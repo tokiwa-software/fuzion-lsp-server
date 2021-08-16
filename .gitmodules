@@ -1,0 +1,3 @@
+[submodule "fuzion"]
+	path = fuzion
+	url = https://github.com/fridis/fuzion
