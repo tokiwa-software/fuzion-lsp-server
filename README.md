@@ -12,4 +12,50 @@
 - make debug
 
 ## Usage
-- connect the client to the (random) port the server prints on stdout.
+- start via `make`
+- connect the client to the (random) port the server prints to stdout.
+
+## Clients
+|Client|Repository|
+|---|---|
+|vscode||
+|vim||
+|emacs||
+
+## TODO
+
+|Language Feature|Status|
+|---|---|
+|completion|☐|
+|completion resolve|☐|
+|hover|☐|
+|signatureHelp|☐|
+|declaration|☐|
+|definition|☐|
+|typeDefinition|☐|
+|implementation|☐|
+|references|☐|
+|documentHighlight|☐|
+|documentSymbol|☐|
+|codeAction|☐|
+|codeAction resolve|☐|
+|codeLens|☐|
+|codeLens resolve|☐|
+|codeLens refresh|☐|
+|documentLink|☐|
+|documentLink resolve|☐|
+|documentColor|☐|
+|colorPresentation|☐|
+|formatting|☐|
+|rangeFormatting|☐|
+|onTypeFormatting|☐|
+|rename|☐|
+|prepareRename|☐|
+|foldingRange|☐|
+|selectionRange|☐|
+|prepareCallHierarchy|☐|
+|callHierarchy incoming|☐|
+|callHierarchy outgoing|☐|
+|semantic tokens|☐|
+|linkedEditingRange|☐|
+|moniker|☐|
