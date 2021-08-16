@@ -21,6 +21,7 @@
 |vscode||
 |vim||
 |emacs||
+|eclipse (theia)||
 
 ## TODO
 
