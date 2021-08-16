@@ -61,7 +61,7 @@ public class FuzionTextDocumentService implements TextDocumentService {
     return character_position;
   }
 
-  private void WithTextInputStream(String text, Runnable runnable){
+  private void WithTextInputStream(String text, Runnable runnable) {
     byte[] byteArray = getBytes(text);
 
     InputStream testInput = new ByteArrayInputStream(byteArray);
@@ -98,10 +98,10 @@ public class FuzionTextDocumentService implements TextDocumentService {
     return Errors.get().stream().map((error) -> {
       var start_line = error.pos._line - 1;
       var start_character = error.pos._column - 1;
-      var start = new Position(start_line, start_character);
-      var end = new Position(start_line, getEndCharaterPositioin(text, start_line, start_character));
-      var message = error.msg + "\n" + error.detail;
-      return new Diagnostic(new Range(start, end), message);
+      var start_Position = new Position(start_line, start_character);
+      var end_Position = new Position(start_line, getEndCharaterPositioin(text, start_line, start_character));
+      var message = error.msg + System.lineSeparator() + error.detail;
+      return new Diagnostic(new Range(start_Position, end_Position), message);
     }).collect(Collectors.toList());
   }
 
