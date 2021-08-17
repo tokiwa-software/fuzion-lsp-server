@@ -7,14 +7,17 @@ JAVA_FILES = \
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
-all: classes $(IMAGES)
+all: classes
 	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main -tcp
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
 	mkdir -p $@
 	javac -classpath $(JARS_FOR_CLASSPATH):build/classes -d $@ $(JAVA_FILES)
 
-debug: classes $(IMAGES)
+stdio: classes
+	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main
+
+debug: classes
 	mkdir -p runDir
 	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main -tcp
 

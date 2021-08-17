@@ -12,8 +12,11 @@
 - make debug
 
 ## Usage
-- start via `make`
+### Transport socket
+- run `make`
 - connect the client to the (random) port the server prints to stdout.
+### Transport stdio
+- run `make stdio`
 
 ## Clients
 |Client|Repository|
