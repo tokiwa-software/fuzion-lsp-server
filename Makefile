@@ -8,7 +8,7 @@ JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.ge
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 all: classes $(IMAGES)
-	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main
+	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main -tcp
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
 	mkdir -p $@
@@ -16,7 +16,7 @@ classes: $(JAVA_FILES) $(JARS) build_fuzion
 
 debug: classes $(IMAGES)
 	mkdir -p runDir
-	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main
+	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main -tcp
 
 jars/org.eclipse.lsp4j-0.12.0.jar:
 	mkdir -p $(@D)

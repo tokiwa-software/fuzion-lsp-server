@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Random;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -7,8 +8,13 @@ import java.util.function.Function;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
@@ -39,14 +45,14 @@ import dev.flang.fe.FrontEndOptions;
 
 public class FuzionTextDocumentService implements TextDocumentService {
 
+  private static final PrintStream DEV_NULL = new PrintStream(OutputStream.nullOutputStream());
+
   /**
    * currently open text documents and their contents
    */
   private HashMap<String, String> textDocuments = new HashMap<String, String>();
 
   private FuzionLanguageServer _fuzionLanguageServer;
-
-  private FrontEndOptions frontEndOptions = new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, true, null);
 
   public FuzionTextDocumentService(FuzionLanguageServer fuzionLanguageServer) {
     _fuzionLanguageServer = fuzionLanguageServer;
@@ -74,24 +80,63 @@ public class FuzionTextDocumentService implements TextDocumentService {
     }
   }
 
+  private void WithRedirectedStdOut(Runnable runnable) {
+    var out = System.out;
+    try {
+      System.setOut(DEV_NULL);
+      runnable.run();
+    } finally {
+      System.setOut(out);
+    }
+  }
+
+  // https://www.baeldung.com/java-random-string
+  public String randomString() {
+    int leftLimit = 97; // letter 'a'
+    int rightLimit = 122; // letter 'z'
+    int targetStringLength = 10;
+    Random random = new Random();
+
+    return random.ints(leftLimit, rightLimit + 1).limit(targetStringLength)
+        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+  }
+
   public void sendDiagnostics(String uri, String text) {
     // TODO move this
     this.textDocuments.put(uri, text);
 
-    WithTextInputStream(text,() -> {
-        Errors.clear();
+    Errors.clear();
 
-        var mir = new FrontEnd(frontEndOptions).createMIR();
+    File tempFile = writeToTempFile(text);
 
-        if (Errors.count() > 0) {
-          var diagnostics = getDiagnostics(text);
-
-          var param = new PublishDiagnosticsParams(uri, diagnostics);
-          _fuzionLanguageServer.getClient().publishDiagnostics(param);
-        }
-
+    WithRedirectedStdOut(() -> {
+      var frontEndOptions = new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false,
+          tempFile.getAbsolutePath());
+      System.out.println(tempFile.getAbsolutePath());
+      var mir = new FrontEnd(frontEndOptions).createMIR();
     });
 
+    if (Errors.count() > 0) {
+      var diagnostics = getDiagnostics(text);
+
+      var param = new PublishDiagnosticsParams(uri, diagnostics);
+      _fuzionLanguageServer.getClient().publishDiagnostics(param);
+    }
+  }
+
+  private File writeToTempFile(String text) {
+    try {
+      File tempFile = File.createTempFile(randomString(), ".fz");
+      tempFile.deleteOnExit();
+
+      FileWriter writer = new FileWriter(tempFile);
+      writer.write(text);
+      writer.close();
+      return tempFile;
+    } catch (IOException e) {
+      System.exit(1);
+      return null;
+    }
   }
 
   private List<Diagnostic> getDiagnostics(String text) {
@@ -127,7 +172,6 @@ public class FuzionTextDocumentService implements TextDocumentService {
   public void didChange(DidChangeTextDocumentParams params) {
     var uri = params.getTextDocument().getUri();
     var text = params.getContentChanges().get(0).getText();
-    System.out.println(text);
     sendDiagnostics(uri, text);
   }
 
