@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: dev.flang.lsp.server.Main
+Class-Path: jars/org.eclipse.lsp4j-0.12.0.jar jars/gson-2.8.7.jar jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar jars/org.eclipse.lsp4j.generator-0.12.0.jar

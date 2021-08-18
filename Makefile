@@ -1,22 +1,23 @@
 SOURCEDIR = src
+CLASSDIR = classes
 JAVA_FILES = $(shell find $(SOURCEDIR) -name '*.java')
 
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 all: classes
-	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main -tcp
+	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
 	mkdir -p $@
 	javac -classpath $(JARS_FOR_CLASSPATH):build/classes -d $@ $(JAVA_FILES)
 
 stdio: classes
-	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main
+	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main
 
 debug: classes
 	mkdir -p runDir
-	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:build/classes:$(JARS_FOR_CLASSPATH) Main -tcp
+	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
 
 jars/org.eclipse.lsp4j-0.12.0.jar:
 	mkdir -p $(@D)
@@ -36,3 +37,10 @@ jars/gson-2.8.7.jar:
 
 build_fuzion:
 	make -f fuzion/Makefile
+
+clean:
+	rm -fR classes
+	rm -f out.jar
+
+jar: clean classes
+	jar cfm out.jar Manifest.txt jars/org.eclipse.lsp4j-0.12.0.jar jars/gson-2.8.7.jar jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar jars/org.eclipse.lsp4j.generator-0.12.0.jar -C classes . -C build/classes .
