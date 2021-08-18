@@ -1,12 +1,5 @@
-JAVA_FILES = \
-	  src/Main.java \
-	  src/Completion.java \
-	  src/Diagnostics.java \
-	  src/Hovering.java \
-	  src/FuzionTextDocumentService.java \
-	  src/FuzionWorkspaceService.java \
-	  src/FuzionLanguageServer.java \
-	  src/Util.java \
+SOURCEDIR = src
+JAVA_FILES = $(shell find $(SOURCEDIR) -name '*.java')
 
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))

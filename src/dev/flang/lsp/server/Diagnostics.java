@@ -1,3 +1,4 @@
+package dev.flang.lsp.server;
 import java.io.File;
 import java.util.stream.Collectors;
 import java.util.List;

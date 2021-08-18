@@ -1,3 +1,4 @@
+package dev.flang.lsp.server;
 import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.HoverOptions;

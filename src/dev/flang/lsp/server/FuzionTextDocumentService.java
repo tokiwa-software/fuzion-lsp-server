@@ -1,3 +1,4 @@
+package dev.flang.lsp.server;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

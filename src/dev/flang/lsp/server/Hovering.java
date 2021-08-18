@@ -1,3 +1,4 @@
+package dev.flang.lsp.server;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.MarkupContent;
