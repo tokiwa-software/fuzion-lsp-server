@@ -1,5 +1,6 @@
 import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.ServerCapabilities;
@@ -16,11 +17,23 @@ public class FuzionLanguageServer implements LanguageServer {
   @Override
   public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
     final InitializeResult res = new InitializeResult(new ServerCapabilities());
-    CompletionOptions completionProvider = new CompletionOptions();
-    completionProvider.setResolveProvider(Boolean.TRUE);
-    res.getCapabilities().setCompletionProvider(completionProvider);
-    res.getCapabilities().setTextDocumentSync(TextDocumentSyncKind.Full);
+    var capabilities = res.getCapabilities();
+    initializeCompletion(capabilities);
+    initializeHover(capabilities);
+    capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeHover(ServerCapabilities serverCapabilities) {
+    var hoverOptions = new HoverOptions();
+    hoverOptions.setWorkDoneProgress(Boolean.FALSE);
+    serverCapabilities.setHoverProvider(hoverOptions);
+  }
+
+  private void initializeCompletion(ServerCapabilities serverCapabilities) {
+    CompletionOptions completionOptions = new CompletionOptions();
+    completionOptions.setResolveProvider(Boolean.FALSE);
+    serverCapabilities.setCompletionProvider(completionOptions);
   }
 
   public void setClient(LanguageClient client){
@@ -43,7 +56,7 @@ public class FuzionLanguageServer implements LanguageServer {
 
   @Override
   public TextDocumentService getTextDocumentService() {
-    return new FuzionTextDocumentService(this);
+    return new FuzionTextDocumentService(this.getClient());
   }
 
   @Override

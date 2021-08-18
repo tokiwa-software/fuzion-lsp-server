@@ -12,6 +12,9 @@ public class Main {
   }
 
   public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
+
+    System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
+
     var transport = Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals) ? Transport.tcp
         : Transport.stdio;
 
