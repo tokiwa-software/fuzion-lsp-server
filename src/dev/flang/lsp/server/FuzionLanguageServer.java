@@ -1,4 +1,5 @@
 package dev.flang.lsp.server;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.HoverOptions;
@@ -21,7 +22,7 @@ public class FuzionLanguageServer implements LanguageServer {
     var capabilities = res.getCapabilities();
     initializeCompletion(capabilities);
     initializeHover(capabilities);
-    capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
+    capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
     return CompletableFuture.supplyAsync(() -> res);
   }
 
@@ -34,6 +35,7 @@ public class FuzionLanguageServer implements LanguageServer {
   private void initializeCompletion(ServerCapabilities serverCapabilities) {
     CompletionOptions completionOptions = new CompletionOptions();
     completionOptions.setResolveProvider(Boolean.FALSE);
+    completionOptions.setTriggerCharacters(List.of("."));
     serverCapabilities.setCompletionProvider(completionOptions);
   }
 

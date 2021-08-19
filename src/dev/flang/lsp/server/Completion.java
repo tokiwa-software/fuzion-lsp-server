@@ -9,6 +9,7 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
 
 public class Completion {
 
@@ -30,9 +31,12 @@ public class Completion {
     return Either.forLeft(List.of());
   }
 
-  private static String getWord(CompletionParams params) {
+  private static @NonNull String getWord(CompletionParams params) {
     var text = FuzionTextDocumentService.getText(params.getTextDocument().getUri());
     var line = text.split("\n")[params.getPosition().getLine()];
+    if(line.length() == 0){
+      return "";
+    }
     var start = params.getPosition().getCharacter();
     do {
       --start;
