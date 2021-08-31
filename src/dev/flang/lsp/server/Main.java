@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.io.IOException;
 import java.net.ServerSocket;
+
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
@@ -18,11 +19,9 @@ public class Main {
     return _languageClient;
   }
 
-  public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
+  public static void main(String[] args) throws Exception {
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
-    System.setProperty("PRECONDITIONS", "true");
-    System.setProperty("POSTCONDITIONS", "true");
 
     var transport = Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals) ? Transport.tcp
         : Transport.stdio;
