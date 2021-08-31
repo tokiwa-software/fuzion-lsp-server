@@ -3,37 +3,13 @@ import java.io.File;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.function.Consumer;
-
-import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.CompletionItemKind;
-import org.eclipse.lsp4j.CompletionList;
-import org.eclipse.lsp4j.CompletionParams;
-import org.eclipse.lsp4j.DidChangeTextDocumentParams;
-import org.eclipse.lsp4j.DidCloseTextDocumentParams;
-import org.eclipse.lsp4j.DidOpenTextDocumentParams;
-import org.eclipse.lsp4j.DidSaveTextDocumentParams;
-import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.TextDocumentItem;
 
-import dev.flang.parser.Parser;
-import dev.flang.util.SourceFile;
 import dev.flang.util.Errors;
-import dev.flang.util.Errors.Error;
-import dev.flang.ast.Block;
-import dev.flang.ast.Feature;
-import dev.flang.ast.Resolution;
-import dev.flang.util.SourcePosition;
+import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
@@ -48,7 +24,9 @@ public class Diagnostics {
   }
 
   public static PublishDiagnosticsParams getPublishDiagnosticsParams(String uri, String text) {
+    // NYI remove once we can create MIR multiple times
     Errors.clear();
+    Types.clear();
 
     File tempFile = Util.writeToTempFile(text);
 
