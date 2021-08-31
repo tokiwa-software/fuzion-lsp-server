@@ -12,24 +12,32 @@ public class Main {
     stdio, tcp
   }
 
+  private static LanguageClient _languageClient;
+
+  public static LanguageClient getLanguageClient(){
+    return _languageClient;
+  }
+
   public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
+    System.setProperty("PRECONDITIONS", "true");
+    System.setProperty("POSTCONDITIONS", "true");
 
     var transport = Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals) ? Transport.tcp
         : Transport.stdio;
 
     switch (transport) {
     case stdio:
-      startStdIo();
+      _languageClient= startStdIo();
       break;
     case tcp:
-      startTcpServer();
+      _languageClient= startTcpServer();
       break;
     }
   }
 
-  private static void startTcpServer() throws IOException, InterruptedException, ExecutionException {
+  private static LanguageClient startTcpServer() throws IOException, InterruptedException, ExecutionException {
     try (var serverSocket = new ServerSocket(0)) {
 
       System.out.println("socket opened on port: " + serverSocket.getLocalPort());
@@ -38,16 +46,15 @@ public class Main {
       var server = new FuzionLanguageServer();
       var launcher = Launcher.createLauncher(server, LanguageClient.class, socket.getInputStream(),
           socket.getOutputStream());
-      server.setClient(launcher.getRemoteProxy());
-      launcher.startListening().get();
+      launcher.startListening();
+      return launcher.getRemoteProxy();
     }
   }
 
-  private static void startStdIo() throws InterruptedException, ExecutionException {
+  private static LanguageClient startStdIo() throws InterruptedException, ExecutionException {
     var server = new FuzionLanguageServer();
     var launcher = Launcher.createLauncher(server, LanguageClient.class, System.in, System.out);
-    server.setClient(launcher.getRemoteProxy());
-
-    launcher.startListening().get();
+    launcher.startListening();
+    return launcher.getRemoteProxy();
   }
 }

@@ -24,13 +24,6 @@ public class FuzionTextDocumentService implements TextDocumentService {
    */
   private static HashMap<String, String> textDocuments = new HashMap<String, String>();
 
-  private LanguageClient _languageClient;
-
-  public FuzionTextDocumentService(LanguageClient languageClient) {
-    _languageClient = languageClient;
-
-  }
-
   public static String getText(String uri) {
     return textDocuments.get(uri);
   }
@@ -45,7 +38,7 @@ public class FuzionTextDocumentService implements TextDocumentService {
 
     var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri, text);
     if (diagnostics.getDiagnostics().size() > 0) {
-      _languageClient.publishDiagnostics(diagnostics);
+      Main.getLanguageClient().publishDiagnostics(diagnostics);
     }
   }
 
@@ -74,7 +67,7 @@ public class FuzionTextDocumentService implements TextDocumentService {
 
     var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri, text);
     if (diagnostics.getDiagnostics().size() > 0) {
-      _languageClient.publishDiagnostics(diagnostics);
+      Main.getLanguageClient().publishDiagnostics(diagnostics);
     }
   }
 

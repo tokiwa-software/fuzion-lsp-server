@@ -1,6 +1,8 @@
 package dev.flang.lsp.server;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.InitializeParams;
@@ -10,11 +12,8 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
-import org.eclipse.lsp4j.services.LanguageClient;
 
 public class FuzionLanguageServer implements LanguageServer {
-
-  private LanguageClient _client;
 
   @Override
   public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
@@ -39,14 +38,6 @@ public class FuzionLanguageServer implements LanguageServer {
     serverCapabilities.setCompletionProvider(completionOptions);
   }
 
-  public void setClient(LanguageClient client){
-    _client = client;
-  }
-
-  public LanguageClient getClient(){
-    return _client;
-  }
-
   @Override
   public CompletableFuture<Object> shutdown() {
     return CompletableFuture.supplyAsync(() -> Boolean.TRUE);
@@ -59,7 +50,7 @@ public class FuzionLanguageServer implements LanguageServer {
 
   @Override
   public TextDocumentService getTextDocumentService() {
-    return new FuzionTextDocumentService(this.getClient());
+    return new FuzionTextDocumentService();
   }
 
   @Override
