@@ -7,15 +7,27 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.ImplementationParams;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
+
+import dev.flang.ast.Feature;
+import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Stmnt;
+import dev.flang.lsp.server.feature.Completion;
+import dev.flang.lsp.server.feature.Diagnostics;
+import dev.flang.lsp.server.feature.Hovering;
+import dev.flang.lsp.server.feature.Definition;
 
 public class FuzionTextDocumentService implements TextDocumentService {
   /**
@@ -122,4 +134,9 @@ public class FuzionTextDocumentService implements TextDocumentService {
     return CompletableFuture.completedFuture(Hovering.getHover(params));
   }
 
+  @Override
+  public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(DefinitionParams params) {
+
+    return CompletableFuture.completedFuture(Definition.getDefinitionLocation(params));
+	}
 }

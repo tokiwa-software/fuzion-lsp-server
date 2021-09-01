@@ -1,4 +1,4 @@
-package dev.flang.lsp.server;
+package dev.flang.lsp.server.feature;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,6 +10,8 @@ import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
+
+import dev.flang.lsp.server.FuzionTextDocumentService;
 
 public class Completion {
 
