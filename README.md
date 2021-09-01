@@ -26,10 +26,63 @@
 |emacs||
 |eclipse (theia)||
 
-## TODO
+### Emacs
+- Note: fuzionlsp_stdio (from ./bin/) needs to in PATH
+- ~/.emacs.d/init.el example using [https://github.com/emacs-lsp/lsp-mode](lsp-mode)
 
-|Language Feature|Status|
+```lisp
+(package-initialize)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(inhibit-startup-screen t)
+ '(package-selected-packages '(lsp-ui flycheck lsp-mode ##)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(define-derived-mode fuzion-mode
+  fundamental-mode "Fuzion"
+  "Major mode for Fuzion.")
+
+(add-to-list 'auto-mode-alist '("\\.fz\\'" . fuzion-mode))
+
+(require 'lsp-mode)
+(global-flycheck-mode)
+(add-to-list 'lsp-language-id-configuration '(fuzion-mode . "fuzion"))
+
+(defgroup lsp-fuzionlsp nil
+  "LSP support for Fuzion, using fuzionlsp."
+  :group 'lsp-mode
+  :link '(url-link ""))
+
+(lsp-register-client
+ (make-lsp-client :new-connection (lsp-stdio-connection "fuzionlsp_stdio")
+                  :major-modes '(fuzion-mode)
+                  :priority -1
+                  :server-id 'fuzionls))
+
+
+(lsp-consistency-check lsp-fuzion)
+
+(add-hook 'fuzion-mode-hook #'lsp)
+
+(provide 'lsp-fuzion)
+
+(provide 'init)
+;;; init.el ends here
+```
+
+## Implementation state
+
+|Feature|Status|
 |---|---|
+|diagnostics|☐|
 |completion|☐|
 |completion resolve|☐|
 |hover|☐|
