@@ -17,6 +17,7 @@ import java.util.Random;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.Feature;
 import dev.flang.ast.Stmnt;
@@ -34,6 +35,7 @@ public class Util
       }
     catch (UnsupportedEncodingException e)
       {
+        e.printStackTrace();
         System.exit(1);
       }
     return byteArray;
@@ -53,6 +55,7 @@ public class Util
       }
     catch (IOException e)
       {
+        e.printStackTrace();
         System.exit(1);
         return null;
       }
@@ -112,6 +115,7 @@ public class Util
       }
     catch (URISyntaxException e)
       {
+        e.printStackTrace();
         System.exit(1);
         return null;
       }
@@ -129,8 +133,11 @@ public class Util
    * @param position
    * @return
    */
-  public static Optional<Feature> getClosestFeature(String uriString, Position position)
+  public static Optional<Feature> getClosestFeature(TextDocumentPositionParams params)
   {
+    var uriString = params.getTextDocument().getUri();
+    var position = params.getPosition();
+
     var uri = Util.toURI(uriString);
     var universe = Memory.Uri2Universe.get(uriString);
 

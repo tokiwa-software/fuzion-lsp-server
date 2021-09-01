@@ -18,8 +18,7 @@ public class Definition
   public static Either<List<? extends Location>, List<? extends LocationLink>> getDefinitionLocation(
     DefinitionParams params)
   {
-    var uriString = params.getTextDocument().getUri();
-    var closestFeature = Util.getClosestFeature(uriString, params.getPosition());
+    var closestFeature = Util.getClosestFeature(params);
     if(closestFeature.isEmpty()){
       return null;
     }
