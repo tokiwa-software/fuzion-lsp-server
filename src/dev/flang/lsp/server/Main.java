@@ -19,6 +19,10 @@ public class Main {
     return _languageClient;
   }
 
+  public static boolean DEBUG(){
+    return System.getenv("DEBUG") == "true";
+  };
+
   public static void main(String[] args) throws Exception {
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
