@@ -10,9 +10,12 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -20,7 +23,10 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.Feature;
+import dev.flang.ast.Call;
 import dev.flang.ast.Stmnt;
+import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Expr;
 
 public class Util
 {
@@ -127,28 +133,84 @@ public class Util
     return new Location("file://" + stmnt.pos()._sourceFile._fileName, new Range(position, position));
   }
 
+  private static Stream<Feature> flatten(Stream<Feature> features)
+  {
+    var featureList = features.toList();
+    if(featureList.stream().count() == 0){
+      return Stream.of();
+    }
+    return Stream.concat(featureList.stream(), featureList.stream().flatMap(feature -> flatten(feature.declaredFeatures().values().stream())));
+  }
+
   /**
    * Return innermost feature for given params
    * @param uriString
    * @param position
    * @return
    */
-  public static Optional<Feature> getClosestFeature(TextDocumentPositionParams params)
+  public static Feature getClosestFeature(TextDocumentPositionParams params)
   {
     var uriString = params.getTextDocument().getUri();
     var position = params.getPosition();
 
     var uri = Util.toURI(uriString);
-    var universe = Memory.Uri2Universe.get(uriString);
 
-    return universe.declaredFeatures().values().stream().filter((feature) -> {
+    var universeFeatures = Memory.Universe.declaredFeatures().values().stream();
+    var allFeatures = flatten(universeFeatures);
+
+    //NYI needs a better way
+    Optional<Feature> closestFeature = allFeatures.filter((feature) -> {
       var featureUri = Util.toURI("file://" + feature.pos()._sourceFile._fileName);
       return featureUri.equals(uri);
     }).filter(feature -> {
       var line_zero_based = feature.pos()._line - 1;
       var character_zero_based = feature.pos()._column - 1;
+      // NYI HACK remove once we get end position of stmnts
+      if(getIndentationLevel(FuzionTextDocumentService.getText(uriString), position.getLine()) <= feature.pos()._column){
+        return false;
+      }
+
       return line_zero_based <= position.getLine() && character_zero_based <= position.getCharacter();
     }).sorted(Comparator.comparing(f -> -f.pos()._line)).findFirst();
+
+    return closestFeature.isPresent() ?  closestFeature.get(): Memory.Universe;
+  }
+
+  private static int getIndentationLevel(String text, int line)
+  {
+    var lineText = text.split("\n")[line];
+    return lineText.length() - lineText.stripLeading().length();
+  }
+
+  /**
+   * NYI
+   * @param params
+   * @return
+   */
+  public static Optional<Call> getClosestCall(TextDocumentPositionParams params)
+  {
+    var closestFeature = Util.getClosestFeature(params);
+    var visitedCalls = new ArrayList<Call>();
+    closestFeature.visit(new FeatureVisitor() {
+      @Override
+      public Expr action(Call c, Feature outer)
+      {
+        visitedCalls.add(c);
+        return c;
+      }
+    });
+
+    Predicate<? super Call> isSameLine = statement -> statement.pos()._line - 1 == params.getPosition().getLine();
+    Predicate<? super Call> beginsBeforeOrAtPosition = statement -> params.getPosition().getCharacter() - (statement.pos()._column - 1) >= 0;
+
+    var closestCall = visitedCalls.stream()
+      .filter(isSameLine)
+      .filter(beginsBeforeOrAtPosition)
+      .sorted(Comparator.comparing(statement -> {
+        return -statement.pos()._column;
+      }))
+      .findFirst();
+    return closestCall;
   }
 
 }

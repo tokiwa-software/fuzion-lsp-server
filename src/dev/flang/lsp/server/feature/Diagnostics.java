@@ -51,10 +51,15 @@ public class Diagnostics
       }
 
     Util.WithRedirectedStdOut(() -> {
+      // NYI parsing works only once for now
+      if (Memory.Universe != null)
+        {
+          return;
+        }
       var frontEndOptions =
           new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
-      var universe = new FrontEnd(frontEndOptions).createMIR().main();
-      Memory.Uri2Universe.put(uri, universe);
+      var universe = new FrontEnd(frontEndOptions).createMIR().main().universe();
+      Memory.Universe = universe;
     });
 
     if (Errors.count() > 0)
