@@ -20,7 +20,7 @@ public class Main {
   }
 
   public static boolean DEBUG(){
-    return System.getenv("DEBUG") == "true";
+    return System.getenv("DEBUG").toLowerCase().equals("true");
   };
 
   public static void main(String[] args) throws Exception {
