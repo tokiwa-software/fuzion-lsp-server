@@ -50,6 +50,7 @@ public class Diagnostics
         return new PublishDiagnosticsParams(uri, new ArrayList<Diagnostic>());
       }
 
+    // NYI move parsing some place else
     Util.WithRedirectedStdOut(() -> {
       // NYI parsing works only once for now
       if (Memory.Universe != null)

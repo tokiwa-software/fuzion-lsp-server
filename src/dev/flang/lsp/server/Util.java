@@ -12,9 +12,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Random;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
@@ -22,11 +24,8 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.ast.Feature;
-import dev.flang.ast.Call;
-import dev.flang.ast.Stmnt;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Expr;
+import dev.flang.ast.*;
+import dev.flang.ast.Impl.Kind;
 
 public class Util
 {
@@ -136,19 +135,26 @@ public class Util
   private static Stream<Feature> flatten(Stream<Feature> features)
   {
     var featureList = features.toList();
-    if(featureList.stream().count() == 0){
-      return Stream.of();
-    }
-    return Stream.concat(featureList.stream(), featureList.stream().flatMap(feature -> flatten(feature.declaredFeatures().values().stream())));
+    if (featureList.stream().count() == 0)
+      {
+        return Stream.of();
+      }
+    return Stream.concat(featureList.stream(),
+        featureList.stream().flatMap(feature -> flatten(feature.declaredFeatures().values().stream())));
+  }
+
+  public static <T> HashSet<T> HashSetOf(T... values)
+  {
+    return Stream.of(values).collect(Collectors.toCollection(HashSet::new));
   }
 
   /**
-   * Return innermost feature for given params
+   * Return enclosing feature for given params
    * @param uriString
    * @param position
    * @return
    */
-  public static Feature getClosestFeature(TextDocumentPositionParams params)
+  public static Feature getEnclosingFeature(TextDocumentPositionParams params)
   {
     var uriString = params.getTextDocument().getUri();
     var position = params.getPosition();
@@ -158,28 +164,52 @@ public class Util
     var universeFeatures = Memory.Universe.declaredFeatures().values().stream();
     var allFeatures = flatten(universeFeatures);
 
-    //NYI needs a better way
-    Optional<Feature> closestFeature = allFeatures.filter((feature) -> {
+    Predicate<? super Feature> isRoutine = feature -> HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.impl.kind_);
+
+    // NYI needs a better way
+    Optional<Feature> enclosingFeature = allFeatures.filter((feature) -> {
       var featureUri = Util.toURI("file://" + feature.pos()._sourceFile._fileName);
       return featureUri.equals(uri);
-    }).filter(feature -> {
+    })
+    .filter(isRoutine)
+    .filter(feature -> {
       var line_zero_based = feature.pos()._line - 1;
       var character_zero_based = feature.pos()._column - 1;
       // NYI HACK remove once we get end position of stmnts
-      if(getIndentationLevel(FuzionTextDocumentService.getText(uriString), position.getLine()) <= feature.pos()._column){
-        return false;
-      }
-
-      return line_zero_based <= position.getLine() && character_zero_based <= position.getCharacter();
+      if (getIndentationLevel(FuzionTextDocumentService.getText(uriString),
+      position.getLine()) <= feature.pos()._column - 1)
+        {
+          System.out.println("filtering indent: " + feature.featureName());
+          return false;
+        }
+        if(!(line_zero_based <= position.getLine() && character_zero_based <= position.getCharacter())){
+          System.out.println("filtering pos: " + feature.featureName());
+          return false;
+        }
+        return true;
     }).sorted(Comparator.comparing(f -> -f.pos()._line)).findFirst();
 
-    return closestFeature.isPresent() ?  closestFeature.get(): Memory.Universe;
+    if (Main.DEBUG())
+      {
+        if (enclosingFeature.isEmpty())
+          {
+            System.err.println("no feature found");
+          }
+        if (enclosingFeature.isPresent())
+          {
+            System.out.println("CLOSEST FEATURE:" + enclosingFeature.get().featureName());
+            System.out.println("pos: " + enclosingFeature.get().pos());
+          }
+      }
+
+    return enclosingFeature.isPresent() ? enclosingFeature.get(): Memory.Universe;
   }
 
   private static int getIndentationLevel(String text, int line)
   {
     var lineText = text.split("\n")[line];
-    return lineText.length() - lineText.stripLeading().length();
+    var indent = lineText.length() - lineText.stripLeading().length();
+    return indent;
   }
 
   /**
@@ -187,30 +217,174 @@ public class Util
    * @param params
    * @return
    */
-  public static Optional<Call> getClosestCall(TextDocumentPositionParams params)
+  public static Optional<Stmnt> getClosestStmnt(TextDocumentPositionParams params)
   {
-    var closestFeature = Util.getClosestFeature(params);
-    var visitedCalls = new ArrayList<Call>();
-    closestFeature.visit(new FeatureVisitor() {
+    var enclosingFeature = Util.getEnclosingFeature(params);
+    var visitedStmnts = new ArrayList<Stmnt>();
+    enclosingFeature.visit(StmntVisitor(visitedStmnts));
+
+    Predicate<? super Stmnt> beginsBeforeOrAtLine =
+        statement -> params.getPosition().getLine() - (statement.pos()._line - 1) >= 0;
+    Predicate<? super Stmnt> beginsBeforeOrAtCharacter =
+        statement -> params.getPosition().getCharacter() - (statement.pos()._column - 1) >= 0;
+
+    var filteredStmnts = visitedStmnts.stream().filter(beginsBeforeOrAtLine).filter(beginsBeforeOrAtCharacter)
+        .sorted(Comparator.comparing(statement -> -((Stmnt) statement).pos()._line)
+            .thenComparing(statement -> -((Stmnt) statement).pos()._column))
+        .toList();
+
+    var closestStmnt = filteredStmnts.stream().findFirst();
+
+    if (Main.DEBUG() && closestStmnt.isPresent())
+      {
+        System.out.println("cs: " + closestStmnt.get().getClass());
+      }
+    if (Main.DEBUG() && closestStmnt.isEmpty())
+      {
+        System.out.println("cs: found nothing");
+      }
+
+    return closestStmnt;
+  }
+
+  private static FeatureVisitor StmntVisitor(ArrayList<Stmnt> visitedStmnts)
+  {
+    return new FeatureVisitor() {
+      @Override
+      public void action(Unbox u, Feature outer)
+      {
+        visitedStmnts.add(u);
+      }
+
+      @Override
+      public void action(Assign a, Feature outer)
+      {
+        visitedStmnts.add(a);
+      }
+
+      @Override
+      public void actionBefore(Block b, Feature outer)
+      {
+        visitedStmnts.add(b);
+      }
+
+      @Override
+      public void actionAfter(Block b, Feature outer)
+      {
+        visitedStmnts.add(b);
+      }
+
+      @Override
+      public void action(Box b, Feature outer)
+      {
+        visitedStmnts.add(b);
+      }
+
       @Override
       public Expr action(Call c, Feature outer)
       {
-        visitedCalls.add(c);
+        visitedStmnts.add(c);
         return c;
       }
-    });
 
-    Predicate<? super Call> isSameLine = statement -> statement.pos()._line - 1 == params.getPosition().getLine();
-    Predicate<? super Call> beginsBeforeOrAtPosition = statement -> params.getPosition().getCharacter() - (statement.pos()._column - 1) >= 0;
+      @Override
+      public void actionBefore(Case c, Feature outer)
+      {
+      }
 
-    var closestCall = visitedCalls.stream()
-      .filter(isSameLine)
-      .filter(beginsBeforeOrAtPosition)
-      .sorted(Comparator.comparing(statement -> {
-        return -statement.pos()._column;
-      }))
-      .findFirst();
-    return closestCall;
+      @Override
+      public void actionAfter(Case c, Feature outer)
+      {
+      }
+
+      @Override
+      public void action(Cond c, Feature outer)
+      {
+      }
+
+      @Override
+      public Expr action(Current c, Feature outer)
+      {
+        visitedStmnts.add(c);
+        return c;
+      }
+
+      @Override
+      public Stmnt action(Destructure d, Feature outer)
+      {
+        visitedStmnts.add(d);
+        return d;
+      }
+
+      @Override
+      public Stmnt action(Feature f, Feature outer)
+      {
+        visitedStmnts.add(f);
+        return f;
+      }
+
+      @Override
+      public Expr action(Function f, Feature outer)
+      {
+        visitedStmnts.add(f);
+        return f;
+      }
+
+      @Override
+      public void action(Generic g, Feature outer)
+      {
+      }
+
+      @Override
+      public void action(If i, Feature outer)
+      {
+        visitedStmnts.add(i);
+      }
+
+      @Override
+      public void action(Impl i, Feature outer)
+      {
+      }
+
+      @Override
+      public Expr action(InitArray i, Feature outer)
+      {
+        visitedStmnts.add(i);
+        return i;
+      }
+
+      @Override
+      public void action(Match m, Feature outer)
+      {
+        visitedStmnts.add(m);
+      }
+
+      @Override
+      public void action(Tag b, Feature outer)
+      {
+        visitedStmnts.add(b);
+      }
+
+      @Override
+      public Expr action(This t, Feature outer)
+      {
+        visitedStmnts.add(t);
+        return t;
+      }
+
+      @Override
+      public Type action(Type t, Feature outer)
+      {
+        return t;
+      }
+    };
+  }
+
+  public static Range toRange(Position position)
+  {
+    var line = position.getLine();
+    var character = position.getCharacter();
+    return new Range(new Position(line, character), new Position(line, character));
   }
 
 }
