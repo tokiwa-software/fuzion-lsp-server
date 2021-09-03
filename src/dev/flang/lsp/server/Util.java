@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Random;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +27,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.*;
 import dev.flang.ast.Impl.Kind;
+import dev.flang.util.SourcePosition;
 
 public class Util
 {
@@ -107,9 +109,9 @@ public class Util
       }
   }
 
-  public static Position ToPosition(Stmnt stmnt)
+  public static Position ToPosition(SourcePosition sourcePosition)
   {
-    return new Position(stmnt.pos()._line - 1, stmnt.pos()._column - 1);
+    return new Position(sourcePosition._line - 1, sourcePosition._column - 1);
   }
 
   public static URI toURI(String uri)
@@ -126,10 +128,10 @@ public class Util
       }
   }
 
-  public static Location ToLocation(Stmnt stmnt)
+  public static Location ToLocation(SourcePosition sourcePosition)
   {
-    var position = Util.ToPosition(stmnt);
-    return new Location("file://" + stmnt.pos()._sourceFile._fileName, new Range(position, position));
+    var position = Util.ToPosition(sourcePosition);
+    return new Location("file://" + sourcePosition._sourceFile._fileName, new Range(position, position));
   }
 
   private static Stream<Feature> flatten(Stream<Feature> features)
@@ -164,30 +166,18 @@ public class Util
     var universeFeatures = Memory.Universe.declaredFeatures().values().stream();
     var allFeatures = flatten(universeFeatures);
 
-    Predicate<? super Feature> isRoutine = feature -> HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.impl.kind_);
+    Predicate<? super Feature> isInURI =
+        feature -> Util.toURI("file://" + feature.pos()._sourceFile._fileName).equals(uri);
+    Predicate<? super Feature> isRoutine =
+        feature -> HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.impl.kind_);
+    Predicate<? super Feature> isBefore = feature -> feature.pos()._line - 1 <= position.getLine()
+        && feature.pos()._column - 1 <= position.getCharacter();
+    Predicate<? super Feature> hasASTItemOnSameLineOrAfter = feature -> getAllAstItems(feature).stream()
+        .anyMatch(entry -> entry.getKey()._line - 1 >= position.getLine());
 
     // NYI needs a better way
-    Optional<Feature> enclosingFeature = allFeatures.filter((feature) -> {
-      var featureUri = Util.toURI("file://" + feature.pos()._sourceFile._fileName);
-      return featureUri.equals(uri);
-    })
-    .filter(isRoutine)
-    .filter(feature -> {
-      var line_zero_based = feature.pos()._line - 1;
-      var character_zero_based = feature.pos()._column - 1;
-      // NYI HACK remove once we get end position of stmnts
-      if (getIndentationLevel(FuzionTextDocumentService.getText(uriString),
-      position.getLine()) <= feature.pos()._column - 1)
-        {
-          System.out.println("filtering indent: " + feature.featureName());
-          return false;
-        }
-        if(!(line_zero_based <= position.getLine() && character_zero_based <= position.getCharacter())){
-          System.out.println("filtering pos: " + feature.featureName());
-          return false;
-        }
-        return true;
-    }).sorted(Comparator.comparing(f -> -f.pos()._line)).findFirst();
+    Optional<Feature> enclosingFeature = allFeatures.filter(isInURI).filter(isRoutine).filter(isBefore).filter(hasASTItemOnSameLineOrAfter)
+        .sorted(Comparator.comparing(f -> -f.pos()._line)).findFirst();
 
     if (Main.DEBUG())
       {
@@ -198,18 +188,11 @@ public class Util
         if (enclosingFeature.isPresent())
           {
             System.out.println("CLOSEST FEATURE:" + enclosingFeature.get().featureName());
-            System.out.println("pos: " + enclosingFeature.get().pos());
+            System.out.println("CLOSEST FEATURE pos: " + enclosingFeature.get().pos());
           }
       }
 
     return enclosingFeature.isPresent() ? enclosingFeature.get(): Memory.Universe;
-  }
-
-  private static int getIndentationLevel(String text, int line)
-  {
-    var lineText = text.split("\n")[line];
-    var indent = lineText.length() - lineText.stripLeading().length();
-    return indent;
   }
 
   /**
@@ -217,164 +200,204 @@ public class Util
    * @param params
    * @return
    */
-  public static Optional<Stmnt> getClosestStmnt(TextDocumentPositionParams params)
+  public static ArrayList<SimpleEntry<SourcePosition, Object>> getPossibleASTItems(TextDocumentPositionParams params, Predicate<? super SimpleEntry<SourcePosition, Object>> filter)
   {
     var enclosingFeature = Util.getEnclosingFeature(params);
-    var visitedStmnts = new ArrayList<Stmnt>();
-    enclosingFeature.visit(StmntVisitor(visitedStmnts));
-
-    Predicate<? super Stmnt> beginsBeforeOrAtLine =
-        statement -> params.getPosition().getLine() - (statement.pos()._line - 1) >= 0;
-    Predicate<? super Stmnt> beginsBeforeOrAtCharacter =
-        statement -> params.getPosition().getCharacter() - (statement.pos()._column - 1) >= 0;
-
-    var filteredStmnts = visitedStmnts.stream().filter(beginsBeforeOrAtLine).filter(beginsBeforeOrAtCharacter)
-        .sorted(Comparator.comparing(statement -> -((Stmnt) statement).pos()._line)
-            .thenComparing(statement -> -((Stmnt) statement).pos()._column))
-        .toList();
-
-    var closestStmnt = filteredStmnts.stream().findFirst();
-
-    if (Main.DEBUG() && closestStmnt.isPresent())
+    var astItems = getAllAstItems(enclosingFeature);
+    astItems
+    .sort(Comparator.comparing(SimpleEntry::getKey));
+    if (Main.DEBUG())
       {
-        System.out.println("cs: " + closestStmnt.get().getClass());
-      }
-    if (Main.DEBUG() && closestStmnt.isEmpty())
-      {
-        System.out.println("cs: found nothing");
+        System.out.println("ast items found: ");
+        astItems.forEach(item -> {
+          System.out.println(item.getValue().getClass() + ":" + item.getKey());
+        });
+        System.out.println("===");
       }
 
-    return closestStmnt;
+    Predicate<? super SimpleEntry<SourcePosition, Object>> isOnSameLine =
+        entry -> params.getPosition().getLine() == (entry.getKey()._line - 1);
+    Predicate<? super SimpleEntry<SourcePosition, Object>> startsBeforeOrAtCharacter =
+        entry -> params.getPosition().getCharacter() - (entry.getKey()._column - 1) >= 0;
+
+    var filteredASTItems = astItems.stream().filter(isOnSameLine).filter(startsBeforeOrAtCharacter).filter(filter)
+        .collect(Collectors.toCollection(ArrayList<SimpleEntry<SourcePosition, Object>>::new));
+
+    if (Main.DEBUG())
+      {
+        System.out.println("Items considered: ");
+        filteredASTItems.forEach(item -> {
+          System.out.println(item.getValue().getClass() + ":" + item.getKey());
+        });
+        System.out.println("===");
+      }
+
+    return filteredASTItems;
   }
 
-  private static FeatureVisitor StmntVisitor(ArrayList<Stmnt> visitedStmnts)
+  private static ArrayList<SimpleEntry<SourcePosition, Object>> getAllAstItems(Feature feature)
+  {
+    var result = new ArrayList<SimpleEntry<SourcePosition, Object>>();
+    feature.visit(EverythingVisitor(result));
+    return result;
+  }
+
+  private static FeatureVisitor EverythingVisitor(ArrayList<SimpleEntry<SourcePosition, Object>> visitedASTItems)
   {
     return new FeatureVisitor() {
       @Override
       public void action(Unbox u, Feature outer)
       {
-        visitedStmnts.add(u);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(u.pos(),u));
       }
 
       @Override
       public void action(Assign a, Feature outer)
       {
-        visitedStmnts.add(a);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(a.pos(),a));
+        a.value.visit(this, outer);
       }
 
       @Override
       public void actionBefore(Block b, Feature outer)
       {
-        visitedStmnts.add(b);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(b.pos(),b));
+        b.statements_.forEach(s -> {
+          s.visit(this, outer);
+        });
+
       }
 
       @Override
       public void actionAfter(Block b, Feature outer)
       {
-        visitedStmnts.add(b);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(b.pos(),b));
+        b.statements_.forEach(s -> {
+          s.visit(this, outer);
+        });
       }
 
       @Override
       public void action(Box b, Feature outer)
       {
-        visitedStmnts.add(b);
+        b._value.visit(this, outer);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(b.pos(),b));
       }
 
       @Override
       public Expr action(Call c, Feature outer)
       {
-        visitedStmnts.add(c);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(c.pos(),c));
         return c;
       }
 
       @Override
       public void actionBefore(Case c, Feature outer)
       {
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(c.pos,c));
+        c.code.visit(this, outer);
       }
 
       @Override
       public void actionAfter(Case c, Feature outer)
       {
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(c.pos,c));
+        c.code.visit(this, outer);
       }
 
       @Override
       public void action(Cond c, Feature outer)
       {
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(c.cond.pos(),c));
+        c.cond.visit(this, outer);
       }
 
       @Override
       public Expr action(Current c, Feature outer)
       {
-        visitedStmnts.add(c);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(c.pos(),c));
         return c;
       }
 
       @Override
       public Stmnt action(Destructure d, Feature outer)
       {
-        visitedStmnts.add(d);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(d.pos(),d));
         return d;
       }
 
       @Override
       public Stmnt action(Feature f, Feature outer)
       {
-        visitedStmnts.add(f);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(f.pos(),f));
+        f.visit(this, outer);
         return f;
       }
 
       @Override
       public Expr action(Function f, Feature outer)
       {
-        visitedStmnts.add(f);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(f.pos(),f));
         return f;
       }
 
       @Override
       public void action(Generic g, Feature outer)
       {
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(g._pos,g));
       }
 
       @Override
       public void action(If i, Feature outer)
       {
-        visitedStmnts.add(i);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(i.pos(),i));
+        i.cond.visit(this, outer);
+        i.block.visit(this, outer);
+        if(i.elseIf != null){
+          i.elseIf.visit(this, outer);
+        }
+        if(i.elseBlock != null){
+          i.elseBlock.visit(this, outer);
+        }
       }
 
       @Override
       public void action(Impl i, Feature outer)
       {
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(i.pos,i));
+        i._code.visit(this, outer);
       }
 
       @Override
       public Expr action(InitArray i, Feature outer)
       {
-        visitedStmnts.add(i);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(i.pos(),i));
         return i;
       }
 
       @Override
       public void action(Match m, Feature outer)
       {
-        visitedStmnts.add(m);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(m.pos(),m));
       }
 
       @Override
       public void action(Tag b, Feature outer)
       {
-        visitedStmnts.add(b);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(b.pos(),b));
       }
 
       @Override
       public Expr action(This t, Feature outer)
       {
-        visitedStmnts.add(t);
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(t.pos(),t));
         return t;
       }
 
       @Override
       public Type action(Type t, Feature outer)
       {
+        visitedASTItems.add(new SimpleEntry<SourcePosition, Object>(t.pos,t));
         return t;
       }
     };

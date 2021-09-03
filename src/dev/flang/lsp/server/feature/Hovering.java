@@ -8,7 +8,7 @@ import org.eclipse.lsp4j.Range;
 
 import dev.flang.ast.Assign;
 import dev.flang.ast.Call;
-import dev.flang.ast.Stmnt;
+import dev.flang.ast.Type;
 import dev.flang.ast.Function;
 import dev.flang.lsp.server.Util;
 
@@ -17,48 +17,61 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var stmnt = Util.getClosestStmnt(params);
-    if (stmnt.isEmpty())
+    var astItems = Util
+        .getPossibleASTItems(params,
+            x -> x.getValue() instanceof Call || x.getValue() instanceof Assign || x.getValue() instanceof Function || x.getValue() instanceof Type);
+
+    if (astItems.isEmpty())
       {
         return null;
       }
-    return getHover(params, stmnt.get());
+    return getHover(params, astItems.get(0).getValue());
   }
 
-  private static Hover getHover(HoverParams params, Stmnt stmnt)
+  private static Hover getHover(HoverParams params, Object astItem)
   {
     // NYI make more exact
     var range = Util.toRange(params.getPosition());
-    if (stmnt instanceof Call)
+    if (astItem instanceof Call)
       {
-        return getHover(range, (Call) stmnt);
+        return getHover(range, (Call) astItem);
       }
-    if (stmnt instanceof Assign)
+    if (astItem instanceof Assign)
       {
-        return getHover(range, (Assign) stmnt);
+        return getHover(range, (Assign) astItem);
       }
-    if (stmnt instanceof Function)
+    if (astItem instanceof Function)
       {
-        return getHover(range, (Function) stmnt);
+        return getHover(range, (Function) astItem);
+      }
+    if (astItem instanceof Type)
+      {
+        return getHover(range, (Type) astItem);
       }
     return null;
   }
 
+  private static Hover getHover(Range range, Type type)
+  {
+    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, "Type: " + type);
+    return new Hover(markupContent, range);
+  }
+
   private static Hover getHover(Range range, Function function)
   {
-    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, "Function: " + function.toString());
+    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, "Function: " + function);
     return new Hover(markupContent, range);
   }
 
   private static Hover getHover(Range range, Assign assign)
   {
-    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, "Assignment: " + assign.toString());
+    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, "Assignment: " + assign);
     return new Hover(markupContent, range);
   }
 
   private static Hover getHover(Range range, Call call)
   {
-    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, "Call: " + call.calledFeature().toString());
+    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, "Call: " + call.calledFeature());
     return new Hover(markupContent, range);
   }
 
