@@ -1,8 +1,5 @@
 package dev.flang.lsp.server.feature;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.ArrayList;
@@ -12,12 +9,6 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Position;
 
 import dev.flang.util.Errors;
-import dev.flang.ast.FeatureName;
-import dev.flang.ast.Types;
-import dev.flang.fe.FrontEnd;
-import dev.flang.fe.FrontEndOptions;
-import dev.flang.lsp.server.Memory;
-import dev.flang.lsp.server.Util;
 
 public class Diagnostics
 {
@@ -34,35 +25,6 @@ public class Diagnostics
 
   public static PublishDiagnosticsParams getPublishDiagnosticsParams(String uri, String text)
   {
-    // NYI remove once we can create MIR multiple times
-    Errors.clear();
-    Types.clear();
-    FeatureName.clear();
-
-    File tempFile;
-    try
-      {
-        tempFile = new File(new URI(uri));
-      }
-    catch (URISyntaxException e)
-      {
-        System.exit(1);
-        return new PublishDiagnosticsParams(uri, new ArrayList<Diagnostic>());
-      }
-
-    // NYI move parsing some place else
-    Util.WithRedirectedStdOut(() -> {
-      // NYI parsing works only once for now
-      if (Memory.Universe != null)
-        {
-          return;
-        }
-      var frontEndOptions =
-          new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
-      var universe = new FrontEnd(frontEndOptions).createMIR().main().universe();
-      Memory.Universe = universe;
-    });
-
     if (Errors.count() > 0)
       {
         var diagnostics = getDiagnostics(text);

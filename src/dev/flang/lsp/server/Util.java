@@ -387,4 +387,17 @@ public class Util
     return new Range(new Position(line, character), new Position(line, character));
   }
 
+  static File toFile(String uri)
+  {
+    try
+      {
+        return new File(new URI(uri));
+      }
+    catch (URISyntaxException e)
+      {
+        System.exit(1);
+        return null;
+      }
+  }
+
 }

@@ -14,16 +14,12 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
-import org.eclipse.lsp4j.ImplementationParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
-import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Stmnt;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.lsp.server.feature.Hovering;
@@ -46,6 +42,8 @@ public class FuzionTextDocumentService implements TextDocumentService {
     var text = textDocument.getText();
 
     textDocuments.put(uri, text);
+
+    FuzionHelpers.Parse(uri);
 
     var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri, text);
     if (diagnostics.getDiagnostics().size() > 0) {
@@ -75,6 +73,8 @@ public class FuzionTextDocumentService implements TextDocumentService {
     text = applyContentChanges(text, contentChanges);
 
     textDocuments.put(uri, text);
+
+    FuzionHelpers.Parse(uri);
 
     var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri, text);
     if (diagnostics.getDiagnostics().size() > 0) {
