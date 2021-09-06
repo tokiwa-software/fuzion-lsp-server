@@ -14,8 +14,12 @@ public class Log {
   }
 
   public static void write(String str){
-    if(Main.DEBUG() && Main.transport == Transport.tcp){
+
+    if(Main.DEBUG() && Main.transport == Transport.tcp && indentation < 10){
       System.out.println(" ".repeat(indentation * 2) + str);
+      if(indentation == 9){
+        System.out.println("...");
+      }
     }
   }
 }
