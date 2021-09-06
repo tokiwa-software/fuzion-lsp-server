@@ -409,7 +409,7 @@ public class FuzionHelpers
     var positionComparisonResult = getPosition(astItem1).compareTo(getPosition(astItem2));
     if (positionComparisonResult == 0)
       {
-        return astItem1.getClass().getCanonicalName().compareTo(astItem2.getClass().getCanonicalName());
+        return astItem1.getClass().getName().compareTo(astItem2.getClass().getName());
       }
     return positionComparisonResult;
   });
