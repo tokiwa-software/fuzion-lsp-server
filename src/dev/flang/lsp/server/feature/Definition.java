@@ -42,7 +42,7 @@ public class Definition
 
   private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(Type type)
   {
-    Location location = FuzionHelpers.ToLocation(type.pos);
+    Location location = FuzionHelpers.ToLocation(type.featureOfType().pos);
     return Either.forLeft(Arrays.asList(location));
   }
 

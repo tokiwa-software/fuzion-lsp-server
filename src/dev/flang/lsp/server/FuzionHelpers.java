@@ -3,7 +3,6 @@ package dev.flang.lsp.server;
 import java.io.File;
 import java.util.Comparator;
 import java.util.TreeSet;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Location;
@@ -13,30 +12,15 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
-import dev.flang.ast.Assign;
-import dev.flang.ast.Block;
-import dev.flang.ast.Box;
-import dev.flang.ast.Call;
-import dev.flang.ast.Case;
 import dev.flang.ast.Cond;
-import dev.flang.ast.Current;
-import dev.flang.ast.Destructure;
-import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Function;
 import dev.flang.ast.Generic;
-import dev.flang.ast.If;
 import dev.flang.ast.Impl;
-import dev.flang.ast.InitArray;
-import dev.flang.ast.Match;
 import dev.flang.ast.Stmnt;
-import dev.flang.ast.Tag;
-import dev.flang.ast.This;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-import dev.flang.ast.Unbox;
+import dev.flang.ast.Impl.Kind;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
@@ -72,265 +56,6 @@ public class FuzionHelpers
     });
   }
 
-  /**
-   * visit everything in feature
-   * add to result if predicate is true
-   * @param result
-   * @param addToResult
-   * @return
-   */
-  static FeatureVisitor EverythingVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult)
-  {
-    if (result.comparator() == null)
-      {
-        System.err.println("no comparator");
-        System.exit(1);
-      }
-    return new FeatureVisitor() {
-      @Override
-      public void action(Unbox u, Feature outer)
-      {
-        if (addToResult.test(u))
-          {
-            result.add(u);
-          }
-        u.adr_.visit(this, outer);
-      }
-
-      @Override
-      public void action(Assign a, Feature outer)
-      {
-        if (addToResult.test(a))
-          {
-            result.add(a);
-          }
-        a.value.visit(this, outer);
-      }
-
-      @Override
-      public void actionBefore(Block b, Feature outer)
-      {
-        if (addToResult.test(b))
-          {
-            result.add(b);
-          }
-        b.statements_.forEach(s -> {
-          s.visit(this, outer);
-        });
-
-      }
-
-      @Override
-      public void actionAfter(Block b, Feature outer)
-      {
-        if (addToResult.test(b))
-          {
-            result.add(b);
-          }
-        b.statements_.forEach(s -> {
-          s.visit(this, outer);
-        });
-      }
-
-      @Override
-      public void action(Box b, Feature outer)
-      {
-        b._value.visit(this, outer);
-        if (addToResult.test(b))
-          {
-            result.add(b);
-          }
-      }
-
-      @Override
-      public Expr action(Call c, Feature outer)
-      {
-
-
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-
-        c._actuals.forEach(x -> {
-          if (!result.contains(x))
-            {
-              x.visit(this, outer);
-            }
-        });
-
-        c.generics.forEach(x -> {
-          if (!result.contains(x))
-            {
-              x.visit(this, outer);
-            }
-        });
-
-        c.target.visit(this, outer);
-        return c;
-      }
-
-      @Override
-      public void actionBefore(Case c, Feature outer)
-      {
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-        c.code.visit(this, outer);
-      }
-
-      @Override
-      public void actionAfter(Case c, Feature outer)
-      {
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-        c.code.visit(this, outer);
-      }
-
-      @Override
-      public void action(Cond c, Feature outer)
-      {
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-        c.cond.visit(this, outer);
-      }
-
-      @Override
-      public Expr action(Current c, Feature outer)
-      {
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-        return c;
-      }
-
-      @Override
-      public Stmnt action(Destructure d, Feature outer)
-      {
-        if (addToResult.test(d))
-          {
-            result.add(d);
-          }
-        return d;
-      }
-
-      @Override
-      public Stmnt action(Feature f, Feature outer)
-      {
-        if (addToResult.test(f))
-          {
-            result.add(f);
-          }
-        f.impl.visit(this, outer);
-        return f;
-      }
-
-      @Override
-      public Expr action(Function f, Feature outer)
-      {
-        if (addToResult.test(f))
-          {
-            result.add(f);
-          }
-        return f;
-      }
-
-      @Override
-      public void action(Generic g, Feature outer)
-      {
-        if (addToResult.test(g))
-          {
-            result.add(g);
-          }
-      }
-
-      @Override
-      public void action(If i, Feature outer)
-      {
-        if (addToResult.test(i))
-          {
-            result.add(i);
-          }
-        i.cond.visit(this, outer);
-        i.block.visit(this, outer);
-        if (i.elseIf != null)
-          {
-            i.elseIf.visit(this, outer);
-          }
-        if (i.elseBlock != null)
-          {
-            i.elseBlock.visit(this, outer);
-          }
-      }
-
-      @Override
-      public void action(Impl i, Feature outer)
-      {
-        if (addToResult.test(i))
-          {
-            result.add(i);
-          }
-        i._code.visit(this, outer);
-      }
-
-      @Override
-      public Expr action(InitArray i, Feature outer)
-      {
-        if (addToResult.test(i))
-          {
-            result.add(i);
-          }
-        return i;
-      }
-
-      @Override
-      public void action(Match m, Feature outer)
-      {
-        if (addToResult.test(m))
-          {
-            result.add(m);
-          }
-      }
-
-      @Override
-      public void action(Tag b, Feature outer)
-      {
-        if (addToResult.test(b))
-          {
-            result.add(b);
-          }
-        b._value.visit(this, outer);
-      }
-
-      @Override
-      public Expr action(This t, Feature outer)
-      {
-        if (addToResult.test(t))
-          {
-            result.add(t);
-          }
-        return t;
-      }
-
-      @Override
-      public Type action(Type t, Feature outer)
-      {
-        if (addToResult.test(t))
-          {
-            result.add(t);
-          }
-        t._generics.forEach(generic -> generic.visit(this, outer));
-        return t;
-      }
-    };
-  }
-
   public static Position ToPosition(SourcePosition sourcePosition)
   {
     return new Position(sourcePosition._line - 1, sourcePosition._column - 1);
@@ -345,7 +70,7 @@ public class FuzionHelpers
   /**
    * getPosition of ASTItem
    * @param entry
-   * @return
+   * @return can be null
    */
   public static SourcePosition getPosition(Object entry)
   {
@@ -360,6 +85,14 @@ public class FuzionHelpers
     if (entry instanceof Impl)
       {
         return ((Impl) entry).pos;
+      }
+    if (entry instanceof Generic)
+      {
+        return ((Generic) entry)._pos;
+      }
+    if (entry instanceof Cond)
+      {
+        return null;
       }
 
     System.out.println("not implemented: " + entry.getClass());
@@ -376,8 +109,12 @@ public class FuzionHelpers
   public static TreeSet<Object> getSuitableASTItems(TextDocumentPositionParams params)
   {
     var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
-    var visitor = EverythingVisitor(astItems, astItem -> {
+    var visitor = new EverythingVisitor(astItems, astItem -> {
       var sourcePosition = getPosition(astItem);
+      if (sourcePosition == null)
+        {
+          return false;
+        }
       if (params.getPosition().getLine() != sourcePosition._line - 1)
         {
           return false;
@@ -385,7 +122,7 @@ public class FuzionHelpers
       var result = sourcePosition._column - 1 <= params.getPosition().getCharacter();
       if (result && Main.DEBUG())
         {
-          System.out.println("considering: " + getPosition(astItem).toString() + ":" + astItem.getClass());
+          Log.write("considering: " + getPosition(astItem).toString() + ":" + astItem.getClass());
         }
       return result;
     });
@@ -413,5 +150,10 @@ public class FuzionHelpers
       }
     return positionComparisonResult;
   });
+
+  static boolean IsRoutineOrRoutineDef(Feature feature)
+  {
+    return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.impl.kind_);
+  }
 
 }
