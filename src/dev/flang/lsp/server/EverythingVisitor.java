@@ -26,282 +26,330 @@ import dev.flang.ast.This;
 import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 
-   /**
-   * visit everything in feature
-   * add to result if predicate is true
-   * @param result
-   * @param addToResult
-   * @return
-   */
-    public class EverythingVisitor extends FeatureVisitor
-    {
-      private final TreeSet<Feature> VisitedFeatures = new TreeSet<>();
-      private final Predicate<? super Object> addToResult;
-      private final TreeSet<Object> result;
+/**
+* visit everything in feature
+* add to result if predicate is true
+* @param result
+* @param addToResult
+* @return
+*/
+public class EverythingVisitor extends FeatureVisitor
+{
+  private final TreeSet<Feature> VisitedFeatures = new TreeSet<>();
+  private final Predicate<? super Object> addToResult;
+  private final TreeSet<Object> result;
 
-      public EverythingVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult)
+  public EverythingVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult)
+  {
+    if (result.comparator() == null)
       {
-        if (result.comparator() == null)
-          {
-            System.err.println("no comparator");
-            System.exit(1);
-          }
-        this.result = result;
-        this.addToResult = addToResult;
+        System.err.println("no comparator");
+        System.exit(1);
       }
+    this.result = result;
+    this.addToResult = addToResult;
+  }
 
-      @Override
-      public void action(Unbox u, Feature outer)
+  @Override
+  public void action(Unbox u, Feature outer)
+  {
+    if (addToResult.test(u))
       {
-        if (addToResult.test(u))
-          {
-            result.add(u);
-          }
-        u.adr_.visit(this, outer);
+        result.add(u);
       }
+    Log.increaseIndentation();
+    u.adr_.visit(this, outer);
+    Log.decreaseIndentation();
+  }
 
-      @Override
-      public void action(Assign a, Feature outer)
+  @Override
+  public void action(Assign a, Feature outer)
+  {
+    if (addToResult.test(a))
       {
-        if (addToResult.test(a))
-          {
-            result.add(a);
-          }
-        a.value.visit(this, outer);
+        result.add(a);
       }
+    Log.increaseIndentation();
+    a.value.visit(this, outer);
+    Log.decreaseIndentation();
+  }
 
-      @Override
-      public void actionBefore(Block b, Feature outer)
+  @Override
+  public void actionBefore(Block b, Feature outer)
+  {
+    if (addToResult.test(b))
       {
-        if (addToResult.test(b))
-          {
-            result.add(b);
-          }
-        b.statements_.forEach(s -> {
-          s.visit(this, outer);
-        });
-
+        result.add(b);
       }
+  }
 
-      @Override
-      public void actionAfter(Block b, Feature outer)
+  @Override
+  public void actionAfter(Block b, Feature outer)
+  {
+    if (addToResult.test(b))
       {
-        if (addToResult.test(b))
-          {
-            result.add(b);
-          }
-        b.statements_.forEach(s -> {
-          s.visit(this, outer);
-        });
+        result.add(b);
       }
+  }
 
-      @Override
-      public void action(Box b, Feature outer)
+  @Override
+  public void action(Box b, Feature outer)
+  {
+
+    if (addToResult.test(b))
       {
-        b._value.visit(this, outer);
-        if (addToResult.test(b))
-          {
-            result.add(b);
-          }
+        result.add(b);
       }
+    Log.increaseIndentation();
+    b._value.visit(this, outer);
+    Log.decreaseIndentation();
+  }
 
-      @Override
-      public Expr action(Call c, Feature outer)
+  @Override
+  public Expr action(Call c, Feature outer)
+  {
+    if (addToResult.test(c))
       {
-
-
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-
-        c._actuals.forEach(x -> {
-          if (!result.contains(x))
-            {
-              x.visit(this, outer);
-            }
-        });
-
-        c.generics.forEach(x -> {
-          if (!result.contains(x))
-            {
-              x.visit(this, outer);
-            }
-        });
-
-        c.target.visit(this, outer);
-
-        if (!this.VisitedFeatures.contains(c.calledFeature())
-          && FuzionHelpers.IsRoutineOrRoutineDef(c.calledFeature())
-        )
-          {
-            this.VisitedFeatures.add(c.calledFeature());
-            c.calledFeature().visit(this);
-          }
-
-        return c;
+        result.add(c);
       }
+    Log.increaseIndentation();
 
-      @Override
-      public void actionBefore(Case c, Feature outer)
+    c._actuals.forEach(x -> {
+      if (!result.contains(x))
+        {
+          x.visit(this, outer);
+        }
+    });
+
+    c.generics.forEach(x -> {
+      if (!result.contains(x))
+        {
+          x.visit(this, outer);
+        }
+    });
+
+    c.target.visit(this, outer);
+
+    if (this.VisitedFeatures.contains(c.calledFeature()))
       {
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-        c.code.visit(this, outer);
+        Log.write("not visiting again: " + c.calledFeature().pos + "|" + c.calledFeature_.impl.kind_ + "|"
+            + c.calledFeature().featureName());
       }
-
-      @Override
-      public void actionAfter(Case c, Feature outer)
+    else if (!FuzionHelpers.IsRoutineOrRoutineDef(c.calledFeature()))
       {
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-        c.code.visit(this, outer);
+        Log.write("no routine or routinedef");
       }
-
-      @Override
-      public void action(Cond c, Feature outer)
+    else
       {
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-        c.cond.visit(this, outer);
+        this.VisitedFeatures.add(c.calledFeature());
+        // NYI how to visit?
+        c.calledFeature().visit(this, c.calledFeature().outer());
       }
+    Log.decreaseIndentation();
+    return c;
+  }
 
-      @Override
-      public Expr action(Current c, Feature outer)
+  @Override
+  public void actionBefore(Case c, Feature outer)
+  {
+    if (addToResult.test(c))
       {
-        if (addToResult.test(c))
-          {
-            result.add(c);
-          }
-        return c;
+        result.add(c);
       }
+    Log.increaseIndentation();
+    c.code.visit(this, outer);
+    Log.decreaseIndentation();
+  }
 
-      @Override
-      public Stmnt action(Destructure d, Feature outer)
+  @Override
+  public void actionAfter(Case c, Feature outer)
+  {
+    if (addToResult.test(c))
       {
-        if (addToResult.test(d))
-          {
-            result.add(d);
-          }
-        return d;
+        result.add(c);
       }
+    Log.increaseIndentation();
+    c.code.visit(this, outer);
+    Log.decreaseIndentation();
+  }
 
-      @Override
-      public Stmnt action(Feature f, Feature outer)
+  @Override
+  public void action(Cond c, Feature outer)
+  {
+    if (addToResult.test(c))
       {
-        this.VisitedFeatures.add(f);
-        if (addToResult.test(f))
-          {
-            result.add(f);
-          }
+        result.add(c);
+      }
+    Log.increaseIndentation();
+    c.cond.visit(this, outer);
+    Log.decreaseIndentation();
+  }
+
+  @Override
+  public Expr action(Current c, Feature outer)
+  {
+    if (addToResult.test(c))
+      {
+        result.add(c);
+      }
+    return c;
+  }
+
+  @Override
+  public Stmnt action(Destructure d, Feature outer)
+  {
+    if (addToResult.test(d))
+      {
+        result.add(d);
+      }
+    return d;
+  }
+
+  @Override
+  public Stmnt action(Feature f, Feature outer)
+  {
+    this.VisitedFeatures.add(f);
+    if (addToResult.test(f))
+      {
+        result.add(f);
+      }
+    Log.increaseIndentation();
+
+    // NYI how to figure out which impl to visit?
+    if (f.isUsed() && FuzionHelpers.IsRoutineOrRoutineDef(f.impl) && f.pos().toString().indexOf("/lib/") < 0)
+      {
         f.impl.visit(this, outer);
-        return f;
       }
 
-      @Override
-      public Expr action(Function f, Feature outer)
-      {
-        if (addToResult.test(f))
-          {
-            result.add(f);
-          }
-        return f;
-      }
+    // NYI declaredFeatures is correct/good?
+    f.declaredFeatures().forEach((n, feature) -> {
+      if (this.VisitedFeatures.contains(feature) || !FuzionHelpers.IsRoutineOrRoutineDef(feature))
+        {
+          return;
+        }
+      this.VisitedFeatures.add(feature);
+      feature.visit(this, feature.outer());
+    });
 
-      @Override
-      public void action(Generic g, Feature outer)
-      {
-        if (addToResult.test(g))
-          {
-            result.add(g);
-          }
-      }
+    Log.decreaseIndentation();
+    return f;
+  }
 
-      @Override
-      public void action(If i, Feature outer)
+  @Override
+  public Expr action(Function f, Feature outer)
+  {
+    if (addToResult.test(f))
       {
-        if (addToResult.test(i))
-          {
-            result.add(i);
-          }
-        i.cond.visit(this, outer);
-        i.block.visit(this, outer);
-        if (i.elseIf != null)
-          {
-            i.elseIf.visit(this, outer);
-          }
-        if (i.elseBlock != null)
-          {
-            i.elseBlock.visit(this, outer);
-          }
+        result.add(f);
       }
+    Log.write("func: " + f.pos());
+    return f;
+  }
 
-      @Override
-      public void action(Impl i, Feature outer)
+  @Override
+  public void action(Generic g, Feature outer)
+  {
+    if (addToResult.test(g))
       {
-        if (addToResult.test(i))
-          {
-            result.add(i);
-          }
-        if (i._code != null)
-          {
-            i._code.visit(this, outer);
-          }
+        result.add(g);
       }
+  }
 
-      @Override
-      public Expr action(InitArray i, Feature outer)
+  @Override
+  public void action(If i, Feature outer)
+  {
+    if (addToResult.test(i))
       {
-        if (addToResult.test(i))
-          {
-            result.add(i);
-          }
-        return i;
+        result.add(i);
       }
+    Log.increaseIndentation();
+    i.cond.visit(this, outer);
+    i.block.visit(this, outer);
+    if (i.elseIf != null)
+      {
+        i.elseIf.visit(this, outer);
+      }
+    if (i.elseBlock != null)
+      {
+        i.elseBlock.visit(this, outer);
+      }
+    Log.decreaseIndentation();
+  }
 
-      @Override
-      public void action(Match m, Feature outer)
+  @Override
+  public void action(Impl i, Feature outer)
+  {
+    if (addToResult.test(i))
       {
-        if (addToResult.test(m))
-          {
-            result.add(m);
-          }
+        result.add(i);
       }
+    Log.increaseIndentation();
+    if (i._code != null)
+      {
+        i._code.visit(this, outer);
+      }
+    else
+      {
+        Log.write("no code in impl: " + outer.featureName());
+      }
+    if (i.initialValue() != null)
+      {
+        i.initialValue().visit(this, outer);
+      }
+    Log.decreaseIndentation();
+  }
 
-      @Override
-      public void action(Tag b, Feature outer)
+  @Override
+  public Expr action(InitArray i, Feature outer)
+  {
+    if (addToResult.test(i))
       {
-        if (addToResult.test(b))
-          {
-            result.add(b);
-          }
-        b._value.visit(this, outer);
+        result.add(i);
       }
+    return i;
+  }
 
-      @Override
-      public Expr action(This t, Feature outer)
+  @Override
+  public void action(Match m, Feature outer)
+  {
+    if (addToResult.test(m))
       {
-        if (addToResult.test(t))
-          {
-            result.add(t);
-          }
-        return t;
+        result.add(m);
       }
+  }
 
-      @Override
-      public Type action(Type t, Feature outer)
+  @Override
+  public void action(Tag b, Feature outer)
+  {
+    if (addToResult.test(b))
       {
-        if (addToResult.test(t))
-          {
-            result.add(t);
-          }
-        t._generics.forEach(generic -> generic.visit(this, outer));
-        return t;
+        result.add(b);
       }
-    }
+    Log.increaseIndentation();
+    b._value.visit(this, outer);
+    Log.decreaseIndentation();
+  }
+
+  @Override
+  public Expr action(This t, Feature outer)
+  {
+    if (addToResult.test(t))
+      {
+        result.add(t);
+      }
+    return t;
+  }
+
+  @Override
+  public Type action(Type t, Feature outer)
+  {
+    if (addToResult.test(t))
+      {
+        result.add(t);
+      }
+    Log.increaseIndentation();
+    t._generics.forEach(generic -> generic.visit(this, outer));
+    Log.decreaseIndentation();
+    return t;
+  }
+}

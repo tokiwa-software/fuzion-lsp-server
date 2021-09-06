@@ -12,6 +12,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
+import dev.flang.ast.Case;
 import dev.flang.ast.Cond;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -94,6 +95,10 @@ public class FuzionHelpers
       {
         return null;
       }
+    if (entry instanceof Case)
+      {
+        return ((Case) entry).pos;
+      }
 
     System.out.println("not implemented: " + entry.getClass());
     System.exit(1);
@@ -113,16 +118,18 @@ public class FuzionHelpers
       var sourcePosition = getPosition(astItem);
       if (sourcePosition == null)
         {
+          Log.write("no src pos: " + astItem.getClass());
           return false;
         }
+      Log.write("visiting: " + getPosition(astItem).toString() + ":" + astItem.getClass());
       if (params.getPosition().getLine() != sourcePosition._line - 1)
         {
           return false;
         }
       var result = sourcePosition._column - 1 <= params.getPosition().getCharacter();
-      if (result && Main.DEBUG())
+      if (result)
         {
-          Log.write("considering: " + getPosition(astItem).toString() + ":" + astItem.getClass());
+          Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
         }
       return result;
     });
@@ -154,6 +161,11 @@ public class FuzionHelpers
   static boolean IsRoutineOrRoutineDef(Feature feature)
   {
     return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.impl.kind_);
+  }
+
+  public static boolean IsRoutineOrRoutineDef(Impl impl)
+  {
+    return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(impl.kind_);
   }
 
 }
