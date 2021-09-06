@@ -1,5 +1,7 @@
 package dev.flang.lsp.server.feature;
 
+import java.util.stream.Collectors;
+
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.MarkupContent;
@@ -10,6 +12,7 @@ import dev.flang.ast.Assign;
 import dev.flang.ast.Call;
 import dev.flang.ast.Type;
 import dev.flang.ast.Function;
+import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 
 public class Hovering
@@ -17,15 +20,15 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var astItems = Util
-        .getPossibleASTItems(params,
-            x -> x.getValue() instanceof Call || x.getValue() instanceof Assign || x.getValue() instanceof Function || x.getValue() instanceof Type);
+    var astItems = FuzionHelpers.getSuitableASTItems(params).stream()
+        .filter(x -> x instanceof Call || x instanceof Assign || x instanceof Function || x instanceof Type)
+        .collect(Collectors.toList());
 
     if (astItems.isEmpty())
       {
         return null;
       }
-    return getHover(params, astItems.get(0).getValue());
+    return getHover(params, astItems.get(0));
   }
 
   private static Hover getHover(HoverParams params, Object astItem)
