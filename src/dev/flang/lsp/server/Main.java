@@ -14,6 +14,7 @@ public class Main {
   }
 
   private static LanguageClient _languageClient;
+  public static Transport transport;
 
   public static LanguageClient getLanguageClient(){
     return _languageClient;
@@ -27,7 +28,7 @@ public class Main {
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
 
-    var transport = Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals) ? Transport.tcp
+    transport = Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals) ? Transport.tcp
         : Transport.stdio;
 
     switch (transport) {
