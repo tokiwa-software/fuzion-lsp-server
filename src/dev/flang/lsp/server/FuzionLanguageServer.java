@@ -40,7 +40,7 @@ public class FuzionLanguageServer implements LanguageServer {
   private void initializeCompletion(ServerCapabilities serverCapabilities) {
     CompletionOptions completionOptions = new CompletionOptions();
     completionOptions.setResolveProvider(Boolean.FALSE);
-    completionOptions.setTriggerCharacters(List.of("."));
+    completionOptions.setTriggerCharacters(List.of(".", "<"));
     serverCapabilities.setCompletionProvider(completionOptions);
   }
 
