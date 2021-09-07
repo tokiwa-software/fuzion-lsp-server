@@ -135,10 +135,7 @@ public class EverythingVisitor extends FeatureVisitor
   @Override
   public void action(Cond c, Feature outer)
   {
-    if (addToResult.test(c))
-      {
-        result.add(c);
-      }
+    // Cond has no SourcePosition, not including
   }
 
   @Override

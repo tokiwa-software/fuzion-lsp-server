@@ -13,7 +13,6 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 import dev.flang.ast.Case;
-import dev.flang.ast.Cond;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Generic;
@@ -68,6 +67,7 @@ public class FuzionHelpers
     return new Location("file://" + sourcePosition._sourceFile._fileName, new Range(position, position));
   }
 
+  // NYI remove once we have ISourcePosition interface
   /**
    * getPosition of ASTItem
    * @param entry
@@ -91,10 +91,6 @@ public class FuzionHelpers
       {
         return ((Generic) entry)._pos;
       }
-    if (entry instanceof Cond)
-      {
-        return null;
-      }
     if (entry instanceof Case)
       {
         return ((Case) entry).pos;
@@ -116,22 +112,12 @@ public class FuzionHelpers
     var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
     var visitor = new EverythingVisitor(astItems, astItem -> {
       var sourcePosition = getPosition(astItem);
-      if (sourcePosition == null)
-        {
-          Log.write("no src pos: " + astItem.getClass());
-          return false;
-        }
       Log.write("visiting: " + getPosition(astItem).toString() + ":" + astItem.getClass());
       if (params.getPosition().getLine() != sourcePosition._line - 1)
         {
           return false;
         }
-      var result = sourcePosition._column - 1 <= params.getPosition().getCharacter();
-      if (result)
-        {
-          Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
-        }
-      return result;
+      return sourcePosition._column - 1 <= params.getPosition().getCharacter();
     });
     Memory.Main.visit(visitor);
     Memory.Main.universe().visit(visitor);
@@ -142,6 +128,10 @@ public class FuzionHelpers
 
     var maxColumn = astItems.stream().map(x -> getPosition(x)._column).max(Integer::compare).get();
     return astItems.stream().filter(obj -> getPosition(obj)._column == maxColumn)
+      .map(astItem -> {
+        Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
+        return astItem;
+      })
         .collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.compareASTItems)));
   }
 
