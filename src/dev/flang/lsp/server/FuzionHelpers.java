@@ -1,8 +1,11 @@
 package dev.flang.lsp.server;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Location;
@@ -12,6 +15,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceFile;
 import dev.flang.ast.Case;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -71,9 +75,15 @@ public class FuzionHelpers
   /**
    * getPosition of ASTItem
    * @param entry
-   * @return can be null
+   * @return
    */
   public static SourcePosition getPosition(Object entry)
+  {
+    var result = getPositionOrNull(entry);
+    return result != null ? result : new SourcePosition(new SourceFile(Path.of("no src position found")), 1, 1);
+  }
+
+  private static SourcePosition getPositionOrNull(Object entry)
   {
     if (entry instanceof Stmnt)
       {
@@ -109,30 +119,66 @@ public class FuzionHelpers
    */
   public static TreeSet<Object> getSuitableASTItems(TextDocumentPositionParams params)
   {
-    var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
-    var visitor = new EverythingVisitor(astItems, astItem -> {
-      var sourcePosition = getPosition(astItem);
-      Log.write("visiting: " + getPosition(astItem).toString() + ":" + astItem.getClass());
-      if (params.getPosition().getLine() != sourcePosition._line - 1)
-        {
-          return false;
-        }
-      return sourcePosition._column - 1 <= params.getPosition().getCharacter();
-    });
-    Memory.Main.visit(visitor);
-    Memory.Main.universe().visit(visitor);
+    var uri = params.getTextDocument().getUri();
+    var position = params.getPosition();
+
+    var baseFeature = getBaseFeature(uri);
+    if (baseFeature.isEmpty())
+      {
+        Log.write("no matching feature found for: " + uri);
+        return new TreeSet<>();
+      }
+
+    var astItems = doVisitation(baseFeature.get(), uri, position);
+
     if (astItems.isEmpty())
       {
+        Log.write("no matching AST items found");
         return astItems;
       }
 
     var maxColumn = astItems.stream().map(x -> getPosition(x)._column).max(Integer::compare).get();
-    return astItems.stream().filter(obj -> getPosition(obj)._column == maxColumn)
-      .map(astItem -> {
-        Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
-        return astItem;
-      })
-        .collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.compareASTItems)));
+    return astItems.stream().filter(obj -> getPosition(obj)._column == maxColumn).map(astItem -> {
+      Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
+      return astItem;
+    }).collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.compareASTItems)));
+  }
+
+  private static TreeSet<Object> doVisitation(Feature baseFeature, String uri, Position position)
+  {
+    var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
+    var visitor = new EverythingVisitor(astItems, filterIrrelevantItems(uri, position), uri);
+    Log.write("starting visitation at: " + baseFeature.qualifiedName());
+    baseFeature.visit(visitor, baseFeature.outer());
+    return astItems;
+  }
+
+  private static Optional<Feature> getBaseFeature(String uri)
+  {
+    var baseFeature = Memory.Main.universe().declaredFeatures().values().stream().filter(feature -> {
+      return uri.equals(toUriString(feature.pos()));
+    }).findFirst();
+    return baseFeature;
+  }
+
+  private static Predicate<? super Object> filterIrrelevantItems(String uri, Position position)
+  {
+    return astItem -> {
+      var sourcePosition = getPosition(astItem);
+      Log.write("visiting: " + sourcePosition.toString() + ":" + astItem.getClass());
+
+      if (position.getLine() != sourcePosition._line - 1 || !uri.equals(toUriString(sourcePosition)))
+        {
+          return false;
+        }
+
+      return sourcePosition._column - 1 <= position.getCharacter();
+    };
+  }
+
+  public static String toUriString(SourcePosition sourcePosition)
+  {
+    return "file://" + sourcePosition._sourceFile._fileName.toString();
   }
 
   /*
@@ -150,12 +196,22 @@ public class FuzionHelpers
 
   static boolean IsRoutineOrRoutineDef(Feature feature)
   {
-    return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.impl.kind_);
+    return IsRoutineOrRoutineDef(feature.impl);
   }
 
   public static boolean IsRoutineOrRoutineDef(Impl impl)
   {
     return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(impl.kind_);
   }
+
+	public static boolean IsIntrinsic(Feature feature)
+	{
+		return IsIntrinsic(feature.impl);
+	}
+
+	public static boolean IsIntrinsic(Impl impl)
+	{
+		return impl.kind_ == Kind.Intrinsic;
+	}
 
 }

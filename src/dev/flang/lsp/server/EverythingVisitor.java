@@ -36,11 +36,15 @@ import dev.flang.ast.Unbox;
 */
 public class EverythingVisitor extends FeatureVisitor
 {
+  // memorize already visited features
   private final TreeSet<Feature> VisitedFeatures = new TreeSet<>();
+  // predicate to decide if AST item should be added to result set
   private final Predicate<? super Object> addToResult;
   private final TreeSet<Object> result;
+  // for which uri this visitor was created
+  private final String uri;
 
-  public EverythingVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult)
+  public EverythingVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult, String uri)
   {
     if (result.comparator() == null)
       {
@@ -49,6 +53,7 @@ public class EverythingVisitor extends FeatureVisitor
       }
     this.result = result;
     this.addToResult = addToResult;
+    this.uri = uri;
   }
 
   @Override
@@ -105,10 +110,8 @@ public class EverythingVisitor extends FeatureVisitor
         result.add(c);
       }
     Log.increaseIndentation();
-    if (!this.VisitedFeatures.contains(c.calledFeature()) && FuzionHelpers.IsRoutineOrRoutineDef(c.calledFeature()))
+    if (!this.VisitedFeatures.contains(c.calledFeature()) && !FuzionHelpers.IsIntrinsic(c.calledFeature()))
       {
-        this.VisitedFeatures.add(c.calledFeature());
-        // NYI how to visit?
         c.calledFeature().visit(this, c.calledFeature().outer());
       }
     Log.decreaseIndentation();
@@ -170,18 +173,17 @@ public class EverythingVisitor extends FeatureVisitor
     Log.increaseIndentation();
 
     // NYI how to figure out which impl to visit?
-    if (f.isUsed() && FuzionHelpers.IsRoutineOrRoutineDef(f.impl) && f.pos().toString().indexOf("/lib/") < 0)
+    if (!FuzionHelpers.IsIntrinsic(f.impl) && uri.equals(FuzionHelpers.toUriString(f.pos())))
       {
         f.impl.visit(this, outer);
       }
 
     // NYI declaredFeatures is correct/good?
     f.declaredFeatures().forEach((n, feature) -> {
-      if (this.VisitedFeatures.contains(feature) || !FuzionHelpers.IsRoutineOrRoutineDef(feature))
+      if (this.VisitedFeatures.contains(feature) || FuzionHelpers.IsIntrinsic(feature) || !uri.equals(FuzionHelpers.toUriString(feature.pos())))
         {
           return;
         }
-      this.VisitedFeatures.add(feature);
       feature.visit(this, feature.outer());
     });
 
