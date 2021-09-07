@@ -57,9 +57,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(u);
       }
-    Log.increaseIndentation();
-    u.adr_.visit(this, outer);
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -69,9 +66,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(a);
       }
-    Log.increaseIndentation();
-    a.value.visit(this, outer);
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -100,9 +94,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(b);
       }
-    Log.increaseIndentation();
-    b._value.visit(this, outer);
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -113,33 +104,7 @@ public class EverythingVisitor extends FeatureVisitor
         result.add(c);
       }
     Log.increaseIndentation();
-
-    c._actuals.forEach(x -> {
-      if (!result.contains(x))
-        {
-          x.visit(this, outer);
-        }
-    });
-
-    c.generics.forEach(x -> {
-      if (!result.contains(x))
-        {
-          x.visit(this, outer);
-        }
-    });
-
-    c.target.visit(this, outer);
-
-    if (this.VisitedFeatures.contains(c.calledFeature()))
-      {
-        Log.write("not visiting again: " + c.calledFeature().pos + "|" + c.calledFeature_.impl.kind_ + "|"
-            + c.calledFeature().featureName());
-      }
-    else if (!FuzionHelpers.IsRoutineOrRoutineDef(c.calledFeature()))
-      {
-        Log.write("no routine or routinedef");
-      }
-    else
+    if (!this.VisitedFeatures.contains(c.calledFeature()) && FuzionHelpers.IsRoutineOrRoutineDef(c.calledFeature()))
       {
         this.VisitedFeatures.add(c.calledFeature());
         // NYI how to visit?
@@ -156,9 +121,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(c);
       }
-    Log.increaseIndentation();
-    c.code.visit(this, outer);
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -168,9 +130,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(c);
       }
-    Log.increaseIndentation();
-    c.code.visit(this, outer);
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -180,9 +139,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(c);
       }
-    Log.increaseIndentation();
-    c.cond.visit(this, outer);
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -242,7 +198,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(f);
       }
-    Log.write("func: " + f.pos());
     return f;
   }
 
@@ -262,18 +217,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(i);
       }
-    Log.increaseIndentation();
-    i.cond.visit(this, outer);
-    i.block.visit(this, outer);
-    if (i.elseIf != null)
-      {
-        i.elseIf.visit(this, outer);
-      }
-    if (i.elseBlock != null)
-      {
-        i.elseBlock.visit(this, outer);
-      }
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -283,20 +226,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(i);
       }
-    Log.increaseIndentation();
-    if (i._code != null)
-      {
-        i._code.visit(this, outer);
-      }
-    else
-      {
-        Log.write("no code in impl: " + outer.featureName());
-      }
-    if (i.initialValue() != null)
-      {
-        i.initialValue().visit(this, outer);
-      }
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -325,9 +254,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(b);
       }
-    Log.increaseIndentation();
-    b._value.visit(this, outer);
-    Log.decreaseIndentation();
   }
 
   @Override
@@ -347,9 +273,6 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(t);
       }
-    Log.increaseIndentation();
-    t._generics.forEach(generic -> generic.visit(this, outer));
-    Log.decreaseIndentation();
     return t;
   }
 }
