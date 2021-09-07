@@ -26,6 +26,7 @@ import dev.flang.ast.This;
 import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 
+// NYI find better naming here
 /**
 * visit everything in feature
 * add to result if predicate is true
