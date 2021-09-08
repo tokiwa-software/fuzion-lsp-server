@@ -8,6 +8,9 @@ JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 all: classes
 	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
 
+tcp:
+	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
+
 classes: $(JAVA_FILES) $(JARS) build_fuzion
 	mkdir -p $@
 	javac -classpath $(JARS_FOR_CLASSPATH):build/classes -d $@ $(JAVA_FILES)
