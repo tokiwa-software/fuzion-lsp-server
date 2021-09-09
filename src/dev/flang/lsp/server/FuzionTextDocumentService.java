@@ -32,7 +32,12 @@ public class FuzionTextDocumentService implements TextDocumentService {
   private static HashMap<String, String> textDocuments = new HashMap<String, String>();
 
   public static String getText(String uri) {
-    return textDocuments.get(uri);
+    var text = textDocuments.get(uri);
+    if(text == null){
+      System.err.println("No text for: " + uri);
+      System.exit(1);
+    }
+    return text;
   }
 
   @Override
@@ -45,7 +50,7 @@ public class FuzionTextDocumentService implements TextDocumentService {
 
     FuzionHelpers.Parse(uri);
 
-    var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri, text);
+    var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri);
     if (diagnostics.getDiagnostics().size() > 0) {
       Main.getLanguageClient().publishDiagnostics(diagnostics);
     }
@@ -76,7 +81,7 @@ public class FuzionTextDocumentService implements TextDocumentService {
 
     FuzionHelpers.Parse(uri);
 
-    var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri, text);
+    var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri);
     if (diagnostics.getDiagnostics().size() > 0) {
       Main.getLanguageClient().publishDiagnostics(diagnostics);
     }
