@@ -8,26 +8,30 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Position;
 
+import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.util.Errors;
 
 public class Diagnostics
 {
 
-  private static int getEndCharaterPositioin(String text, int line_number, int character_position)
+  // NYI can we use tokenizer to get end?
+  private static Position getEndPosition(String text, Position start)
   {
-    var line_text = text.split("\n")[line_number];
-    while (line_text.length() > character_position && line_text.charAt(character_position) != ' ')
+    var end = new Position(start.getLine(),start.getCharacter());
+    var line_text = text.split("\n")[start.getLine()];
+    while (line_text.length() > end.getCharacter() && line_text.charAt(end.getCharacter()) != ' ')
       {
-        character_position++;
+        end.setCharacter(end.getCharacter() + 1);
       }
-    return character_position;
+    return end;
   }
 
-  public static PublishDiagnosticsParams getPublishDiagnosticsParams(String uri, String text)
+  public static PublishDiagnosticsParams getPublishDiagnosticsParams(String uri)
   {
     if (Errors.count() > 0)
       {
-        var diagnostics = getDiagnostics(text);
+        var diagnostics = getDiagnostics(uri);
 
         return new PublishDiagnosticsParams(uri, diagnostics);
       }
@@ -35,15 +39,14 @@ public class Diagnostics
     return new PublishDiagnosticsParams(uri, new ArrayList<Diagnostic>());
   }
 
-  private static List<Diagnostic> getDiagnostics(String text)
+  private static List<Diagnostic> getDiagnostics(String uri)
   {
-    return Errors.get().stream().map((error) -> {
-      var start_line = error.pos._line - 1;
-      var start_character = error.pos._column - 1;
-      var start_Position = new Position(start_line, start_character);
-      var end_Position = new Position(start_line, getEndCharaterPositioin(text, start_line, start_character));
+    return Errors.get().stream().filter(error -> FuzionHelpers.toUriString(error.pos) == uri).map((error) -> {
+      var start = FuzionHelpers.ToPosition(error.pos);
+      var text = FuzionTextDocumentService.getText(uri);
+      var end = getEndPosition(text, start);
       var message = error.msg + System.lineSeparator() + error.detail;
-      return new Diagnostic(new Range(start_Position, end_Position), message);
+      return new Diagnostic(new Range(start, end), message);
     }).collect(Collectors.toList());
   }
 }
