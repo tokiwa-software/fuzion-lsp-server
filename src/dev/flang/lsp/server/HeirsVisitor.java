@@ -172,6 +172,10 @@ public class HeirsVisitor extends FeatureVisitor
       }
     Log.increaseIndentation();
 
+    // NYI their is also resultType and resultField?
+    f.returnType.visit(this, outer);
+    f.resultType().visit(this, outer);
+
     // NYI how to figure out which impl to visit?
     if (!FuzionHelpers.IsIntrinsic(f.impl) && uri.equals(FuzionHelpers.toUriString(f.pos())))
       {
