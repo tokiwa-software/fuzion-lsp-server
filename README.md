@@ -21,10 +21,10 @@
 ## Clients
 |Client|Repository|
 |---|---|
-|vscode||
+|vscode|this|
 |vim||
-|emacs||
-|eclipse (theia)||
+|emacs|not necessary, see below|
+|eclipse (theia)|with this vscode extension|
 
 ### Emacs
 - Note: fuzionlsp_stdio (from ./bin/) needs to in PATH

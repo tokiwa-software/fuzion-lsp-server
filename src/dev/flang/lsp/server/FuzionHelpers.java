@@ -1,6 +1,8 @@
 package dev.flang.lsp.server;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -45,7 +47,7 @@ public class FuzionHelpers
 
     // NYI don't read from filesystem but newest version from
     // FuzionTextDocumentService->getText()
-    File tempFile = Util.toFile(uri);
+    File sourceFile = uri.contains("/lib/") ? getDummyFile(): Util.toFile(uri);
 
     Util.WithRedirectedStdOut(() -> {
       // NYI parsing works only once for now
@@ -54,10 +56,29 @@ public class FuzionHelpers
           return;
         }
       var frontEndOptions =
-          new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
+          new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, sourceFile.getAbsolutePath());
       var main = new FrontEnd(frontEndOptions).createMIR().main();
       Memory.Main = main;
     });
+
+  }
+
+  private static File getDummyFile()
+  {
+    try
+      {
+        var file = File.createTempFile("000000", ".fz");
+        FileWriter writer = new FileWriter(file);
+        writer.write("nothing is");
+        writer.close();
+        return file;
+      }
+    catch (IOException e)
+      {
+        Log.write("parsing failed");
+        Log.write(e.getStackTrace().toString());
+        return null;
+      }
   }
 
   public static Position ToPosition(SourcePosition sourcePosition)
@@ -164,12 +185,12 @@ public class FuzionHelpers
   {
     var universe = Memory.Main.universe();
     var allFeatures = new ArrayList<Feature>();
-    universe.visit(new FeatureVisitor(){
+    universe.visit(new FeatureVisitor() {
       @Override
       public Stmnt action(Feature f, Feature outer)
       {
         allFeatures.add(f);
-        f.declaredFeatures().forEach((n,df) -> df.visit(this, f));
+        f.declaredFeatures().forEach((n, df) -> df.visit(this, f));
         return super.action(f, outer);
       }
     }, universe.outer());
