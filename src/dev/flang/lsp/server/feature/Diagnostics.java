@@ -29,19 +29,12 @@ public class Diagnostics
 
   public static PublishDiagnosticsParams getPublishDiagnosticsParams(String uri)
   {
-    if (Errors.count() > 0)
-      {
-        var diagnostics = getDiagnostics(uri);
-
-        return new PublishDiagnosticsParams(uri, diagnostics);
-      }
-
-    return new PublishDiagnosticsParams(uri, new ArrayList<Diagnostic>());
+    return new PublishDiagnosticsParams(uri, getDiagnostics(uri));
   }
 
   private static List<Diagnostic> getDiagnostics(String uri)
   {
-    return Errors.get().stream().filter(error -> FuzionHelpers.toUriString(error.pos) == uri).map((error) -> {
+    return Errors.get().stream().filter(error -> FuzionHelpers.toUriString(error.pos).equals(uri)).map((error) -> {
       var start = FuzionHelpers.ToPosition(error.pos);
       var text = FuzionTextDocumentService.getText(uri);
       var end = getEndPosition(text, start);

@@ -40,11 +40,6 @@ public class FuzionHelpers
    */
   public static void Parse(String uri)
   {
-    // NYI remove once we can create MIR multiple times
-    Errors.clear();
-    Types.clear();
-    FeatureName.clear();
-
     // NYI don't read from filesystem but newest version from
     // FuzionTextDocumentService->getText()
     File sourceFile = uri.contains("/lib/") ? getDummyFile(): Util.toFile(uri);
@@ -55,6 +50,12 @@ public class FuzionHelpers
         {
           return;
         }
+
+      // // NYI remove once we can create MIR multiple times
+      // Errors.clear();
+      // Types.clear();
+      // FeatureName.clear();
+
       var frontEndOptions =
           new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, sourceFile.getAbsolutePath());
       var main = new FrontEnd(frontEndOptions).createMIR().main();
