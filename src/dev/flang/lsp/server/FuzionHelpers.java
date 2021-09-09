@@ -1,9 +1,9 @@
 package dev.flang.lsp.server;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -15,10 +15,10 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.SourceFile;
 import dev.flang.ast.Case;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Stmnt;
@@ -80,7 +80,13 @@ public class FuzionHelpers
   public static SourcePosition getPosition(Object entry)
   {
     var result = getPositionOrNull(entry);
-    return result != null ? result : new SourcePosition(new SourceFile(Path.of("no src position found")), 1, 1);
+    if (result != null)
+      {
+        return result;
+      }
+    Log.write("no src pos found for: " + entry.getClass());
+    // NYI what to return?
+    return SourcePosition.builtIn;
   }
 
   private static SourcePosition getPositionOrNull(Object entry)
@@ -138,10 +144,11 @@ public class FuzionHelpers
       }
 
     var maxColumn = astItems.stream().map(x -> getPosition(x)._column).max(Integer::compare).get();
-    return astItems.stream().filter(obj -> getPosition(obj)._column == maxColumn).map(astItem -> {
-      Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
-      return astItem;
-    }).collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.compareASTItems)));
+    return astItems.stream().filter(obj -> getPosition(obj).isBuiltIn() || getPosition(obj)._column == maxColumn)
+        .map(astItem -> {
+          Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
+          return astItem;
+        }).collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.compareASTItems)));
   }
 
   private static TreeSet<Object> doVisitation(Feature baseFeature, String uri, Position position)
@@ -178,6 +185,11 @@ public class FuzionHelpers
       var sourcePosition = getPosition(astItem);
       Log.write("visiting: " + sourcePosition.toString() + ":" + astItem.getClass());
 
+      // NYI what can we do with built in stuff?
+      if (sourcePosition.isBuiltIn())
+        {
+          return false;
+        }
       if (position.getLine() != sourcePosition._line - 1 || !uri.equals(toUriString(sourcePosition)))
         {
           return false;
@@ -192,17 +204,9 @@ public class FuzionHelpers
     return "file://" + sourcePosition._sourceFile._fileName.toString();
   }
 
-  /*
-   * tries to figure out if two AST Items are the same.
-   * compares position then classname.
-   */
-  static Comparator<? super Object> compareASTItems = Comparator.comparing(obj -> obj, (astItem1, astItem2) -> {
-    var positionComparisonResult = getPosition(astItem1).compareTo(getPosition(astItem2));
-    if (positionComparisonResult == 0)
-      {
-        return astItem1.getClass().getName().compareTo(astItem2.getClass().getName());
-      }
-    return positionComparisonResult;
+  private static Comparator<? super Object> compareASTItems = Comparator.comparing(obj -> obj, (astItem1, astItem2) -> {
+    // we don't care about order thus always return 1 if not same
+    return astItem1.equals(astItem2) ? 0: 1;
   });
 
   static boolean IsRoutineOrRoutineDef(Feature feature)
@@ -215,14 +219,14 @@ public class FuzionHelpers
     return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(impl.kind_);
   }
 
-	public static boolean IsIntrinsic(Feature feature)
-	{
-		return IsIntrinsic(feature.impl);
-	}
+  public static boolean IsIntrinsic(Feature feature)
+  {
+    return IsIntrinsic(feature.impl);
+  }
 
-	public static boolean IsIntrinsic(Impl impl)
-	{
-		return impl.kind_ == Kind.Intrinsic;
-	}
+  public static boolean IsIntrinsic(Impl impl)
+  {
+    return impl.kind_ == Kind.Intrinsic;
+  }
 
 }
