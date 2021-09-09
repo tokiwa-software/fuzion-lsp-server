@@ -155,10 +155,21 @@ public class FuzionHelpers
 
   private static Optional<Feature> getBaseFeature(String uri)
   {
-    var baseFeature = Memory.Main.universe().declaredFeatures().values().stream().filter(feature -> {
+    var universe = Memory.Main.universe();
+    var allFeatures = new ArrayList<Feature>();
+    universe.visit(new FeatureVisitor(){
+      @Override
+      public Stmnt action(Feature f, Feature outer)
+      {
+        allFeatures.add(f);
+        f.declaredFeatures().forEach((n,df) -> df.visit(this, f));
+        return super.action(f, outer);
+      }
+    }, universe.outer());
+
+    return allFeatures.stream().filter(feature -> {
       return uri.equals(toUriString(feature.pos()));
     }).findFirst();
-    return baseFeature;
   }
 
   private static Predicate<? super Object> filterIrrelevantItems(String uri, Position position)
