@@ -26,15 +26,14 @@ import dev.flang.ast.This;
 import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 
-// NYI find better naming here
 /**
-* visit everything in feature
+* visit everything in feature including heirs
 * add to result if predicate is true
 * @param result
 * @param addToResult
 * @return
 */
-public class EverythingVisitor extends FeatureVisitor
+public class HeirsVisitor extends FeatureVisitor
 {
   // memorize already visited features
   private final TreeSet<Feature> VisitedFeatures = new TreeSet<>();
@@ -44,7 +43,7 @@ public class EverythingVisitor extends FeatureVisitor
   // for which uri this visitor was created
   private final String uri;
 
-  public EverythingVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult, String uri)
+  public HeirsVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult, String uri)
   {
     if (result.comparator() == null)
       {
@@ -109,11 +108,12 @@ public class EverythingVisitor extends FeatureVisitor
       {
         result.add(c);
       }
-    Log.increaseIndentation();
-    if (!this.VisitedFeatures.contains(c.calledFeature()) && !FuzionHelpers.IsIntrinsic(c.calledFeature()))
+    if (this.VisitedFeatures.contains(c.calledFeature()) || FuzionHelpers.IsIntrinsic(c.calledFeature()))
       {
-        c.calledFeature().visit(this, c.calledFeature().outer());
+        return c;
       }
+    Log.increaseIndentation();
+    c.calledFeature().visit(this, c.calledFeature().outer());
     Log.decreaseIndentation();
     return c;
   }
@@ -180,7 +180,8 @@ public class EverythingVisitor extends FeatureVisitor
 
     // NYI declaredFeatures is correct/good?
     f.declaredFeatures().forEach((n, feature) -> {
-      if (this.VisitedFeatures.contains(feature) || FuzionHelpers.IsIntrinsic(feature) || !uri.equals(FuzionHelpers.toUriString(feature.pos())))
+      if (this.VisitedFeatures.contains(feature) || FuzionHelpers.IsIntrinsic(feature)
+          || !uri.equals(FuzionHelpers.toUriString(feature.pos())))
         {
           return;
         }

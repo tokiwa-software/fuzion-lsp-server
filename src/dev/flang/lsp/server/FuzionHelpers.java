@@ -147,7 +147,7 @@ public class FuzionHelpers
   private static TreeSet<Object> doVisitation(Feature baseFeature, String uri, Position position)
   {
     var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
-    var visitor = new EverythingVisitor(astItems, filterIrrelevantItems(uri, position), uri);
+    var visitor = new HeirsVisitor(astItems, filterIrrelevantItems(uri, position), uri);
     Log.write("starting visitation at: " + baseFeature.qualifiedName());
     baseFeature.visit(visitor, baseFeature.outer());
     return astItems;
