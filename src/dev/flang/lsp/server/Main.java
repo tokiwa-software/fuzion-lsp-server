@@ -21,7 +21,11 @@ public class Main {
   }
 
   public static boolean DEBUG(){
-    return System.getenv("DEBUG").toLowerCase().equals("true");
+    var debug = System.getenv("DEBUG");
+    if(debug == null){
+      return false;
+    }
+    return debug.toLowerCase().equals("true");
   };
 
   public static void main(String[] args) throws Exception {
