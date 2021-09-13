@@ -184,6 +184,9 @@ public class FuzionHelpers
 
   private static Optional<Feature> getBaseFeature(String uri)
   {
+    if(Memory.Main == null){
+      return Optional.empty();
+    }
     var universe = Memory.Main.universe();
     var allFeatures = new ArrayList<Feature>();
     universe.visit(new FeatureVisitor() {
