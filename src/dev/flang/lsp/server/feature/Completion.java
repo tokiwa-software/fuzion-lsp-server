@@ -2,26 +2,33 @@ package dev.flang.lsp.server.feature;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
 
+import dev.flang.ast.Call;
+import dev.flang.ast.Type;
+import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Log;
 
 public class Completion
 {
 
-  private static CompletionItem buildSnippet(String label, String insertText)
+  private static CompletionItem buildCompletionItem(String label, String insertText,
+    CompletionItemKind completionItemKind)
   {
     var item = new CompletionItem(label);
-    item.setKind(CompletionItemKind.Snippet);
+    item.setKind(completionItemKind);
     item.setInsertTextFormat(InsertTextFormat.Snippet);
     item.setInsertTextMode(InsertTextMode.AdjustIndentation);
     item.setInsertText(insertText);
@@ -30,13 +37,42 @@ public class Completion
 
   public static Either<List<CompletionItem>, CompletionList> getCompletions(CompletionParams params)
   {
+    var triggerCharacter = params.getContext().getTriggerCharacter();
+    Log.write("completion triggered (" + triggerCharacter + ")");
+
+    if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked || ".".equals(triggerCharacter))
+      {
+        Stream<CompletionItem> completionItems = FuzionHelpers.getSuitableASTItems(params).stream().map(astItem -> {
+          if (astItem instanceof Call)
+            {
+              return ((Call) astItem).calledFeature();
+            }
+          if ((astItem instanceof Type && !((Type) astItem).isGenericArgument()))
+            {
+              return ((Type) astItem).featureOfType();
+            }
+          return null;
+        })
+          .filter(o -> o != null)
+          .flatMap(
+            f -> f.outer().declaredFeatures().values().stream())
+          .distinct()
+          .map(f -> f.featureName())
+          // NYI use feature.isAnonymousInnerFeature() once it exists
+          .filter(fn -> !fn.baseName().startsWith("#"))
+          .map(
+            featureName -> buildCompletionItem(
+              featureName.toString(),
+              featureName.baseName(), CompletionItemKind.Class));
+        return Either.forLeft(completionItems.collect(Collectors.toList()));
+      }
+
     var word = getWord(params);
-    Log.write("completion triggered (" + params.getContext().getTriggerCharacter() + "): " + word);
     switch (word)
       {
       case "for" :
-        return Either
-            .forLeft(Arrays.asList(buildSnippet("for i in start..end do", "for ${1:i} in ${2:0}..${3:10} do")));
+        return Either.forLeft(Arrays.asList(buildCompletionItem("for i in start..end do",
+          "for ${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Snippet)));
       }
     return Either.forLeft(List.of());
   }
