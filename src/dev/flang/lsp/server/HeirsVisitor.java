@@ -176,11 +176,7 @@ public class HeirsVisitor extends FeatureVisitor
     f.returnType.visit(this, outer);
     f.resultType().visit(this, outer);
 
-    // NYI how to figure out which impl to visit?
-    if (!FuzionHelpers.IsIntrinsic(f.impl) && uri.equals(FuzionHelpers.toUriString(f.pos())))
-      {
-        f.impl.visit(this, outer);
-      }
+    f.visit(this);
 
     // NYI declaredFeatures is correct/good?
     f.declaredFeatures().forEach((n, feature) -> {
