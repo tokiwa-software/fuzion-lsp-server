@@ -181,7 +181,7 @@ public class HeirsVisitor extends FeatureVisitor
     // NYI declaredFeatures is correct/good?
     f.declaredFeatures().forEach((n, feature) -> {
       if (this.VisitedFeatures.contains(feature) || FuzionHelpers.IsIntrinsic(feature)
-          || !uri.equals(FuzionHelpers.toUriString(feature.pos())))
+          || !uri.equals(ParserHelper.getUri(feature.pos())))
         {
           return;
         }

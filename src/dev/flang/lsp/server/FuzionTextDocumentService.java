@@ -25,42 +25,46 @@ import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.Definition;
 
-public class FuzionTextDocumentService implements TextDocumentService {
+public class FuzionTextDocumentService implements TextDocumentService
+{
   /**
    * currently open text documents and their contents
    */
   private static HashMap<String, String> textDocuments = new HashMap<String, String>();
 
-  public static String getText(String uri) {
+  public static String getText(String uri)
+  {
     var text = textDocuments.get(uri);
-    if(text == null){
-      System.err.println("No text for: " + uri);
-      System.exit(1);
-    }
+    if (text == null)
+      {
+        System.err.println("No text for: " + uri);
+        System.exit(1);
+      }
     return text;
   }
 
   @Override
-  public void didOpen(DidOpenTextDocumentParams params) {
+  public void didOpen(DidOpenTextDocumentParams params)
+  {
     var textDocument = params.getTextDocument();
     var uri = textDocument.getUri();
     var text = textDocument.getText();
 
     textDocuments.put(uri, text);
 
-    FuzionHelpers.Parse(uri);
+    ParserHelper.Parse(uri);
 
     var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri);
-    if (diagnostics.getDiagnostics().size() > 0) {
-      Main.getLanguageClient().publishDiagnostics(diagnostics);
-    }
+    Main.getLanguageClient().publishDiagnostics(diagnostics);
   }
 
   // taken from apache commons
-  public static int ordinalIndexOf(String str, String substr, int n) {
-    if (n == 0) {
-      return -1;
-    }
+  public static int ordinalIndexOf(String str, String substr, int n)
+  {
+    if (n == 0)
+      {
+        return -1;
+      }
     int pos = str.indexOf(substr);
     while (--n > 0 && pos != -1)
       pos = str.indexOf(substr, pos + 1);
@@ -68,23 +72,27 @@ public class FuzionTextDocumentService implements TextDocumentService {
   }
 
   @Override
-  public void didChange(DidChangeTextDocumentParams params) {
-    var uri = params.getTextDocument().getUri();
-    var text = textDocuments.get(uri);
-    var contentChanges = params.getContentChanges();
+  public void didChange(DidChangeTextDocumentParams params)
+  {
+    var uri = Util.getUri(params.getTextDocument());
 
-    // TODO test if this works correctly
-    reverseSort(contentChanges);
-    text = applyContentChanges(text, contentChanges);
+    synchronized (textDocuments)
+      {
+        var text = textDocuments.get(uri);
 
-    textDocuments.put(uri, text);
+        var contentChanges = params.getContentChanges();
 
-    FuzionHelpers.Parse(uri);
+        // TODO test if this works correctly
+        reverseSort(contentChanges);
+        text = applyContentChanges(text, contentChanges);
+
+        textDocuments.put(uri, text);
+      }
+
+    ParserHelper.Parse(uri);
 
     var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri);
-    if (diagnostics.getDiagnostics().size() > 0) {
-      Main.getLanguageClient().publishDiagnostics(diagnostics);
-    }
+    Main.getLanguageClient().publishDiagnostics(diagnostics);
   }
 
   /**
@@ -92,56 +100,68 @@ public class FuzionTextDocumentService implements TextDocumentService {
    *
    * @param contentChanges
    */
-  private void reverseSort(List<TextDocumentContentChangeEvent> contentChanges) {
+  private void reverseSort(List<TextDocumentContentChangeEvent> contentChanges)
+  {
     contentChanges.sort((left, right) -> {
-      if (right.getRange().getStart().getLine() == left.getRange().getStart().getLine()) {
-        return Integer.compare(right.getRange().getStart().getCharacter(), left.getRange().getStart().getCharacter());
-      } else {
-        return Integer.compare(right.getRange().getStart().getLine(), left.getRange().getStart().getLine());
-      }
+      if (right.getRange().getStart().getLine() == left.getRange().getStart().getLine())
+        {
+          return Integer.compare(right.getRange().getStart().getCharacter(), left.getRange().getStart().getCharacter());
+        }
+      else
+        {
+          return Integer.compare(right.getRange().getStart().getLine(), left.getRange().getStart().getLine());
+        }
     });
   }
 
-  private String applyContentChanges(String text, List<TextDocumentContentChangeEvent> contentChanges) {
+  private String applyContentChanges(String text, List<TextDocumentContentChangeEvent> contentChanges)
+  {
     return contentChanges.stream().reduce(text, (_text, contentChange) -> {
       var start = ordinalIndexOf(_text, System.lineSeparator(), contentChange.getRange().getStart().getLine()) + 1
-          + contentChange.getRange().getStart().getCharacter();
+        + contentChange.getRange().getStart().getCharacter();
       var end = ordinalIndexOf(_text, System.lineSeparator(), contentChange.getRange().getEnd().getLine()) + 1
-          + contentChange.getRange().getEnd().getCharacter();
+        + contentChange.getRange().getEnd().getCharacter();
       return _text.substring(0, start) + contentChange.getText() + _text.substring(end, _text.length());
     }, String::concat);
   }
 
   @Override
-  public void didClose(DidCloseTextDocumentParams params) {
-    textDocuments.remove(params.getTextDocument().getUri());
+  public void didClose(DidCloseTextDocumentParams params)
+  {
+    textDocuments.remove(Util.getUri(params.getTextDocument()));
   }
 
   @Override
-  public void didSave(DidSaveTextDocumentParams params) {
-    var uri = params.getTextDocument().getUri();
+  public void didSave(DidSaveTextDocumentParams params)
+  {
+    var uri = Util.getUri(params.getTextDocument());
     var text = params.getText();
     textDocuments.put(uri, text);
   }
 
   @Override
-  public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
+  public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position)
+  {
     return CompletableFuture.completedFuture(Completion.getCompletions(position));
   }
 
   @Override
-  public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved) {
+  public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
+  {
     return CompletableFuture.completedFuture(unresolved);
   }
 
   @Override
-  public CompletableFuture<Hover> hover(HoverParams params) {
+  public CompletableFuture<Hover> hover(HoverParams params)
+  {
     return CompletableFuture.completedFuture(Hovering.getHover(params));
   }
 
   @Override
-  public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(DefinitionParams params) {
+  public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
+    DefinitionParams params)
+  {
 
     return CompletableFuture.completedFuture(Definition.getDefinitionLocation(params));
-	}
+  }
 }

@@ -2,7 +2,6 @@ package dev.flang.lsp.server.feature;
 
 import java.util.stream.Collectors;
 import java.util.List;
-import java.util.ArrayList;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
@@ -10,6 +9,7 @@ import org.eclipse.lsp4j.Position;
 
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.ParserHelper;
 import dev.flang.util.Errors;
 
 public class Diagnostics
@@ -34,7 +34,7 @@ public class Diagnostics
 
   private static List<Diagnostic> getDiagnostics(String uri)
   {
-    return Errors.get().stream().filter(error -> FuzionHelpers.toUriString(error.pos).equals(uri)).map((error) -> {
+    return Errors.get().stream().filter(error -> ParserHelper.getUri(error.pos).equals(uri)).map((error) -> {
       var start = FuzionHelpers.ToPosition(error.pos);
       var text = FuzionTextDocumentService.getText(uri);
       var end = getEndPosition(text, start);

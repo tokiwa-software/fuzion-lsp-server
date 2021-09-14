@@ -16,10 +16,15 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
 
 import dev.flang.ast.Call;
+import dev.flang.ast.Feature;
 import dev.flang.ast.Type;
+import dev.flang.ast.Types;
+import dev.flang.ast.Feature;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Log;
+import dev.flang.lsp.server.Memory;
+import dev.flang.lsp.server.Util;
 
 public class Completion
 {
@@ -42,28 +47,45 @@ public class Completion
 
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked || ".".equals(triggerCharacter))
       {
-        Stream<CompletionItem> completionItems = FuzionHelpers.getSuitableASTItems(params).stream().map(astItem -> {
-          if (astItem instanceof Call)
-            {
-              return ((Call) astItem).calledFeature();
-            }
-          if ((astItem instanceof Type && !((Type) astItem).isGenericArgument()))
-            {
-              return ((Type) astItem).featureOfType();
-            }
-          return null;
-        })
+        // NYI what do we actually want to/can do here?
+        var existingASTItems = FuzionHelpers.getSuitableASTItems(params);
+        Stream<CompletionItem> completionItems = (existingASTItems.isEmpty() ? Stream.of(Memory.Main) : existingASTItems.stream())
+          .map(astItem -> {
+            if (astItem instanceof Call)
+              {
+                var calledFeature = ((Call) astItem).calledFeature();
+                if(calledFeature != Types.f_ERROR){
+                  return calledFeature;
+                }
+                return Memory.Main;
+              }
+            if ((astItem instanceof Type && !((Type) astItem).isGenericArgument()))
+              {
+                return ((Type) astItem).featureOfType();
+              }
+            if ((astItem instanceof Feature))
+              {
+                return ((Feature) astItem);
+              }
+            return null;
+          })
           .filter(o -> o != null)
           .flatMap(
-            f -> f.outer().declaredFeatures().values().stream())
+            f -> {
+              if (f.outer() == null)
+                {
+                  return f.declaredFeatures().values().stream();
+                }
+              return Stream.concat(f.declaredFeatures().values().stream(),
+                f.outer().declaredFeatures().values().stream());
+            })
           .distinct()
-          .map(f -> f.featureName())
           // NYI use feature.isAnonymousInnerFeature() once it exists
-          .filter(fn -> !fn.baseName().startsWith("#"))
+          .filter(f -> !f.featureName().baseName().startsWith("#"))
           .map(
-            featureName -> buildCompletionItem(
-              featureName.toString(),
-              featureName.baseName(), CompletionItemKind.Class));
+            feature -> buildCompletionItem(
+              feature.toString(),
+              feature.featureName().baseName(), CompletionItemKind.Class));
         return Either.forLeft(completionItems.collect(Collectors.toList()));
       }
 
@@ -79,7 +101,7 @@ public class Completion
 
   private static @NonNull String getWord(CompletionParams params)
   {
-    var text = FuzionTextDocumentService.getText(params.getTextDocument().getUri());
+    var text = FuzionTextDocumentService.getText(Util.getUri(params));
     var line = text.split("\n")[params.getPosition().getLine()];
     if (line.length() == 0)
       {

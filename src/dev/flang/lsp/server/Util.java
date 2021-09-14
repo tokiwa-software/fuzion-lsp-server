@@ -17,6 +17,8 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 public class Util
 {
@@ -82,7 +84,20 @@ public class Util
       }
   }
 
-  private static void WithTextInputStream(String text, Runnable runnable)
+  public static void WithRedirectedStdErr(Runnable runnable)
+  {
+    var err = System.err;
+    try
+      {
+        System.setErr(DEV_NULL);
+        runnable.run();
+      } finally
+      {
+        System.setErr(err);
+      }
+  }
+
+  public static void WithTextInputStream(String text, Runnable runnable)
   {
     byte[] byteArray = getBytes(text);
 
@@ -135,6 +150,16 @@ public class Util
         System.exit(1);
         return null;
       }
+  }
+
+  public static String getUri(TextDocumentPositionParams params)
+  {
+    return getUri(params.getTextDocument());
+  }
+
+  public static String getUri(TextDocumentIdentifier params)
+  {
+    return params.getUri();
   }
 
 }
