@@ -30,7 +30,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   /**
    * currently open text documents and their contents
    */
-  private static HashMap<String, String> textDocuments = new HashMap<String, String>();
+  private static final HashMap<String, String> textDocuments = new HashMap<String, String>();
 
   public static String getText(String uri)
   {
@@ -43,6 +43,16 @@ public class FuzionTextDocumentService implements TextDocumentService
     return text;
   }
 
+  public static void setText(String uri, String text)
+  {
+    if (text == null)
+      {
+        System.err.println("set null forbidden: " + uri);
+        System.exit(1);
+      }
+    textDocuments.put(uri, text);
+  }
+
   @Override
   public void didOpen(DidOpenTextDocumentParams params)
   {
@@ -50,7 +60,7 @@ public class FuzionTextDocumentService implements TextDocumentService
     var uri = textDocument.getUri();
     var text = textDocument.getText();
 
-    textDocuments.put(uri, text);
+    setText(uri, text);
 
     ParserHelper.Parse(uri);
 
@@ -86,7 +96,7 @@ public class FuzionTextDocumentService implements TextDocumentService
         reverseSort(contentChanges);
         text = applyContentChanges(text, contentChanges);
 
-        textDocuments.put(uri, text);
+        setText(uri, text);
       }
 
     ParserHelper.Parse(uri);
@@ -133,9 +143,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public void didSave(DidSaveTextDocumentParams params)
   {
-    var uri = Util.getUri(params.getTextDocument());
-    var text = params.getText();
-    textDocuments.put(uri, text);
+
   }
 
   @Override
