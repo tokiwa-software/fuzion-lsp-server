@@ -78,7 +78,7 @@ public class FuzionTextDocumentService implements TextDocumentService
 
     synchronized (textDocuments)
       {
-        var text = textDocuments.get(uri);
+        var text = getText(uri);
 
         var contentChanges = params.getContentChanges();
 
@@ -128,7 +128,6 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public void didClose(DidCloseTextDocumentParams params)
   {
-    textDocuments.remove(Util.getUri(params.getTextDocument()));
   }
 
   @Override
