@@ -181,7 +181,7 @@ public class HeirsVisitor extends FeatureVisitor
     // NYI declaredFeatures is correct/good?
     f.declaredFeatures().forEach((n, feature) -> {
       if (this.VisitedFeatures.contains(feature) || FuzionHelpers.IsIntrinsic(feature)
-          || !uri.equals(ParserHelper.getUri(feature.pos())))
+          || !IsFeatureInUri(feature))
         {
           return;
         }
@@ -190,6 +190,11 @@ public class HeirsVisitor extends FeatureVisitor
 
     Log.decreaseIndentation();
     return f;
+  }
+
+  private boolean IsFeatureInUri(Feature feature)
+  {
+    return uri.equals(ParserHelper.getUri(feature.pos()));
   }
 
   @Override
