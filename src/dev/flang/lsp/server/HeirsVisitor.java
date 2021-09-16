@@ -40,10 +40,8 @@ public class HeirsVisitor extends FeatureVisitor
   // predicate to decide if AST item should be added to result set
   private final Predicate<? super Object> addToResult;
   private final TreeSet<Object> result;
-  // for which uri this visitor was created
-  private final String uri;
 
-  public HeirsVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult, String uri)
+  public HeirsVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult)
   {
     if (result.comparator() == null)
       {
@@ -52,7 +50,6 @@ public class HeirsVisitor extends FeatureVisitor
       }
     this.result = result;
     this.addToResult = addToResult;
-    this.uri = uri;
   }
 
   @Override
@@ -180,8 +177,7 @@ public class HeirsVisitor extends FeatureVisitor
 
     // NYI declaredFeatures is correct/good?
     f.declaredFeatures().forEach((n, feature) -> {
-      if (this.VisitedFeatures.contains(feature) || FuzionHelpers.IsIntrinsic(feature)
-          || !IsFeatureInUri(feature))
+      if (this.VisitedFeatures.contains(feature) || FuzionHelpers.IsIntrinsic(feature))
         {
           return;
         }
@@ -190,11 +186,6 @@ public class HeirsVisitor extends FeatureVisitor
 
     Log.decreaseIndentation();
     return f;
-  }
-
-  private boolean IsFeatureInUri(Feature feature)
-  {
-    return uri.equals(ParserHelper.getUri(feature.pos()));
   }
 
   @Override

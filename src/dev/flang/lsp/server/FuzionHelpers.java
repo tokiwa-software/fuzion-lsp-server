@@ -123,7 +123,7 @@ public class FuzionHelpers
   private static TreeSet<Object> doVisitation(Feature baseFeature, String uri, Position position)
   {
     var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
-    var visitor = new HeirsVisitor(astItems, IsItemInFileAndOnLineAndBeforeCharacter(uri, position), uri);
+    var visitor = new HeirsVisitor(astItems, IsItemInFileAndOnLineAndBeforeCharacter(uri, position));
     Log.write("starting visitation at: " + baseFeature.qualifiedName());
     baseFeature.visit(visitor, baseFeature.outer());
     return astItems;
