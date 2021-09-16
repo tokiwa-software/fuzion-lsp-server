@@ -87,6 +87,7 @@ public class FuzionHelpers
   /**
    * given a TextDocumentPosition return all ASTItems
    * in the given file on the given line.
+   * sorted by position descending.
    * @param params
    * @return
    */
@@ -196,7 +197,7 @@ public class FuzionHelpers
       return position1.compareTo(position2);
     });
 
-  private static Comparator<? super Object> CompareBySourcePositionDesc =
+  public static Comparator<? super Object> CompareBySourcePositionDesc =
     Comparator.comparing(obj -> getPosition(obj), (position1, position2) -> {
       return position1.compareTo(position2);
     }).reversed();
@@ -286,6 +287,31 @@ public class FuzionHelpers
   public static boolean IsAnonymousInnerFeature(Feature f)
   {
     return f.featureName().baseName().startsWith("#");
+  }
+
+  public static Stream<Feature> getFeatures(TextDocumentPositionParams params)
+  {
+    var result = getASTItemsOnLine(params)
+      .stream()
+      .map(astItem -> {
+        if (astItem instanceof Feature)
+          {
+            return (Feature) astItem;
+          }
+        if (astItem instanceof Call)
+          {
+            return ((Call) astItem).calledFeature();
+          }
+        if (astItem instanceof Type)
+          {
+            return ((Type) astItem).featureOfType();
+          }
+        return null;
+      })
+      .filter(f -> f != null)
+      .filter(f -> IsRoutineOrRoutineDef(f))
+      .filter(f -> !IsAnonymousInnerFeature(f));
+    return result;
   }
 
 }
