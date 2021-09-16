@@ -63,8 +63,7 @@ public class Completion
           .get()
           .flatMap(f -> f.declaredFeatures().values().stream())
           .distinct()
-          // NYI use feature.isAnonymousInnerFeature() once it exists
-          .filter(f -> !f.featureName().baseName().startsWith("#"))
+          .filter(f -> !FuzionHelpers.IsAnonymousInnerFeature(f))
           .collect(Collectors.toList());
 
         var completionItems = IntStream
@@ -73,7 +72,7 @@ public class Completion
             index -> {
               var feature = sortedFeatures.get(index);
               return buildCompletionItem(
-                getLabel(feature),
+                FuzionHelpers.getLabel(feature),
                 getSnippet(feature), CompletionItemKind.Function, String.format("%10d", index));
             });
 
@@ -108,22 +107,6 @@ public class Completion
       })
       .collect(Collectors.joining(", ")) + ")";
     return feature.featureName().baseName() + feature.generics + arguments;
-  }
-
-  /**
-   * @param feature
-   * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
-   */
-  private static String getLabel(Feature feature)
-  {
-    if (!FuzionHelpers.IsRoutineOrRoutineDef(feature))
-      {
-        return feature.featureName().baseName();
-      }
-    var arguments = "(" + feature.arguments.stream()
-      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().returnType)
-      .collect(Collectors.joining(", ")) + ")";
-    return feature.featureName().baseName() + feature.generics + arguments + " => " + feature.returnType;
   }
 
   private static @NonNull String getWord(TextDocumentPositionParams params)

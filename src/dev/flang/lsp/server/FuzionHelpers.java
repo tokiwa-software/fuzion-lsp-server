@@ -86,7 +86,7 @@ public class FuzionHelpers
 
   /**
    * given a TextDocumentPosition return all ASTItems
-   * in the given file on the given line and before given character position.
+   * in the given file on the given line.
    * @param params
    * @return
    */
@@ -110,14 +110,12 @@ public class FuzionHelpers
         return astItems;
       }
 
-    var maxColumn = astItems.stream().map(x -> getPosition(x)._column).max(Integer::compare).get();
     return astItems.stream()
-      .filter(obj -> getPosition(obj).isBuiltIn() || getPosition(obj)._column == maxColumn)
-      .map(astItem -> {
-        Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
-        return astItem;
-      })
-      .collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.compareASTItems)));
+      // .map(astItem -> {
+      //   Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
+      //   return astItem;
+      // })
+      .collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.CompareBySourcePositionDesc)));
   }
 
   private static TreeSet<Object> doVisitation(Feature baseFeature, String uri, Position position)
@@ -198,6 +196,11 @@ public class FuzionHelpers
       return position1.compareTo(position2);
     });
 
+  private static Comparator<? super Object> CompareBySourcePositionDesc =
+    Comparator.comparing(obj -> getPosition(obj), (position1, position2) -> {
+      return position1.compareTo(position2);
+    }).reversed();
+
   private static Predicate<? super Object> IsItemInFileAndOnLineAndBeforeCharacter(String uri, Position position)
   {
     return astItem -> {
@@ -262,6 +265,27 @@ public class FuzionHelpers
       })
       .filter(o -> o != null);
     return calledFeatures;
+  }
+
+  /**
+   * @param feature
+   * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
+   */
+  public static String getLabel(Feature feature)
+  {
+    if (!IsRoutineOrRoutineDef(feature))
+      {
+        return feature.featureName().baseName();
+      }
+    var arguments = "(" + feature.arguments.stream()
+      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().returnType)
+      .collect(Collectors.joining(", ")) + ")";
+    return feature.featureName().baseName() + feature.generics + arguments + " => " + feature.returnType;
+  }
+
+  public static boolean IsAnonymousInnerFeature(Feature f)
+  {
+    return f.featureName().baseName().startsWith("#");
   }
 
 }
