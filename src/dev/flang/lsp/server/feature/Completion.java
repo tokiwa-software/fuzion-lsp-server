@@ -91,7 +91,7 @@ public class Completion
 
   /**
    * @param feature
-   * @return example: array<T>(${1:length}, ${1:init})
+   * @return example: array<T>(${1:length}, ${2:init})
    */
   private static String getSnippet(Feature feature)
   {
@@ -103,9 +103,10 @@ public class Completion
       .range(0, feature.arguments.size())
       .mapToObj(index -> {
         var argument = feature.arguments.get(index);
-        return "${" + index + ":" + argument.thisType().featureOfType().featureName().baseName() + "}";
+        return "${" + (index + 1) + ":" + argument.thisType().featureOfType().featureName().baseName() + "}";
       })
       .collect(Collectors.joining(", ")) + ")";
+
     return feature.featureName().baseName() + feature.generics + arguments;
   }
 
