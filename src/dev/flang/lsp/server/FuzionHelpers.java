@@ -112,10 +112,10 @@ public class FuzionHelpers
       }
 
     return astItems.stream()
-      // .map(astItem -> {
-      //   Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
-      //   return astItem;
-      // })
+      .map(astItem -> {
+        Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
+        return astItem;
+      })
       .collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.CompareBySourcePositionDesc)));
   }
 
@@ -198,8 +198,12 @@ public class FuzionHelpers
     });
 
   public static Comparator<? super Object> CompareBySourcePositionDesc =
-    Comparator.comparing(obj -> getPosition(obj), (position1, position2) -> {
-      return position1.compareTo(position2);
+    Comparator.comparing(obj -> obj, (obj1, obj2) -> {
+      var result = getPosition(obj1).compareTo(getPosition(obj2));
+      if(result != 0){
+        return result;
+      }
+      return obj1.equals(obj2) ? 0: 1;
     }).reversed();
 
   private static Predicate<? super Object> IsItemInFileAndOnLineAndBeforeCharacter(String uri, Position position)
@@ -310,7 +314,11 @@ public class FuzionHelpers
       })
       .filter(f -> f != null)
       .filter(f -> IsRoutineOrRoutineDef(f))
-      .filter(f -> !IsAnonymousInnerFeature(f));
+      .filter(f -> !IsAnonymousInnerFeature(f))
+      // NYI maybe there is a better way?
+      .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()))
+      ;
+
     return result;
   }
 
