@@ -20,7 +20,7 @@ public class Definition
   public static Either<List<? extends Location>, List<? extends LocationLink>> getDefinitionLocation(
       DefinitionParams params)
   {
-    var astItems = FuzionHelpers.getSuitableASTItems(params).stream().filter(x ->  x instanceof Feature || x instanceof Call || x instanceof Type).collect(Collectors.toList());
+    var astItems = FuzionHelpers.getASTItemsOnLine(params).stream().filter(x ->  x instanceof Feature || x instanceof Call || x instanceof Type).collect(Collectors.toList());
 
     if (astItems.isEmpty())
       {

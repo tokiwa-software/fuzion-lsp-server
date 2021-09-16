@@ -2,8 +2,8 @@ package dev.flang.lsp.server;
 
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.ArrayList;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -13,6 +13,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.util.SourcePosition;
+import dev.flang.ast.Call;
 import dev.flang.ast.Case;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
@@ -20,6 +21,7 @@ import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
+import dev.flang.ast.Types;
 import dev.flang.ast.Impl.Kind;
 
 public class FuzionHelpers
@@ -88,7 +90,7 @@ public class FuzionHelpers
    * @param params
    * @return
    */
-  public static TreeSet<Object> getSuitableASTItems(TextDocumentPositionParams params)
+  public static TreeSet<Object> getASTItemsOnLine(TextDocumentPositionParams params)
   {
     var uri = Util.getUri(params);
     var position = params.getPosition();
@@ -121,21 +123,65 @@ public class FuzionHelpers
   private static TreeSet<Object> doVisitation(Feature baseFeature, String uri, Position position)
   {
     var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
-    var visitor = new HeirsVisitor(astItems, filterIrrelevantItems(uri, position), uri);
+    var visitor = new HeirsVisitor(astItems, IsItemInFileAndOnLineAndBeforeCharacter(uri, position), uri);
     Log.write("starting visitation at: " + baseFeature.qualifiedName());
     baseFeature.visit(visitor, baseFeature.outer());
     return astItems;
   }
 
+  /**
+   * returns the outermost feature found in uri
+   * @param uri
+   * @return
+   */
   private static Optional<Feature> getBaseFeature(String uri)
   {
-    if (Memory.Main == null)
-      {
-        return Optional.empty();
-      }
+    return getAllFeatures(uri).findFirst();
+  }
+
+  public static Stream<Feature> getAllFeatures(String uri)
+  {
     var universe = Memory.Main.universe();
-    var allFeatures = new ArrayList<Feature>();
-    universe.visit(new FeatureVisitor() {
+    var allFeatures = getAllFeatures(universe);
+
+    return allFeatures.stream().filter(IsFeatureInFile(uri));
+  }
+
+  public static Stream<Feature> getParentFeatures(TextDocumentPositionParams params)
+  {
+    return getAllFeatures(params.getTextDocument().getUri()).filter(IsParentFeature(params.getPosition()));
+  }
+
+  /**
+   * NYI make more precise
+   * @param position
+   * @return
+   */
+  private static Predicate<? super Feature> IsParentFeature(Position position)
+  {
+    return feature -> {
+      var positionOfFeature = ToPosition(feature.pos);
+      // feature has to be in same line or before and before cursor position
+      return (position.getLine() >= positionOfFeature.getLine()
+        && position.getCharacter() > positionOfFeature.getCharacter());
+    };
+  }
+
+  private static Predicate<? super Feature> IsFeatureInFile(String uri)
+  {
+    return feature -> {
+      return uri.equals(ParserHelper.getUri(feature.pos()));
+    };
+  }
+
+  /**
+   * @param baseFeature
+   * @return all descending features of base feature
+   */
+  private static TreeSet<Feature> getAllFeatures(Feature baseFeature)
+  {
+    var allFeatures = new TreeSet<Feature>(CompareBySourcePosition);
+    baseFeature.visit(new FeatureVisitor() {
       @Override
       public Stmnt action(Feature f, Feature outer)
       {
@@ -143,14 +189,16 @@ public class FuzionHelpers
         f.declaredFeatures().forEach((n, df) -> df.visit(this, f));
         return super.action(f, outer);
       }
-    }, universe.outer());
-
-    return allFeatures.stream().filter(feature -> {
-      return uri.equals(ParserHelper.getUri(feature.pos()));
-    }).findFirst();
+    }, baseFeature.outer());
+    return allFeatures;
   }
 
-  private static Predicate<? super Object> filterIrrelevantItems(String uri, Position position)
+  private static Comparator<? super Feature> CompareBySourcePosition =
+    Comparator.comparing(feature -> feature.pos, (position1, position2) -> {
+      return position1.compareTo(position2);
+    });
+
+  private static Predicate<? super Object> IsItemInFileAndOnLineAndBeforeCharacter(String uri, Position position)
   {
     return astItem -> {
       var sourcePosition = getPosition(astItem);
@@ -176,7 +224,7 @@ public class FuzionHelpers
     return astItem1.equals(astItem2) ? 0: 1;
   });
 
-  static boolean IsRoutineOrRoutineDef(Feature feature)
+  public static boolean IsRoutineOrRoutineDef(Feature feature)
   {
     return IsRoutineOrRoutineDef(feature.impl);
   }
@@ -194,6 +242,26 @@ public class FuzionHelpers
   public static boolean IsIntrinsic(Impl impl)
   {
     return impl.kind_ == Kind.Intrinsic;
+  }
+
+  public static Stream<Feature> getCalledFeatures(TextDocumentPositionParams params)
+  {
+    var suitableItems = getASTItemsOnLine(params).stream();
+    // NYI what do we actually want to/can do here?
+    Stream<Feature> calledFeatures = suitableItems
+      .map(astItem -> {
+        if (astItem instanceof Call)
+          {
+            var calledFeature = ((Call) astItem).calledFeature();
+            if (calledFeature != Types.f_ERROR)
+              {
+                return calledFeature;
+              }
+          }
+        return null;
+      })
+      .filter(o -> o != null);
+    return calledFeatures;
   }
 
 }

@@ -15,7 +15,7 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var astItems = FuzionHelpers.getSuitableASTItems(params).stream().collect(Collectors.toList());
+    var astItems = FuzionHelpers.getASTItemsOnLine(params).stream().collect(Collectors.toList());
 
     // NYI make more exact
     var range = Util.toRange(params.getPosition());
