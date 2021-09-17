@@ -1,7 +1,9 @@
 package dev.flang.lsp.server;
 
 import java.util.TreeSet;
-import java.util.function.Predicate;
+
+import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.Position;
 
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
@@ -26,6 +28,7 @@ import dev.flang.ast.This;
 import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 
+// NYI resolve cyclic dependency HeirsVistor <-> FuzionHelpers
 /**
 * visit everything in feature including heirs
 * add to result if predicate is true
@@ -37,11 +40,37 @@ public class HeirsVisitor extends FeatureVisitor
 {
   // memorize already visited features
   private final TreeSet<Feature> VisitedFeatures = new TreeSet<>();
-  // predicate to decide if AST item should be added to result set
-  private final Predicate<? super Object> addToResult;
   private final TreeSet<Object> result;
+  private final Position cursorPosition;
+  private final String uri;
 
-  public HeirsVisitor(TreeSet<Object> result, Predicate<? super Object> addToResult)
+  private final boolean addToResult(Feature outer, Object astItem)
+  {
+    var sourcePosition = FuzionHelpers.getPosition(astItem);
+
+    // NYI what can we do with built in stuff?
+    if (sourcePosition.isBuiltIn())
+      {
+        return false;
+      }
+    if (!this.uri.equals(ParserHelper.getUri(sourcePosition)))
+      {
+        return false;
+      }
+    if (this.cursorPosition.getLine() != FuzionHelpers.ToPosition(sourcePosition).getLine())
+      {
+        return false;
+      }
+
+    boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(this.cursorPosition,
+      FuzionHelpers.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
+    boolean ItemPositionIsBeforeOrAtCursorPosition =
+      Util.ComparePosition(this.cursorPosition, FuzionHelpers.ToPosition(sourcePosition)) >= 0;
+    return ItemPositionIsBeforeOrAtCursorPosition && EndOfOuterFeatureIsAfterCursorPosition;
+  }
+
+  // NYI consider only passing uri instead of params
+  public HeirsVisitor(TreeSet<Object> result, TextDocumentPositionParams params)
   {
     if (result.comparator() == null)
       {
@@ -49,13 +78,14 @@ public class HeirsVisitor extends FeatureVisitor
         System.exit(1);
       }
     this.result = result;
-    this.addToResult = addToResult;
+    this.cursorPosition = Util.getPosition(params);
+    this.uri = Util.getUri(params);
   }
 
   @Override
   public void action(Unbox u, Feature outer)
   {
-    if (addToResult.test(u))
+    if (addToResult(outer, u))
       {
         result.add(u);
       }
@@ -64,7 +94,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void action(Assign a, Feature outer)
   {
-    if (addToResult.test(a))
+    if (addToResult(outer, a))
       {
         result.add(a);
       }
@@ -73,7 +103,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void actionBefore(Block b, Feature outer)
   {
-    if (addToResult.test(b))
+    if (addToResult(outer, b))
       {
         result.add(b);
       }
@@ -82,7 +112,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void actionAfter(Block b, Feature outer)
   {
-    if (addToResult.test(b))
+    if (addToResult(outer, b))
       {
         result.add(b);
       }
@@ -92,7 +122,7 @@ public class HeirsVisitor extends FeatureVisitor
   public void action(Box b, Feature outer)
   {
 
-    if (addToResult.test(b))
+    if (addToResult(outer, b))
       {
         result.add(b);
       }
@@ -101,7 +131,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public Expr action(Call c, Feature outer)
   {
-    if (addToResult.test(c))
+    if (addToResult(outer, c))
       {
         result.add(c);
       }
@@ -118,7 +148,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void actionBefore(Case c, Feature outer)
   {
-    if (addToResult.test(c))
+    if (addToResult(outer, c))
       {
         result.add(c);
       }
@@ -127,7 +157,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void actionAfter(Case c, Feature outer)
   {
-    if (addToResult.test(c))
+    if (addToResult(outer, c))
       {
         result.add(c);
       }
@@ -142,7 +172,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public Expr action(Current c, Feature outer)
   {
-    if (addToResult.test(c))
+    if (addToResult(outer, c))
       {
         result.add(c);
       }
@@ -152,7 +182,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public Stmnt action(Destructure d, Feature outer)
   {
-    if (addToResult.test(d))
+    if (addToResult(outer, d))
       {
         result.add(d);
       }
@@ -163,7 +193,7 @@ public class HeirsVisitor extends FeatureVisitor
   public Stmnt action(Feature f, Feature outer)
   {
     this.VisitedFeatures.add(f);
-    if (addToResult.test(f))
+    if (addToResult(outer, f))
       {
         result.add(f);
       }
@@ -191,7 +221,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public Expr action(Function f, Feature outer)
   {
-    if (addToResult.test(f))
+    if (addToResult(outer, f))
       {
         result.add(f);
       }
@@ -201,7 +231,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void action(Generic g, Feature outer)
   {
-    if (addToResult.test(g))
+    if (addToResult(outer, g))
       {
         result.add(g);
       }
@@ -210,7 +240,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void action(If i, Feature outer)
   {
-    if (addToResult.test(i))
+    if (addToResult(outer, i))
       {
         result.add(i);
       }
@@ -219,7 +249,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void action(Impl i, Feature outer)
   {
-    if (addToResult.test(i))
+    if (addToResult(outer, i))
       {
         result.add(i);
       }
@@ -228,7 +258,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public Expr action(InitArray i, Feature outer)
   {
-    if (addToResult.test(i))
+    if (addToResult(outer, i))
       {
         result.add(i);
       }
@@ -238,7 +268,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void action(Match m, Feature outer)
   {
-    if (addToResult.test(m))
+    if (addToResult(outer, m))
       {
         result.add(m);
       }
@@ -247,7 +277,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void action(Tag b, Feature outer)
   {
-    if (addToResult.test(b))
+    if (addToResult(outer, b))
       {
         result.add(b);
       }
@@ -256,7 +286,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public Expr action(This t, Feature outer)
   {
-    if (addToResult.test(t))
+    if (addToResult(outer, t))
       {
         result.add(t);
       }
@@ -266,7 +296,7 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public Type action(Type t, Feature outer)
   {
-    if (addToResult.test(t))
+    if (addToResult(outer, t))
       {
         result.add(t);
       }

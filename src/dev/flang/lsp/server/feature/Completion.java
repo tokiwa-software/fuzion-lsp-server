@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.Log;
 import dev.flang.lsp.server.Memory;
 import dev.flang.lsp.server.Util;
 
@@ -53,14 +54,9 @@ public class Completion
 
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked || ".".equals(triggerCharacter))
       {
-        var universe = Stream.of(Memory.Main.universe());
+        Stream<Feature> features = getFeatures(params, triggerCharacter);
 
-        var sortedFeatures = Stream.of(
-          FuzionHelpers.getCalledFeatures(params),
-          FuzionHelpers.getParentFeatures(params),
-          universe)
-          .reduce(Stream::concat)
-          .get()
+        var sortedFeatures = features
           .flatMap(f -> f.declaredFeatures().values().stream())
           .distinct()
           .filter(f -> !FuzionHelpers.IsAnonymousInnerFeature(f))
@@ -73,7 +69,7 @@ public class Completion
               var feature = sortedFeatures.get(index);
               return buildCompletionItem(
                 FuzionHelpers.getLabel(feature),
-                getSnippet(feature), CompletionItemKind.Function, String.format("%10d", index));
+                getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
             });
 
         return Either.forLeft(completionItems.collect(Collectors.toList()));
@@ -82,23 +78,55 @@ public class Completion
     var word = getWord(params);
     switch (word)
       {
-      case "for" :
-        return Either.forLeft(Arrays.asList(buildCompletionItem("for i in start..end do",
-          "for ${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Snippet)));
+        case "for" :
+          return Either.forLeft(Arrays.asList(buildCompletionItem("for i in start..end do",
+            "for ${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Snippet)));
       }
     return Either.forLeft(List.of());
   }
 
+  private static Stream<Feature> getFeatures(CompletionParams params, String triggerCharacter)
+  {
+    var universe = Stream.of(Memory.getMain().universe());
+
+    Stream<Feature> features;
+    if (".".equals(triggerCharacter))
+      {
+        var feature = FuzionHelpers.calledFeaturesSortedDesc(params)
+          .map(x -> {
+            return x.resultType().featureOfType();
+          })
+          .findFirst();
+
+        if (feature.isEmpty())
+          {
+            Log.write("no feature to complete");
+            return Stream.empty();
+          }
+
+        features = Stream.of(feature.get());
+      }
+    else
+      {
+        features = Stream.of(
+          FuzionHelpers.getParentFeatures(params),
+          universe).reduce(Stream::concat).get();
+      }
+    return features;
+  }
+
   /**
    * @param feature
-   * @return example: array<T>(${1:length}, ${2:init})
+   * @return example: psMap<${4:K -> ordered<psMap.K>}, ${5:V}>(${1:data}, ${2:size}, ${3:fill})
    */
-  private static String getSnippet(Feature feature)
+  private static String getInsertText(Feature feature)
   {
     if (!FuzionHelpers.IsRoutineOrRoutineDef(feature))
       {
         return feature.featureName().baseName();
       }
+
+    // ${1:data}, ${2:size}, ${3:fill}
     var arguments = "(" + IntStream
       .range(0, feature.arguments.size())
       .mapToObj(index -> {
@@ -107,7 +135,29 @@ public class Completion
       })
       .collect(Collectors.joining(", ")) + ")";
 
-    return feature.featureName().baseName() + feature.generics + arguments;
+    // ${4:K -> ordered<psMap.K>}, ${5:V}
+    var _generics = IntStream
+      .range(0, feature.generics.list.size())
+      .mapToObj(index -> {
+        return "${" + (index + 1 + feature.arguments.size()) + ":" + feature.generics.list.get(index).toString() + "}";
+      })
+      .collect(Collectors.joining(", "));
+
+    // <${4:K -> ordered<psMap.K>}, ${5:V}>
+    var generics = genericsSnippet(feature, _generics);
+
+    return feature.featureName().baseName() + generics + arguments;
+  }
+
+  private static String genericsSnippet(Feature feature, String _generics)
+  {
+    if (!feature.generics.isOpen() && feature.generics.list.isEmpty())
+      {
+        return "";
+      }
+    return "<" + _generics
+      + (feature.generics.isOpen() ? "...": "")
+      + ">";
   }
 
   private static @NonNull String getWord(TextDocumentPositionParams params)

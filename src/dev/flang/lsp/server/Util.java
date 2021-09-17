@@ -67,8 +67,10 @@ public class Util
     int targetStringLength = 10;
     Random random = new Random();
 
-    return random.ints(leftLimit, rightLimit + 1).limit(targetStringLength)
-        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+    return random.ints(leftLimit, rightLimit + 1)
+      .limit(targetStringLength)
+      .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+      .toString();
   }
 
   public static void WithRedirectedStdOut(Runnable runnable)
@@ -160,6 +162,22 @@ public class Util
   public static String getUri(TextDocumentIdentifier params)
   {
     return params.getUri();
+  }
+
+  public static Position getPosition(TextDocumentPositionParams params)
+  {
+    return params.getPosition();
+  }
+
+  public static int ComparePosition(Position position1, Position position2)
+  {
+    var result = position1.getLine() < position2.getLine() ? -1: position1.getLine() > position2.getLine() ? +1: 0;
+    if (result == 0)
+      {
+        result = position1.getCharacter() < position2.getCharacter() ? -1
+                          : position1.getCharacter() > position2.getCharacter() ? +1: 0;
+      }
+    return result;
   }
 
 }

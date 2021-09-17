@@ -48,7 +48,7 @@ public class ParserHelper
             var frontEndOptions =
               new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
             var main = new FrontEnd(frontEndOptions).createMIR().main();
-            Memory.Main = main;
+            Memory.setMain(main);
           });
         });
       }

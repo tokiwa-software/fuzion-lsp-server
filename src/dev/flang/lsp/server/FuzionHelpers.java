@@ -12,16 +12,9 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
-import dev.flang.ast.Call;
-import dev.flang.ast.Case;
-import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Generic;
-import dev.flang.ast.Impl;
-import dev.flang.ast.Stmnt;
-import dev.flang.ast.Type;
-import dev.flang.ast.Types;
+import dev.flang.ast.*;
 import dev.flang.ast.Impl.Kind;
 
 public class FuzionHelpers
@@ -85,7 +78,7 @@ public class FuzionHelpers
   }
 
   /**
-   * given a TextDocumentPosition return all ASTItems
+   * given a TextDocumentPosition return all matching ASTItems
    * in the given file on the given line.
    * sorted by position descending.
    * @param params
@@ -93,17 +86,13 @@ public class FuzionHelpers
    */
   public static TreeSet<Object> getASTItemsOnLine(TextDocumentPositionParams params)
   {
-    var uri = Util.getUri(params);
-    var position = params.getPosition();
-
-    var baseFeature = getBaseFeature(uri);
+    var baseFeature = getBaseFeature(params);
     if (baseFeature.isEmpty())
       {
-        Log.write("no matching feature found for: " + uri);
         return new TreeSet<>();
       }
 
-    var astItems = doVisitation(baseFeature.get(), uri, position);
+    var astItems = doVisitation(baseFeature.get(), params);
 
     if (astItems.isEmpty())
       {
@@ -119,11 +108,10 @@ public class FuzionHelpers
       .collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.CompareBySourcePositionDesc)));
   }
 
-  private static TreeSet<Object> doVisitation(Feature baseFeature, String uri, Position position)
+  private static TreeSet<Object> doVisitation(Feature baseFeature, TextDocumentPositionParams params)
   {
     var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
-    var visitor = new HeirsVisitor(astItems, IsItemInFileAndOnLineAndBeforeCharacter(uri, position));
-    Log.write("starting visitation at: " + baseFeature.qualifiedName());
+    var visitor = new HeirsVisitor(astItems, params);
     baseFeature.visit(visitor, baseFeature.outer());
     return astItems;
   }
@@ -133,37 +121,23 @@ public class FuzionHelpers
    * @param uri
    * @return
    */
-  private static Optional<Feature> getBaseFeature(String uri)
+  private static Optional<Feature> getBaseFeature(TextDocumentPositionParams params)
   {
-    return getAllFeatures(uri).findFirst();
-  }
-
-  public static Stream<Feature> getAllFeatures(String uri)
-  {
-    var universe = Memory.Main.universe();
-    var allFeatures = getAllFeatures(universe);
-
-    return allFeatures.stream().filter(IsFeatureInFile(uri));
+    var universe = Memory.getMain().universe();
+    var baseFeature = getAllFeatures(universe).stream()
+      .filter(IsFeatureInFile(Util.getUri(params)))
+      .findFirst();
+    if (baseFeature.isPresent())
+      {
+        Log.write("baseFeature: " + baseFeature.get().qualifiedName());
+      }
+    return baseFeature;
   }
 
   public static Stream<Feature> getParentFeatures(TextDocumentPositionParams params)
   {
-    return getAllFeatures(params.getTextDocument().getUri()).filter(IsParentFeature(params.getPosition()));
-  }
-
-  /**
-   * NYI make more precise
-   * @param position
-   * @return
-   */
-  private static Predicate<? super Feature> IsParentFeature(Position position)
-  {
-    return feature -> {
-      var positionOfFeature = ToPosition(feature.pos);
-      // feature has to be in same line or before and before cursor position
-      return (position.getLine() >= positionOfFeature.getLine()
-        && position.getCharacter() > positionOfFeature.getCharacter());
-    };
+    // find innermost then outer() until at universe
+    return Stream.empty();
   }
 
   private static Predicate<? super Feature> IsFeatureInFile(String uri)
@@ -200,32 +174,12 @@ public class FuzionHelpers
   public static Comparator<? super Object> CompareBySourcePositionDesc =
     Comparator.comparing(obj -> obj, (obj1, obj2) -> {
       var result = getPosition(obj1).compareTo(getPosition(obj2));
-      if(result != 0){
-        return result;
-      }
+      if (result != 0)
+        {
+          return result;
+        }
       return obj1.equals(obj2) ? 0: 1;
     }).reversed();
-
-  private static Predicate<? super Object> IsItemInFileAndOnLineAndBeforeCharacter(String uri, Position position)
-  {
-    return astItem -> {
-      var sourcePosition = getPosition(astItem);
-      // Log.write("visiting: " + sourcePosition.toString() + ":" +
-      // astItem.getClass());
-
-      // NYI what can we do with built in stuff?
-      if (sourcePosition.isBuiltIn())
-        {
-          return false;
-        }
-      if (position.getLine() != sourcePosition._line - 1 || !uri.equals(ParserHelper.getUri(sourcePosition)))
-        {
-          return false;
-        }
-
-      return sourcePosition._column - 1 <= position.getCharacter();
-    };
-  }
 
   private static Comparator<? super Object> compareASTItems = Comparator.comparing(obj -> obj, (astItem1, astItem2) -> {
     // we don't care about order thus always return 1 if not same
@@ -252,24 +206,204 @@ public class FuzionHelpers
     return impl.kind_ == Kind.Intrinsic;
   }
 
-  public static Stream<Feature> getCalledFeatures(TextDocumentPositionParams params)
+  public static Stream<Feature> calledFeaturesSortedDesc(TextDocumentPositionParams params)
   {
-    var suitableItems = getASTItemsOnLine(params).stream();
-    // NYI what do we actually want to/can do here?
-    Stream<Feature> calledFeatures = suitableItems
-      .map(astItem -> {
-        if (astItem instanceof Call)
+    var baseFeature = getBaseFeature(params);
+    if (baseFeature.isEmpty())
+      {
+        return Stream.empty();
+      }
+
+    var calls = callsSortedDesc(baseFeature.get(), params);
+
+    return calls.stream()
+      .map(c -> c.calledFeature());
+  }
+
+  /**
+   * NYI replace by real end of feature once we have this information in the AST
+   * !!!CACHED via Memory.EndOfFeature!!!
+   * @param baseFeature
+   * @return
+   */
+  public static SourcePosition getEndOfFeature(Feature baseFeature)
+  {
+    if (Memory.EndOfFeature.containsKey(baseFeature))
+      {
+        return Memory.EndOfFeature.get(baseFeature);
+      }
+    var positions = new TreeSet<SourcePosition>();
+    baseFeature.visit(new FeatureVisitor() {
+      @Override
+      public Stmnt action(Feature f, Feature outer)
+      {
+        positions.add(getPosition(f));
+        f.visit(this);
+        f.declaredFeatures().forEach((n, df) -> df.visit(this, f));
+        return super.action(f, outer);
+      }
+
+      @Override
+      public void action(Unbox u, Feature outer)
+      {
+        positions.add(getPosition(u));
+      }
+
+      @Override
+      public void action(Assign a, Feature outer)
+      {
+        positions.add(getPosition(a));
+      }
+
+      @Override
+      public void actionBefore(Block b, Feature outer)
+      {
+        positions.add(getPosition(b));
+      }
+
+      @Override
+      public void actionAfter(Block b, Feature outer)
+      {
+        positions.add(getPosition(b));
+      }
+
+      @Override
+      public void action(Box b, Feature outer)
+      {
+
+        positions.add(getPosition(b));
+      }
+
+      @Override
+      public Expr action(Call c, Feature outer)
+      {
+        positions.add(getPosition(c));
+        return c;
+      }
+
+      @Override
+      public void actionBefore(Case c, Feature outer)
+      {
+        positions.add(getPosition(c));
+      }
+
+      @Override
+      public void actionAfter(Case c, Feature outer)
+      {
+        positions.add(getPosition(c));
+      }
+
+      @Override
+      public void action(Cond c, Feature outer)
+      {
+        // Cond has no SourcePosition, not including
+      }
+
+      @Override
+      public Expr action(Current c, Feature outer)
+      {
+        positions.add(getPosition(c));
+        return c;
+      }
+
+      @Override
+      public Stmnt action(Destructure d, Feature outer)
+      {
+        positions.add(getPosition(d));
+        return d;
+      }
+
+      @Override
+      public Expr action(Function f, Feature outer)
+      {
+        positions.add(getPosition(f));
+        return f;
+      }
+
+      @Override
+      public void action(Generic g, Feature outer)
+      {
+        positions.add(getPosition(g));
+      }
+
+      @Override
+      public void action(If i, Feature outer)
+      {
+        positions.add(getPosition(i));
+      }
+
+      @Override
+      public void action(Impl i, Feature outer)
+      {
+        positions.add(getPosition(i));
+      }
+
+      @Override
+      public Expr action(InitArray i, Feature outer)
+      {
+        positions.add(getPosition(i));
+        return i;
+      }
+
+      @Override
+      public void action(Match m, Feature outer)
+      {
+        positions.add(getPosition(m));
+      }
+
+      @Override
+      public void action(Tag b, Feature outer)
+      {
+        positions.add(getPosition(b));
+      }
+
+      @Override
+      public Expr action(This t, Feature outer)
+      {
+        positions.add(getPosition(t));
+        return t;
+      }
+
+      @Override
+      public Type action(Type t, Feature outer)
+      {
+        positions.add(getPosition(t));
+        return t;
+      }
+    }, baseFeature.outer());
+
+    System.out.println(
+      "end of feature: " + getLabel(baseFeature) + ":" + positions.last()._line + ":" + positions.last()._column);
+
+    Memory.EndOfFeature.put(baseFeature, positions.last());
+
+    return positions.last();
+  }
+
+  private static TreeSet<Call> callsSortedDesc(Feature baseFeature, TextDocumentPositionParams params)
+  {
+    var allCalls = new TreeSet<Call>(CompareBySourcePositionDesc);
+    baseFeature.visit(new FeatureVisitor() {
+      @Override
+      public Expr action(Call c, Feature outer)
+      {
+        // NYI consider begin as well
+        if (Util.ComparePosition(Util.getPosition(params), ToPosition(getEndOfFeature(outer))) <= 0)
           {
-            var calledFeature = ((Call) astItem).calledFeature();
-            if (calledFeature != Types.f_ERROR)
-              {
-                return calledFeature;
-              }
+            allCalls.add(c);
           }
-        return null;
-      })
-      .filter(o -> o != null);
-    return calledFeatures;
+        return super.action(c, outer);
+      }
+
+      @Override
+      public Stmnt action(Feature f, Feature outer)
+      {
+        f.visit(this);
+        f.declaredFeatures().forEach((n, df) -> df.visit(this, f));
+        return super.action(f, outer);
+      }
+    }, baseFeature.outer());
+    return allCalls;
   }
 
   /**
@@ -283,9 +417,9 @@ public class FuzionHelpers
         return feature.featureName().baseName();
       }
     var arguments = "(" + feature.arguments.stream()
-      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().returnType)
+      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
       .collect(Collectors.joining(", ")) + ")";
-    return feature.featureName().baseName() + feature.generics + arguments + " => " + feature.returnType;
+    return feature.featureName().baseName() + feature.generics + arguments + " => " + feature.resultType();
   }
 
   public static boolean IsAnonymousInnerFeature(Feature f)
@@ -316,8 +450,7 @@ public class FuzionHelpers
       .filter(f -> IsRoutineOrRoutineDef(f))
       .filter(f -> !IsAnonymousInnerFeature(f))
       // NYI maybe there is a better way?
-      .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()))
-      ;
+      .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()));
 
     return result;
   }
