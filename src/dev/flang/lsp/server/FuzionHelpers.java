@@ -238,156 +238,167 @@ public class FuzionHelpers
    */
   public static SourcePosition getEndOfFeature(Feature baseFeature)
   {
-    if (Memory.EndOfFeature.containsKey(baseFeature))
+    if (!Memory.EndOfFeature.containsKey(baseFeature))
       {
-        return Memory.EndOfFeature.get(baseFeature);
+        var positions = new TreeSet<SourcePosition>();
+        baseFeature.visit(new FeatureVisitor() {
+          @Override
+          public Stmnt action(Feature f, Feature outer)
+          {
+            positions.add(getPosition(f));
+            f.visit(this);
+            f.declaredFeatures().forEach((n, df) -> df.visit(this, f));
+            return super.action(f, outer);
+          }
+
+          @Override
+          public void action(Unbox u, Feature outer)
+          {
+            positions.add(getPosition(u));
+          }
+
+          @Override
+          public void action(Assign a, Feature outer)
+          {
+            positions.add(getPosition(a));
+          }
+
+          @Override
+          public void actionBefore(Block b, Feature outer)
+          {
+            positions.add(getPosition(b));
+          }
+
+          @Override
+          public void actionAfter(Block b, Feature outer)
+          {
+            positions.add(getPosition(b));
+          }
+
+          @Override
+          public void action(Box b, Feature outer)
+          {
+
+            positions.add(getPosition(b));
+          }
+
+          @Override
+          public Expr action(Call c, Feature outer)
+          {
+            positions.add(getPosition(c));
+            return c;
+          }
+
+          @Override
+          public void actionBefore(Case c, Feature outer)
+          {
+            positions.add(getPosition(c));
+          }
+
+          @Override
+          public void actionAfter(Case c, Feature outer)
+          {
+            positions.add(getPosition(c));
+          }
+
+          @Override
+          public void action(Cond c, Feature outer)
+          {
+            // Cond has no SourcePosition, not including
+          }
+
+          @Override
+          public Expr action(Current c, Feature outer)
+          {
+            positions.add(getPosition(c));
+            return c;
+          }
+
+          @Override
+          public Stmnt action(Destructure d, Feature outer)
+          {
+            positions.add(getPosition(d));
+            return d;
+          }
+
+          @Override
+          public Expr action(Function f, Feature outer)
+          {
+            positions.add(getPosition(f));
+            return f;
+          }
+
+          @Override
+          public void action(Generic g, Feature outer)
+          {
+            positions.add(getPosition(g));
+          }
+
+          @Override
+          public void action(If i, Feature outer)
+          {
+            positions.add(getPosition(i));
+          }
+
+          @Override
+          public void action(Impl i, Feature outer)
+          {
+            positions.add(getPosition(i));
+          }
+
+          @Override
+          public Expr action(InitArray i, Feature outer)
+          {
+            positions.add(getPosition(i));
+            return i;
+          }
+
+          @Override
+          public void action(Match m, Feature outer)
+          {
+            positions.add(getPosition(m));
+          }
+
+          @Override
+          public void action(Tag b, Feature outer)
+          {
+            positions.add(getPosition(b));
+          }
+
+          @Override
+          public Expr action(This t, Feature outer)
+          {
+            positions.add(getPosition(t));
+            return t;
+          }
+
+          @Override
+          public Type action(Type t, Feature outer)
+          {
+            positions.add(getPosition(t));
+            return t;
+          }
+        }, baseFeature.outer());
+
+        var endColumn = getEndColumn(positions.last());
+
+        Memory.EndOfFeature.put(baseFeature,
+          new SourcePosition(positions.last()._sourceFile, positions.last()._line, endColumn));
       }
-    var positions = new TreeSet<SourcePosition>();
-    baseFeature.visit(new FeatureVisitor() {
-      @Override
-      public Stmnt action(Feature f, Feature outer)
+
+    return Memory.EndOfFeature.get(baseFeature);
+  }
+
+  private static int getEndColumn(SourcePosition start)
+  {
+    var uri = ParserHelper.getUri(start);
+    var line_text = FuzionTextDocumentService.getText(uri).split("\\R", -1)[start._line - 1];
+    var column = start._column;
+    while (line_text.length() > column && !Util.HashSetOf(')', '.', ' ').contains(line_text.charAt(column - 1)))
       {
-        positions.add(getPosition(f));
-        f.visit(this);
-        f.declaredFeatures().forEach((n, df) -> df.visit(this, f));
-        return super.action(f, outer);
+        column++;
       }
-
-      @Override
-      public void action(Unbox u, Feature outer)
-      {
-        positions.add(getPosition(u));
-      }
-
-      @Override
-      public void action(Assign a, Feature outer)
-      {
-        positions.add(getPosition(a));
-      }
-
-      @Override
-      public void actionBefore(Block b, Feature outer)
-      {
-        positions.add(getPosition(b));
-      }
-
-      @Override
-      public void actionAfter(Block b, Feature outer)
-      {
-        positions.add(getPosition(b));
-      }
-
-      @Override
-      public void action(Box b, Feature outer)
-      {
-
-        positions.add(getPosition(b));
-      }
-
-      @Override
-      public Expr action(Call c, Feature outer)
-      {
-        positions.add(getPosition(c));
-        return c;
-      }
-
-      @Override
-      public void actionBefore(Case c, Feature outer)
-      {
-        positions.add(getPosition(c));
-      }
-
-      @Override
-      public void actionAfter(Case c, Feature outer)
-      {
-        positions.add(getPosition(c));
-      }
-
-      @Override
-      public void action(Cond c, Feature outer)
-      {
-        // Cond has no SourcePosition, not including
-      }
-
-      @Override
-      public Expr action(Current c, Feature outer)
-      {
-        positions.add(getPosition(c));
-        return c;
-      }
-
-      @Override
-      public Stmnt action(Destructure d, Feature outer)
-      {
-        positions.add(getPosition(d));
-        return d;
-      }
-
-      @Override
-      public Expr action(Function f, Feature outer)
-      {
-        positions.add(getPosition(f));
-        return f;
-      }
-
-      @Override
-      public void action(Generic g, Feature outer)
-      {
-        positions.add(getPosition(g));
-      }
-
-      @Override
-      public void action(If i, Feature outer)
-      {
-        positions.add(getPosition(i));
-      }
-
-      @Override
-      public void action(Impl i, Feature outer)
-      {
-        positions.add(getPosition(i));
-      }
-
-      @Override
-      public Expr action(InitArray i, Feature outer)
-      {
-        positions.add(getPosition(i));
-        return i;
-      }
-
-      @Override
-      public void action(Match m, Feature outer)
-      {
-        positions.add(getPosition(m));
-      }
-
-      @Override
-      public void action(Tag b, Feature outer)
-      {
-        positions.add(getPosition(b));
-      }
-
-      @Override
-      public Expr action(This t, Feature outer)
-      {
-        positions.add(getPosition(t));
-        return t;
-      }
-
-      @Override
-      public Type action(Type t, Feature outer)
-      {
-        positions.add(getPosition(t));
-        return t;
-      }
-    }, baseFeature.outer());
-
-    Log.write(
-      "end of feature: " + getLabel(baseFeature) + ":" + positions.last()._line + ":" + positions.last()._column);
-
-    Memory.EndOfFeature.put(baseFeature, positions.last());
-
-    return positions.last();
+    return column;
   }
 
   private static TreeSet<Call> callsSortedDesc(Feature baseFeature, TextDocumentPositionParams params)
