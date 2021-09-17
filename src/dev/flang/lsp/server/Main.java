@@ -79,6 +79,7 @@ public class Main
       .setInput(in)
       .setOutput(out)
       .setExceptionHandler((x) -> {
+        x.printStackTrace();
         System.exit(1);
         return null;
       })
