@@ -19,7 +19,7 @@ public class Diagnostics
   private static Position getEndPosition(String text, Position start)
   {
     var end = new Position(start.getLine(),start.getCharacter());
-    var line_text = text.split("\n")[start.getLine()];
+    var line_text = text.split("\\R", -1)[start.getLine()];
     while (line_text.length() > end.getCharacter() && line_text.charAt(end.getCharacter()) != ' ')
       {
         end.setCharacter(end.getCharacter() + 1);
