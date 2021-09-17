@@ -18,7 +18,7 @@ public class Hovering
     // NYI make more exact
     var range = Util.toRange(params.getPosition());
 
-    var result = FuzionHelpers.getFeatures(params)
+    var result = FuzionHelpers.getFeaturesDesc(params)
       .map(f -> FuzionHelpers.getLabel(f))
       .map(str -> "- " + str)
       .collect(Collectors.joining(System.lineSeparator()));

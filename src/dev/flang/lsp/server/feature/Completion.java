@@ -104,6 +104,8 @@ public class Completion
             return Stream.empty();
           }
 
+        Log.write("completing for: " + feature.get().qualifiedName());
+
         features = Stream.of(feature.get());
       }
     else

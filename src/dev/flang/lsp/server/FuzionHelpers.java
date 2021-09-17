@@ -109,7 +109,7 @@ public class FuzionHelpers
 
   private static TreeSet<Object> doVisitation(Feature baseFeature, TextDocumentPositionParams params)
   {
-    var astItems = new TreeSet<>(FuzionHelpers.compareASTItems);
+    var astItems = new TreeSet<>(FuzionHelpers.CompareBySourcePositionDesc);
     var visitor = new HeirsVisitor(astItems, params);
     baseFeature.visit(visitor, baseFeature.outer());
     return astItems;
@@ -171,7 +171,7 @@ public class FuzionHelpers
       return position1.compareTo(position2);
     });
 
-  public static Comparator<? super Object> CompareBySourcePositionDesc =
+  private static Comparator<? super Object> CompareBySourcePositionDesc =
     Comparator.comparing(obj -> obj, (obj1, obj2) -> {
       var result = getPosition(obj1).compareTo(getPosition(obj2));
       if (result != 0)
@@ -181,11 +181,6 @@ public class FuzionHelpers
       return obj1.equals(obj2) ? 0: 1;
     }).reversed();
 
-  private static Comparator<? super Object> compareASTItems = Comparator.comparing(obj -> obj, (astItem1, astItem2) -> {
-    // we don't care about order thus always return 1 if not same
-    return astItem1.equals(astItem2) ? 0: 1;
-  });
-
   public static boolean IsRoutineOrRoutineDef(Feature feature)
   {
     return IsRoutineOrRoutineDef(feature.impl);
@@ -194,6 +189,17 @@ public class FuzionHelpers
   public static boolean IsRoutineOrRoutineDef(Impl impl)
   {
     return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(impl.kind_);
+  }
+
+  public static boolean IsFieldLike(Feature feature)
+  {
+    return IsFieldLike(feature.impl);
+  }
+
+  public static boolean IsFieldLike(Impl impl)
+  {
+    return Util.HashSetOf(Kind.Field, Kind.FieldActual, Kind.FieldDef, Kind.FieldInit, Kind.FieldIter)
+      .contains(impl.kind_);
   }
 
   public static boolean IsIntrinsic(Feature feature)
@@ -214,12 +220,12 @@ public class FuzionHelpers
         return Stream.empty();
       }
 
-    var calls = callsSortedDesc(baseFeature.get(), params);
-
-    return calls.stream()
+    return callsSortedDesc(baseFeature.get(), params)
+      .stream()
       .filter(c -> !IsAnonymousInnerFeature(c.calledFeature()))
       .filter(c -> c.calledFeature().resultType() != Types.t_ERROR)
       .map(c -> {
+        Log.write("call: " + c.pos().toString());
         return c.calledFeature();
       });
   }
@@ -386,16 +392,31 @@ public class FuzionHelpers
 
   private static TreeSet<Call> callsSortedDesc(Feature baseFeature, TextDocumentPositionParams params)
   {
-    var allCalls = new TreeSet<Call>(CompareBySourcePositionDesc);
+    var result = new TreeSet<Call>(CompareBySourcePositionDesc);
     baseFeature.visit(new FeatureVisitor() {
       @Override
       public Expr action(Call c, Feature outer)
       {
-        if (Util.ComparePosition(Util.getPosition(params), ToPosition(getEndOfFeature(outer))) <= 0)
+        if (ItemIsAfterCursor(params, c.pos()))
           {
-            allCalls.add(c);
+            return super.action(c, outer);
           }
+        if (ItemIsBeforeCursor(params, getEndOfFeature(outer)))
+          {
+            return super.action(c, outer);
+          }
+        result.add(c);
         return super.action(c, outer);
+      }
+
+      private boolean ItemIsAfterCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
+      {
+        return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) < 0;
+      }
+
+      private boolean ItemIsBeforeCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
+      {
+        return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) > 0;
       }
 
       @Override
@@ -406,7 +427,7 @@ public class FuzionHelpers
         return super.action(f, outer);
       }
     }, baseFeature.outer());
-    return allCalls;
+    return result;
   }
 
   /**
@@ -430,7 +451,7 @@ public class FuzionHelpers
     return f.featureName().baseName().startsWith("#");
   }
 
-  public static Stream<Feature> getFeatures(TextDocumentPositionParams params)
+  public static Stream<Feature> getFeaturesDesc(TextDocumentPositionParams params)
   {
     var result = getASTItemsOnLine(params)
       .stream()
@@ -450,7 +471,7 @@ public class FuzionHelpers
         return null;
       })
       .filter(f -> f != null)
-      .filter(f -> IsRoutineOrRoutineDef(f))
+      .filter(f -> !IsFieldLike(f))
       .filter(f -> !IsAnonymousInnerFeature(f))
       // NYI maybe there is a better way?
       .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()));
