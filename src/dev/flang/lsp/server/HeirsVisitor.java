@@ -62,11 +62,12 @@ public class HeirsVisitor extends FeatureVisitor
         return false;
       }
 
-    boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(this.cursorPosition,
-      FuzionHelpers.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
+    // NYI
+    // boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(this.cursorPosition,
+    //   FuzionHelpers.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
     boolean ItemPositionIsBeforeOrAtCursorPosition =
       Util.ComparePosition(this.cursorPosition, FuzionHelpers.ToPosition(sourcePosition)) >= 0;
-    return ItemPositionIsBeforeOrAtCursorPosition && EndOfOuterFeatureIsAfterCursorPosition;
+    return ItemPositionIsBeforeOrAtCursorPosition;
   }
 
   // NYI consider only passing uri instead of params

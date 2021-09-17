@@ -12,7 +12,6 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.ast.*;
 import dev.flang.ast.Impl.Kind;
@@ -166,6 +165,7 @@ public class FuzionHelpers
     return allFeatures;
   }
 
+  // NYI can there be features at same pos?
   private static Comparator<? super Feature> CompareBySourcePosition =
     Comparator.comparing(feature -> feature.pos, (position1, position2) -> {
       return position1.compareTo(position2);
@@ -217,7 +217,11 @@ public class FuzionHelpers
     var calls = callsSortedDesc(baseFeature.get(), params);
 
     return calls.stream()
-      .map(c -> c.calledFeature());
+      .filter(c -> !IsAnonymousInnerFeature(c.calledFeature()))
+      .filter(c -> c.calledFeature().resultType() != Types.t_ERROR)
+      .map(c -> {
+        return c.calledFeature();
+      });
   }
 
   /**
@@ -372,7 +376,7 @@ public class FuzionHelpers
       }
     }, baseFeature.outer());
 
-    System.out.println(
+    Log.write(
       "end of feature: " + getLabel(baseFeature) + ":" + positions.last()._line + ":" + positions.last()._column);
 
     Memory.EndOfFeature.put(baseFeature, positions.last());
@@ -387,7 +391,6 @@ public class FuzionHelpers
       @Override
       public Expr action(Call c, Feature outer)
       {
-        // NYI consider begin as well
         if (Util.ComparePosition(Util.getPosition(params), ToPosition(getEndOfFeature(outer))) <= 0)
           {
             allCalls.add(c);
