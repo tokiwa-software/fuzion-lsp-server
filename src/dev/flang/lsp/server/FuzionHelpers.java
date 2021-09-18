@@ -100,7 +100,7 @@ public class FuzionHelpers
       .filter(IsItemOnSameLineAsCursor(params))
       .filter(IsItemInScope(params))
       .map(entry -> entry.getKey())
-      .sorted(FuzionHelpers.CompareBySourcePositionDesc);
+      .sorted(FuzionHelpers.CompareBySourcePosition.reversed());
 
     return astItems;
   }
@@ -159,8 +159,13 @@ public class FuzionHelpers
   private static Optional<Feature> getBaseFeature(TextDocumentPositionParams params)
   {
     var universe = Memory.getMain().universe();
-    var baseFeature = getAllFeatures(universe).stream()
+    var baseFeature = HeirsVisitor.visit(universe)
+      .keySet()
+      .stream()
+      .filter(obj -> obj instanceof Feature)
+      .map(obj -> (Feature) obj)
       .filter(IsFeatureInFile(Util.getUri(params)))
+      .sorted(CompareBySourcePosition)
       .findFirst();
     if (baseFeature.isPresent())
       {
@@ -182,32 +187,7 @@ public class FuzionHelpers
     };
   }
 
-  /**
-   * @param baseFeature
-   * @return all descending features of base feature
-   */
-  private static TreeSet<Feature> getAllFeatures(Feature baseFeature)
-  {
-    var allFeatures = new TreeSet<Feature>(CompareBySourcePosition);
-    baseFeature.visit(new FeatureVisitor() {
-      @Override
-      public Stmnt action(Feature f, Feature outer)
-      {
-        allFeatures.add(f);
-        f.declaredFeatures().forEach((n, df) -> df.visit(this, f));
-        return super.action(f, outer);
-      }
-    }, baseFeature.outer());
-    return allFeatures;
-  }
-
-  // NYI can there be features at same pos?
-  private static Comparator<? super Feature> CompareBySourcePosition =
-    Comparator.comparing(feature -> feature.pos, (position1, position2) -> {
-      return position1.compareTo(position2);
-    });
-
-  private static Comparator<? super Object> CompareBySourcePositionDesc =
+  private static Comparator<? super Object> CompareBySourcePosition =
     Comparator.comparing(obj -> obj, (obj1, obj2) -> {
       var result = getPosition(obj1).compareTo(getPosition(obj2));
       if (result != 0)
@@ -215,7 +195,7 @@ public class FuzionHelpers
           return result;
         }
       return obj1.equals(obj2) ? 0: 1;
-    }).reversed();
+    });
 
   public static boolean IsRoutineOrRoutineDef(Feature feature)
   {
@@ -310,7 +290,7 @@ public class FuzionHelpers
 
   private static TreeSet<Call> callsSortedDesc(Feature baseFeature, TextDocumentPositionParams params)
   {
-    var result = new TreeSet<Call>(CompareBySourcePositionDesc);
+    var result = new TreeSet<Call>(CompareBySourcePosition.reversed());
     baseFeature.visit(new FeatureVisitor() {
       @Override
       public Expr action(Call c, Feature outer)
