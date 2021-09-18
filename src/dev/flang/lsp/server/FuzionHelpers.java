@@ -95,6 +95,9 @@ public class FuzionHelpers
     var astItems = HeirsVisitor.visit(baseFeature.get())
       .entrySet()
       .stream()
+      .filter(IsItemNotBuiltIn(params))
+      .filter(IsItemInFile(params))
+      .filter(IsItemOnSameLineAsCursor(params))
       .filter(IsItemInScope(params))
       .map(entry -> entry.getKey())
       .sorted(FuzionHelpers.CompareBySourcePositionDesc);
@@ -102,29 +105,42 @@ public class FuzionHelpers
     return astItems;
   }
 
+  private static Predicate<? super Entry<Object, Feature>> IsItemOnSameLineAsCursor(TextDocumentPositionParams params)
+  {
+    return (entry) -> {
+      var astItem = entry.getKey();
+      var cursorPosition = Util.getPosition(params);
+      var sourcePosition = FuzionHelpers.getPosition(astItem);
+      return cursorPosition.getLine() == FuzionHelpers.ToPosition(sourcePosition).getLine();
+    };
+  }
+
+  private static Predicate<? super Entry<Object, Feature>> IsItemNotBuiltIn(TextDocumentPositionParams params)
+  {
+    return (entry) -> {
+      var astItem = entry.getKey();
+      var sourcePosition = FuzionHelpers.getPosition(astItem);
+      return !sourcePosition.isBuiltIn();
+    };
+  }
+
+  private static Predicate<? super Entry<Object, Feature>> IsItemInFile(TextDocumentPositionParams params)
+  {
+    return (entry) -> {
+      var uri = Util.getUri(params);
+      var sourcePosition = FuzionHelpers.getPosition(entry.getKey());
+      return uri.equals(ParserHelper.getUri(sourcePosition));
+    };
+  }
+
   private static Predicate<? super Entry<Object, Feature>> IsItemInScope(TextDocumentPositionParams params)
   {
     return (entry) -> {
       var astItem = entry.getKey();
       var outer = entry.getValue();
-      var uri = Util.getUri(params);
       var cursorPosition = Util.getPosition(params);
 
       var sourcePosition = FuzionHelpers.getPosition(astItem);
-
-      // NYI what can we do with built in stuff?
-      if (sourcePosition.isBuiltIn())
-        {
-          return false;
-        }
-      if (!uri.equals(ParserHelper.getUri(sourcePosition)))
-        {
-          return false;
-        }
-      if (cursorPosition.getLine() != FuzionHelpers.ToPosition(sourcePosition).getLine())
-        {
-          return false;
-        }
 
       boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(cursorPosition,
         FuzionHelpers.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
