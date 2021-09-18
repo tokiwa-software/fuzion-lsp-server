@@ -2,8 +2,8 @@ package dev.flang.lsp.server;
 
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Stream;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -236,14 +236,32 @@ public class FuzionHelpers
         return Stream.empty();
       }
 
-    return callsSortedDesc(baseFeature.get(), params)
+    return HeirsVisitor.visit(baseFeature.get())
+      .entrySet()
       .stream()
+      .filter(IsItemInFile(params))
+      .filter(entry -> entry.getKey() instanceof Call)
+      .map(entry -> new SimpleEntry<Call, Feature>((Call) entry.getKey(), entry.getValue()))
+      .filter(entry -> PositionIsAfterCursor(params, getEndOfFeature(entry.getValue())))
+      .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
+      .map(entry -> entry.getKey())
       .filter(c -> !IsAnonymousInnerFeature(c.calledFeature()))
       .filter(c -> c.calledFeature().resultType() != Types.t_ERROR)
       .map(c -> {
         Log.write("call: " + c.pos().toString());
         return c.calledFeature();
-      });
+      })
+      .sorted(CompareBySourcePosition.reversed());
+  }
+
+  private static boolean PositionIsAfterCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
+  {
+    return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) < 0;
+  }
+
+  private static boolean PositionIsBeforeCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
+  {
+    return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) > 0;
   }
 
   /**
@@ -286,46 +304,6 @@ public class FuzionHelpers
         column++;
       }
     return column;
-  }
-
-  private static TreeSet<Call> callsSortedDesc(Feature baseFeature, TextDocumentPositionParams params)
-  {
-    var result = new TreeSet<Call>(CompareBySourcePosition.reversed());
-    baseFeature.visit(new FeatureVisitor() {
-      @Override
-      public Expr action(Call c, Feature outer)
-      {
-        if (ItemIsAfterCursor(params, c.pos()))
-          {
-            return super.action(c, outer);
-          }
-        if (ItemIsBeforeCursor(params, getEndOfFeature(outer)))
-          {
-            return super.action(c, outer);
-          }
-        result.add(c);
-        return super.action(c, outer);
-      }
-
-      private boolean ItemIsAfterCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
-      {
-        return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) < 0;
-      }
-
-      private boolean ItemIsBeforeCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
-      {
-        return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) > 0;
-      }
-
-      @Override
-      public Stmnt action(Feature f, Feature outer)
-      {
-        f.visit(this);
-        f.declaredFeatures().forEach((n, df) -> df.visit(this, f));
-        return super.action(f, outer);
-      }
-    }, baseFeature.outer());
-    return result;
   }
 
   /**
