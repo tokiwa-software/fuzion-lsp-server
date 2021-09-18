@@ -54,19 +54,19 @@ public class Main
     var server = new FuzionLanguageServer();
     switch (transport)
       {
-      case stdio :
-        return createLauncher(server, System.in, System.out);
-      case tcp :
-        try (var serverSocket = new ServerSocket(0))
-          {
+        case stdio :
+          return createLauncher(server, System.in, System.out);
+        case tcp :
+          try (var serverSocket = new ServerSocket(0))
+            {
 
-            System.out.println("socket opened on port: " + serverSocket.getLocalPort());
-            var socket = serverSocket.accept();
-            return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
-          }
-      default:
-        System.exit(1);
-        return null;
+              System.out.println("socket opened on port: " + serverSocket.getLocalPort());
+              var socket = serverSocket.accept();
+              return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
+            }
+        default:
+          Util.PrintStackTraceAndExit(1);
+          return null;
       }
   }
 
@@ -79,8 +79,7 @@ public class Main
       .setInput(in)
       .setOutput(out)
       .setExceptionHandler((x) -> {
-        x.printStackTrace();
-        System.exit(1);
+        Util.PrintStackTraceAndExit(1);
         return null;
       })
       .create();

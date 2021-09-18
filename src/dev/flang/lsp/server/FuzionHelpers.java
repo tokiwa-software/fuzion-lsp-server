@@ -72,8 +72,7 @@ public class FuzionHelpers
         return ((Case) entry).pos;
       }
 
-    System.out.println("not implemented: " + entry.getClass());
-    System.exit(1);
+    Util.PrintStackTraceAndExit(1);
     return null;
   }
 

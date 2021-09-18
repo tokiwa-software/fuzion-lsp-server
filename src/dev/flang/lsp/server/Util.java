@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -33,8 +34,7 @@ public class Util
       }
     catch (UnsupportedEncodingException e)
       {
-        e.printStackTrace();
-        System.exit(1);
+        Util.PrintStackTraceAndExit(1);
       }
     return byteArray;
   }
@@ -53,8 +53,7 @@ public class Util
       }
     catch (IOException e)
       {
-        e.printStackTrace();
-        System.exit(1);
+        Util.PrintStackTraceAndExit(1);
         return null;
       }
   }
@@ -123,8 +122,7 @@ public class Util
       }
     catch (URISyntaxException e)
       {
-        e.printStackTrace();
-        System.exit(1);
+        Util.PrintStackTraceAndExit(1);
         return null;
       }
   }
@@ -149,7 +147,7 @@ public class Util
       }
     catch (URISyntaxException e)
       {
-        System.exit(1);
+        Util.PrintStackTraceAndExit(1);
         return null;
       }
   }
@@ -178,6 +176,12 @@ public class Util
                           : position1.getCharacter() > position2.getCharacter() ? +1: 0;
       }
     return result;
+  }
+
+  static void PrintStackTraceAndExit(int status)
+  {
+    System.err.println(Arrays.toString(Thread.currentThread().getStackTrace()));
+    System.exit(1);
   }
 
 }

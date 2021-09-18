@@ -37,8 +37,7 @@ public class FuzionTextDocumentService implements TextDocumentService
     var text = textDocuments.get(uri);
     if (text == null)
       {
-        System.err.println("No text for: " + uri);
-        System.exit(1);
+        Util.PrintStackTraceAndExit(1);
       }
     return text;
   }
@@ -47,8 +46,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   {
     if (text == null)
       {
-        System.err.println("set null forbidden: " + uri);
-        System.exit(1);
+        Util.PrintStackTraceAndExit(1);
       }
     textDocuments.put(uri, text);
   }
