@@ -3,6 +3,7 @@ package dev.flang.lsp.server;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -83,36 +84,55 @@ public class FuzionHelpers
    * @param params
    * @return
    */
-  public static TreeSet<Object> getASTItemsOnLine(TextDocumentPositionParams params)
+  public static Stream<Object> getASTItemsOnLine(TextDocumentPositionParams params)
   {
     var baseFeature = getBaseFeature(params);
     if (baseFeature.isEmpty())
       {
-        return new TreeSet<>();
+        return Stream.empty();
       }
 
-    var astItems = doVisitation(baseFeature.get(), params);
+    var astItems = HeirsVisitor.visit(baseFeature.get())
+      .entrySet()
+      .stream()
+      .filter(IsItemInScope(params))
+      .map(entry -> entry.getKey())
+      .sorted(FuzionHelpers.CompareBySourcePositionDesc);
 
-    if (astItems.isEmpty())
-      {
-        Log.write("no matching AST items found");
-        return astItems;
-      }
-
-    return astItems.stream()
-      .map(astItem -> {
-        Log.write("found: " + getPosition(astItem).toString() + ":" + astItem.getClass());
-        return astItem;
-      })
-      .collect(Collectors.toCollection(() -> new TreeSet<>(FuzionHelpers.CompareBySourcePositionDesc)));
+    return astItems;
   }
 
-  private static TreeSet<Object> doVisitation(Feature baseFeature, TextDocumentPositionParams params)
+  private static Predicate<? super Entry<Object, Feature>> IsItemInScope(TextDocumentPositionParams params)
   {
-    var astItems = new TreeSet<>(FuzionHelpers.CompareBySourcePositionDesc);
-    var visitor = new HeirsVisitor(astItems, params);
-    baseFeature.visit(visitor, baseFeature.outer());
-    return astItems;
+    return (entry) -> {
+      var astItem = entry.getKey();
+      var outer = entry.getValue();
+      var uri = Util.getUri(params);
+      var cursorPosition = Util.getPosition(params);
+
+      var sourcePosition = FuzionHelpers.getPosition(astItem);
+
+      // NYI what can we do with built in stuff?
+      if (sourcePosition.isBuiltIn())
+        {
+          return false;
+        }
+      if (!uri.equals(ParserHelper.getUri(sourcePosition)))
+        {
+          return false;
+        }
+      if (cursorPosition.getLine() != FuzionHelpers.ToPosition(sourcePosition).getLine())
+        {
+          return false;
+        }
+
+      boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(cursorPosition,
+        FuzionHelpers.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
+      boolean ItemPositionIsBeforeOrAtCursorPosition =
+        Util.ComparePosition(cursorPosition, FuzionHelpers.ToPosition(sourcePosition)) >= 0;
+
+      return ItemPositionIsBeforeOrAtCursorPosition && EndOfOuterFeatureIsAfterCursorPosition;
+    };
   }
 
   /**
@@ -465,7 +485,6 @@ public class FuzionHelpers
   public static Stream<Feature> getFeaturesDesc(TextDocumentPositionParams params)
   {
     var result = getASTItemsOnLine(params)
-      .stream()
       .map(astItem -> {
         if (astItem instanceof Feature)
           {

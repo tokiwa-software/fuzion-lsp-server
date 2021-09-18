@@ -1,9 +1,8 @@
 package dev.flang.lsp.server;
 
+import java.util.Comparator;
+import java.util.TreeMap;
 import java.util.TreeSet;
-
-import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.eclipse.lsp4j.Position;
 
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
@@ -28,114 +27,69 @@ import dev.flang.ast.This;
 import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 
-// NYI resolve cyclic dependency HeirsVistor <-> FuzionHelpers
 /**
 * visit everything in feature including heirs
-* add to result if predicate is true
 * @param result
-* @param addToResult
 * @return
 */
 public class HeirsVisitor extends FeatureVisitor
 {
   // memorize already visited features
   private final TreeSet<Feature> VisitedFeatures = new TreeSet<>();
-  private final TreeSet<Object> result;
-  private final Position cursorPosition;
-  private final String uri;
+  private final TreeMap<Object, Feature> result;
 
-  private final boolean addToResult(Feature outer, Object astItem)
+  private HeirsVisitor()
   {
-    var sourcePosition = FuzionHelpers.getPosition(astItem);
-
-    // NYI what can we do with built in stuff?
-    if (sourcePosition.isBuiltIn())
+    this.result = new TreeMap<Object, Feature>(new Comparator<Object>() {
+      public int compare(Object o1, Object o2)
       {
-        return false;
+        return o1.equals(o2) ? 0: 1;
       }
-    if (!this.uri.equals(ParserHelper.getUri(sourcePosition)))
-      {
-        return false;
-      }
-    if (this.cursorPosition.getLine() != FuzionHelpers.ToPosition(sourcePosition).getLine())
-      {
-        return false;
-      }
-
-    boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(this.cursorPosition,
-      FuzionHelpers.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
-    boolean ItemPositionIsBeforeOrAtCursorPosition =
-      Util.ComparePosition(this.cursorPosition, FuzionHelpers.ToPosition(sourcePosition)) >= 0;
-
-    return ItemPositionIsBeforeOrAtCursorPosition && EndOfOuterFeatureIsAfterCursorPosition;
+    });
   }
 
-  // NYI consider only passing uri instead of params
-  public HeirsVisitor(TreeSet<Object> result, TextDocumentPositionParams params)
+  public static TreeMap<Object, Feature> visit(Feature baseFeature)
   {
-    if (result.comparator() == null)
-      {
-        System.err.println("no comparator");
-        System.exit(1);
-      }
-    this.result = result;
-    this.cursorPosition = Util.getPosition(params);
-    this.uri = Util.getUri(params);
+    var visitor = new HeirsVisitor();
+    baseFeature.visit(visitor, baseFeature.outer());
+    return visitor.result;
   }
 
   @Override
   public void action(Unbox u, Feature outer)
   {
-    if (addToResult(outer, u))
-      {
-        result.add(u);
-      }
+    result.put(u, outer);
   }
 
   @Override
   public void action(Assign a, Feature outer)
   {
-    if (addToResult(outer, a))
-      {
-        result.add(a);
-      }
+    result.put(a, outer);
   }
 
   @Override
   public void actionBefore(Block b, Feature outer)
   {
-    if (addToResult(outer, b))
-      {
-        result.add(b);
-      }
+    result.put(b, outer);
   }
 
   @Override
   public void actionAfter(Block b, Feature outer)
   {
-    if (addToResult(outer, b))
-      {
-        result.add(b);
-      }
+    result.put(b, outer);
   }
 
   @Override
   public void action(Box b, Feature outer)
   {
 
-    if (addToResult(outer, b))
-      {
-        result.add(b);
-      }
+    result.put(b, outer);
   }
 
   @Override
   public Expr action(Call c, Feature outer)
   {
-    if (addToResult(outer, c))
-      {
-        result.add(c);
-      }
+    result.put(c, outer);
     if (this.VisitedFeatures.contains(c.calledFeature()) || FuzionHelpers.IsIntrinsic(c.calledFeature()))
       {
         return c;
@@ -149,19 +103,13 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public void actionBefore(Case c, Feature outer)
   {
-    if (addToResult(outer, c))
-      {
-        result.add(c);
-      }
+    result.put(c, outer);
   }
 
   @Override
   public void actionAfter(Case c, Feature outer)
   {
-    if (addToResult(outer, c))
-      {
-        result.add(c);
-      }
+    result.put(c, outer);
   }
 
   @Override
@@ -173,20 +121,14 @@ public class HeirsVisitor extends FeatureVisitor
   @Override
   public Expr action(Current c, Feature outer)
   {
-    if (addToResult(outer, c))
-      {
-        result.add(c);
-      }
+    result.put(c, outer);
     return c;
   }
 
   @Override
   public Stmnt action(Destructure d, Feature outer)
   {
-    if (addToResult(outer, d))
-      {
-        result.add(d);
-      }
+    result.put(d, outer);
     return d;
   }
 
@@ -194,10 +136,8 @@ public class HeirsVisitor extends FeatureVisitor
   public Stmnt action(Feature f, Feature outer)
   {
     this.VisitedFeatures.add(f);
-    if (addToResult(outer, f))
-      {
-        result.add(f);
-      }
+
+    result.put(f, outer);
     Log.increaseIndentation();
 
     // NYI their is also resultType and resultField?
@@ -216,91 +156,65 @@ public class HeirsVisitor extends FeatureVisitor
     });
 
     Log.decreaseIndentation();
+
     return f;
   }
 
   @Override
   public Expr action(Function f, Feature outer)
   {
-    if (addToResult(outer, f))
-      {
-        result.add(f);
-      }
+    result.put(f, outer);
     return f;
   }
 
   @Override
   public void action(Generic g, Feature outer)
   {
-    if (addToResult(outer, g))
-      {
-        result.add(g);
-      }
+    result.put(g, outer);
   }
 
   @Override
   public void action(If i, Feature outer)
   {
-    if (addToResult(outer, i))
-      {
-        result.add(i);
-      }
+    result.put(i, outer);
   }
 
   @Override
   public void action(Impl i, Feature outer)
   {
-    if (addToResult(outer, i))
-      {
-        result.add(i);
-      }
+    result.put(i, outer);
   }
 
   @Override
   public Expr action(InitArray i, Feature outer)
   {
-    if (addToResult(outer, i))
-      {
-        result.add(i);
-      }
+    result.put(i, outer);
     return i;
   }
 
   @Override
   public void action(Match m, Feature outer)
   {
-    if (addToResult(outer, m))
-      {
-        result.add(m);
-      }
+    result.put(m, outer);
   }
 
   @Override
   public void action(Tag b, Feature outer)
   {
-    if (addToResult(outer, b))
-      {
-        result.add(b);
-      }
+    result.put(b, outer);
   }
 
   @Override
   public Expr action(This t, Feature outer)
   {
-    if (addToResult(outer, t))
-      {
-        result.add(t);
-      }
+    result.put(t, outer);
     return t;
   }
 
   @Override
   public Type action(Type t, Feature outer)
   {
-    if (addToResult(outer, t))
-      {
-        result.add(t);
-      }
+    result.put(t, outer);
     return t;
   }
 }
