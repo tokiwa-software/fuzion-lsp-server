@@ -41,9 +41,14 @@ public class Util
 
   public static File writeToTempFile(String text)
   {
+    return writeToTempFile(text, Util.randomString(), ".fz");
+  }
+
+  private static File writeToTempFile(String text, String prefix, String extension)
+  {
     try
       {
-        File tempFile = File.createTempFile(Util.randomString(), ".fz");
+        File tempFile = File.createTempFile(prefix, extension);
         tempFile.deleteOnExit();
 
         FileWriter writer = new FileWriter(tempFile);
@@ -180,7 +185,9 @@ public class Util
 
   static void PrintStackTraceAndExit(int status)
   {
-    System.err.println(Arrays.toString(Thread.currentThread().getStackTrace()));
+    var stackTrace = Arrays.toString(Thread.currentThread().getStackTrace());
+    Util.writeToTempFile(stackTrace, "fuzion-lsp-crash" , ".log");
+    System.err.println(stackTrace);
     System.exit(1);
   }
 
