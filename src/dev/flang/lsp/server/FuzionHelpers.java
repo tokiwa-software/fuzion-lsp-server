@@ -12,6 +12,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 
 import dev.flang.util.SourcePosition;
 import dev.flang.ast.*;
@@ -85,7 +86,7 @@ public class FuzionHelpers
    */
   public static Stream<Object> getASTItemsOnLine(TextDocumentPositionParams params)
   {
-    var baseFeature = getBaseFeature(params);
+    var baseFeature = getBaseFeature(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
@@ -155,7 +156,7 @@ public class FuzionHelpers
    * @param uri
    * @return
    */
-  private static Optional<Feature> getBaseFeature(TextDocumentPositionParams params)
+  private static Optional<Feature> getBaseFeature(TextDocumentIdentifier params)
   {
     var universe = Memory.getMain().universe();
     var baseFeature = HeirsVisitor.visit(universe)
@@ -229,7 +230,7 @@ public class FuzionHelpers
 
   public static Stream<Feature> calledFeaturesSortedDesc(TextDocumentPositionParams params)
   {
-    var baseFeature = getBaseFeature(params);
+    var baseFeature = getBaseFeature(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
