@@ -106,7 +106,7 @@ public class Completion
 
         Log.write("completing for: " + feature.get().qualifiedName());
 
-        features = Stream.of(feature.get());
+        features = Stream.concat(Stream.of(feature.get()), getInheritedFeatures(feature.get()));
       }
     else
       {
@@ -115,6 +115,13 @@ public class Completion
           universe).reduce(Stream::concat).get();
       }
     return features;
+  }
+
+  private static Stream<Feature> getInheritedFeatures(Feature feature)
+  {
+    return feature.inherits.stream().flatMap(c -> {
+      return Stream.concat(Stream.of(c.calledFeature()), getInheritedFeatures(c.calledFeature()));
+    });
   }
 
   /**
