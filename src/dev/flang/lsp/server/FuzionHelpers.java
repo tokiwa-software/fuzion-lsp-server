@@ -197,6 +197,16 @@ public class FuzionHelpers
       return obj1.equals(obj2) ? 0: 1;
     });
 
+  private static Comparator<? super Call> CompareByEndOfCall =
+    Comparator.comparing(obj -> obj, (obj1, obj2) -> {
+      var result = getEndOfCall(obj1).compareTo(getEndOfCall(obj2));
+      if (result != 0)
+        {
+          return result;
+        }
+      return obj1.equals(obj2) ? 0: 1;
+    });
+
   public static boolean IsRoutineOrRoutineDef(Feature feature)
   {
     return IsRoutineOrRoutineDef(feature.impl);
@@ -242,21 +252,36 @@ public class FuzionHelpers
       .filter(IsItemInFile(params))
       .filter(entry -> entry.getKey() instanceof Call)
       .map(entry -> new SimpleEntry<Call, Feature>((Call) entry.getKey(), entry.getValue()))
-      .filter(entry -> PositionIsAfterCursor(params, getEndOfFeature(entry.getValue())))
+      .filter(entry -> PositionIsAfterOrAtCursor(params, getEndOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
       .map(entry -> entry.getKey())
       .filter(c -> !IsAnonymousInnerFeature(c.calledFeature()))
       .filter(c -> c.calledFeature().resultType() != Types.t_ERROR)
+      .sorted(CompareByEndOfCall.reversed())
       .map(c -> {
         Log.write("call: " + c.pos().toString());
         return c.calledFeature();
-      })
-      .sorted(CompareBySourcePosition.reversed());
+      });
   }
 
-  private static boolean PositionIsAfterCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
+  private static SourcePosition getEndOfCall(Call call)
   {
-    return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) < 0;
+    var result = call._actuals
+      .stream()
+      .map(expression -> expression.pos())
+      .sorted(CompareBySourcePosition.reversed())
+      .findFirst();
+    if (result.isEmpty())
+      {
+        return call.pos();
+      }
+
+    return new SourcePosition(result.get()._sourceFile, result.get()._line, result.get()._column + 1);
+  }
+
+  private static boolean PositionIsAfterOrAtCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
+  {
+    return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) <= 0;
   }
 
   private static boolean PositionIsBeforeCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
