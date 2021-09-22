@@ -52,6 +52,9 @@ public class ParserHelper
           });
         });
       }
+    if(Main.DEBUG()){
+      ASTPrinter.printAST(Memory.getMain());
+    }
   }
 
   public static String getUri(SourcePosition sourcePosition)

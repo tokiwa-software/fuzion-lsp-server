@@ -21,6 +21,9 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+/**
+ * utils which are independent of fuzion
+ */
 public class Util
 {
   static final PrintStream DEV_NULL = new PrintStream(OutputStream.nullOutputStream());
