@@ -72,6 +72,10 @@ public class FuzionHelpers
       {
         return ((Case) entry).pos;
       }
+    if (entry instanceof Cond)
+      {
+        return ((Cond) entry).cond.pos();
+      }
 
     Util.PrintStackTraceAndExit(1);
     return null;
