@@ -196,11 +196,16 @@ public class Util
 
   static void PrintStackTraceAndExit(int status)
   {
-    var stackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
+    PrintStackTraceAndExit(status, Thread.currentThread().getStackTrace());
+  }
+
+  static void PrintStackTraceAndExit(int status, StackTraceElement[] stackTrace)
+  {
+    var stackTraceString = Arrays.stream(stackTrace)
       .map(st -> st.toString())
       .collect(Collectors.joining(System.lineSeparator()));
-    Util.writeToTempFile(stackTrace, "fuzion-lsp-crash", ".log", false);
-    System.err.println(stackTrace);
+    Util.writeToTempFile(stackTraceString, "fuzion-lsp-crash", ".log", false);
+    System.err.println(stackTraceString);
     System.exit(1);
   }
 

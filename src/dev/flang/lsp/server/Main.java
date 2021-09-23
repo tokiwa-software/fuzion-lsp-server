@@ -78,8 +78,8 @@ public class Main
       .setRemoteInterface(LanguageClient.class)
       .setInput(in)
       .setOutput(out)
-      .setExceptionHandler((x) -> {
-        Util.PrintStackTraceAndExit(1);
+      .setExceptionHandler((e) -> {
+        Util.PrintStackTraceAndExit(1, e.getStackTrace());
         return null;
       })
       .create();
