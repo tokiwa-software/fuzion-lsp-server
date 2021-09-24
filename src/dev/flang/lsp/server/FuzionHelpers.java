@@ -72,11 +72,28 @@ public class FuzionHelpers
       {
         return ((Case) entry).pos;
       }
+    // NYI
+    if (entry instanceof ReturnType)
+      {
+        return SourcePosition.builtIn;
+      }
+    // NYI
     if (entry instanceof Cond)
       {
-        return ((Cond) entry).cond.pos();
+        return SourcePosition.builtIn;
+      }
+    // NYI
+    if (entry instanceof FormalGenerics)
+      {
+        return SourcePosition.builtIn;
+      }
+    // NYI
+    if (entry instanceof Contract)
+      {
+        return SourcePosition.builtIn;
       }
 
+    System.err.println(entry.getClass());
     Util.PrintStackTraceAndExit(1);
     return null;
   }
@@ -191,7 +208,7 @@ public class FuzionHelpers
     };
   }
 
-  private static Comparator<? super Object> CompareBySourcePosition =
+  public static Comparator<? super Object> CompareBySourcePosition =
     Comparator.comparing(obj -> obj, (obj1, obj2) -> {
       var result = getPosition(obj1).compareTo(getPosition(obj2));
       if (result != 0)
