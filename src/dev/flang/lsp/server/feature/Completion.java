@@ -136,26 +136,41 @@ public class Completion
       }
 
     // ${1:data}, ${2:size}, ${3:fill}
-    var arguments = "(" + IntStream
-      .range(0, feature.arguments.size())
-      .mapToObj(index -> {
-        var argument = feature.arguments.get(index);
-        return "${" + (index + 1) + ":" + argument.thisType().featureOfType().featureName().baseName() + "}";
-      })
-      .collect(Collectors.joining(", ")) + ")";
+    var arguments = "(" + getArguments(feature.arguments) + ")";
 
     // ${4:K -> ordered<psMap.K>}, ${5:V}
+    var _generics = getGenerics(feature);
+
+    // <${4:K -> ordered<psMap.K>}, ${5:V}>
+    var generics = genericsSnippet(feature, _generics);
+
+    Log.write(feature.featureName().baseName() + generics + arguments);
+    return feature.featureName().baseName() + generics + arguments;
+  }
+
+  private static String getGenerics(Feature feature)
+  {
     var _generics = IntStream
       .range(0, feature.generics.list.size())
       .mapToObj(index -> {
         return "${" + (index + 1 + feature.arguments.size()) + ":" + feature.generics.list.get(index).toString() + "}";
       })
       .collect(Collectors.joining(", "));
+    return _generics;
+  }
 
-    // <${4:K -> ordered<psMap.K>}, ${5:V}>
-    var generics = genericsSnippet(feature, _generics);
-
-    return feature.featureName().baseName() + generics + arguments;
+  private static String getArguments(List<Feature> arguments)
+  {
+    return IntStream
+      .range(0, arguments.size())
+      .<String>mapToObj(index -> {
+        var argument = arguments.get(index).thisType().featureOfType();
+        if(argument.thisType().featureOfType().resultType().name != "Function"){
+          return "${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
+        }
+        return "fun (${" + (index + 1) + ":}) =>";
+      })
+      .collect(Collectors.joining(", "));
   }
 
   private static String genericsSnippet(Feature feature, String _generics)
