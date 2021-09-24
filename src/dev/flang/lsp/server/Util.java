@@ -16,6 +16,8 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -204,8 +206,10 @@ public class Util
     var stackTraceString = Arrays.stream(stackTrace)
       .map(st -> st.toString())
       .collect(Collectors.joining(System.lineSeparator()));
-    Util.writeToTempFile(stackTraceString, "fuzion-lsp-crash", ".log", false);
-    System.err.println(stackTraceString);
+    var file = Util.writeToTempFile(stackTraceString, "fuzion-lsp-crash", ".log", false);
+    Main.getLanguageClient()
+      .showMessage(new MessageParams(MessageType.Error,
+        "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
     System.exit(1);
   }
 

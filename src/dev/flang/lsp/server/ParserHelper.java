@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.TreeMap;
 
+import org.eclipse.lsp4j.MessageType;
+
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
@@ -86,8 +88,8 @@ public class ParserHelper
       }
     catch (IOException e)
       {
-        Log.write("parsing failed");
-        Log.write(e.getStackTrace().toString());
+        Log.message("parsing failed", MessageType.Error);
+        Log.message(e.getStackTrace().toString(),  MessageType.Error);
         return null;
       }
   }

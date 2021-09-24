@@ -196,7 +196,7 @@ public class FuzionHelpers
       .findFirst();
     if (baseFeature.isPresent())
       {
-        Log.write("baseFeature: " + baseFeature.get().qualifiedName());
+        Log.message("baseFeature: " + baseFeature.get().qualifiedName());
       }
     return baseFeature;
   }
@@ -286,7 +286,7 @@ public class FuzionHelpers
       .filter(c -> c.calledFeature().resultType() != Types.t_ERROR)
       .sorted(CompareByEndOfCall.reversed())
       .map(c -> {
-        Log.write("call: " + c.pos().toString());
+        Log.message("call: " + c.pos().toString());
         return c.calledFeature();
       });
   }

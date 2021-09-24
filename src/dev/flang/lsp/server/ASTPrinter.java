@@ -2,6 +2,8 @@ package dev.flang.lsp.server;
 
 import java.util.TreeMap;
 
+import org.eclipse.lsp4j.MessageType;
+
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.Box;
@@ -49,13 +51,13 @@ public class ASTPrinter extends FeatureVisitor
 
   private void Print(String type, String position, String name, Runnable inner)
   {
-    Log.write("<li class=\"d-none\">" + type + ":" + position + ":" + name + "</li>");
-    Log.write("<ul class=\"d-none\" onclick=\"toggle(this)\">");
+    Log.message("<li class=\"d-none\">" + type + ":" + position + ":" + name + "</li>");
+    Log.message("<ul class=\"d-none\" onclick=\"toggle(this)\">");
     if (inner != null)
       {
         inner.run();
       }
-    Log.write("</ul>");
+    Log.message("</ul>");
   }
 
   @Override
@@ -209,7 +211,7 @@ public class ASTPrinter extends FeatureVisitor
         ((Call) astItem).visit(visitor, outer);
         return;
       }
-    System.out.println(astItem.getClass());
+    Log.message(astItem.getClass().toString(), MessageType.Error);
     Util.PrintStackTraceAndExit(1);
   }
 

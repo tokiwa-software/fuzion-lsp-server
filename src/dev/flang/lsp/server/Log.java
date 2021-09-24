@@ -1,6 +1,7 @@
 package dev.flang.lsp.server;
 
-import dev.flang.lsp.server.Main.Transport;
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
 
 public class Log
 {
@@ -17,20 +18,26 @@ public class Log
     indentation--;
   }
 
-  public static void write(String str)
+  public static void message(String str)
   {
+    message(str, MessageType.Log);
+  }
 
-    if (Main.DEBUG() && Main.transport == Transport.tcp && indentation < MAX_INDENT)
+  public static void message(String str, MessageType messageType)
+  {
+    String result = "";
+    if (Main.DEBUG())
       {
         var lines = str.split("\n");
         for(String line : lines)
           {
-            System.out.println(" ".repeat(indentation * 2) + line);
+            result += " ".repeat(indentation * 2) + line + System.lineSeparator();
             if (indentation == MAX_INDENT - 1)
               {
-                System.out.println("...");
+                result += "..." + System.lineSeparator();
               }
           }
+        Main.getLanguageClient().logMessage(new MessageParams(messageType, result));
       }
   }
 }

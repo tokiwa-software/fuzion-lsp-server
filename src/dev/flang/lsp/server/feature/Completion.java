@@ -100,11 +100,11 @@ public class Completion
 
         if (feature.isEmpty())
           {
-            Log.write("no feature to complete");
+            Log.message("no feature to complete");
             return Stream.empty();
           }
 
-        Log.write("completing for: " + feature.get().qualifiedName());
+        Log.message("completing for: " + feature.get().qualifiedName());
 
         features = Stream.concat(Stream.of(feature.get()), getInheritedFeatures(feature.get()));
       }
@@ -144,7 +144,7 @@ public class Completion
     // <${4:K -> ordered<psMap.K>}, ${5:V}>
     var generics = genericsSnippet(feature, _generics);
 
-    Log.write(feature.featureName().baseName() + generics + arguments);
+    Log.message(feature.featureName().baseName() + generics + arguments);
     return feature.featureName().baseName() + generics + arguments;
   }
 
