@@ -1,22 +1,33 @@
 package dev.flang.lsp.server;
 
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.Map.Entry;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.stream.Stream;
+import java.util.Comparator;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.util.SourcePosition;
-import dev.flang.ast.*;
+import dev.flang.ast.Call;
+import dev.flang.ast.Case;
+import dev.flang.ast.Cond;
+import dev.flang.ast.Contract;
+import dev.flang.ast.Feature;
+import dev.flang.ast.FormalGenerics;
+import dev.flang.ast.Generic;
+import dev.flang.ast.Impl;
 import dev.flang.ast.Impl.Kind;
+import dev.flang.ast.ReturnType;
+import dev.flang.ast.Stmnt;
+import dev.flang.ast.Type;
+import dev.flang.ast.Types;
+import dev.flang.util.SourcePosition;
 
 public class FuzionHelpers
 {
@@ -179,12 +190,7 @@ public class FuzionHelpers
    */
   private static Optional<Feature> getBaseFeature(TextDocumentIdentifier params)
   {
-    var universe = Memory.getMain().universe();
-    var baseFeature = HeirsVisitor.visit(universe)
-      .keySet()
-      .stream()
-      .filter(obj -> obj instanceof Feature)
-      .map(obj -> (Feature) obj)
+    var baseFeature = allOf(Feature.class)
       .filter(IsFeatureInFile(Util.getUri(params)))
       .sorted(CompareBySourcePosition)
       .findFirst();
@@ -398,6 +404,32 @@ public class FuzionHelpers
       .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()));
 
     return result;
+  }
+
+  /**
+   * example: allOf(Call.class) returns all Calls
+   * @param <T>
+   * @param classOfT
+   * @return
+   */
+  public static <T extends Object> Stream<T> allOf(Class<T> classOfT)
+  {
+    var universe = Memory.getMain().universe();
+    return HeirsVisitor.visit(universe)
+      .keySet()
+      .stream()
+      .filter(obj -> obj.getClass().equals(classOfT))
+      .map(obj -> (T) obj);
+  }
+
+  /**
+   * @param feature
+   * @return all calls to this feature
+   */
+  public static Stream<Call> callsTo(Feature feature)
+  {
+    return allOf(Call.class)
+      .filter(call -> call.calledFeature().equals(feature));
   }
 
 }

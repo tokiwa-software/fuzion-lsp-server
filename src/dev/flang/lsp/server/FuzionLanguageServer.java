@@ -22,8 +22,14 @@ public class FuzionLanguageServer implements LanguageServer {
     initializeCompletion(capabilities);
     initializeHover(capabilities);
     initializeDefinition(capabilities);
+    initializeReferences(capabilities);
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeReferences(ServerCapabilities capabilities)
+  {
+    capabilities.setReferencesProvider(true);
   }
 
   private void initializeDefinition(ServerCapabilities serverCapabilities)

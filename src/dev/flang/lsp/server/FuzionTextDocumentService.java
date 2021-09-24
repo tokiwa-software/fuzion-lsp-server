@@ -16,6 +16,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -23,6 +24,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.lsp.server.feature.Hovering;
+import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Definition;
 
 public class FuzionTextDocumentService implements TextDocumentService
@@ -168,5 +170,11 @@ public class FuzionTextDocumentService implements TextDocumentService
   {
 
     return CompletableFuture.completedFuture(Definition.getDefinitionLocation(params));
+  }
+
+  @Override
+  public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
+  {
+    return CompletableFuture.completedFuture(References.getReferences(params));
   }
 }
