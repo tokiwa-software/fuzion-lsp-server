@@ -39,7 +39,7 @@ public class FuzionTextDocumentService implements TextDocumentService
     var text = textDocuments.get(uri);
     if (text == null)
       {
-        Util.PrintStackTraceAndExit(1);
+        Util.WriteStackTraceAndExit(1);
       }
     return text;
   }
@@ -48,7 +48,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   {
     if (text == null)
       {
-        Util.PrintStackTraceAndExit(1);
+        Util.WriteStackTraceAndExit(1);
       }
     textDocuments.put(uri, text);
   }

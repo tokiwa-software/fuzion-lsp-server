@@ -105,7 +105,7 @@ public class FuzionHelpers
       }
 
     System.err.println(entry.getClass());
-    Util.PrintStackTraceAndExit(1);
+    Util.WriteStackTraceAndExit(1);
     return null;
   }
 

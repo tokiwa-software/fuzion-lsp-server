@@ -42,14 +42,14 @@ public class ASTPrinter extends FeatureVisitor
   {
     var visitor = new ASTPrinter();
     Log.message("""
-    <script>
-    function toggle(that){
-      this.event.stopPropagation();
-      Array.from(that.children).forEach(child => child.tagName =='UL' ? child.classList.toggle('d-none') : 0);
-    }
-    </script>
-    """);
-    Log.message("<ul onclick=\"toggle(this)\">");
+      <script>
+      function toggle(that){
+        this.event.stopPropagation();
+        Array.from(that.children).forEach(child => child.tagName ==='UL' ? child.classList.toggle('d-none') : 0);
+      }
+      </script>
+      """);
+    Log.message("<ul>");
     baseFeature.visit(visitor, baseFeature.outer());
     Log.message("</ul>");
   }
@@ -61,13 +61,16 @@ public class ASTPrinter extends FeatureVisitor
 
   private void Print(String type, String position, String name, Runnable inner)
   {
-    Log.message("<li>" + type + ":" + position + ":" + name + "</li>");
-    Log.message("<ul class=\"d-none\" onclick=\"toggle(this)\">");
+    // NYI sanitize html
+    // NYI add some useful css-classes
+    Log.message("<li onclick=\"toggle(this)\">" + type + ":" + position + ":" + name.replace("<", "&lt;").replace(">", "&gt;"));
+    Log.message("<ul class=\"d-none\">");
     if (inner != null)
       {
         inner.run();
       }
     Log.message("</ul>");
+    Log.message("</li>");
   }
 
   @Override
@@ -151,19 +154,19 @@ public class ASTPrinter extends FeatureVisitor
 
       Log.increaseIndentation();
 
-      visitations.put(f.resultType(), outer);
+      visitations.put(f.resultType(), f);
 
-      visitations.put(f.generics, outer);
+      visitations.put(f.generics, f);
       for(Call c : f.inherits)
         {
-          visitations.put(c, outer);
+          visitations.put(c, f);
         }
       if (f.contract != null)
         {
-          visitations.put(f.contract, outer);
+          visitations.put(f.contract, f);
         }
-      visitations.put(f.impl, outer);
-      visitations.put(f.returnType, outer);
+      visitations.put(f.impl, f);
+      visitations.put(f.returnType, f);
 
       f.declaredFeatures().forEach((n, feature) -> {
         visitations.put(feature, feature.outer());
@@ -176,8 +179,6 @@ public class ASTPrinter extends FeatureVisitor
     });
     return f;
   }
-
-
 
   private void doVisit(Object astItem, ASTPrinter visitor, Feature outer)
   {
@@ -222,7 +223,7 @@ public class ASTPrinter extends FeatureVisitor
         return;
       }
     Log.message(astItem.getClass().toString(), MessageType.Error);
-    Util.PrintStackTraceAndExit(1);
+    Util.WriteStackTraceAndExit(1);
   }
 
   @Override

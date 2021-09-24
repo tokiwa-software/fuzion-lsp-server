@@ -39,7 +39,7 @@ public class Util
       }
     catch (UnsupportedEncodingException e)
       {
-        Util.PrintStackTraceAndExit(1);
+        Util.WriteStackTraceAndExit(1);
       }
     return byteArray;
   }
@@ -71,7 +71,7 @@ public class Util
       }
     catch (IOException e)
       {
-        Util.PrintStackTraceAndExit(1);
+        Util.WriteStackTraceAndExit(1);
         return null;
       }
   }
@@ -140,7 +140,7 @@ public class Util
       }
     catch (URISyntaxException e)
       {
-        Util.PrintStackTraceAndExit(1);
+        Util.WriteStackTraceAndExit(1);
         return null;
       }
   }
@@ -165,7 +165,7 @@ public class Util
       }
     catch (URISyntaxException e)
       {
-        Util.PrintStackTraceAndExit(1);
+        Util.WriteStackTraceAndExit(1);
         return null;
       }
   }
@@ -196,12 +196,12 @@ public class Util
     return result;
   }
 
-  static void PrintStackTraceAndExit(int status)
+  static void WriteStackTraceAndExit(int status)
   {
-    PrintStackTraceAndExit(status, Thread.currentThread().getStackTrace());
+    WriteStackTraceAndExit(status, Thread.currentThread().getStackTrace());
   }
 
-  static void PrintStackTraceAndExit(int status, StackTraceElement[] stackTrace)
+  static void WriteStackTraceAndExit(int status, StackTraceElement[] stackTrace)
   {
     var stackTraceString = Arrays.stream(stackTrace)
       .map(st -> st.toString())

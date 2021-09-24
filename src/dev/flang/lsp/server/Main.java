@@ -65,7 +65,7 @@ public class Main
               return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
             }
         default:
-          Util.PrintStackTraceAndExit(1);
+          Util.WriteStackTraceAndExit(1);
           return null;
       }
   }
@@ -79,7 +79,7 @@ public class Main
       .setInput(in)
       .setOutput(out)
       .setExceptionHandler((e) -> {
-        Util.PrintStackTraceAndExit(1, e.getStackTrace());
+        Util.WriteStackTraceAndExit(1, e.getStackTrace());
         return null;
       })
       .create();
