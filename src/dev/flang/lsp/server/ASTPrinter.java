@@ -41,7 +41,17 @@ public class ASTPrinter extends FeatureVisitor
   public static void printAST(Feature baseFeature)
   {
     var visitor = new ASTPrinter();
+    Log.message("""
+    <script>
+    function toggle(that){
+      this.event.stopPropagation();
+      Array.from(that.children).forEach(child => child.tagName =='UL' ? child.classList.toggle('d-none') : 0);
+    }
+    </script>
+    """);
+    Log.message("<ul onclick=\"toggle(this)\">");
     baseFeature.visit(visitor, baseFeature.outer());
+    Log.message("</ul>");
   }
 
   private void Print(String type, String position, String name)
@@ -51,7 +61,7 @@ public class ASTPrinter extends FeatureVisitor
 
   private void Print(String type, String position, String name, Runnable inner)
   {
-    Log.message("<li class=\"d-none\">" + type + ":" + position + ":" + name + "</li>");
+    Log.message("<li>" + type + ":" + position + ":" + name + "</li>");
     Log.message("<ul class=\"d-none\" onclick=\"toggle(this)\">");
     if (inner != null)
       {
