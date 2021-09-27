@@ -27,6 +27,9 @@ import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
+import dev.flang.parser.Lexer;
+import dev.flang.parser.Lexer.Token;
+import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 public class FuzionHelpers
@@ -430,6 +433,50 @@ public class FuzionHelpers
   {
     return allOf(Call.class)
       .filter(call -> call.calledFeature().equals(feature));
+  }
+
+  public static Range ToRange(SourcePosition start, SourcePosition end)
+  {
+    return new Range(ToPosition(start), ToPosition(end));
+  }
+
+  public static Boolean IsValidIdentifier(String str)
+  {
+    var isIdentifier = Util.WithTextInputStream(str, () -> {
+      var lexer = new Lexer(SourceFile.STDIN);
+      return lexer.current() == Token.t_ident;
+    });
+    return isIdentifier;
+  }
+
+  public static TokenIdentifier getTokenIdentifier(TextDocumentPositionParams params)
+  {
+    var sourceText = FuzionTextDocumentService.getText(params.getTextDocument().getUri());
+    return Util.WithTextInputStream(sourceText, () -> {
+
+      var lexer = new Lexer(SourceFile.STDIN);
+      lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
+
+      while (lexer.current() != Token.t_eof
+          && lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer)
+        )
+        {
+          lexer.nextRaw();
+        }
+      return getTokenIdentifier(lexer);
+    });
+  }
+
+  private static boolean lexerEndPosIsBeforeOrAtTextDocumentPosition(TextDocumentPositionParams params, Lexer lexer)
+  {
+    return (lexer.sourcePos()._column - 1) <= params.getPosition().getCharacter();
+  }
+
+  private static TokenIdentifier getTokenIdentifier(Lexer lexer)
+  {
+    var start = lexer.sourcePos(lexer.pos());
+    var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
+    return new TokenIdentifier(start, tokenString);
   }
 
 }

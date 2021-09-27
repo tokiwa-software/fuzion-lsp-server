@@ -7,6 +7,7 @@ import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -19,12 +20,20 @@ public class FuzionLanguageServer implements LanguageServer {
   public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
     final InitializeResult res = new InitializeResult(new ServerCapabilities());
     var capabilities = res.getCapabilities();
+
     initializeCompletion(capabilities);
     initializeHover(capabilities);
     initializeDefinition(capabilities);
     initializeReferences(capabilities);
+    initializeRename(capabilities);
+
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeRename(ServerCapabilities capabilities)
+  {
+    capabilities.setRenameProvider(new RenameOptions(true));
   }
 
   private void initializeReferences(ServerCapabilities capabilities)

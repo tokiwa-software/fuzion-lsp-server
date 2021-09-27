@@ -16,8 +16,13 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.PrepareRenameParams;
+import org.eclipse.lsp4j.PrepareRenameResult;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ReferenceParams;
+import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
@@ -26,6 +31,7 @@ import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Definition;
+import dev.flang.lsp.server.feature.Rename;
 
 public class FuzionTextDocumentService implements TextDocumentService
 {
@@ -176,5 +182,17 @@ public class FuzionTextDocumentService implements TextDocumentService
   public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
   {
     return CompletableFuture.completedFuture(References.getReferences(params));
+  }
+
+  @Override
+  public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
+  {
+    return CompletableFuture.completedFuture(Rename.getWorkspaceEdit(params));
+  }
+
+  @Override
+  public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
+  {
+    return CompletableFuture.completedFuture(Either.forRight(Rename.getPrepareRenameResult(params)));
   }
 }

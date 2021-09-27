@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -116,7 +117,7 @@ public class Util
       }
   }
 
-  public static void WithTextInputStream(String text, Runnable runnable)
+  public static <T> T WithTextInputStream(String text, Callable<T> callable)
   {
     byte[] byteArray = getBytes(text);
 
@@ -125,7 +126,12 @@ public class Util
     try
       {
         System.setIn(testInput);
-        runnable.run();
+        return callable.call();
+      }
+    catch (Exception e)
+      {
+        Util.WriteStackTraceAndExit(1, e);
+        return null;
       } finally
       {
         System.setIn(old);
@@ -198,10 +204,17 @@ public class Util
 
   static void WriteStackTraceAndExit(int status)
   {
-    WriteStackTraceAndExit(status, Thread.currentThread().getStackTrace());
+    WriteStackTrace(Thread.currentThread().getStackTrace());
+    System.exit(1);
   }
 
-  static void WriteStackTraceAndExit(int status, StackTraceElement[] stackTrace)
+  private static void WriteStackTraceAndExit(int status, Throwable e)
+  {
+    WriteStackTrace(e.getStackTrace());
+    System.exit(1);
+  }
+
+  private static void WriteStackTrace(StackTraceElement[] stackTrace)
   {
     var stackTraceString = Arrays.stream(stackTrace)
       .map(st -> st.toString())
@@ -210,7 +223,11 @@ public class Util
     Main.getLanguageClient()
       .showMessage(new MessageParams(MessageType.Error,
         "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
-    System.exit(1);
+  }
+
+  public static void WriteStackTrace(Throwable e)
+  {
+    WriteStackTrace(e.getStackTrace());
   }
 
 }

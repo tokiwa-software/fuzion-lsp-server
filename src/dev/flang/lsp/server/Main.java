@@ -79,7 +79,7 @@ public class Main
       .setInput(in)
       .setOutput(out)
       .setExceptionHandler((e) -> {
-        Util.WriteStackTraceAndExit(1, e.getStackTrace());
+        Util.WriteStackTrace(e);
         return null;
       })
       .create();
