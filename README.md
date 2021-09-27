@@ -31,6 +31,9 @@
 - ~/.emacs.d/init.el example using [https://github.com/emacs-lsp/lsp-mode](lsp-mode)
 
 ```lisp
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/"))
 (package-initialize)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -38,7 +41,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(inhibit-startup-screen t)
- '(package-selected-packages '(lsp-ui flycheck lsp-mode ##)))
+ '(package-selected-packages '(lsp-ui company flycheck lsp-mode ##)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -71,6 +74,7 @@
 (lsp-consistency-check lsp-fuzion)
 
 (add-hook 'fuzion-mode-hook #'lsp)
+(add-hook 'after-init-hook 'global-company-mode)
 
 (provide 'lsp-fuzion)
 
