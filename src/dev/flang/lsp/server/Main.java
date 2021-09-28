@@ -10,6 +10,8 @@ import java.net.ServerSocket;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
+import dev.flang.util.Errors;
+
 public class Main
 {
 
@@ -40,6 +42,7 @@ public class Main
   {
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
+    Errors.MAX_ERROR_MESSAGES  = Integer.MAX_VALUE;
 
     transport = Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals)
                                                                                                   ? Transport.tcp
