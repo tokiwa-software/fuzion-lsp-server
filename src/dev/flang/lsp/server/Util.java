@@ -210,7 +210,7 @@ public class Util
 
   private static void WriteStackTraceAndExit(int status, Throwable e)
   {
-    WriteStackTrace(e.getStackTrace());
+    WriteStackTrace(e.getCause().getStackTrace());
     System.exit(1);
   }
 
@@ -227,7 +227,7 @@ public class Util
 
   public static void WriteStackTrace(Throwable e)
   {
-    WriteStackTrace(e.getStackTrace());
+    WriteStackTrace(e.getCause().getStackTrace());
   }
 
 }
