@@ -21,7 +21,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.TokenIdentifier;
+import dev.flang.lsp.server.TokenInfo;
 import dev.flang.lsp.server.Util;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
@@ -78,7 +78,7 @@ public class Rename
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(Feature featureToRename, TokenIdentifier featureIdentifier)
+  private static Stream<SourcePosition> getRenamePositions(Feature featureToRename, TokenInfo featureIdentifier)
   {
     var callsSourcePositions = FuzionHelpers.callsTo(featureToRename).map(c -> c.pos());
     var tokenPosition = new SourcePosition(featureToRename.pos()._sourceFile, featureToRename.pos()._line, featureToRename.pos()._column + featureIdentifier.start._column - 1);

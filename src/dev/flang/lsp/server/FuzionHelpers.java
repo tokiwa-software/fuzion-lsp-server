@@ -454,7 +454,7 @@ public class FuzionHelpers
    * @param str example: "infix %%"
    * @return example: text: "%%", start: 7
    */
-  public static TokenIdentifier getNextTokenOfType(String str, HashSet<Token> tokens)
+  public static TokenInfo getNextTokenOfType(String str, HashSet<Token> tokens)
   {
     return Util.WithTextInputStream(str, () -> {
       var lexer = new Lexer(SourceFile.STDIN);
@@ -466,7 +466,7 @@ public class FuzionHelpers
     });
   }
 
-  public static TokenIdentifier getTokenIdentifier(TextDocumentPositionParams params)
+  public static TokenInfo getTokenIdentifier(TextDocumentPositionParams params)
   {
     var sourceText = FuzionTextDocumentService.getText(params.getTextDocument().getUri());
     return Util.WithTextInputStream(sourceText, () -> {
@@ -489,11 +489,11 @@ public class FuzionHelpers
     return (lexer.sourcePos()._column - 1) <= params.getPosition().getCharacter();
   }
 
-  private static TokenIdentifier getTokenIdentifier(Lexer lexer)
+  private static TokenInfo getTokenIdentifier(Lexer lexer)
   {
     var start = lexer.sourcePos(lexer.pos());
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
-    return new TokenIdentifier(start, tokenString);
+    return new TokenInfo(start, tokenString);
   }
 
 }
