@@ -7,6 +7,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.Util;
 
 public class References
 {
@@ -18,7 +19,7 @@ public class References
       {
         return List.of();
       }
-    return FuzionHelpers.callsTo(optionalFeature.get())
+    return FuzionHelpers.callsTo(Util.getUri(params), optionalFeature.get())
       .map(call -> FuzionHelpers.ToLocation(call.pos()))
       .collect(Collectors.toList());
   }

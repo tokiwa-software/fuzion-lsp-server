@@ -194,7 +194,7 @@ public class FuzionHelpers
    */
   private static Optional<Feature> getBaseFeature(TextDocumentIdentifier params)
   {
-    var baseFeature = allOf(Feature.class)
+    var baseFeature = allOf(Util.getUri(params), Feature.class)
       .filter(IsFeatureInFile(Util.getUri(params)))
       .sorted(CompareBySourcePosition)
       .findFirst();
@@ -416,9 +416,9 @@ public class FuzionHelpers
    * @param classOfT
    * @return
    */
-  public static <T extends Object> Stream<T> allOf(Class<T> classOfT)
+  public static <T extends Object> Stream<T> allOf(String uri, Class<T> classOfT)
   {
-    var universe = Memory.getMain().universe();
+    var universe = ParserHelper.getMainFeature(uri).universe();
     return HeirsVisitor.visit(universe)
       .keySet()
       .stream()
@@ -430,9 +430,9 @@ public class FuzionHelpers
    * @param feature
    * @return all calls to this feature
    */
-  public static Stream<Call> callsTo(Feature feature)
+  public static Stream<Call> callsTo(String uri, Feature feature)
   {
-    return allOf(Call.class)
+    return allOf(uri, Call.class)
       .filter(call -> call.calledFeature().equals(feature));
   }
 
@@ -459,9 +459,10 @@ public class FuzionHelpers
     return Util.WithTextInputStream(str, () -> {
       var lexer = new Lexer(SourceFile.STDIN);
 
-      while(lexer.current() != Token.t_eof && !tokens.contains(lexer.current())){
-        lexer.next();
-      }
+      while (lexer.current() != Token.t_eof && !tokens.contains(lexer.current()))
+        {
+          lexer.next();
+        }
       return getTokenIdentifier(lexer);
     });
   }
@@ -475,8 +476,7 @@ public class FuzionHelpers
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
 
       while (lexer.current() != Token.t_eof
-          && lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer)
-        )
+        && lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
         {
           lexer.nextRaw();
         }

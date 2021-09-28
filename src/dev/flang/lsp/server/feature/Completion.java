@@ -21,7 +21,7 @@ import dev.flang.ast.Feature;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Log;
-import dev.flang.lsp.server.Memory;
+import dev.flang.lsp.server.ParserHelper;
 import dev.flang.lsp.server.Util;
 
 public class Completion
@@ -87,7 +87,7 @@ public class Completion
 
   private static Stream<Feature> getFeatures(CompletionParams params, String triggerCharacter)
   {
-    var universe = Stream.of(Memory.getMain().universe());
+    var universe = ParserHelper.getMainFeature(Util.getUri(params)).universe();
 
     Stream<Feature> features;
     if (".".equals(triggerCharacter))
@@ -112,7 +112,7 @@ public class Completion
       {
         features = Stream.of(
           FuzionHelpers.getParentFeatures(params),
-          universe).reduce(Stream::concat).get();
+          Stream.of(universe)).reduce(Stream::concat).get();
       }
     return features;
   }
@@ -165,9 +165,10 @@ public class Completion
       .range(0, arguments.size())
       .<String>mapToObj(index -> {
         var argument = arguments.get(index).thisType().featureOfType();
-        if(argument.thisType().featureOfType().resultType().name != "Function"){
-          return "${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
-        }
+        if (argument.thisType().featureOfType().resultType().name != "Function")
+          {
+            return "${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
+          }
         return "fun (${" + (index + 1) + ":}) =>";
       })
       .collect(Collectors.joining(", "));

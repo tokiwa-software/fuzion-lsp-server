@@ -7,10 +7,12 @@ import java.util.TreeMap;
 
 import org.eclipse.lsp4j.MessageType;
 
+import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
@@ -21,13 +23,12 @@ public class ParserHelper
    * maps temporary files which are fed to the parser to their original uri.
    */
   private static TreeMap<String, String> tempFile2Uri = new TreeMap<>();
+  private static TreeMap<String, Feature> parserCache = new TreeMap<>();
 
   /**
-   * create MIR and store main feature in Memory.Main
-   * for future use
    * @param uri
    */
-  public static void Parse(String uri)
+  public static Feature getMainFeature(String uri)
   {
     synchronized (tempFile2Uri)
       {
@@ -35,30 +36,63 @@ public class ParserHelper
         // NYI
         if (uri.contains("/lib/"))
           {
-            return;
+            return null;
           }
 
-        File tempFile = ParserHelper.toTempFile(uri);
+        var sourceText = FuzionTextDocumentService.getText(uri);
+        if (parserCache.containsKey(sourceText))
+          {
+            return parserCache.get(sourceText);
+          }
+        var mainFeature = Parse(uri);
+        parserCache.put(sourceText, mainFeature);
 
-        Util.WithRedirectedStdOut(() -> {
-          Util.WithRedirectedStdErr(() -> {
-            // NYI remove once we can create MIR multiple times
-            Errors.clear();
-            Types.clear();
-            FeatureName.clear();
+        var result = getMainFeature(uri);
 
-            var frontEndOptions =
-              new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
-            var main = new FrontEnd(frontEndOptions).createMIR().main();
-            Memory.setMain(main);
-          });
-        });
+        afterParsing(uri, result);
+
+        return result;
       }
-    if(Main.DEBUG()){
-      ASTPrinter.printAST(Memory.getMain());
-    }
   }
 
+  private static void afterParsing(String uri, Feature mainFeature)
+  {
+    Memory.EndOfFeature.clear();
+
+    //NYI publish diagnostics throttled after change of text document
+    Diagnostics.publishDiagnostics(uri);
+
+    if (Main.DEBUG())
+      {
+        ASTPrinter.printAST(mainFeature);
+      }
+  }
+
+  private static Feature Parse(String uri)
+  {
+    File tempFile = ParserHelper.toTempFile(uri);
+
+    var mainFeature = Util.WithRedirectedStdOut(() -> {
+      return Util.WithRedirectedStdErr(() -> {
+        // NYI remove once we can create MIR multiple times
+        Errors.clear();
+        Types.clear();
+        FeatureName.clear();
+
+        var frontEndOptions =
+          new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
+        return new FrontEnd(frontEndOptions).createMIR().main();
+      });
+    });
+    return mainFeature;
+  }
+
+  /**
+   * get original URI of given sourcePosition
+   * necessary because we are feeding the parser temporary files
+   * @param sourcePosition
+   * @return
+   */
   public static String getUri(SourcePosition sourcePosition)
   {
     var result = tempFile2Uri.get("file:" + sourcePosition._sourceFile._fileName.toString());
@@ -89,7 +123,7 @@ public class ParserHelper
     catch (IOException e)
       {
         Log.message("parsing failed", MessageType.Error);
-        Log.message(e.getStackTrace().toString(),  MessageType.Error);
+        Log.message(e.getStackTrace().toString(), MessageType.Error);
         return null;
       }
   }

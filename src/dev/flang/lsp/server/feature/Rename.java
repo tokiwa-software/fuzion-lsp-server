@@ -41,7 +41,7 @@ public class Rename
 
     var featureIdentifier = FuzionHelpers.getNextTokenOfType(feature.featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
-    Stream<SourcePosition> renamePositions = getRenamePositions(feature, featureIdentifier);
+    Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature, featureIdentifier);
 
     var changes = renamePositions
       .map(sourcePosition -> FuzionHelpers.ToLocation(sourcePosition))
@@ -78,9 +78,9 @@ public class Rename
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(Feature featureToRename, TokenInfo featureIdentifier)
+  private static Stream<SourcePosition> getRenamePositions(String uri, Feature featureToRename, TokenInfo featureIdentifier)
   {
-    var callsSourcePositions = FuzionHelpers.callsTo(featureToRename).map(c -> c.pos());
+    var callsSourcePositions = FuzionHelpers.callsTo(uri, featureToRename).map(c -> c.pos());
     var tokenPosition = new SourcePosition(featureToRename.pos()._sourceFile, featureToRename.pos()._line, featureToRename.pos()._column + featureIdentifier.start._column - 1);
     Stream<SourcePosition> renamePositions = Stream.concat(callsSourcePositions, Stream.of(tokenPosition));
     return renamePositions;

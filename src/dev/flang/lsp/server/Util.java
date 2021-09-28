@@ -91,26 +91,36 @@ public class Util
       .toString();
   }
 
-  public static void WithRedirectedStdOut(Runnable runnable)
+  public static <T> T WithRedirectedStdOut(Callable<T> callable)
   {
     var out = System.out;
     try
       {
         System.setOut(DEV_NULL);
-        runnable.run();
+        return callable.call();
+      }
+    catch (Exception e)
+      {
+        Util.WriteStackTraceAndExit(1, e);
+        return null;
       } finally
       {
         System.setOut(out);
       }
   }
 
-  public static void WithRedirectedStdErr(Runnable runnable)
+  public static <T> T WithRedirectedStdErr(Callable<T> callable)
   {
     var err = System.err;
     try
       {
         System.setErr(DEV_NULL);
-        runnable.run();
+        return callable.call();
+      }
+    catch (Exception e)
+      {
+        Util.WriteStackTraceAndExit(1, e);
+        return null;
       } finally
       {
         System.setErr(err);

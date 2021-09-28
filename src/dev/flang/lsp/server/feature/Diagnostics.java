@@ -9,6 +9,7 @@ import org.eclipse.lsp4j.Position;
 
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.Main;
 import dev.flang.lsp.server.ParserHelper;
 import dev.flang.util.Errors;
 
@@ -18,7 +19,7 @@ public class Diagnostics
   // NYI can we use tokenizer to get end?
   private static Position getEndPosition(String text, Position start)
   {
-    var end = new Position(start.getLine(),start.getCharacter());
+    var end = new Position(start.getLine(), start.getCharacter());
     var line_text = text.split("\\R", -1)[start.getLine()];
     while (line_text.length() > end.getCharacter() && line_text.charAt(end.getCharacter()) != ' ')
       {
@@ -27,9 +28,9 @@ public class Diagnostics
     return end;
   }
 
-  public static PublishDiagnosticsParams getPublishDiagnosticsParams(String uri)
-  {
-    return new PublishDiagnosticsParams(uri, getDiagnostics(uri));
+  public static void publishDiagnostics(String uri){
+    var diagnostics = new PublishDiagnosticsParams(uri, getDiagnostics(uri));
+    Main.getLanguageClient().publishDiagnostics(diagnostics);
   }
 
   private static List<Diagnostic> getDiagnostics(String uri)

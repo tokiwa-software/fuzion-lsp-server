@@ -68,10 +68,6 @@ public class FuzionTextDocumentService implements TextDocumentService
 
     setText(uri, text);
 
-    ParserHelper.Parse(uri);
-
-    var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri);
-    Main.getLanguageClient().publishDiagnostics(diagnostics);
   }
 
   // taken from apache commons
@@ -104,11 +100,6 @@ public class FuzionTextDocumentService implements TextDocumentService
 
         setText(uri, text);
       }
-
-    ParserHelper.Parse(uri);
-
-    var diagnostics = Diagnostics.getPublishDiagnosticsParams(uri);
-    Main.getLanguageClient().publishDiagnostics(diagnostics);
   }
 
   /**
