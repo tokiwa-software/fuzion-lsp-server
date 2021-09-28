@@ -23,6 +23,7 @@ public class ParserHelper
   private static TreeMap<String, String> tempFile2Uri = new TreeMap<>();
 
   /**
+   * NYI parsing doesnt work after renaming of stdlib things
    * create MIR and store main feature in Memory.Main
    * for future use
    * @param uri
