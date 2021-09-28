@@ -1,9 +1,9 @@
 package dev.flang.lsp.server.feature;
 
-import java.util.stream.Stream;
-import java.util.Optional;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -21,7 +21,9 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.TokenIdentifier;
 import dev.flang.lsp.server.Util;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
 
 public class Rename
@@ -35,6 +37,28 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
+    var feature = getFeature(params);
+
+    var featureIdentifier = FuzionHelpers.getNextTokenOfType(feature.featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
+
+    Stream<SourcePosition> renamePositions = getRenamePositions(feature, featureIdentifier);
+
+    var changes = renamePositions
+      .map(sourcePosition -> FuzionHelpers.ToLocation(sourcePosition))
+      .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
+        getTextEdit(location, featureIdentifier.text.length(), params.getNewName())))
+      .collect(Collectors.groupingBy(e -> e.getKey(), Collectors.mapping(e -> e.getValue(), Collectors.toList())));
+
+    return new WorkspaceEdit(changes);
+  }
+
+  /**
+   * get the feature that is to be renamed
+   * @param params
+   * @return
+   */
+  private static Feature getFeature(RenameParams params)
+  {
     Optional<Object> itemToRename = CallsAndFeatures(params)
       .findFirst();
 
@@ -45,25 +69,29 @@ public class Rename
       }
 
     var featureToRename = getFeature(itemToRename.get());
-    var callPositions = FuzionHelpers.callsTo(featureToRename).map(c -> c.pos());
-
-    //NYI support e.g. infix features
-    Stream<SourcePosition> renamePositions = Stream.concat(callPositions, Stream.of(featureToRename.pos()));
-
-    var changes = renamePositions
-      .map(sourcePosition -> FuzionHelpers.ToLocation(sourcePosition))
-      .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
-        getEdit(location, featureToRename.featureName().baseName(), params.getNewName())))
-      .collect(Collectors.groupingBy(e -> e.getKey(), Collectors.mapping(e -> e.getValue(), Collectors.toList())));
-
-    return new WorkspaceEdit(changes);
+    return featureToRename;
   }
 
-  private static TextEdit getEdit(Location location, String oldName, String newText)
+  /**
+   *
+   * @param featureToRename
+   * @param featureIdentifier
+   * @return stream of sourcepositions where renamings must be done
+   */
+  private static Stream<SourcePosition> getRenamePositions(Feature featureToRename, TokenIdentifier featureIdentifier)
+  {
+    var callsSourcePositions = FuzionHelpers.callsTo(featureToRename).map(c -> c.pos());
+    var tokenPosition = new SourcePosition(featureToRename.pos()._sourceFile, featureToRename.pos()._line, featureToRename.pos()._column + featureIdentifier.start._column - 1);
+    Stream<SourcePosition> renamePositions = Stream.concat(callsSourcePositions, Stream.of(tokenPosition));
+    return renamePositions;
+  }
+
+  private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)
   {
     var startPos = location.getRange().getStart();
-    var endPos = new Position(startPos.getLine(), startPos.getCharacter() + oldName.length());
-    return new TextEdit(new Range(startPos, endPos), newText);
+    var endPos = new Position(startPos.getLine(), startPos.getCharacter() + lengthOfOldToken);
+    var result = new TextEdit(new Range(startPos, endPos), newText);
+    return result;
   }
 
   private static Feature getFeature(Object item)

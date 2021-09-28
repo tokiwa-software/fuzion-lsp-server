@@ -2,6 +2,7 @@ package dev.flang.lsp.server;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -447,6 +448,22 @@ public class FuzionHelpers
       return lexer.current() == Token.t_ident;
     });
     return isIdentifier;
+  }
+
+  /**
+   * @param str example: "infix %%"
+   * @return example: text: "%%", start: 7
+   */
+  public static TokenIdentifier getNextTokenOfType(String str, HashSet<Token> tokens)
+  {
+    return Util.WithTextInputStream(str, () -> {
+      var lexer = new Lexer(SourceFile.STDIN);
+
+      while(lexer.current() != Token.t_eof && !tokens.contains(lexer.current())){
+        lexer.next();
+      }
+      return getTokenIdentifier(lexer);
+    });
   }
 
   public static TokenIdentifier getTokenIdentifier(TextDocumentPositionParams params)
