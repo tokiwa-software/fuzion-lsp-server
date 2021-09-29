@@ -418,7 +418,11 @@ public class FuzionHelpers
    */
   public static <T extends Object> Stream<T> allOf(String uri, Class<T> classOfT)
   {
-    var universe = ParserHelper.getMainFeature(uri).universe();
+    var mainFeature = ParserHelper.getMainFeature(uri);
+    if(mainFeature.isEmpty()){
+      return Stream.empty();
+    }
+    var universe = mainFeature.get().universe();
     return HeirsVisitor.visit(universe)
       .keySet()
       .stream()

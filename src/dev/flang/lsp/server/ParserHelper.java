@@ -3,6 +3,7 @@ package dev.flang.lsp.server;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.eclipse.lsp4j.MessageType;
@@ -28,7 +29,7 @@ public class ParserHelper
   /**
    * @param uri
    */
-  public static Feature getMainFeature(String uri)
+  public static Optional<Feature> getMainFeature(String uri)
   {
     synchronized (tempFile2Uri)
       {
@@ -36,22 +37,22 @@ public class ParserHelper
         // NYI
         if (uri.contains("/lib/"))
           {
-            return null;
+            return Optional.empty();
           }
 
         var sourceText = FuzionTextDocumentService.getText(uri);
         if (parserCache.containsKey(sourceText))
           {
-            return parserCache.get(sourceText);
+            return Optional.of(parserCache.get(sourceText));
           }
         var mainFeature = Parse(uri);
         parserCache.put(sourceText, mainFeature);
 
-        var result = getMainFeature(uri);
+        var result = getMainFeature(uri).get();
 
         afterParsing(uri, result);
 
-        return result;
+        return Optional.of(result);
       }
   }
 

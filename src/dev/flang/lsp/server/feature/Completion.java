@@ -87,7 +87,11 @@ public class Completion
 
   private static Stream<Feature> getFeatures(CompletionParams params, String triggerCharacter)
   {
-    var universe = ParserHelper.getMainFeature(Util.getUri(params)).universe();
+    var mainFeature = ParserHelper.getMainFeature(Util.getUri(params));
+    if(mainFeature.isEmpty()){
+      return Stream.empty();
+    }
+    var universe = mainFeature.get().universe();
 
     Stream<Feature> features;
     if (".".equals(triggerCharacter))
