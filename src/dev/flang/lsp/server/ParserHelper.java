@@ -74,7 +74,7 @@ public class ParserHelper
 
     if (Main.DEBUG())
       {
-        ASTPrinter.printAST(mainFeature);
+        ASTtoHTML.printAST(mainFeature);
       }
   }
 

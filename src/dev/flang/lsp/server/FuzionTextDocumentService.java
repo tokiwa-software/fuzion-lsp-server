@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
@@ -185,4 +188,16 @@ public class FuzionTextDocumentService implements TextDocumentService
   {
     return CompletableFuture.completedFuture(Either.forRight(Rename.getPrepareRenameResult(params)));
   }
+
+
+
+  @Override
+  public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
+  {
+    var command = new Command(Commands.showSyntaxTree.toString(), Commands.showSyntaxTree.toString(), List.of(params.getTextDocument().getUri()));
+    var codeAction = new CodeAction(Commands.showSyntaxTree.toString());
+    codeAction.setCommand(command);
+    return CompletableFuture.completedFuture(List.of(Either.forRight(codeAction)));
+  }
+
 }

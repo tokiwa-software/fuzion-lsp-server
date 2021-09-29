@@ -1,9 +1,14 @@
 package dev.flang.lsp.server;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -17,10 +22,12 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 /**
  * does the initialization of language server features
  */
-public class FuzionLanguageServer implements LanguageServer {
+public class FuzionLanguageServer implements LanguageServer
+{
 
   @Override
-  public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
+  public CompletableFuture<InitializeResult> initialize(InitializeParams params)
+  {
     final InitializeResult res = new InitializeResult(new ServerCapabilities());
     var capabilities = res.getCapabilities();
 
@@ -29,9 +36,19 @@ public class FuzionLanguageServer implements LanguageServer {
     initializeDefinition(capabilities);
     initializeReferences(capabilities);
     initializeRename(capabilities);
+    initializeCodeActions(capabilities);
 
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeCodeActions(ServerCapabilities capabilities)
+  {
+    capabilities.setCodeActionProvider(true);
+    var commands = Arrays.stream(Commands.values())
+      .map(c -> c.toString())
+      .collect(Collectors.toList());
+    capabilities.setExecuteCommandProvider(new ExecuteCommandOptions(commands));
   }
 
   private void initializeRename(ServerCapabilities capabilities)
@@ -49,13 +66,15 @@ public class FuzionLanguageServer implements LanguageServer {
     serverCapabilities.setDefinitionProvider(true);
   }
 
-  private void initializeHover(ServerCapabilities serverCapabilities) {
+  private void initializeHover(ServerCapabilities serverCapabilities)
+  {
     var hoverOptions = new HoverOptions();
     hoverOptions.setWorkDoneProgress(Boolean.FALSE);
     serverCapabilities.setHoverProvider(hoverOptions);
   }
 
-  private void initializeCompletion(ServerCapabilities serverCapabilities) {
+  private void initializeCompletion(ServerCapabilities serverCapabilities)
+  {
     CompletionOptions completionOptions = new CompletionOptions();
     completionOptions.setResolveProvider(Boolean.FALSE);
     completionOptions.setTriggerCharacters(List.of(".", "<"));
@@ -63,22 +82,26 @@ public class FuzionLanguageServer implements LanguageServer {
   }
 
   @Override
-  public CompletableFuture<Object> shutdown() {
+  public CompletableFuture<Object> shutdown()
+  {
     return CompletableFuture.supplyAsync(() -> Boolean.TRUE);
   }
 
   @Override
-  public void exit() {
+  public void exit()
+  {
     System.exit(0);
   }
 
   @Override
-  public TextDocumentService getTextDocumentService() {
+  public TextDocumentService getTextDocumentService()
+  {
     return new FuzionTextDocumentService();
   }
 
   @Override
-  public WorkspaceService getWorkspaceService() {
+  public WorkspaceService getWorkspaceService()
+  {
     return new FuzionWorkspaceService();
   }
 }

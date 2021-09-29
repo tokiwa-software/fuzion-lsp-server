@@ -205,8 +205,13 @@ public class FuzionHelpers
    */
   private static Optional<Feature> getBaseFeature(TextDocumentIdentifier params)
   {
-    var baseFeature = allOf(Util.getUri(params), Feature.class)
-      .filter(IsFeatureInFile(Util.getUri(params)))
+    return getBaseFeature(Util.getUri(params));
+  }
+
+  public static Optional<Feature> getBaseFeature(String uri)
+  {
+    var baseFeature = allOf(uri, Feature.class)
+      .filter(IsFeatureInFile(uri))
       .sorted(CompareBySourcePosition)
       .findFirst();
     if (baseFeature.isPresent())

@@ -49,7 +49,7 @@ public class Util
     return writeToTempFile(text, Util.randomString(), ".fz");
   }
 
-  private static File writeToTempFile(String text, String prefix, String extension)
+  public static File writeToTempFile(String text, String prefix, String extension)
   {
     return writeToTempFile(text, prefix, extension, true);
   }

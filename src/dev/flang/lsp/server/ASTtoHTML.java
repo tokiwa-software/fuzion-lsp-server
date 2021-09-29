@@ -31,61 +31,78 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 import dev.flang.util.SourcePosition;
 
-public class ASTPrinter extends FeatureVisitor
+public class ASTtoHTML extends FeatureVisitor
 {
-  private ASTPrinter()
-  {
+  private ASTtoHTML(){
   }
-
   /**
+  * example: ASTPrinter.printAST(feature)
   * @return
-  */
-  private StringBuilder sb = new StringBuilder();
-  private int indent = 0;
+  <script>
+    function toggle(that){
+      this.event.stopPropagation();
+      Array.from(that.children).forEach(child => child.tagName ==='UL' ? child.classList.toggle('d-none') : 0);
+    }
+  </script>
 
-  public static String getAST(Feature baseFeature)
+  <ul>
+    <li onclick="toggle(this)">Feature:1:1:myfeat
+    </li>
+    ...
+  </ul>
+  */
+  public static void printAST(Feature baseFeature)
   {
-    var visitor = new ASTPrinter();
-    visitor.sb.append("Abstract syntax tree of: " + baseFeature.qualifiedName() + System.lineSeparator());
-    visitor.sb.append("Legend: line:column:type_of_item:identifier" + System.lineSeparator());
-    visitor.sb.append(System.lineSeparator());
+    var visitor = new ASTtoHTML();
+    Log.message("""
+      <script>
+      function toggle(that){
+        this.event.stopPropagation();
+        Array.from(that.children).forEach(child => child.tagName ==='UL' ? child.classList.toggle('d-none') : 0);
+      }
+      </script>
+      """);
+    Log.message("<ul>");
     baseFeature.visit(visitor, baseFeature.outer());
-    return visitor.sb.toString();
+    Log.message("</ul>");
   }
 
-  private void Print(String type, SourcePosition position, String name)
+  private void Print(String type, String position, String name)
   {
     Print(type, position, name, null);
   }
 
-  private void Print(String type, SourcePosition position, String name, Runnable inner)
+  private void Print(String type, String position, String name, Runnable inner)
   {
-    sb.append(" ".repeat(indent * 2) + position._line + ":" + position._column + ":" + type + ":" + name
-      + System.lineSeparator());
-    indent++;
+    // NYI sanitize html
+    // NYI add some useful css-classes
+    Log.message(
+      "<li onclick=\"toggle(this)\">" + type + ":" + position + ":" + name.replace("<", "&lt;").replace(">", "&gt;"));
+    Log.message("<ul class=\"d-none\">");
     if (inner != null)
       {
         inner.run();
       }
-    indent--;
+    Log.message("</ul>");
+    Log.message("</li>");
   }
 
   @Override
   public void action(Unbox u, Feature outer)
   {
-    Print("Unbox", FuzionHelpers.getPosition(u), u.toString());
+    Print("Unbox", PosToString(FuzionHelpers.getPosition(u)), u.toString());
   }
 
   @Override
   public void action(Assign a, Feature outer)
   {
-    Print("Assign", FuzionHelpers.getPosition(a), a._assignedField.qualifiedName());
+    Print("Assign", PosToString(FuzionHelpers.getPosition(a)), a._assignedField.qualifiedName());
   }
 
   @Override
   public void actionBefore(Block b, Feature outer)
   {
-    Print("Block", FuzionHelpers.getPosition(b), "");
+    Print("Block", PosToString(FuzionHelpers.getPosition(b)), "");
   }
 
   @Override
@@ -96,14 +113,18 @@ public class ASTPrinter extends FeatureVisitor
   @Override
   public void action(Box b, Feature outer)
   {
-    Print("Box", FuzionHelpers.getPosition(b), b.toString());
+    Print("Box", PosToString(FuzionHelpers.getPosition(b)), b.toString());
   }
 
+  private String PosToString(SourcePosition position)
+  {
+    return position._line + ":" + position._column;
+  }
 
   @Override
   public Expr action(Call c, Feature outer)
   {
-    Print("Call", FuzionHelpers.getPosition(c), c.calledFeature().qualifiedName());
+    Print("Call", PosToString(FuzionHelpers.getPosition(c)), c.calledFeature().qualifiedName());
     return c;
   }
 
@@ -111,7 +132,7 @@ public class ASTPrinter extends FeatureVisitor
   @Override
   public void actionBefore(Case c, Feature outer)
   {
-    Print("Case", FuzionHelpers.getPosition(c), c.toString());
+    Print("Case", PosToString(FuzionHelpers.getPosition(c)), c.toString());
   }
 
   @Override
@@ -122,27 +143,27 @@ public class ASTPrinter extends FeatureVisitor
   @Override
   public void action(Cond c, Feature outer)
   {
-    Print("Cond", FuzionHelpers.getPosition(c), c.toString());
+    Print("Cond", PosToString(FuzionHelpers.getPosition(c)), c.toString());
   }
 
   @Override
   public Expr action(Current c, Feature outer)
   {
-    Print("Current", FuzionHelpers.getPosition(c), c.toString());
+    Print("Current", PosToString(FuzionHelpers.getPosition(c)), c.toString());
     return c;
   }
 
   @Override
   public Stmnt action(Destructure d, Feature outer)
   {
-    Print("Destructure", FuzionHelpers.getPosition(d), d.toString());
+    Print("Destructure", PosToString(FuzionHelpers.getPosition(d)), d.toString());
     return d;
   }
 
   @Override
   public Stmnt action(Feature f, Feature outer)
   {
-    Print("Feature", FuzionHelpers.getPosition(f), f.qualifiedName(), () -> {
+    Print("Feature", PosToString(FuzionHelpers.getPosition(f)), f.qualifiedName(), () -> {
       var visitations = new TreeMap<Object, Feature>(FuzionHelpers.CompareBySourcePosition);
 
       Log.increaseIndentation();
@@ -173,7 +194,7 @@ public class ASTPrinter extends FeatureVisitor
     return f;
   }
 
-  private void doVisit(Object astItem, ASTPrinter visitor, Feature outer)
+  private void doVisit(Object astItem, ASTtoHTML visitor, Feature outer)
   {
     if (astItem instanceof Type)
       {
@@ -222,58 +243,58 @@ public class ASTPrinter extends FeatureVisitor
   @Override
   public Expr action(Function f, Feature outer)
   {
-    Print("Function", FuzionHelpers.getPosition(f), "");
+    Print("Function", PosToString(FuzionHelpers.getPosition(f)), "");
     return f;
   }
 
   @Override
   public void action(Generic g, Feature outer)
   {
-    Print("Generic", FuzionHelpers.getPosition(g), g.toString());
+    Print("Generic", PosToString(FuzionHelpers.getPosition(g)), g.toString());
   }
 
   @Override
   public void action(If i, Feature outer)
   {
-    Print("If", FuzionHelpers.getPosition(i), "");
+    Print("If", PosToString(FuzionHelpers.getPosition(i)), "");
   }
 
   @Override
   public void action(Impl i, Feature outer)
   {
-    Print("Impl", FuzionHelpers.getPosition(i), "");
+    Print("Impl", PosToString(FuzionHelpers.getPosition(i)), "");
   }
 
   @Override
   public Expr action(InitArray i, Feature outer)
   {
-    Print("InitArray", FuzionHelpers.getPosition(i), i.toString());
+    Print("InitArray", PosToString(FuzionHelpers.getPosition(i)), i.toString());
     return i;
   }
 
   @Override
   public void action(Match m, Feature outer)
   {
-    Print("Match", FuzionHelpers.getPosition(m), m.toString());
+    Print("Match", PosToString(FuzionHelpers.getPosition(m)), m.toString());
   }
 
   @Override
   public void action(Tag b, Feature outer)
   {
-    Print("Tag", FuzionHelpers.getPosition(b), b.toString());
+    Print("Tag", PosToString(FuzionHelpers.getPosition(b)), b.toString());
   }
 
   @Override
   public Expr action(This t, Feature outer)
   {
-    Print("This", FuzionHelpers.getPosition(t), t.toString());
+    Print("This", PosToString(FuzionHelpers.getPosition(t)), t.toString());
     return t;
   }
 
   @Override
   public Type action(Type t, Feature outer)
   {
-    Print("Type", FuzionHelpers.getPosition(t), t.toString());
+    Print("Type", PosToString(FuzionHelpers.getPosition(t)), t.toString());
     return t;
   }
 }
