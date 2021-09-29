@@ -11,6 +11,10 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.FuzionHelpers;
 
+/**
+ * tries to provide the definition of a call
+ * https://microsoft.github.io/language-server-protocol/specification#textDocument_definition
+ */
 public class Definition
 {
   public static Either<List<? extends Location>, List<? extends LocationLink>> getDefinitionLocation(

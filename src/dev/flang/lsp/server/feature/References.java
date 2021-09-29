@@ -9,6 +9,10 @@ import org.eclipse.lsp4j.ReferenceParams;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 
+/**
+ * return list of references for feature at cursor position
+ * https://microsoft.github.io/language-server-protocol/specification#textDocument_references
+ */
 public class References
 {
 

@@ -26,6 +26,11 @@ import dev.flang.lsp.server.Util;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
 
+/**
+ * for rename request return all appropriate TextEdits
+ * https://microsoft.github.io/language-server-protocol/specification#textDocument_rename
+ * https://microsoft.github.io/language-server-protocol/specification#textDocument_prepareRename
+ */
 public class Rename
 {
 
@@ -104,6 +109,7 @@ public class Rename
   }
 
   // NYI disallow renaming of stdlib
+  // NYI should we disallow renaming in case of source code errors?
   public static PrepareRenameResult getPrepareRenameResult(PrepareRenameParams params)
   {
     var tokenPosition = FuzionHelpers.getTokenIdentifier(params);

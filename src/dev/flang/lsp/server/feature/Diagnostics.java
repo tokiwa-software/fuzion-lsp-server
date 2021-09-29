@@ -13,6 +13,10 @@ import dev.flang.lsp.server.Main;
 import dev.flang.lsp.server.ParserHelper;
 import dev.flang.util.Errors;
 
+/**
+ * provide diagnostics for a given uri
+ * https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics
+ */
 public class Diagnostics
 {
 

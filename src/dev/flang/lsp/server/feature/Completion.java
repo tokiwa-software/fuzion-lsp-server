@@ -24,6 +24,10 @@ import dev.flang.lsp.server.Log;
 import dev.flang.lsp.server.ParserHelper;
 import dev.flang.lsp.server.Util;
 
+/**
+ * tries offering completions
+ * https://microsoft.github.io/language-server-protocol/specification#textDocument_completion
+ */
 public class Completion
 {
 
@@ -114,9 +118,8 @@ public class Completion
       }
     else
       {
-        features = Stream.of(
-          FuzionHelpers.getParentFeatures(params),
-          Stream.of(universe)).reduce(Stream::concat).get();
+        // NYI can we do better here?
+        features = Stream.of(universe);
       }
     return features;
   }
@@ -139,19 +142,19 @@ public class Completion
         return feature.featureName().baseName();
       }
 
-    // ${1:data}, ${2:size}, ${3:fill}
     var arguments = "(" + getArguments(feature.arguments) + ")";
 
-    // ${4:K -> ordered<psMap.K>}, ${5:V}
     var _generics = getGenerics(feature);
 
-    // <${4:K -> ordered<psMap.K>}, ${5:V}>
     var generics = genericsSnippet(feature, _generics);
 
     Log.message(feature.featureName().baseName() + generics + arguments);
     return feature.featureName().baseName() + generics + arguments;
   }
 
+  /**
+   * @return ${4:K -> ordered<psMap.K>}, ${5:V}
+   */
   private static String getGenerics(Feature feature)
   {
     var _generics = IntStream
@@ -163,6 +166,10 @@ public class Completion
     return _generics;
   }
 
+  /**
+   * @param arguments
+   * @return ${1:data}, ${2:size}, ${3:fill}
+   */
   private static String getArguments(List<Feature> arguments)
   {
     return IntStream
@@ -178,6 +185,12 @@ public class Completion
       .collect(Collectors.joining(", "));
   }
 
+  /**
+   *
+   * @param feature
+   * @param _generics
+   * @return <${4:K -> ordered<psMap.K>}, ${5:V}>
+   */
   private static String genericsSnippet(Feature feature, String _generics)
   {
     if (!feature.generics.isOpen() && feature.generics.list.isEmpty())

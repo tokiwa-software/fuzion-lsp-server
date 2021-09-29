@@ -17,6 +17,11 @@ import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
+/**
+ * - does the parsing of a given URI
+ * - caches parsing results.
+ * - provides a function to get the original URI of a SourcePosition
+ */
 public class ParserHelper
 {
 

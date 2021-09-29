@@ -10,6 +10,10 @@ import org.eclipse.lsp4j.MarkupKind;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 
+/**
+ * on hover returns signature of call
+ * https://microsoft.github.io/language-server-protocol/specification#textDocument_hover
+ */
 public class Hovering
 {
 

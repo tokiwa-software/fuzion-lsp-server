@@ -14,6 +14,9 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+/**
+ * does the initialization of language server features
+ */
 public class FuzionLanguageServer implements LanguageServer {
 
   @Override

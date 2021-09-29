@@ -12,6 +12,9 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.util.Errors;
 
+/**
+ * Main Class of Fuzion LSP responsible for starting the language server.
+ */
 public class Main
 {
 

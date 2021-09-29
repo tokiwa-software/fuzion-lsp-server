@@ -33,6 +33,10 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
+/**
+ * wild mixture of
+ * shared helpers which are useful in more than one language server feature
+ */
 public class FuzionHelpers
 {
 
@@ -48,6 +52,7 @@ public class FuzionHelpers
   }
 
   // NYI remove once we have ISourcePosition interface
+  // NYI return Optional<SourcePosition>
   /**
    * getPosition of ASTItem
    * @param entry
@@ -169,6 +174,11 @@ public class FuzionHelpers
     };
   }
 
+  /**
+   * tries figuring out if an item is "reachable" from a given textdocumentposition
+   * @param params
+   * @return
+   */
   private static Predicate<? super Entry<Object, Feature>> IsItemInScope(TextDocumentPositionParams params)
   {
     return (entry) -> {
@@ -203,12 +213,6 @@ public class FuzionHelpers
         Log.message("baseFeature: " + baseFeature.get().qualifiedName());
       }
     return baseFeature;
-  }
-
-  public static Stream<Feature> getParentFeatures(TextDocumentPositionParams params)
-  {
-    // find innermost then outer() until at universe
-    return Stream.empty();
   }
 
   private static Predicate<? super Feature> IsFeatureInFile(String uri)
@@ -295,6 +299,11 @@ public class FuzionHelpers
       });
   }
 
+  /**
+   * tries to figure out the end of a call in terms of a sourceposition
+   * @param call
+   * @return
+  */
   private static SourcePosition getEndOfCall(Call call)
   {
     var result = call._actuals
@@ -350,6 +359,11 @@ public class FuzionHelpers
     return Memory.EndOfFeature.get(baseFeature);
   }
 
+  /**
+   * NYI use lexer to figure out to end of the token at start
+   * @param start
+   * @return
+   */
   private static int getEndColumn(SourcePosition start)
   {
     var uri = ParserHelper.getUri(start);
@@ -383,6 +397,11 @@ public class FuzionHelpers
     return f.featureName().baseName().startsWith("#");
   }
 
+  /**
+   * NYI return only one feature
+   * @param params
+   * @return
+   */
   public static Stream<Feature> getFeaturesDesc(TextDocumentPositionParams params)
   {
     var result = getASTItemsOnLine(params)
@@ -419,9 +438,10 @@ public class FuzionHelpers
   public static <T extends Object> Stream<T> allOf(String uri, Class<T> classOfT)
   {
     var mainFeature = ParserHelper.getMainFeature(uri);
-    if(mainFeature.isEmpty()){
-      return Stream.empty();
-    }
+    if (mainFeature.isEmpty())
+      {
+        return Stream.empty();
+      }
     var universe = mainFeature.get().universe();
     return HeirsVisitor.visit(universe)
       .keySet()

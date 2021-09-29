@@ -28,7 +28,7 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 
 /**
-* visit everything in feature including heirs
+* visit every AST-Item in feature including heirs
 * @param result
 * @return
 */

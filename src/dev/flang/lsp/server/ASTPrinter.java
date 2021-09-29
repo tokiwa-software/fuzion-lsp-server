@@ -31,13 +31,26 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 import dev.flang.util.SourcePosition;
 
-/**
-* visit everything in feature including heirs
-* @param result
-* @return
-*/
 public class ASTPrinter extends FeatureVisitor
 {
+  private ASTPrinter(){
+  }
+  /**
+  * example: ASTPrinter.printAST(feature)
+  * @return
+  <script>
+    function toggle(that){
+      this.event.stopPropagation();
+      Array.from(that.children).forEach(child => child.tagName ==='UL' ? child.classList.toggle('d-none') : 0);
+    }
+  </script>
+
+  <ul>
+    <li onclick="toggle(this)">Feature:1:1:myfeat
+    </li>
+    ...
+  </ul>
+  */
   public static void printAST(Feature baseFeature)
   {
     var visitor = new ASTPrinter();
@@ -63,7 +76,8 @@ public class ASTPrinter extends FeatureVisitor
   {
     // NYI sanitize html
     // NYI add some useful css-classes
-    Log.message("<li onclick=\"toggle(this)\">" + type + ":" + position + ":" + name.replace("<", "&lt;").replace(">", "&gt;"));
+    Log.message(
+      "<li onclick=\"toggle(this)\">" + type + ":" + position + ":" + name.replace("<", "&lt;").replace(">", "&gt;"));
     Log.message("<ul class=\"d-none\">");
     if (inner != null)
       {

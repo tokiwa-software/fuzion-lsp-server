@@ -27,10 +27,9 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import dev.flang.lsp.server.feature.Completion;
-import dev.flang.lsp.server.feature.Diagnostics;
+import dev.flang.lsp.server.feature.Definition;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.References;
-import dev.flang.lsp.server.feature.Definition;
 import dev.flang.lsp.server.feature.Rename;
 
 public class FuzionTextDocumentService implements TextDocumentService
