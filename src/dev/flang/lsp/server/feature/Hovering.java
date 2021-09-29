@@ -1,14 +1,11 @@
 package dev.flang.lsp.server.feature;
 
-import java.util.stream.Collectors;
-
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.Util;
 
 /**
  * on hover returns signature of call
@@ -19,14 +16,15 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    // NYI make more exact
-    var range = Util.toRange(params.getPosition());
+    var range = FuzionHelpers.ToRange(params);
 
-    var result = FuzionHelpers.getFeaturesDesc(params)
-      .map(f -> FuzionHelpers.getLabel(f))
-      .map(str -> "- " + str)
-      .collect(Collectors.joining(System.lineSeparator()));
-    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, result);
+    var feature = FuzionHelpers.getFeatureAt(params);
+    if (feature.isEmpty())
+      {
+        return null;
+      }
+
+    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, FuzionHelpers.getLabel(feature.get()));
     return new Hover(markupContent, range);
   }
 

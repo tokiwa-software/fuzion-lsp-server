@@ -18,12 +18,12 @@ public class References
 
   public static List<? extends Location> getReferences(ReferenceParams params)
   {
-    var optionalFeature = FuzionHelpers.getFeaturesDesc(params).findFirst();
-    if (optionalFeature.isEmpty())
+    var feature = FuzionHelpers.getFeatureAt(params);
+    if (feature.isEmpty())
       {
         return List.of();
       }
-    return FuzionHelpers.callsTo(Util.getUri(params), optionalFeature.get())
+    return FuzionHelpers.callsTo(Util.getUri(params), feature.get())
       .map(call -> FuzionHelpers.ToLocation(call.pos()))
       .collect(Collectors.toList());
   }

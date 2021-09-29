@@ -42,7 +42,11 @@ public class ParserHelper
         // NYI
         if (uri.contains("/lib/"))
           {
-            return Optional.empty();
+            if (parserCache.isEmpty())
+              {
+                return Optional.empty();
+              }
+            return Optional.of(parserCache.firstEntry().getValue());
           }
 
         var sourceText = FuzionTextDocumentService.getText(uri);
@@ -65,7 +69,7 @@ public class ParserHelper
   {
     Memory.EndOfFeature.clear();
 
-    //NYI publish diagnostics throttled after change of text document
+    // NYI publish diagnostics throttled after change of text document
     Diagnostics.publishDiagnostics(uri);
 
     if (Main.DEBUG())

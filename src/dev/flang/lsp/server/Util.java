@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
@@ -164,13 +163,6 @@ public class Util
   public static <T> HashSet<T> HashSetOf(T... values)
   {
     return Stream.of(values).collect(Collectors.toCollection(HashSet::new));
-  }
-
-  public static Range toRange(Position position)
-  {
-    var line = position.getLine();
-    var character = position.getCharacter();
-    return new Range(new Position(line, character), new Position(line, character));
   }
 
   static File toFile(String uri)

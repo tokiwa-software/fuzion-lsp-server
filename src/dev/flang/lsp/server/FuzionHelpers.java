@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -398,13 +399,12 @@ public class FuzionHelpers
   }
 
   /**
-   * NYI return only one feature
    * @param params
    * @return
    */
-  public static Stream<Feature> getFeaturesDesc(TextDocumentPositionParams params)
+  public static Optional<Feature> getFeatureAt(TextDocumentPositionParams params)
   {
-    var result = getASTItemsOnLine(params)
+    return getASTItemsOnLine(params)
       .map(astItem -> {
         if (astItem instanceof Feature)
           {
@@ -422,11 +422,9 @@ public class FuzionHelpers
       })
       .filter(f -> f != null)
       .filter(f -> !IsFieldLike(f))
-      .filter(f -> !IsAnonymousInnerFeature(f))
       // NYI maybe there is a better way?
-      .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()));
-
-    return result;
+      .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()))
+      .findFirst();
   }
 
   /**
@@ -458,11 +456,6 @@ public class FuzionHelpers
   {
     return allOf(uri, Call.class)
       .filter(call -> call.calledFeature().equals(feature));
-  }
-
-  public static Range ToRange(SourcePosition start, SourcePosition end)
-  {
-    return new Range(ToPosition(start), ToPosition(end));
   }
 
   public static Boolean IsValidIdentifier(String str)
@@ -518,6 +511,14 @@ public class FuzionHelpers
     var start = lexer.sourcePos(lexer.pos());
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
     return new TokenInfo(start, tokenString);
+  }
+
+  public static Range ToRange(TextDocumentPositionParams params)
+  {
+    var tokenIdent = getTokenIdentifier(params);
+    var line = params.getPosition().getLine();
+    var characterStart = tokenIdent.start._column - 1;
+    return new Range(new Position(line, characterStart), new Position(line, characterStart + tokenIdent.text.length()));
   }
 
 }

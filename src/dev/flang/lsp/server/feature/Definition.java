@@ -20,12 +20,11 @@ public class Definition
   public static Either<List<? extends Location>, List<? extends LocationLink>> getDefinitionLocation(
       DefinitionParams params)
   {
-    var astItem = FuzionHelpers.getFeaturesDesc(params)
-       .findFirst().orElse(null);
-    if(astItem == null){
+    var feature = FuzionHelpers.getFeatureAt(params);
+    if(feature.isEmpty()){
       return null;
     }
-    return getDefinition(astItem);
+    return getDefinition(feature.get());
   }
 
   private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(Feature obj)

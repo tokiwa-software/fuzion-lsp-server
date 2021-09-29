@@ -118,9 +118,7 @@ public class Rename
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "no valid identifier.", null);
         throw new ResponseErrorException(responseError);
       }
-    var end = new SourcePosition(tokenPosition.start._sourceFile, tokenPosition.start._line,
-      tokenPosition.start._column + tokenPosition.text.length());
-    return new PrepareRenameResult(FuzionHelpers.ToRange(tokenPosition.start, end), tokenPosition.text);
+    return new PrepareRenameResult(FuzionHelpers.ToRange(params), tokenPosition.text);
   }
 
   private static boolean IsAtCallOrFeature(PrepareRenameParams params, int column)
