@@ -300,7 +300,7 @@ public class FuzionHelpers
     var result = call._actuals
       .stream()
       .map(expression -> expression.pos())
-      .sorted(CompareBySourcePosition.reversed())
+      .sorted(Comparator.reverseOrder())
       .findFirst();
     if (result.isEmpty())
       {
