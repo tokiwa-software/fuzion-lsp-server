@@ -230,22 +230,20 @@ public class FuzionHelpers
 
   public static Comparator<? super Object> CompareBySourcePosition =
     Comparator.comparing(obj -> obj, (obj1, obj2) -> {
-      var result = getPosition(obj1).compareTo(getPosition(obj2));
-      if (result != 0)
+      if (obj1.equals(obj2))
         {
-          return result;
+          return 0;
         }
-      return obj1.equals(obj2) ? 0: 1;
+      return getPosition(obj1).compareTo(getPosition(obj2));
     });
 
   private static Comparator<? super Call> CompareByEndOfCall =
     Comparator.comparing(obj -> obj, (obj1, obj2) -> {
-      var result = getEndOfCall(obj1).compareTo(getEndOfCall(obj2));
-      if (result != 0)
+      if (obj1.equals(obj2))
         {
-          return result;
+          return 0;
         }
-      return obj1.equals(obj2) ? 0: 1;
+      return getEndOfCall(obj1).compareTo(getEndOfCall(obj2));
     });
 
   public static boolean IsRoutineOrRoutineDef(Feature feature)
