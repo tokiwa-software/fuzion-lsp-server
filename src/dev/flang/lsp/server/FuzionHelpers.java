@@ -138,7 +138,7 @@ public class FuzionHelpers
       .entrySet()
       .stream()
       .filter(IsItemNotBuiltIn(params))
-      .filter(IsItemInFile(params))
+      .filter(IsItemInFile(Util.getUri(params)))
       .filter(IsItemOnSameLineAsCursor(params))
       .filter(IsItemInScope(params))
       .map(entry -> entry.getKey())
@@ -166,10 +166,9 @@ public class FuzionHelpers
     };
   }
 
-  private static Predicate<? super Entry<Object, Feature>> IsItemInFile(TextDocumentPositionParams params)
+  private static Predicate<? super Entry<Object, Feature>> IsItemInFile(String uri)
   {
     return (entry) -> {
-      var uri = Util.getUri(params);
       var sourcePosition = FuzionHelpers.getPosition(entry.getKey());
       return uri.equals(ParserHelper.getUri(sourcePosition));
     };
@@ -212,7 +211,6 @@ public class FuzionHelpers
   {
     var baseFeature = allOf(uri, Feature.class)
       .filter(IsFeatureInFile(uri))
-      .sorted(CompareBySourcePosition)
       .findFirst();
     if (baseFeature.isPresent())
       {
@@ -288,7 +286,7 @@ public class FuzionHelpers
     return HeirsVisitor.visit(baseFeature.get())
       .entrySet()
       .stream()
-      .filter(IsItemInFile(params))
+      .filter(IsItemInFile(Util.getUri(params)))
       .filter(entry -> entry.getKey() instanceof Call)
       .map(entry -> new SimpleEntry<Call, Feature>((Call) entry.getKey(), entry.getValue()))
       .filter(entry -> PositionIsAfterOrAtCursor(params, getEndOfFeature(entry.getValue())))
@@ -348,6 +346,7 @@ public class FuzionHelpers
           .entrySet()
           .stream()
           .filter(entry -> entry.getValue() != null)
+          .filter(IsItemInFile(FuzionHelpers.ToLocation(baseFeature.pos()).getUri()))
           .filter(entry -> entry.getValue().compareTo(baseFeature) == 0)
           .map(entry -> getPosition(entry.getKey()))
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
