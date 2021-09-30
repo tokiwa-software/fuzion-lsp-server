@@ -204,7 +204,7 @@ public class Completion
 
   private static @NonNull String getWord(TextDocumentPositionParams params)
   {
-    var text = FuzionTextDocumentService.getText(Util.getUri(params));
+    var text = FuzionTextDocumentService.getText(Util.getUri(params)).orElseThrow();
     var line = text.split("\\R", -1)[params.getPosition().getLine()];
     if (line.length() == 0)
       {

@@ -49,7 +49,7 @@ public class ParserHelper
             return Optional.of(parserCache.firstEntry().getValue());
           }
 
-        var sourceText = FuzionTextDocumentService.getText(uri);
+        var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
         if (parserCache.containsKey(sourceText))
           {
             return Optional.of(parserCache.get(sourceText));
@@ -115,7 +115,7 @@ public class ParserHelper
 
   private static File toTempFile(String uri)
   {
-    File sourceFile = Util.writeToTempFile(FuzionTextDocumentService.getText(uri));
+    File sourceFile = Util.writeToTempFile(FuzionTextDocumentService.getText(uri).orElseThrow());
     tempFile2Uri.put(sourceFile.toURI().toString(), uri);
     return sourceFile;
   }

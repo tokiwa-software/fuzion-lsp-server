@@ -2,6 +2,7 @@ package dev.flang.lsp.server;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CodeAction;
@@ -42,14 +43,10 @@ public class FuzionTextDocumentService implements TextDocumentService
    */
   private static final HashMap<String, String> textDocuments = new HashMap<String, String>();
 
-  public static String getText(String uri)
+  public static Optional<String> getText(String uri)
   {
     var text = textDocuments.get(uri);
-    if (text == null)
-      {
-        Util.WriteStackTraceAndExit(1);
-      }
-    return text;
+    return Optional.ofNullable(text);
   }
 
   public static void setText(String uri, String text)
@@ -92,7 +89,7 @@ public class FuzionTextDocumentService implements TextDocumentService
 
     synchronized (textDocuments)
       {
-        var text = getText(uri);
+        var text = getText(uri).orElseThrow();
 
         var contentChanges = params.getContentChanges();
 

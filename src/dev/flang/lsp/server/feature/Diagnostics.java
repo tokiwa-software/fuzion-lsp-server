@@ -41,7 +41,7 @@ public class Diagnostics
   {
     return Errors.get().stream().filter(error -> ParserHelper.getUri(error.pos).equals(uri)).map((error) -> {
       var start = FuzionHelpers.ToPosition(error.pos);
-      var text = FuzionTextDocumentService.getText(uri);
+      var text = FuzionTextDocumentService.getText(uri).orElseThrow();
       var end = getEndPosition(text, start);
       var message = error.msg + System.lineSeparator() + error.detail;
       return new Diagnostic(new Range(start, end), message);

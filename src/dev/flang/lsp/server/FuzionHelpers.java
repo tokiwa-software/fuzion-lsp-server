@@ -370,7 +370,12 @@ public class FuzionHelpers
   private static int getEndColumn(SourcePosition start)
   {
     var uri = ParserHelper.getUri(start);
-    var line_text = FuzionTextDocumentService.getText(uri).split("\\R", -1)[start._line - 1];
+    var optionalText = FuzionTextDocumentService.getText(uri);
+    if(optionalText.isEmpty()){
+      return start._column;
+    }
+    var text = optionalText.get();
+    var line_text = text.split("\\R", -1)[start._line - 1];
     var column = start._column;
     while (line_text.length() > column && !Util.HashSetOf(')', '.', ' ').contains(line_text.charAt(column - 1)))
       {
@@ -488,7 +493,7 @@ public class FuzionHelpers
 
   public static TokenInfo getTokenIdentifier(TextDocumentPositionParams params)
   {
-    var sourceText = FuzionTextDocumentService.getText(params.getTextDocument().getUri());
+    var sourceText = FuzionTextDocumentService.getText(params.getTextDocument().getUri()).orElseThrow();
     return Util.WithTextInputStream(sourceText, () -> {
 
       var lexer = new Lexer(SourceFile.STDIN);
