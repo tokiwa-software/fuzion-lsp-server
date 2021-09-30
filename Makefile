@@ -6,21 +6,21 @@ JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.ge
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 all: classes
-	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
+	java -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
 
 tcp:
-	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
+	java -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
 	mkdir -p $@
-	javac -classpath $(JARS_FOR_CLASSPATH):build/classes -d $@ $(JAVA_FILES)
+	javac -classpath $(JARS_FOR_CLASSPATH):fuzion/build/classes -d $@ $(JAVA_FILES)
 
 stdio: classes
-	java -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main
+	java -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main
 
 debug: classes
 	mkdir -p runDir
-	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
+	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) dev.flang.lsp.server.Main -tcp
 
 jars/org.eclipse.lsp4j-0.12.0.jar:
 	mkdir -p $(@D)
@@ -39,11 +39,11 @@ jars/gson-2.8.7.jar:
 	wget -O $@ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.7/$(@F)
 
 build_fuzion:
-	make -f fuzion/Makefile
+	make -C fuzion
 
 clean:
 	rm -fR classes
 	rm -f out.jar
 
 jar: clean classes
-	jar cfm out.jar Manifest.txt jars/org.eclipse.lsp4j-0.12.0.jar jars/gson-2.8.7.jar jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar jars/org.eclipse.lsp4j.generator-0.12.0.jar -C classes . -C build/classes .
+	jar cfm out.jar Manifest.txt jars/org.eclipse.lsp4j-0.12.0.jar jars/gson-2.8.7.jar jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar jars/org.eclipse.lsp4j.generator-0.12.0.jar -C classes . -C fuzion/build/classes .
