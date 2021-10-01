@@ -3,16 +3,18 @@ package dev.flang.lsp.server;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
@@ -371,9 +373,10 @@ public class FuzionHelpers
   {
     var uri = ParserHelper.getUri(start);
     var optionalText = FuzionTextDocumentService.getText(uri);
-    if(optionalText.isEmpty()){
-      return start._column;
-    }
+    if (optionalText.isEmpty())
+      {
+        return start._column;
+      }
     var text = optionalText.get();
     var line_text = text.split("\\R", -1)[start._line - 1];
     var column = start._column;
@@ -526,6 +529,16 @@ public class FuzionHelpers
     var line = params.getPosition().getLine();
     var characterStart = tokenIdent.start._column - 1;
     return new Range(new Position(line, characterStart), new Position(line, characterStart + tokenIdent.text.length()));
+  }
+
+  public static Range getRange(Feature feature)
+  {
+    return new Range(ToPosition(feature.pos()), ToPosition(getEndOfFeature(feature)));
+  }
+
+  public static DocumentSymbol ToDocumentSymbol(Feature feature)
+  {
+    return new DocumentSymbol(getLabel(feature), SymbolKind.Key, getRange(feature), getRange(feature));
   }
 
 }

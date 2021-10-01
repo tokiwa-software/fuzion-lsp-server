@@ -3,10 +3,8 @@ package dev.flang.lsp.server;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.HoverOptions;
@@ -37,9 +35,15 @@ public class FuzionLanguageServer implements LanguageServer
     initializeReferences(capabilities);
     initializeRename(capabilities);
     initializeCodeActions(capabilities);
+    initializeDocumentSymbol(capabilities);
 
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeDocumentSymbol(ServerCapabilities capabilities)
+  {
+    capabilities.setDocumentSymbolProvider(true);
   }
 
   private void initializeCodeActions(ServerCapabilities capabilities)

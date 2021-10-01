@@ -16,6 +16,8 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
@@ -25,6 +27,7 @@ import org.eclipse.lsp4j.PrepareRenameResult;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -32,6 +35,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Definition;
+import dev.flang.lsp.server.feature.DocumentSymbols;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Rename;
@@ -197,4 +201,10 @@ public class FuzionTextDocumentService implements TextDocumentService
     return CompletableFuture.completedFuture(List.of(Either.forRight(codeAction)));
   }
 
+
+  @Override
+  public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
+  {
+    return CompletableFuture.completedFuture(DocumentSymbols.getDocumentSymbols(params));
+  }
 }
