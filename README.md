@@ -27,7 +27,7 @@
 |eclipse (theia)|with this vscode extension|
 
 ### Emacs
-- Note: fuzionlsp_stdio (from ./bin/) needs to in PATH
+- Note: fuzionlsp_stdio (from ./bin/) needs to be in $PATH
 - ~/.emacs.d/init.el example using [https://github.com/emacs-lsp/lsp-mode](lsp-mode)
 
 ```lisp
