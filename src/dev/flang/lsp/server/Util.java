@@ -222,9 +222,12 @@ public class Util
       .map(st -> st.toString())
       .collect(Collectors.joining(System.lineSeparator()));
     var file = Util.writeToTempFile(stackTraceString, "fuzion-lsp-crash", ".log", false);
-    Main.getLanguageClient()
-      .showMessage(new MessageParams(MessageType.Error,
-        "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
+    if (Main.DEBUG())
+      {
+        Main.getLanguageClient()
+          .showMessage(new MessageParams(MessageType.Error,
+            "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
+      }
   }
 
   public static void WriteStackTrace(Throwable e)
