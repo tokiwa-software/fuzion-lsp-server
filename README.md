@@ -28,7 +28,11 @@
 
 ### Emacs
 - Note: fuzionlsp_stdio (from ./bin/) needs to be in $PATH
-- ~/.emacs.d/init.el example using [https://github.com/emacs-lsp/lsp-mode](lsp-mode)
+- install lsp-mode, flycheck and company for emacs using
+    - M-x package-install RET lsp-mode
+    - M-x package-install RET flycheck
+    - M-x package-install RET company RET
+- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [https://github.com/emacs-lsp/lsp-mode](lsp-mode)
 
 ```lisp
 (require 'package)
@@ -81,6 +85,10 @@
 (provide 'init)
 ;;; init.el ends here
 ```
+
+- add following line to ~/.emacs.d/init.el or to ~/.emacs
+
+  (load "~/.emacs.d/fuzion-lsp.el")
 
 ## Implementation state
 
