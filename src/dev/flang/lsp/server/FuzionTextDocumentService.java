@@ -7,6 +7,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
@@ -33,6 +35,7 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
+import dev.flang.lsp.server.feature.CodeLenses;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Definition;
 import dev.flang.lsp.server.feature.DocumentSymbols;
@@ -207,4 +210,11 @@ public class FuzionTextDocumentService implements TextDocumentService
   {
     return CompletableFuture.completedFuture(DocumentSymbols.getDocumentSymbols(params));
   }
+
+  @Override
+  public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
+  {
+    return CompletableFuture.completedFuture(CodeLenses.getCodeLenses(params));
+  }
+
 }

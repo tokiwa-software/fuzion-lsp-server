@@ -221,7 +221,7 @@ public class FuzionHelpers
     return baseFeature;
   }
 
-  private static Predicate<? super Feature> IsFeatureInFile(String uri)
+  public static Predicate<? super Feature> IsFeatureInFile(String uri)
   {
     return feature -> {
       return uri.equals(ParserHelper.getUri(feature.pos()));
@@ -539,6 +539,37 @@ public class FuzionHelpers
   public static DocumentSymbol ToDocumentSymbol(Feature feature)
   {
     return new DocumentSymbol(getLabel(feature), SymbolKind.Key, getRange(feature), getRange(feature));
+  }
+
+  public static String getString(String uri, Range range)
+  {
+    var optionalText = FuzionTextDocumentService.getText(uri);
+    if (optionalText.isEmpty())
+      {
+        return "error";
+      }
+    var lines = optionalText.get()
+      .lines()
+      .skip(range.getStart().getLine())
+      .limit(range.getEnd().getLine() - range.getStart().getLine() + 1)
+      .toList();
+    var result = "";
+    for(int i = 0; i < lines.size(); i++)
+      {
+        if (i == 0)
+          {
+            result += lines.get(i).substring(range.getStart().getCharacter());
+          }
+        else if (i + 1 == lines.size())
+          {
+            result += lines.get(i).substring(0, range.getEnd().getCharacter());
+          }
+        else
+          {
+            result += lines.get(i);
+          }
+      }
+    return result;
   }
 
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.HoverOptions;
@@ -36,9 +37,16 @@ public class FuzionLanguageServer implements LanguageServer
     initializeRename(capabilities);
     initializeCodeActions(capabilities);
     initializeDocumentSymbol(capabilities);
+    initializeCodeLens(capabilities);
 
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeCodeLens(ServerCapabilities capabilities)
+  {
+    // NYI implement code lens resolve
+    capabilities.setCodeLensProvider(new CodeLensOptions(false));
   }
 
   private void initializeDocumentSymbol(ServerCapabilities capabilities)
