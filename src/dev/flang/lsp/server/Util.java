@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -206,33 +208,36 @@ public class Util
 
   static void WriteStackTraceAndExit(int status)
   {
-    WriteStackTrace(Thread.currentThread().getStackTrace());
-    System.exit(1);
+    var throwable = new Throwable();
+    throwable.fillInStackTrace();
+    WriteStackTrace(throwable);
+    System.exit(status);
   }
 
   private static void WriteStackTraceAndExit(int status, Throwable e)
   {
-    WriteStackTrace(e.getCause().getStackTrace());
-    System.exit(1);
+    WriteStackTrace(e);
+    System.exit(status);
   }
 
-  private static void WriteStackTrace(StackTraceElement[] stackTrace)
+  public static String toString(Throwable th)
   {
-    var stackTraceString = Arrays.stream(stackTrace)
-      .map(st -> st.toString())
-      .collect(Collectors.joining(System.lineSeparator()));
-    var file = Util.writeToTempFile(stackTraceString, "fuzion-lsp-crash", ".log", false);
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    th.printStackTrace(pw);
+    return sw.toString();
+  }
+
+  public static void WriteStackTrace(Throwable e)
+  {
+    var file =
+      Util.writeToTempFile(e.getMessage() + System.lineSeparator() + toString(e), "fuzion-lsp-crash", ".log", false);
     if (Main.DEBUG())
       {
         Main.getLanguageClient()
           .showMessage(new MessageParams(MessageType.Error,
             "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
       }
-  }
-
-  public static void WriteStackTrace(Throwable e)
-  {
-    WriteStackTrace(e.getCause().getStackTrace());
   }
 
 }
