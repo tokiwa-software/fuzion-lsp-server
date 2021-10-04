@@ -15,7 +15,7 @@ public class DocumentSymbols
 {
   public static List<Either<SymbolInformation, DocumentSymbol>> getDocumentSymbols(DocumentSymbolParams params)
   {
-    var baseFeature = FuzionHelpers.getBaseFeature(Util.getUri(params.getTextDocument()));
+    var baseFeature = FuzionHelpers.baseFeature(Util.getUri(params.getTextDocument()));
     if (baseFeature.isEmpty())
       {
         return List.of();

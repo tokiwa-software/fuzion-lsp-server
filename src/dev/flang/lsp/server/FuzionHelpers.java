@@ -44,7 +44,7 @@ public final class FuzionHelpers
    * @param entry
    * @return
    */
-  public static SourcePosition getPosition(Object entry)
+  public static SourcePosition position(Object entry)
   {
     var result = getPositionOrNull(entry);
     if (result != null)
@@ -111,9 +111,9 @@ public final class FuzionHelpers
    * @param params
    * @return
    */
-  public static Stream<Object> getASTItemsOnLine(TextDocumentPositionParams params)
+  public static Stream<Object> ASTItemsOnLine(TextDocumentPositionParams params)
   {
-    var baseFeature = getBaseFeature(params.getTextDocument());
+    var baseFeature = baseFeature(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
@@ -137,7 +137,7 @@ public final class FuzionHelpers
     return (entry) -> {
       var astItem = entry.getKey();
       var cursorPosition = Util.getPosition(params);
-      var sourcePosition = FuzionHelpers.getPosition(astItem);
+      var sourcePosition = FuzionHelpers.position(astItem);
       return cursorPosition.getLine() == Converters.ToPosition(sourcePosition).getLine();
     };
   }
@@ -146,7 +146,7 @@ public final class FuzionHelpers
   {
     return (entry) -> {
       var astItem = entry.getKey();
-      var sourcePosition = FuzionHelpers.getPosition(astItem);
+      var sourcePosition = FuzionHelpers.position(astItem);
       return !sourcePosition.isBuiltIn();
     };
   }
@@ -154,7 +154,7 @@ public final class FuzionHelpers
   private static Predicate<? super Entry<Object, Feature>> IsItemInFile(String uri)
   {
     return (entry) -> {
-      var sourcePosition = FuzionHelpers.getPosition(entry.getKey());
+      var sourcePosition = FuzionHelpers.position(entry.getKey());
       return uri.equals(ParserHelper.getUri(sourcePosition));
     };
   }
@@ -171,10 +171,10 @@ public final class FuzionHelpers
       var outer = entry.getValue();
       var cursorPosition = Util.getPosition(params);
 
-      var sourcePosition = FuzionHelpers.getPosition(astItem);
+      var sourcePosition = FuzionHelpers.position(astItem);
 
       boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(cursorPosition,
-        Converters.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
+        Converters.ToPosition(FuzionHelpers.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
         Util.ComparePosition(cursorPosition, Converters.ToPosition(sourcePosition)) >= 0;
 
@@ -187,12 +187,12 @@ public final class FuzionHelpers
    * @param uri
    * @return
    */
-  private static Optional<Feature> getBaseFeature(TextDocumentIdentifier params)
+  private static Optional<Feature> baseFeature(TextDocumentIdentifier params)
   {
-    return getBaseFeature(Util.getUri(params));
+    return baseFeature(Util.getUri(params));
   }
 
-  public static Optional<Feature> getBaseFeature(String uri)
+  public static Optional<Feature> baseFeature(String uri)
   {
     var baseFeature = allOf(uri, Feature.class)
       .filter(IsFeatureInFile(uri))
@@ -217,7 +217,7 @@ public final class FuzionHelpers
         {
           return 0;
         }
-      return getPosition(obj1).compareTo(getPosition(obj2));
+      return position(obj1).compareTo(position(obj2));
     });
 
   private static Comparator<? super Call> CompareByEndOfCall =
@@ -262,7 +262,7 @@ public final class FuzionHelpers
 
   public static Stream<Feature> calledFeaturesSortedDesc(TextDocumentPositionParams params)
   {
-    var baseFeature = getBaseFeature(params.getTextDocument());
+    var baseFeature = baseFeature(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
@@ -274,7 +274,7 @@ public final class FuzionHelpers
       .filter(IsItemInFile(Util.getUri(params)))
       .filter(entry -> entry.getKey() instanceof Call)
       .map(entry -> new SimpleEntry<Call, Feature>((Call) entry.getKey(), entry.getValue()))
-      .filter(entry -> PositionIsAfterOrAtCursor(params, getEndOfFeature(entry.getValue())))
+      .filter(entry -> PositionIsAfterOrAtCursor(params, endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
       .map(entry -> entry.getKey())
       .filter(c -> !IsAnonymousInnerFeature(c.calledFeature()))
@@ -322,7 +322,7 @@ public final class FuzionHelpers
    * @param baseFeature
    * @return
    */
-  public static SourcePosition getEndOfFeature(Feature baseFeature)
+  public static SourcePosition endOfFeature(Feature baseFeature)
   {
     if (!Memory.EndOfFeature.containsKey(baseFeature))
       {
@@ -333,10 +333,10 @@ public final class FuzionHelpers
           .filter(entry -> entry.getValue() != null)
           .filter(IsItemInFile(Converters.ToLocation(baseFeature.pos()).getUri()))
           .filter(entry -> entry.getValue().compareTo(baseFeature) == 0)
-          .map(entry -> getPosition(entry.getKey()))
+          .map(entry -> position(entry.getKey()))
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
-            return new SourcePosition(position._sourceFile, position._line, getEndColumn(position));
+            return new SourcePosition(position._sourceFile, position._line, endColumn(position));
           })
           .findFirst()
           .orElse(baseFeature.pos());
@@ -352,7 +352,7 @@ public final class FuzionHelpers
    * @param start
    * @return
    */
-  private static int getEndColumn(SourcePosition start)
+  private static int endColumn(SourcePosition start)
   {
     var uri = ParserHelper.getUri(start);
     var optionalText = FuzionTextDocumentService.getText(uri);
@@ -379,9 +379,9 @@ public final class FuzionHelpers
    * @param params
    * @return
    */
-  public static Optional<Feature> getFeatureAt(TextDocumentPositionParams params)
+  public static Optional<Feature> featureAt(TextDocumentPositionParams params)
   {
-    return getASTItemsOnLine(params)
+    return ASTItemsOnLine(params)
       .map(astItem -> {
         if (astItem instanceof Feature)
           {
@@ -490,7 +490,7 @@ public final class FuzionHelpers
     return new TokenInfo(start, tokenString);
   }
 
-  public static String getString(String uri, Range range)
+  public static String stringAt(String uri, Range range)
   {
     var optionalText = FuzionTextDocumentService.getText(uri);
     if (optionalText.isEmpty())

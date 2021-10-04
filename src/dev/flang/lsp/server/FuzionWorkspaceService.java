@@ -36,7 +36,7 @@ public class FuzionWorkspaceService implements WorkspaceService
       {
         case showSyntaxTree :
           var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
-          var feature = FuzionHelpers.getBaseFeature(uri);
+          var feature = FuzionHelpers.baseFeature(uri);
           if (feature.isEmpty())
             {
               CompletableFuture.completedFuture(null);

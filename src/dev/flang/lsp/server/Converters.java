@@ -30,7 +30,7 @@ public final class Converters {
 
   public static Range ToRange(Feature feature)
   {
-    return new Range(ToPosition(feature.pos()), ToPosition(FuzionHelpers.getEndOfFeature(feature)));
+    return new Range(ToPosition(feature.pos()), ToPosition(FuzionHelpers.endOfFeature(feature)));
   }
 
   public static Range ToRange(TextDocumentPositionParams params)

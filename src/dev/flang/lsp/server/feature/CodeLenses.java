@@ -28,7 +28,7 @@ public class CodeLenses
       // NYI range should only spawn one line
       .map(f -> new CodeLens(Converters.ToRange(f),
         new Command(Commands.evaluate.toString(), Commands.evaluate.toString(),
-          List.of(FuzionHelpers.getString(uri, Converters.ToRange(f)))),
+          List.of(FuzionHelpers.stringAt(uri, Converters.ToRange(f)))),
         null))
       .collect(Collectors.toList());
   }

@@ -90,19 +90,19 @@ public class ASTtoHTML extends FeatureVisitor
   @Override
   public void action(Unbox u, Feature outer)
   {
-    Print("Unbox", PosToString(FuzionHelpers.getPosition(u)), u.toString());
+    Print("Unbox", PosToString(FuzionHelpers.position(u)), u.toString());
   }
 
   @Override
   public void action(Assign a, Feature outer)
   {
-    Print("Assign", PosToString(FuzionHelpers.getPosition(a)), a._assignedField.qualifiedName());
+    Print("Assign", PosToString(FuzionHelpers.position(a)), a._assignedField.qualifiedName());
   }
 
   @Override
   public void actionBefore(Block b, Feature outer)
   {
-    Print("Block", PosToString(FuzionHelpers.getPosition(b)), "");
+    Print("Block", PosToString(FuzionHelpers.position(b)), "");
   }
 
   @Override
@@ -113,7 +113,7 @@ public class ASTtoHTML extends FeatureVisitor
   @Override
   public void action(Box b, Feature outer)
   {
-    Print("Box", PosToString(FuzionHelpers.getPosition(b)), b.toString());
+    Print("Box", PosToString(FuzionHelpers.position(b)), b.toString());
   }
 
   private String PosToString(SourcePosition position)
@@ -124,7 +124,7 @@ public class ASTtoHTML extends FeatureVisitor
   @Override
   public Expr action(Call c, Feature outer)
   {
-    Print("Call", PosToString(FuzionHelpers.getPosition(c)), c.calledFeature().qualifiedName());
+    Print("Call", PosToString(FuzionHelpers.position(c)), c.calledFeature().qualifiedName());
     return c;
   }
 
@@ -132,7 +132,7 @@ public class ASTtoHTML extends FeatureVisitor
   @Override
   public void actionBefore(Case c, Feature outer)
   {
-    Print("Case", PosToString(FuzionHelpers.getPosition(c)), c.toString());
+    Print("Case", PosToString(FuzionHelpers.position(c)), c.toString());
   }
 
   @Override
@@ -143,27 +143,27 @@ public class ASTtoHTML extends FeatureVisitor
   @Override
   public void action(Cond c, Feature outer)
   {
-    Print("Cond", PosToString(FuzionHelpers.getPosition(c)), c.toString());
+    Print("Cond", PosToString(FuzionHelpers.position(c)), c.toString());
   }
 
   @Override
   public Expr action(Current c, Feature outer)
   {
-    Print("Current", PosToString(FuzionHelpers.getPosition(c)), c.toString());
+    Print("Current", PosToString(FuzionHelpers.position(c)), c.toString());
     return c;
   }
 
   @Override
   public Stmnt action(Destructure d, Feature outer)
   {
-    Print("Destructure", PosToString(FuzionHelpers.getPosition(d)), d.toString());
+    Print("Destructure", PosToString(FuzionHelpers.position(d)), d.toString());
     return d;
   }
 
   @Override
   public Stmnt action(Feature f, Feature outer)
   {
-    Print("Feature", PosToString(FuzionHelpers.getPosition(f)), f.qualifiedName(), () -> {
+    Print("Feature", PosToString(FuzionHelpers.position(f)), f.qualifiedName(), () -> {
       var visitations = new TreeMap<Object, Feature>(FuzionHelpers.CompareBySourcePosition);
 
       Log.increaseIndentation();
@@ -243,58 +243,58 @@ public class ASTtoHTML extends FeatureVisitor
   @Override
   public Expr action(Function f, Feature outer)
   {
-    Print("Function", PosToString(FuzionHelpers.getPosition(f)), "");
+    Print("Function", PosToString(FuzionHelpers.position(f)), "");
     return f;
   }
 
   @Override
   public void action(Generic g, Feature outer)
   {
-    Print("Generic", PosToString(FuzionHelpers.getPosition(g)), g.toString());
+    Print("Generic", PosToString(FuzionHelpers.position(g)), g.toString());
   }
 
   @Override
   public void action(If i, Feature outer)
   {
-    Print("If", PosToString(FuzionHelpers.getPosition(i)), "");
+    Print("If", PosToString(FuzionHelpers.position(i)), "");
   }
 
   @Override
   public void action(Impl i, Feature outer)
   {
-    Print("Impl", PosToString(FuzionHelpers.getPosition(i)), "");
+    Print("Impl", PosToString(FuzionHelpers.position(i)), "");
   }
 
   @Override
   public Expr action(InitArray i, Feature outer)
   {
-    Print("InitArray", PosToString(FuzionHelpers.getPosition(i)), i.toString());
+    Print("InitArray", PosToString(FuzionHelpers.position(i)), i.toString());
     return i;
   }
 
   @Override
   public void action(Match m, Feature outer)
   {
-    Print("Match", PosToString(FuzionHelpers.getPosition(m)), m.toString());
+    Print("Match", PosToString(FuzionHelpers.position(m)), m.toString());
   }
 
   @Override
   public void action(Tag b, Feature outer)
   {
-    Print("Tag", PosToString(FuzionHelpers.getPosition(b)), b.toString());
+    Print("Tag", PosToString(FuzionHelpers.position(b)), b.toString());
   }
 
   @Override
   public Expr action(This t, Feature outer)
   {
-    Print("This", PosToString(FuzionHelpers.getPosition(t)), t.toString());
+    Print("This", PosToString(FuzionHelpers.position(t)), t.toString());
     return t;
   }
 
   @Override
   public Type action(Type t, Feature outer)
   {
-    Print("Type", PosToString(FuzionHelpers.getPosition(t)), t.toString());
+    Print("Type", PosToString(FuzionHelpers.position(t)), t.toString());
     return t;
   }
 }

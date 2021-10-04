@@ -124,7 +124,7 @@ public class Rename
 
   private static boolean IsAtCallOrFeature(PrepareRenameParams params, int column)
   {
-    return CallsAndFeatures(params).map(obj -> FuzionHelpers.getPosition(obj))
+    return CallsAndFeatures(params).map(obj -> FuzionHelpers.position(obj))
       .filter(pos -> column == pos._column)
       .findFirst()
       .isPresent();
@@ -132,7 +132,7 @@ public class Rename
 
   private static Stream<Object> CallsAndFeatures(TextDocumentPositionParams params)
   {
-    return FuzionHelpers.getASTItemsOnLine(params)
+    return FuzionHelpers.ASTItemsOnLine(params)
       .filter(item -> Util.HashSetOf(Feature.class, Call.class).contains(item.getClass()));
   }
 

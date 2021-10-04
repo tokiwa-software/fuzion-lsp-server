@@ -19,7 +19,7 @@ public class Hovering
   {
     var range = Converters.ToRange(params);
 
-    var feature = FuzionHelpers.getFeatureAt(params);
+    var feature = FuzionHelpers.featureAt(params);
     if (feature.isEmpty())
       {
         return null;

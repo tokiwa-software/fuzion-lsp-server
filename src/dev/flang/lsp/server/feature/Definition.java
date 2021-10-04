@@ -21,7 +21,7 @@ public class Definition
   public static Either<List<? extends Location>, List<? extends LocationLink>> getDefinitionLocation(
       DefinitionParams params)
   {
-    var feature = FuzionHelpers.getFeatureAt(params);
+    var feature = FuzionHelpers.featureAt(params);
     if(feature.isEmpty()){
       return null;
     }

@@ -19,7 +19,7 @@ public class References
 
   public static List<? extends Location> getReferences(ReferenceParams params)
   {
-    var feature = FuzionHelpers.getFeatureAt(params);
+    var feature = FuzionHelpers.featureAt(params);
     if (feature.isEmpty())
       {
         return List.of();
