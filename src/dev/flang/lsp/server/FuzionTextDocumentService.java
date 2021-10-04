@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import dev.flang.lsp.server.feature.CodeLenses;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Definition;
+import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.lsp.server.feature.DocumentSymbols;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.References;
@@ -63,6 +64,9 @@ public class FuzionTextDocumentService implements TextDocumentService
         Util.WriteStackTraceAndExit(1);
       }
     textDocuments.put(uri, text);
+    // NYI turn this into an event? to run asynchronosly?
+    ParserHelper.getMainFeature(uri);
+    Diagnostics.publishDiagnostics(uri);
   }
 
   @Override
@@ -100,8 +104,6 @@ public class FuzionTextDocumentService implements TextDocumentService
 
         var contentChanges = params.getContentChanges();
 
-        // TODO test if this works correctly
-        reverseSort(contentChanges);
         text = applyContentChanges(text, contentChanges);
 
         setText(uri, text);
@@ -129,6 +131,7 @@ public class FuzionTextDocumentService implements TextDocumentService
 
   private String applyContentChanges(String text, List<TextDocumentContentChangeEvent> contentChanges)
   {
+    reverseSort(contentChanges);
     return contentChanges.stream().reduce(text, (_text, contentChange) -> {
       var start = ordinalIndexOf(_text, System.lineSeparator(), contentChange.getRange().getStart().getLine()) + 1
         + contentChange.getRange().getStart().getCharacter();

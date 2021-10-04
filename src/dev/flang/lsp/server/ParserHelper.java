@@ -30,6 +30,7 @@ public class ParserHelper
    */
   private static TreeMap<String, String> tempFile2Uri = new TreeMap<>();
   private static TreeMap<String, Feature> parserCache = new TreeMap<>();
+  private static TreeMap<String, String> parserCacheSourceText = new TreeMap<>();
 
   /**
    * @param uri
@@ -50,12 +51,13 @@ public class ParserHelper
           }
 
         var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
-        if (parserCache.containsKey(sourceText))
+        if (parserCache.containsKey(uri) && sourceText.equals(parserCacheSourceText.get(uri)))
           {
-            return Optional.of(parserCache.get(sourceText));
+            return Optional.of(parserCache.get(uri));
           }
         var mainFeature = Parse(uri);
-        parserCache.put(sourceText, mainFeature);
+        parserCache.put(uri, mainFeature);
+        parserCacheSourceText.put(uri, sourceText);
 
         var result = getMainFeature(uri).get();
 
@@ -69,12 +71,8 @@ public class ParserHelper
   {
     Memory.EndOfFeature.clear();
 
-    // NYI publish diagnostics throttled after change of text document
-    Diagnostics.publishDiagnostics(uri);
-
     if (Main.DEBUG())
       {
-        Util.WriteStackTraceAndExit(1);
         ASTtoHTML.printAST(mainFeature);
       }
   }
