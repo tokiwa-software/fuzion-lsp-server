@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -519,6 +520,13 @@ public final class FuzionHelpers
           }
       }
     return result;
+  }
+
+  public static Position endOfToken(String uri, Position start)
+  {
+    var textDocumentPosition = new TextDocumentPositionParams(new TextDocumentIdentifier(uri), start);
+    var token = nextToken(textDocumentPosition);
+    return Converters.ToPosition(token.end());
   }
 
 }
