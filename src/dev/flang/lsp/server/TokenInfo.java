@@ -16,4 +16,8 @@ public class TokenInfo extends ANY
 
   public final SourcePosition start;
   public final String text;
+
+  public SourcePosition end(){
+    return new SourcePosition(start._sourceFile, start._line, start._column + text.length());
+  }
 }
