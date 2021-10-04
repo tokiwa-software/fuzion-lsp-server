@@ -9,6 +9,7 @@ import org.eclipse.lsp4j.Command;
 
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Commands;
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 
@@ -25,9 +26,9 @@ public class CodeLenses
       // NYI can we support features with primite args?
       .filter(f -> f.arguments.isEmpty())
       // NYI range should only spawn one line
-      .map(f -> new CodeLens(FuzionHelpers.getRange(f),
+      .map(f -> new CodeLens(Converters.ToRange(f),
         new Command(Commands.evaluate.toString(), Commands.evaluate.toString(),
-          List.of(FuzionHelpers.getString(uri, FuzionHelpers.getRange(f)))),
+          List.of(FuzionHelpers.getString(uri, Converters.ToRange(f)))),
         null))
       .collect(Collectors.toList());
   }

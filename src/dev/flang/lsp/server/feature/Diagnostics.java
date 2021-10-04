@@ -7,7 +7,7 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Position;
 
-import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Main;
 import dev.flang.lsp.server.ParserHelper;
@@ -40,7 +40,7 @@ public class Diagnostics
   private static List<Diagnostic> getDiagnostics(String uri)
   {
     return Errors.get().stream().filter(error -> ParserHelper.getUri(error.pos).equals(uri)).map((error) -> {
-      var start = FuzionHelpers.ToPosition(error.pos);
+      var start = Converters.ToPosition(error.pos);
       var text = FuzionTextDocumentService.getText(uri).orElseThrow();
       var end = getEndPosition(text, start);
       var message = error.msg + System.lineSeparator() + error.detail;

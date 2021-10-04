@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.TokenInfo;
 import dev.flang.lsp.server.Util;
@@ -44,12 +45,12 @@ public class Rename
 
     var feature = getFeature(params);
 
-    var featureIdentifier = FuzionHelpers.getNextTokenOfType(feature.featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
+    var featureIdentifier = FuzionHelpers.nextTokenOfType(feature.featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
     Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature, featureIdentifier);
 
     var changes = renamePositions
-      .map(sourcePosition -> FuzionHelpers.ToLocation(sourcePosition))
+      .map(sourcePosition -> Converters.ToLocation(sourcePosition))
       .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
         getTextEdit(location, featureIdentifier.text.length(), params.getNewName())))
       .collect(Collectors.groupingBy(e -> e.getKey(), Collectors.mapping(e -> e.getValue(), Collectors.toList())));
@@ -112,13 +113,13 @@ public class Rename
   // NYI should we disallow renaming in case of source code errors?
   public static PrepareRenameResult getPrepareRenameResult(PrepareRenameParams params)
   {
-    var tokenPosition = FuzionHelpers.getTokenIdentifier(params);
+    var tokenPosition = FuzionHelpers.nextToken(params);
     if (tokenPosition == null || !IsAtCallOrFeature(params, tokenPosition.start._column))
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "no valid identifier.", null);
         throw new ResponseErrorException(responseError);
       }
-    return new PrepareRenameResult(FuzionHelpers.ToRange(params), tokenPosition.text);
+    return new PrepareRenameResult(Converters.ToRange(params), tokenPosition.text);
   }
 
   private static boolean IsAtCallOrFeature(PrepareRenameParams params, int column)

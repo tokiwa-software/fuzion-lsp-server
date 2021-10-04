@@ -3,18 +3,12 @@ package dev.flang.lsp.server;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.lsp4j.DocumentSymbol;
-import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
@@ -40,19 +34,8 @@ import dev.flang.util.SourcePosition;
  * wild mixture of
  * shared helpers which are useful in more than one language server feature
  */
-public class FuzionHelpers
+public final class FuzionHelpers
 {
-
-  public static Position ToPosition(SourcePosition sourcePosition)
-  {
-    return new Position(sourcePosition._line - 1, sourcePosition._column - 1);
-  }
-
-  public static Location ToLocation(SourcePosition sourcePosition)
-  {
-    var position = ToPosition(sourcePosition);
-    return new Location(ParserHelper.getUri(sourcePosition), new Range(position, position));
-  }
 
   // NYI remove once we have ISourcePosition interface
   // NYI return Optional<SourcePosition>
@@ -155,7 +138,7 @@ public class FuzionHelpers
       var astItem = entry.getKey();
       var cursorPosition = Util.getPosition(params);
       var sourcePosition = FuzionHelpers.getPosition(astItem);
-      return cursorPosition.getLine() == FuzionHelpers.ToPosition(sourcePosition).getLine();
+      return cursorPosition.getLine() == Converters.ToPosition(sourcePosition).getLine();
     };
   }
 
@@ -191,9 +174,9 @@ public class FuzionHelpers
       var sourcePosition = FuzionHelpers.getPosition(astItem);
 
       boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(cursorPosition,
-        FuzionHelpers.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
+        Converters.ToPosition(FuzionHelpers.getEndOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
-        Util.ComparePosition(cursorPosition, FuzionHelpers.ToPosition(sourcePosition)) >= 0;
+        Util.ComparePosition(cursorPosition, Converters.ToPosition(sourcePosition)) >= 0;
 
       return ItemPositionIsBeforeOrAtCursorPosition && EndOfOuterFeatureIsAfterCursorPosition;
     };
@@ -243,7 +226,7 @@ public class FuzionHelpers
         {
           return 0;
         }
-      return getEndOfCall(obj1).compareTo(getEndOfCall(obj2));
+      return endOfCall(obj1).compareTo(endOfCall(obj2));
     });
 
   public static boolean IsRoutineOrRoutineDef(Feature feature)
@@ -308,7 +291,7 @@ public class FuzionHelpers
    * @param call
    * @return
   */
-  private static SourcePosition getEndOfCall(Call call)
+  private static SourcePosition endOfCall(Call call)
   {
     var result = call._actuals
       .stream()
@@ -325,12 +308,12 @@ public class FuzionHelpers
 
   private static boolean PositionIsAfterOrAtCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
   {
-    return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) <= 0;
+    return Util.ComparePosition(Util.getPosition(params), Converters.ToPosition(sourcePosition)) <= 0;
   }
 
   private static boolean PositionIsBeforeCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
   {
-    return Util.ComparePosition(Util.getPosition(params), ToPosition(sourcePosition)) > 0;
+    return Util.ComparePosition(Util.getPosition(params), Converters.ToPosition(sourcePosition)) > 0;
   }
 
   /**
@@ -348,7 +331,7 @@ public class FuzionHelpers
           .entrySet()
           .stream()
           .filter(entry -> entry.getValue() != null)
-          .filter(IsItemInFile(FuzionHelpers.ToLocation(baseFeature.pos()).getUri()))
+          .filter(IsItemInFile(Converters.ToLocation(baseFeature.pos()).getUri()))
           .filter(entry -> entry.getValue().compareTo(baseFeature) == 0)
           .map(entry -> getPosition(entry.getKey()))
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
@@ -385,22 +368,6 @@ public class FuzionHelpers
         column++;
       }
     return column;
-  }
-
-  /**
-   * @param feature
-   * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
-   */
-  public static String getLabel(Feature feature)
-  {
-    if (!IsRoutineOrRoutineDef(feature))
-      {
-        return feature.featureName().baseName();
-      }
-    var arguments = "(" + feature.arguments.stream()
-      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
-      .collect(Collectors.joining(", ")) + ")";
-    return feature.featureName().baseName() + feature.generics + arguments + " => " + feature.resultType();
   }
 
   public static boolean IsAnonymousInnerFeature(Feature f)
@@ -481,7 +448,7 @@ public class FuzionHelpers
    * @param str example: "infix %%"
    * @return example: text: "%%", start: 7
    */
-  public static TokenInfo getNextTokenOfType(String str, HashSet<Token> tokens)
+  public static TokenInfo nextTokenOfType(String str, HashSet<Token> tokens)
   {
     return Util.WithTextInputStream(str, () -> {
       var lexer = new Lexer(SourceFile.STDIN);
@@ -494,7 +461,7 @@ public class FuzionHelpers
     });
   }
 
-  public static TokenInfo getTokenIdentifier(TextDocumentPositionParams params)
+  public static TokenInfo nextToken(TextDocumentPositionParams params)
   {
     var sourceText = FuzionTextDocumentService.getText(params.getTextDocument().getUri()).orElseThrow();
     return Util.WithTextInputStream(sourceText, () -> {
@@ -521,24 +488,6 @@ public class FuzionHelpers
     var start = lexer.sourcePos(lexer.pos());
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
     return new TokenInfo(start, tokenString);
-  }
-
-  public static Range ToRange(TextDocumentPositionParams params)
-  {
-    var tokenIdent = getTokenIdentifier(params);
-    var line = params.getPosition().getLine();
-    var characterStart = tokenIdent.start._column - 1;
-    return new Range(new Position(line, characterStart), new Position(line, characterStart + tokenIdent.text.length()));
-  }
-
-  public static Range getRange(Feature feature)
-  {
-    return new Range(ToPosition(feature.pos()), ToPosition(getEndOfFeature(feature)));
-  }
-
-  public static DocumentSymbol ToDocumentSymbol(Feature feature)
-  {
-    return new DocumentSymbol(getLabel(feature), SymbolKind.Key, getRange(feature), getRange(feature));
   }
 
   public static String getString(String uri, Range range)

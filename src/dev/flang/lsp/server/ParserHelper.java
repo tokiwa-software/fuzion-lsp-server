@@ -74,6 +74,7 @@ public class ParserHelper
 
     if (Main.DEBUG())
       {
+        Util.WriteStackTraceAndExit(1);
         ASTtoHTML.printAST(mainFeature);
       }
   }

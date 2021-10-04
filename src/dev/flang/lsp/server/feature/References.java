@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 
@@ -24,7 +25,7 @@ public class References
         return List.of();
       }
     return FuzionHelpers.callsTo(Util.getUri(params), feature.get())
-      .map(call -> FuzionHelpers.ToLocation(call.pos()))
+      .map(call -> Converters.ToLocation(call.pos()))
       .collect(Collectors.toList());
   }
 

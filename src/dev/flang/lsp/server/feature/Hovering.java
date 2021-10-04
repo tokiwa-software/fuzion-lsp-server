@@ -5,6 +5,7 @@ import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 
 /**
@@ -16,7 +17,7 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var range = FuzionHelpers.ToRange(params);
+    var range = Converters.ToRange(params);
 
     var feature = FuzionHelpers.getFeatureAt(params);
     if (feature.isEmpty())
@@ -24,7 +25,7 @@ public class Hovering
         return null;
       }
 
-    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, FuzionHelpers.getLabel(feature.get()));
+    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, Converters.ToLabel(feature.get()));
     return new Hover(markupContent, range);
   }
 

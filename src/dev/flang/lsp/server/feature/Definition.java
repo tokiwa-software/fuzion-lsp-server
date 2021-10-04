@@ -9,6 +9,7 @@ import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.Feature;
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 
 /**
@@ -33,7 +34,7 @@ public class Definition
     if(obj.toString().startsWith("INVISIBLE")){
       return getDefinition(obj.outer());
     }
-    Location location = FuzionHelpers.ToLocation(obj.pos());
+    Location location = Converters.ToLocation(obj.pos());
     return Either.forLeft(Arrays.asList(location));
 	}
 

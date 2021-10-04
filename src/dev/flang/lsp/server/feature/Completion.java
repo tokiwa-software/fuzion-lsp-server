@@ -18,6 +18,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
 
 import dev.flang.ast.Feature;
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Log;
@@ -72,7 +73,7 @@ public class Completion
             index -> {
               var feature = sortedFeatures.get(index);
               return buildCompletionItem(
-                FuzionHelpers.getLabel(feature),
+                Converters.ToLabel(feature),
                 getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
             });
 

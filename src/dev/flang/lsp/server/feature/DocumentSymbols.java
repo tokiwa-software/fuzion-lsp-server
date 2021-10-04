@@ -7,6 +7,7 @@ import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 
@@ -22,7 +23,7 @@ public class DocumentSymbols
 
     var feature = baseFeature.get();
 
-    var rootSymbol = FuzionHelpers.ToDocumentSymbol(feature);
+    var rootSymbol = Converters.ToDocumentSymbol(feature);
 
     var visitor =  new DocumentSymbolVisitor(rootSymbol);
 

@@ -8,6 +8,7 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Stmnt;
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 
 
@@ -26,7 +27,7 @@ public class DocumentSymbolVisitor extends FeatureVisitor
       return f;
     }
     var parent = stack.peek();
-    var documentSymbol = FuzionHelpers.ToDocumentSymbol(f);
+    var documentSymbol = Converters.ToDocumentSymbol(f);
     if(parent.getChildren() == null){
       parent.setChildren(new ArrayList<>());
     }
