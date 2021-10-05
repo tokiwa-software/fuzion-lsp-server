@@ -126,7 +126,8 @@ public class Util
           {
             executor.shutdown();
           }
-        result += extracted(inputStream, p);
+        p.close();
+        result += new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         return result;
       }
     catch (Exception e)
@@ -138,13 +139,6 @@ public class Util
         System.setOut(out);
         System.setErr(err);
       }
-  }
-
-  private static String extracted(PipedInputStream inputStream, PrintStream p) throws IOException
-  {
-    p.close();
-    var result = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-    return result;
   }
 
   public static <T> T WithRedirectedStdOut(Callable<T> callable)
