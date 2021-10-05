@@ -47,4 +47,4 @@ clean:
 	rm -f out.jar
 
 jar: clean classes
-	jar cfm out.jar Manifest.txt jars/org.eclipse.lsp4j-0.12.0.jar jars/gson-2.8.7.jar jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar jars/org.eclipse.lsp4j.generator-0.12.0.jar -C classes . -C $(FUZION_HOME)/classes .
+	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
