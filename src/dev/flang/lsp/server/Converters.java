@@ -37,8 +37,8 @@ public final class Converters {
   {
     var tokenIdent = FuzionHelpers.nextToken(params);
     var line = params.getPosition().getLine();
-    var characterStart = tokenIdent.start._column - 1;
-    return new Range(new Position(line, characterStart), new Position(line, characterStart + tokenIdent.text.length()));
+    var characterStart = tokenIdent.start()._column - 1;
+    return new Range(new Position(line, characterStart), new Position(line, characterStart + tokenIdent.text().length()));
   }
 
   public static DocumentSymbol ToDocumentSymbol(Feature feature)

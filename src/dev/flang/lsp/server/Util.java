@@ -6,16 +6,23 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -90,6 +97,54 @@ public class Util
       .limit(targetStringLength)
       .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
       .toString();
+  }
+
+  public static String WithCapturedStdOutErr(Runnable runnable, long timeOutInMilliSeconds)
+  {
+    var out = System.out;
+    var err = System.err;
+    try
+      {
+        var inputStream = new PipedInputStream();
+        PrintStream p = new PrintStream(new PipedOutputStream(inputStream));
+        System.setOut(p);
+        System.setErr(p);
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<?> future = executor.submit(runnable);
+
+        var result = "";
+        try
+          {
+            future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
+          }
+        catch (TimeoutException e)
+          {
+            future.cancel(true);
+            result += "Timed out..." + System.lineSeparator();
+          } finally
+          {
+            executor.shutdown();
+          }
+        result += extracted(inputStream, p);
+        return result;
+      }
+    catch (Exception e)
+      {
+        Util.WriteStackTraceAndExit(1, e);
+        return null;
+      } finally
+      {
+        System.setOut(out);
+        System.setErr(err);
+      }
+  }
+
+  private static String extracted(PipedInputStream inputStream, PrintStream p) throws IOException
+  {
+    p.close();
+    var result = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    return result;
   }
 
   public static <T> T WithRedirectedStdOut(Callable<T> callable)

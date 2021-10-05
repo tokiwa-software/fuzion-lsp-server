@@ -13,7 +13,11 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
-import dev.flang.lsp.server.feature.Diagnostics;
+import dev.flang.fuir.FUIR;
+import dev.flang.lsp.server.records.ParserCache;
+import dev.flang.me.MiddleEnd;
+import dev.flang.mir.MIR;
+import dev.flang.opt.Optimizer;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
@@ -29,7 +33,7 @@ public class ParserHelper
    * maps temporary files which are fed to the parser to their original uri.
    */
   private static TreeMap<String, String> tempFile2Uri = new TreeMap<>();
-  private static TreeMap<String, Feature> parserCache = new TreeMap<>();
+  private static TreeMap<String, ParserCache> parserCache = new TreeMap<>();
   private static TreeMap<String, String> parserCacheSourceText = new TreeMap<>();
 
   /**
@@ -47,16 +51,18 @@ public class ParserHelper
               {
                 return Optional.empty();
               }
-            return Optional.of(parserCache.firstEntry().getValue());
+            return Optional.of(parserCache.firstEntry().getValue().mir().main());
           }
 
         var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
         if (parserCache.containsKey(uri) && sourceText.equals(parserCacheSourceText.get(uri)))
           {
-            return Optional.of(parserCache.get(uri));
+            return Optional.of(parserCache.get(uri).mir().main());
           }
-        var mainFeature = Parse(uri);
-        parserCache.put(uri, mainFeature);
+
+        var frontEndOptions = FrontEndOptions(uri);
+        var mir = MIR(frontEndOptions);
+        parserCache.put(uri, new ParserCache(mir, frontEndOptions));
         parserCacheSourceText.put(uri, sourceText);
 
         var result = getMainFeature(uri).get();
@@ -77,23 +83,43 @@ public class ParserHelper
       }
   }
 
-  private static Feature Parse(String uri)
+  public static FUIR FUIR(String uri)
   {
-    File tempFile = ParserHelper.toTempFile(uri);
+    if (!parserCache.containsKey(uri))
+      {
+        throw new RuntimeException("this should not happen");
+      }
+    var frontEndOptions = parserCache.get(uri).frontEndOptions();
+    var air = new MiddleEnd(frontEndOptions, parserCache.get(uri).mir()).air();
+    return new Optimizer(frontEndOptions, air).fuir(false);
+  }
 
-    var mainFeature = Util.WithRedirectedStdOut(() -> {
+  private static MIR MIR(FrontEndOptions frontEndOptions)
+  {
+    var mir = Util.WithRedirectedStdOut(() -> {
       return Util.WithRedirectedStdErr(() -> {
         // NYI remove once we can create MIR multiple times
         Errors.clear();
         Types.clear();
         FeatureName.clear();
-
-        var frontEndOptions =
-          new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
-        return new FrontEnd(frontEndOptions).createMIR().main();
+        return new FrontEnd(frontEndOptions).createMIR();
       });
     });
-    return mainFeature;
+    return mir;
+  }
+
+  private static FrontEndOptions FrontEndOptions(String uri)
+  {
+    File tempFile = ParserHelper.toTempFile(uri);
+    var frontEndOptions = FrontEndOptions(tempFile);
+    return frontEndOptions;
+  }
+
+  private static FrontEndOptions FrontEndOptions(File tempFile)
+  {
+    var frontEndOptions =
+      new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
+    return frontEndOptions;
   }
 
   /**

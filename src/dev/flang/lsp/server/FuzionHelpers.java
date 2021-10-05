@@ -22,6 +22,7 @@ import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Impl.Kind;
+import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;

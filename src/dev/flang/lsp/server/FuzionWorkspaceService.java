@@ -12,6 +12,8 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ShowDocumentParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import dev.flang.be.interpreter.Interpreter;
+
 public class FuzionWorkspaceService implements WorkspaceService
 {
 
@@ -35,24 +37,38 @@ public class FuzionWorkspaceService implements WorkspaceService
     switch (Commands.valueOf(params.getCommand()))
       {
         case showSyntaxTree :
-          var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
-          var feature = FuzionHelpers.baseFeature(uri);
-          if (feature.isEmpty())
-            {
-              CompletableFuture.completedFuture(null);
-            }
-          var ast = ASTPrinter.getAST(feature.get());
-          var file = Util.writeToTempFile(ast, Util.randomString(), ".fuzion.ast");
-          Main.getLanguageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
+          showSyntaxTree(params);
           return CompletableFuture.completedFuture(null);
         case evaluate :
-          var qualifiedName = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
-          Main.getLanguageClient().showMessage(new MessageParams(MessageType.Info, "should eval: " + qualifiedName));
+          evaluate(params);
           return CompletableFuture.completedFuture(null);
         default:
           Util.WriteStackTrace(new Exception("not implemented"));
           return CompletableFuture.completedFuture(null);
       }
+  }
+
+  private void evaluate(ExecuteCommandParams params)
+  {
+    var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
+    var result = Util.WithCapturedStdOutErr(() ->{
+      var interpreter = new Interpreter(ParserHelper.FUIR(uri));
+      interpreter.run();
+    }, 5000);
+    Main.getLanguageClient().showMessage(new MessageParams(MessageType.Info, result));
+  }
+
+  private void showSyntaxTree(ExecuteCommandParams params)
+  {
+    var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
+    var feature = FuzionHelpers.baseFeature(uri);
+    if (feature.isEmpty())
+      {
+        CompletableFuture.completedFuture(null);
+      }
+    var ast = ASTPrinter.getAST(feature.get());
+    var file = Util.writeToTempFile(ast, Util.randomString(), ".fuzion.ast");
+    Main.getLanguageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }
 
 }
