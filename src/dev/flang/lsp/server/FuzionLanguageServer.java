@@ -58,7 +58,7 @@ public class FuzionLanguageServer implements LanguageServer
   {
     capabilities.setCodeActionProvider(true);
     var commands = Arrays.stream(Commands.values())
-      .map(c -> c.toString())
+      .map(c -> c.name())
       .collect(Collectors.toList());
     capabilities.setExecuteCommandProvider(new ExecuteCommandOptions(commands));
   }

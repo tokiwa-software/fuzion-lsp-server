@@ -26,7 +26,7 @@ public class CodeLenses
   private static Stream<CodeLens> evaluateUri(String uri)
   {
     return Stream.of(new CodeLens(new Range(new Position(0, 0), new Position(0, 1)),
-      new Command(Commands.evaluate.toString(), Commands.evaluate.toString(),
+      new Command(Commands.evaluate.toString(), Commands.evaluate.name(),
         List.of(uri)),
       null));
   }
