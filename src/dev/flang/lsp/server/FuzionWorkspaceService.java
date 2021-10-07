@@ -51,7 +51,7 @@ public class FuzionWorkspaceService implements WorkspaceService
   private void evaluate(ExecuteCommandParams params)
   {
     var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
-    var result = Util.WithCapturedStdOutErr(() ->{
+    var result = Util.WithCapturedStdOutErr(() -> {
       var interpreter = new Interpreter(ParserHelper.FUIR(uri));
       interpreter.run();
     }, 10000);
@@ -67,7 +67,7 @@ public class FuzionWorkspaceService implements WorkspaceService
         CompletableFuture.completedFuture(null);
       }
     var ast = ASTPrinter.getAST(feature.get());
-    var file = Util.writeToTempFile(ast, Util.randomString(), ".fuzion.ast");
+    var file = Util.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Main.getLanguageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }
 

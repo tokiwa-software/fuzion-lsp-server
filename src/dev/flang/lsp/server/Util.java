@@ -16,9 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -56,7 +54,7 @@ public class Util
 
   public static File writeToTempFile(String text)
   {
-    return writeToTempFile(text, Util.randomString(), ".fz");
+    return writeToTempFile(text, String.valueOf(System.currentTimeMillis()), ".fz");
   }
 
   public static File writeToTempFile(String text, String prefix, String extension)
@@ -84,20 +82,6 @@ public class Util
         Util.WriteStackTraceAndExit(1);
         return null;
       }
-  }
-
-  // https://www.baeldung.com/java-random-string
-  static String randomString()
-  {
-    int leftLimit = 97; // letter 'a'
-    int rightLimit = 122; // letter 'z'
-    int targetStringLength = 10;
-    Random random = new Random();
-
-    return random.ints(leftLimit, rightLimit + 1)
-      .limit(targetStringLength)
-      .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-      .toString();
   }
 
   /**
