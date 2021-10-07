@@ -133,11 +133,11 @@ public class Util
 
   private static MessageParams TryRunWithTimeout(Runnable runnable, long timeOutInMilliSeconds,
     PipedInputStream inputStream,
-    PrintStream outputStream) throws InterruptedException, ExecutionException, IOException
+    PrintStream outputStream) throws IOException
   {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    Future<?> future = executor.submit(runnable);
 
+    Future<?> future = executor.submit(runnable);
     try
       {
         future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
@@ -147,8 +147,15 @@ public class Util
     catch (TimeoutException e)
       {
         future.cancel(true);
+        outputStream.close();
         return new MessageParams(MessageType.Warning, "Execution timed out: " + System.lineSeparator()
           + new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+      }
+    catch (Exception e)
+      {
+        Util.WriteStackTrace(e);
+        return new MessageParams(MessageType.Error, "Execution failed: " + System.lineSeparator() +
+          e.getMessage());
       } finally
       {
         executor.shutdown();
