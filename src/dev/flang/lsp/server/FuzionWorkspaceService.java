@@ -54,8 +54,8 @@ public class FuzionWorkspaceService implements WorkspaceService
     var result = Util.WithCapturedStdOutErr(() ->{
       var interpreter = new Interpreter(ParserHelper.FUIR(uri));
       interpreter.run();
-    }, 5000);
-    Main.getLanguageClient().showMessage(new MessageParams(MessageType.Info, result));
+    }, 10000);
+    Main.getLanguageClient().showMessage(result);
   }
 
   private void showSyntaxTree(ExecuteCommandParams params)

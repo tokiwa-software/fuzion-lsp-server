@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -99,36 +100,25 @@ public class Util
       .toString();
   }
 
-  public static String WithCapturedStdOutErr(Runnable runnable, long timeOutInMilliSeconds)
+  /**
+   * this ugly method executes a runnable within a given time and
+   * captures both stdout and stderr along the way.
+   * @param runnable
+   * @param timeOutInMilliSeconds
+   * @return
+   */
+  public static MessageParams WithCapturedStdOutErr(Runnable runnable, long timeOutInMilliSeconds)
   {
     var out = System.out;
     var err = System.err;
     try
       {
         var inputStream = new PipedInputStream();
-        PrintStream p = new PrintStream(new PipedOutputStream(inputStream));
-        System.setOut(p);
-        System.setErr(p);
+        PrintStream outputStream = new PrintStream(new PipedOutputStream(inputStream));
+        System.setOut(outputStream);
+        System.setErr(outputStream);
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<?> future = executor.submit(runnable);
-
-        var result = "";
-        try
-          {
-            future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
-          }
-        catch (TimeoutException e)
-          {
-            future.cancel(true);
-            result += "Timed out..." + System.lineSeparator();
-          } finally
-          {
-            executor.shutdown();
-          }
-        p.close();
-        result += new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        return result;
+        return TryRunWithTimeout(runnable, timeOutInMilliSeconds, inputStream, outputStream);
       }
     catch (Exception e)
       {
@@ -138,6 +128,32 @@ public class Util
       {
         System.setOut(out);
         System.setErr(err);
+      }
+  }
+
+  private static MessageParams TryRunWithTimeout(Runnable runnable, long timeOutInMilliSeconds,
+    PipedInputStream inputStream,
+    PrintStream outputStream) throws InterruptedException, ExecutionException, IOException
+  {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    Future<?> future = executor.submit(runnable);
+
+    try
+      {
+        future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
+        outputStream.close();
+        return new MessageParams(MessageType.Info, new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+      }
+    catch (TimeoutException e)
+      {
+        future.cancel(true);
+        return new MessageParams(MessageType.Warning, "Execution timed out: " + System.lineSeparator()
+          + new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+      } finally
+      {
+        executor.shutdown();
+        outputStream.close();
+        inputStream.close();
       }
   }
 
