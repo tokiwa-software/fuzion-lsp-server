@@ -1,6 +1,9 @@
 package dev.flang.lsp.server;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import com.google.gson.JsonPrimitive;
 
@@ -51,11 +54,20 @@ public class FuzionWorkspaceService implements WorkspaceService
   private void evaluate(ExecuteCommandParams params)
   {
     var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
-    var result = Util.WithCapturedStdOutErr(() -> {
-      var interpreter = new Interpreter(ParserHelper.FUIR(uri));
-      interpreter.run();
-    }, 10000);
-    Main.getLanguageClient().showMessage(result);
+    try
+      {
+        var result = Util.WithCapturedStdOutErr(() -> {
+          var interpreter = new Interpreter(ParserHelper.FUIR(uri));
+          interpreter.run();
+        }, 10000);
+        Main.getLanguageClient().showMessage(result);
+      }
+    catch (IOException | InterruptedException | ExecutionException | TimeoutException | StackOverflowError e)
+      {
+        Main.getLanguageClient()
+          .showMessage(new MessageParams(MessageType.Error, e.getMessage()));
+      }
+
   }
 
   private void showSyntaxTree(ExecuteCommandParams params)

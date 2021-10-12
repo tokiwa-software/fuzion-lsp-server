@@ -17,6 +17,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -90,8 +91,12 @@ public class Util
    * @param runnable
    * @param timeOutInMilliSeconds
    * @return
+   * @throws IOException
+   * @throws TimeoutException
+   * @throws ExecutionException
+   * @throws InterruptedException
    */
-  public static MessageParams WithCapturedStdOutErr(Runnable runnable, long timeOutInMilliSeconds)
+  public static MessageParams WithCapturedStdOutErr(Runnable runnable, long timeOutInMilliSeconds) throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     var out = System.out;
     var err = System.err;
@@ -103,11 +108,6 @@ public class Util
         System.setErr(outputStream);
 
         return TryRunWithTimeout(runnable, timeOutInMilliSeconds, inputStream, outputStream);
-      }
-    catch (Exception e)
-      {
-        Util.WriteStackTraceAndExit(1, e);
-        return null;
       } finally
       {
         System.setOut(out);
@@ -117,7 +117,7 @@ public class Util
 
   private static MessageParams TryRunWithTimeout(Runnable runnable, long timeOutInMilliSeconds,
     PipedInputStream inputStream,
-    PrintStream outputStream) throws IOException
+    PrintStream outputStream) throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -127,21 +127,12 @@ public class Util
         future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
         outputStream.close();
         return new MessageParams(MessageType.Info, new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
-      }
-    catch (TimeoutException e)
-      {
-        future.cancel(true);
-        outputStream.close();
-        return new MessageParams(MessageType.Warning, "Execution timed out: " + System.lineSeparator()
-          + new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
-      }
-    catch (Exception e)
-      {
-        Util.WriteStackTrace(e);
-        return new MessageParams(MessageType.Error, "Execution failed: " + System.lineSeparator() +
-          e.getMessage());
       } finally
       {
+        if (!future.isCancelled() && !future.isDone())
+          {
+            future.cancel(true);
+          }
         executor.shutdown();
         outputStream.close();
         inputStream.close();
@@ -266,8 +257,7 @@ public class Util
   {
     var throwable = new Throwable();
     throwable.fillInStackTrace();
-    WriteStackTrace(throwable);
-    System.exit(status);
+    WriteStackTraceAndExit(status, throwable);
   }
 
   private static void WriteStackTraceAndExit(int status, Throwable e)
