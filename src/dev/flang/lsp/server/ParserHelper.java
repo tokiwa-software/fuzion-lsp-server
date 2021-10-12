@@ -11,9 +11,11 @@ import org.eclipse.lsp4j.MessageType;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
+import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
+import dev.flang.ir.Clazzes;
 import dev.flang.lsp.server.records.ParserCache;
 import dev.flang.me.MiddleEnd;
 import dev.flang.mir.MIR;
@@ -54,16 +56,12 @@ public class ParserHelper
             return Optional.of(parserCache.firstEntry().getValue().mir().main());
           }
 
-        var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
-        if (parserCache.containsKey(uri) && sourceText.equals(parserCacheSourceText.get(uri)))
+        if (cacheContains(uri))
           {
             return Optional.of(parserCache.get(uri).mir().main());
           }
 
-        var frontEndOptions = FrontEndOptions(uri);
-        var mir = MIR(frontEndOptions);
-        parserCache.put(uri, new ParserCache(mir, frontEndOptions));
-        parserCacheSourceText.put(uri, sourceText);
+        createMIRandCache(uri);
 
         var result = getMainFeature(uri).get();
 
@@ -71,6 +69,21 @@ public class ParserHelper
 
         return Optional.of(result);
       }
+  }
+
+  private static boolean cacheContains(String uri)
+  {
+    var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
+    return parserCache.containsKey(uri) && sourceText.equals(parserCacheSourceText.get(uri));
+  }
+
+  private static void createMIRandCache(String uri)
+  {
+    var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
+    var frontEndOptions = FrontEndOptions(uri);
+    var mir = MIR(frontEndOptions);
+    parserCache.put(uri, new ParserCache(mir, frontEndOptions));
+    parserCacheSourceText.put(uri, sourceText);
   }
 
   private static void afterParsing(String uri, Feature mainFeature)
@@ -85,10 +98,9 @@ public class ParserHelper
 
   public static FUIR FUIR(String uri)
   {
-    if (!parserCache.containsKey(uri))
-      {
-        throw new RuntimeException("this should not happen");
-      }
+    // NYI remove recreation of MIR
+    createMIRandCache(uri);
+
     var frontEndOptions = parserCache.get(uri).frontEndOptions();
     var air = new MiddleEnd(frontEndOptions, parserCache.get(uri).mir()).air();
     return new Optimizer(frontEndOptions, air).fuir(false);
@@ -102,6 +114,8 @@ public class ParserHelper
         Errors.clear();
         Types.clear();
         FeatureName.clear();
+        Clazzes.clear();
+        Interpreter.clear();
         return new FrontEnd(frontEndOptions).createMIR();
       });
     });
