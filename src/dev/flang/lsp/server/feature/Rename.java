@@ -110,7 +110,8 @@ public class Rename
   }
 
   // NYI disallow renaming of stdlib
-  // NYI should we disallow renaming in case of source code errors?
+  // NYI check for name collisions?
+  // NYI should we disallow renaming if source code errors are present?
   public static PrepareRenameResult getPrepareRenameResult(PrepareRenameParams params)
   {
     var tokenPosition = FuzionHelpers.nextToken(params);

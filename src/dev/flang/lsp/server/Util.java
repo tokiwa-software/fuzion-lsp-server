@@ -15,6 +15,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -260,7 +261,7 @@ public class Util
     WriteStackTraceAndExit(status, throwable);
   }
 
-  private static void WriteStackTraceAndExit(int status, Throwable e)
+  public static void WriteStackTraceAndExit(int status, Throwable e)
   {
     WriteStackTrace(e);
     LSPSecurityManager.IgnoreExit = false;
@@ -285,6 +286,11 @@ public class Util
           .showMessage(new MessageParams(MessageType.Error,
             "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
       }
+  }
+
+  static Path PathOf(String uri)
+  {
+    return Path.of(uri.substring("file:".length()));
   }
 
 }

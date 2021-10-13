@@ -1,5 +1,8 @@
 package dev.flang.lsp.server;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -22,11 +25,11 @@ import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Impl.Kind;
-import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
+import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourceFile;
@@ -175,12 +178,13 @@ public final class FuzionHelpers
 
       var sourcePosition = FuzionHelpers.position(astItem);
 
-      boolean EndOfOuterFeatureIsAfterCursorPosition = Util.ComparePosition(cursorPosition,
+      boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
+        || Util.ComparePosition(cursorPosition,
         Converters.ToPosition(FuzionHelpers.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
         Util.ComparePosition(cursorPosition, Converters.ToPosition(sourcePosition)) >= 0;
 
-      return ItemPositionIsBeforeOrAtCursorPosition && EndOfOuterFeatureIsAfterCursorPosition;
+      return ItemPositionIsBeforeOrAtCursorPosition && BuiltInOrEndAfterCursor;
     };
   }
 
@@ -326,6 +330,7 @@ public final class FuzionHelpers
    */
   public static SourcePosition endOfFeature(Feature baseFeature)
   {
+    var uri = Converters.ToLocation(baseFeature.pos()).getUri();
     if (!Memory.EndOfFeature.containsKey(baseFeature))
       {
         SourcePosition endOfFeature = HeirsVisitor
@@ -333,12 +338,13 @@ public final class FuzionHelpers
           .entrySet()
           .stream()
           .filter(entry -> entry.getValue() != null)
-          .filter(IsItemInFile(Converters.ToLocation(baseFeature.pos()).getUri()))
+          .filter(IsItemInFile(uri))
           .filter(entry -> entry.getValue().compareTo(baseFeature) == 0)
           .map(entry -> position(entry.getKey()))
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
-            return new SourcePosition(position._sourceFile, position._line, endColumn(position));
+            return new SourcePosition(position._sourceFile, position._line,
+              endOfToken(uri, Converters.ToPosition(position)).getCharacter() + 1);
           })
           .findFirst()
           .orElse(baseFeature.pos());
@@ -347,29 +353,6 @@ public final class FuzionHelpers
       }
 
     return Memory.EndOfFeature.get(baseFeature);
-  }
-
-  /**
-   * NYI use lexer to figure out to end of the token at start
-   * @param start
-   * @return
-   */
-  private static int endColumn(SourcePosition start)
-  {
-    var uri = ParserHelper.getUri(start);
-    var optionalText = FuzionTextDocumentService.getText(uri);
-    if (optionalText.isEmpty())
-      {
-        return start._column;
-      }
-    var text = optionalText.get();
-    var line_text = text.split("\\R", -1)[start._line - 1];
-    var column = start._column;
-    while (line_text.length() > column && !Util.HashSetOf(')', '.', ' ').contains(line_text.charAt(column - 1)))
-      {
-        column++;
-      }
-    return column;
   }
 
   public static boolean IsAnonymousInnerFeature(Feature f)
@@ -465,7 +448,7 @@ public final class FuzionHelpers
 
   public static TokenInfo nextToken(TextDocumentPositionParams params)
   {
-    var sourceText = FuzionTextDocumentService.getText(params.getTextDocument().getUri()).orElseThrow();
+    var sourceText = sourceText(params);
     return Util.WithTextInputStream(sourceText, () -> {
 
       var lexer = new Lexer(SourceFile.STDIN);
@@ -478,6 +461,26 @@ public final class FuzionHelpers
         }
       return getTokenIdentifier(lexer);
     });
+  }
+
+  private static String sourceText(TextDocumentPositionParams params)
+  {
+    String uri = params.getTextDocument().getUri();
+    var sourceText = FuzionTextDocumentService.getText(uri);
+    if (sourceText.isPresent())
+      {
+        return sourceText.get();
+      }
+    try
+      {
+        return String.join(System.lineSeparator(),
+          Files.readAllLines(Util.PathOf(uri), StandardCharsets.UTF_8));
+      }
+    catch (IOException e)
+      {
+        Util.WriteStackTraceAndExit(1, e);
+        return null;
+      }
   }
 
   private static boolean lexerEndPosIsBeforeOrAtTextDocumentPosition(TextDocumentPositionParams params, Lexer lexer)
