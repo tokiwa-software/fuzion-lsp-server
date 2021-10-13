@@ -263,6 +263,7 @@ public class Util
   private static void WriteStackTraceAndExit(int status, Throwable e)
   {
     WriteStackTrace(e);
+    LSPSecurityManager.IgnoreExit = false;
     System.exit(status);
   }
 

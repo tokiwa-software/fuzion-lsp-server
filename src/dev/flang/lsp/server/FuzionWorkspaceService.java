@@ -64,8 +64,12 @@ public class FuzionWorkspaceService implements WorkspaceService
       }
     catch (IOException | InterruptedException | ExecutionException | TimeoutException | StackOverflowError e)
       {
-        Main.getLanguageClient()
-          .showMessage(new MessageParams(MessageType.Error, e.getMessage()));
+        var message = e.getMessage();
+        if (message != null)
+          {
+            Main.getLanguageClient()
+              .showMessage(new MessageParams(MessageType.Error, message));
+          }
       }
 
   }
