@@ -7,21 +7,21 @@ JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.ge
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 all: classes
-	java -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) dev.flang.lsp.server.Main -tcp
+	java -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
 tcp:
-	java -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) dev.flang.lsp.server.Main -tcp
+	java -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
 	mkdir -p $@
 	javac -classpath $(JARS_FOR_CLASSPATH):$(FUZION_HOME)/classes -d $@ $(JAVA_FILES)
 
 stdio: classes
-	java -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) dev.flang.lsp.server.Main
+	java -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main
 
 debug: classes
 	mkdir -p runDir
-	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) dev.flang.lsp.server.Main -tcp
+	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
 jars/org.eclipse.lsp4j-0.12.0.jar:
 	mkdir -p $(@D)
