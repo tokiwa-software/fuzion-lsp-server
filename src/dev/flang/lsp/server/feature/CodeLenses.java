@@ -15,20 +15,27 @@ import dev.flang.lsp.server.Util;
 
 public class CodeLenses
 {
-
   public static List<CodeLens> getCodeLenses(CodeLensParams params)
   {
     var uri = Util.getUri(params.getTextDocument());
-    return evaluateUri(uri)
+    return Stream.of(codeLensEvaluateFile(uri), codeLensShowSyntaxTree(params))
       .collect(Collectors.toList());
   }
 
-  private static Stream<CodeLens> evaluateUri(String uri)
+  private static CodeLens codeLensShowSyntaxTree(CodeLensParams params)
   {
-    return Stream.of(new CodeLens(new Range(new Position(0, 0), new Position(0, 1)),
-      new Command(Commands.evaluate.toString(), Commands.evaluate.name(),
-        List.of(uri)),
-      null));
+    var command = new Command(Commands.showSyntaxTree.toString(), Commands.showSyntaxTree.name(),
+      List.of(params.getTextDocument().getUri()));
+    return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)), command, null);
+  }
+
+  private static CodeLens codeLensEvaluateFile(String uri)
+  {
+    Command command = new Command(Commands.evaluate.toString(), Commands.evaluate.name(),
+      List.of(uri));
+    return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)),
+      command,
+      null);
   }
 
 }
