@@ -3,7 +3,7 @@ CLASSDIR = classes
 JAVA_FILES = $(shell find $(SOURCEDIR) -name '*.java')
 FUZION_HOME = '${CURDIR}/fuzion/build'
 
-JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar
+JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 all: classes
@@ -39,6 +39,14 @@ jars/gson-2.8.7.jar:
 	mkdir -p $(@D)
 	wget -O $@ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.7/$(@F)
 
+jars/junit-platform-console-standalone-1.8.1.jar:
+	mkdir -p $(@D)
+	wget -O $@ https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.8.1/$(@F)
+
+jars/junit-jupiter-api-5.8.1.jar:
+	mkdir -p $(@D)
+	wget -O $@ https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.8.1/$(@F)
+
 build_fuzion:
 	make -C fuzion
 
@@ -48,3 +56,6 @@ clean:
 
 jar: clean classes
 	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
+
+run_tests: classes
+	java -jar jars/junit-platform-console-standalone-1.8.1.jar -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) -p test.flang.lsp.server

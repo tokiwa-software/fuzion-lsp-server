@@ -180,7 +180,7 @@ public final class FuzionHelpers
 
       boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
         || Util.ComparePosition(cursorPosition,
-        Converters.ToPosition(FuzionHelpers.endOfFeature(outer))) <= 0;
+          Converters.ToPosition(FuzionHelpers.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
         Util.ComparePosition(cursorPosition, Converters.ToPosition(sourcePosition)) >= 0;
 
@@ -442,7 +442,7 @@ public final class FuzionHelpers
         {
           lexer.next();
         }
-      return getTokenIdentifier(lexer);
+      return tokenInfo(lexer);
     });
   }
 
@@ -459,7 +459,7 @@ public final class FuzionHelpers
         {
           lexer.nextRaw();
         }
-      return getTokenIdentifier(lexer);
+      return tokenInfo(lexer);
     });
   }
 
@@ -488,7 +488,7 @@ public final class FuzionHelpers
     return (lexer.sourcePos()._column - 1) <= params.getPosition().getCharacter();
   }
 
-  private static TokenInfo getTokenIdentifier(Lexer lexer)
+  private static TokenInfo tokenInfo(Lexer lexer)
   {
     var start = lexer.sourcePos(lexer.pos());
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
@@ -507,20 +507,27 @@ public final class FuzionHelpers
       .skip(range.getStart().getLine())
       .limit(range.getEnd().getLine() - range.getStart().getLine() + 1)
       .toList();
+    if (lines.size() == 1)
+      {
+        return lines.get(0).substring(range.getStart().getCharacter(), range.getEnd().getCharacter());
+      }
     var result = "";
     for(int i = 0; i < lines.size(); i++)
       {
+        // first line
         if (i == 0)
           {
-            result += lines.get(i).substring(range.getStart().getCharacter());
+            result += lines.get(i).substring(range.getStart().getCharacter()) + System.lineSeparator();
           }
+        // last line
         else if (i + 1 == lines.size())
           {
             result += lines.get(i).substring(0, range.getEnd().getCharacter());
           }
+        // middle line
         else
           {
-            result += lines.get(i);
+            result += lines.get(i) + System.lineSeparator();
           }
       }
     return result;

@@ -64,9 +64,6 @@ public class FuzionTextDocumentService implements TextDocumentService
         Util.WriteStackTraceAndExit(1);
       }
     textDocuments.put(uri, text);
-    // NYI turn this into an event? to run asynchronosly?
-    ParserHelper.getMainFeature(uri);
-    Diagnostics.publishDiagnostics(uri);
   }
 
   @Override
@@ -77,7 +74,14 @@ public class FuzionTextDocumentService implements TextDocumentService
     var text = textDocument.getText();
 
     setText(uri, text);
+    afterSetText(uri);
+  }
 
+  private void afterSetText(String uri)
+  {
+    // NYI turn this into an event? to run asynchronosly?
+    ParserHelper.getMainFeature(uri);
+    Diagnostics.publishDiagnostics(uri);
   }
 
   // taken from apache commons
@@ -107,6 +111,7 @@ public class FuzionTextDocumentService implements TextDocumentService
         text = applyContentChanges(text, contentChanges);
 
         setText(uri, text);
+        afterSetText(uri);
       }
   }
 
