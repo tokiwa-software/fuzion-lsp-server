@@ -26,7 +26,7 @@ public class Log
   public static void message(String str, MessageType messageType)
   {
     String result = "";
-    if (Main.DEBUG())
+    if (Config.DEBUG())
       {
         var lines = str.split("\n");
         for(String line : lines)
@@ -37,7 +37,7 @@ public class Log
                 result += "..." + System.lineSeparator();
               }
           }
-        Main.getLanguageClient().logMessage(new MessageParams(messageType, result));
+        Config.languageClient().logMessage(new MessageParams(messageType, result));
       }
   }
 }

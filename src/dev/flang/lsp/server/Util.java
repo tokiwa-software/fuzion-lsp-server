@@ -97,7 +97,8 @@ public class Util
    * @throws ExecutionException
    * @throws InterruptedException
    */
-  public static MessageParams WithCapturedStdOutErr(Runnable runnable, long timeOutInMilliSeconds) throws IOException, InterruptedException, ExecutionException, TimeoutException
+  public static MessageParams WithCapturedStdOutErr(Runnable runnable, long timeOutInMilliSeconds)
+    throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     var out = System.out;
     var err = System.err;
@@ -140,8 +141,25 @@ public class Util
       }
   }
 
+  private static <T> T callOrPanic(Callable<T> callable)
+  {
+    try
+      {
+        return callable.call();
+      }
+    catch (Exception e)
+      {
+        Util.WriteStackTraceAndExit(1, e);
+        return null;
+      }
+  }
+
   public static <T> T WithRedirectedStdOut(Callable<T> callable)
   {
+    if (Config.transport() == Transport.tcp)
+      {
+        return callOrPanic(callable);
+      }
     var out = System.out;
     try
       {
@@ -160,6 +178,10 @@ public class Util
 
   public static <T> T WithRedirectedStdErr(Callable<T> callable)
   {
+    if (Config.transport() == Transport.tcp)
+      {
+        return callOrPanic(callable);
+      }
     var err = System.err;
     try
       {
@@ -280,9 +302,9 @@ public class Util
   {
     var file =
       Util.writeToTempFile(e.getMessage() + System.lineSeparator() + toString(e), "fuzion-lsp-crash", ".log", false);
-    if (Main.DEBUG())
+    if (Config.DEBUG())
       {
-        Main.getLanguageClient()
+        Config.languageClient()
           .showMessage(new MessageParams(MessageType.Error,
             "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
       }

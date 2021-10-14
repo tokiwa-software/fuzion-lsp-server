@@ -58,4 +58,4 @@ jar: clean classes
 	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
 
 run_tests: classes
-	java -jar jars/junit-platform-console-standalone-1.8.1.jar -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) -p test.flang.lsp.server
+	java -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -jar jars/junit-platform-console-standalone-1.8.1.jar -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) -p test.flang.lsp.server

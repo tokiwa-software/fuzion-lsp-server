@@ -35,8 +35,8 @@ public class ParserHelper
    * maps temporary files which are fed to the parser to their original uri.
    */
   private static TreeMap<String, String> tempFile2Uri = new TreeMap<>();
-  private static TreeMap<String, ParserCache> parserCache = new TreeMap<>();
-  private static TreeMap<String, String> parserCacheSourceText = new TreeMap<>();
+  private static TreeMap<String, ParserCache> uri2ParserCache = new TreeMap<>();
+  private static TreeMap<String, String> uri2SourceText = new TreeMap<>();
 
   /**
    * @param uri
@@ -49,16 +49,16 @@ public class ParserHelper
         // NYI
         if (uri.contains("/lib/"))
           {
-            if (parserCache.isEmpty())
+            if (uri2ParserCache.isEmpty())
               {
                 return Optional.empty();
               }
-            return Optional.of(parserCache.firstEntry().getValue().mir().main());
+            return Optional.of(uri2ParserCache.firstEntry().getValue().mir().main());
           }
 
         if (cacheContains(uri))
           {
-            return Optional.of(parserCache.get(uri).mir().main());
+            return Optional.of(uri2ParserCache.get(uri).mir().main());
           }
 
         createMIRandCache(uri);
@@ -74,23 +74,29 @@ public class ParserHelper
   private static boolean cacheContains(String uri)
   {
     var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
-    return parserCache.containsKey(uri) && sourceText.equals(parserCacheSourceText.get(uri));
+    return uri2ParserCache.containsKey(uri) && sourceText.equals(uri2SourceText.get(uri));
   }
 
   private static void createMIRandCache(String uri)
   {
     var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
+    uri2ParserCache.put(uri, parserCache(uri));
+    uri2SourceText.put(uri, sourceText);
+  }
+
+  private static ParserCache parserCache(String uri)
+  {
     var frontEndOptions = FrontEndOptions(uri);
     var mir = MIR(frontEndOptions);
-    parserCache.put(uri, new ParserCache(mir, frontEndOptions));
-    parserCacheSourceText.put(uri, sourceText);
+    return new ParserCache(mir, frontEndOptions);
   }
 
   private static void afterParsing(String uri, Feature mainFeature)
   {
+    // NYI make this less bad
     Memory.EndOfFeature.clear();
 
-    if (Main.DEBUG())
+    if (Config.DEBUG())
       {
         ASTtoHTML.printAST(mainFeature);
       }
@@ -101,8 +107,8 @@ public class ParserHelper
     // NYI remove recreation of MIR
     createMIRandCache(uri);
 
-    var frontEndOptions = parserCache.get(uri).frontEndOptions();
-    var air = new MiddleEnd(frontEndOptions, parserCache.get(uri).mir()).air();
+    var frontEndOptions = uri2ParserCache.get(uri).frontEndOptions();
+    var air = new MiddleEnd(frontEndOptions, uri2ParserCache.get(uri).mir()).air();
     return new Optimizer(frontEndOptions, air).fuir(false);
   }
 

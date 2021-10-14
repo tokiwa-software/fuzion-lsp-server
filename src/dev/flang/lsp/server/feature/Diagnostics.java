@@ -8,10 +8,10 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 
+import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Log;
-import dev.flang.lsp.server.Main;
 import dev.flang.lsp.server.ParserHelper;
 import dev.flang.util.Errors;
 
@@ -26,7 +26,7 @@ public class Diagnostics
   {
     var diagnostics = new PublishDiagnosticsParams(uri, getDiagnostics(uri).collect(Collectors.toList()));
     Log.message("publishing diagnostics: " + diagnostics.getDiagnostics().size());
-    Main.getLanguageClient().publishDiagnostics(diagnostics);
+    Config.languageClient().publishDiagnostics(diagnostics);
   }
 
   private static Stream<Diagnostic> getDiagnostics(String uri)

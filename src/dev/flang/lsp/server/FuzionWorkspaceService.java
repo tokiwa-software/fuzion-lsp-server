@@ -60,14 +60,14 @@ public class FuzionWorkspaceService implements WorkspaceService
           var interpreter = new Interpreter(ParserHelper.FUIR(uri));
           interpreter.run();
         }, 10000);
-        Main.getLanguageClient().showMessage(result);
+        Config.languageClient().showMessage(result);
       }
     catch (IOException | InterruptedException | ExecutionException | TimeoutException | StackOverflowError e)
       {
         var message = e.getMessage();
         if (message != null)
           {
-            Main.getLanguageClient()
+            Config.languageClient()
               .showMessage(new MessageParams(MessageType.Error, message));
           }
       }
@@ -84,7 +84,7 @@ public class FuzionWorkspaceService implements WorkspaceService
       }
     var ast = ASTPrinter.getAST(feature.get());
     var file = Util.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
-    Main.getLanguageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
+    Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }
 
 }

@@ -18,49 +18,26 @@ import dev.flang.util.Errors;
 public class Main
 {
 
-  enum Transport
-  {
-    stdio, tcp
-  }
-
-  private static LanguageClient _languageClient;
-  public static Transport transport;
-
-  public static LanguageClient getLanguageClient()
-  {
-    return _languageClient;
-  }
-
-  public static boolean DEBUG()
-  {
-    var debug = System.getenv("DEBUG");
-    if (debug == null)
-      {
-        return false;
-      }
-    return debug.toLowerCase().equals("true");
-  };
-
   public static void main(String[] args) throws Exception
   {
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
-    Errors.MAX_ERROR_MESSAGES  = Integer.MAX_VALUE;
+    Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
 
     System.setSecurityManager(new LSPSecurityManager());
 
-    transport = Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals)
-                                                                                                  ? Transport.tcp
-                                                                                                  : Transport.stdio;
+    Config.setTransport(Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals)
+                                                                                                          ? Transport.tcp
+                                                                                                          : Transport.stdio);
     var launcher = getLauncher();
     launcher.startListening();
-    _languageClient = launcher.getRemoteProxy();
+    Config.setLanguageClient(launcher.getRemoteProxy());
   }
 
   private static Launcher<LanguageClient> getLauncher() throws InterruptedException, ExecutionException, IOException
   {
     var server = new FuzionLanguageServer();
-    switch (transport)
+    switch (Config.transport())
       {
         case stdio :
           return createLauncher(server, System.in, System.out);
