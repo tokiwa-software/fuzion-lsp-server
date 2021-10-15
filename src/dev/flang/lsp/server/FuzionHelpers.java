@@ -15,6 +15,9 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
+import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import dev.flang.ast.Call;
 import dev.flang.ast.Case;
@@ -29,6 +32,7 @@ import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
+import dev.flang.lsp.server.feature.Rename;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
@@ -538,6 +542,54 @@ public final class FuzionHelpers
     var textDocumentPosition = new TextDocumentPositionParams(new TextDocumentIdentifier(uri), start);
     var token = nextToken(textDocumentPosition);
     return Converters.ToPosition(token.end());
+  }
+
+  private static Stream<Object> callsAndFeaturesAt(TextDocumentPositionParams params)
+  {
+    return ASTItemsOnLine(params)
+      .filter(item -> Util.HashSetOf(Feature.class, Call.class).contains(item.getClass()));
+  }
+
+  /**
+   * @param params
+   * @return feature at textdocumentposition or empty
+   */
+  public static Optional<Feature> feature(TextDocumentPositionParams params)
+  {
+    Optional<Object> callOrFeature = callsAndFeaturesAt(params)
+      .findFirst();
+
+    if (callOrFeature.isEmpty())
+      {
+        return Optional.empty();
+      }
+
+    var item = callOrFeature.get();
+    if (item instanceof Call)
+      {
+        return Optional.of(((Call) item).calledFeature());
+      }
+    return Optional.of((Feature) item);
+  }
+
+  public static Optional<TokenInfo> CallOrFeatureToken(TextDocumentPositionParams params)
+  {
+    var token = FuzionHelpers.nextToken(params);
+    if (token == null)
+      {
+        return Optional.empty();
+      }
+    var column = token.start()._column;
+    var isCallOrFeature = FuzionHelpers.callsAndFeaturesAt(params)
+      .map(obj -> position(obj))
+      .filter(pos -> column == pos._column)
+      .findFirst()
+      .isPresent();
+    if (!isCallOrFeature)
+      {
+        return Optional.empty();
+      }
+    return Optional.of(token);
   }
 
 }

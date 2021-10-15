@@ -10,6 +10,7 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.Feature;
+import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -60,6 +61,13 @@ public final class Converters {
       .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
       .collect(Collectors.joining(", ")) + ")";
     return feature.featureName().baseName() + feature.generics + arguments + " => " + feature.resultType();
+  }
+
+  public static Range ToRange(TokenInfo tokenInfo)
+  {
+    var start = ToPosition(tokenInfo.start());
+    var end = ToPosition(tokenInfo.end());
+    return new Range(start, end);
   }
 
 }

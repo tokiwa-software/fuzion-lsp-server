@@ -1,13 +1,11 @@
 package dev.flang.lsp.server.feature;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.PrepareRenameResult;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.RenameParams;
@@ -18,7 +16,6 @@ import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
-import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
@@ -43,11 +40,17 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
-    var feature = getFeature(params);
+    var feature = FuzionHelpers.feature(params);
+    if (feature.isEmpty())
+      {
+        var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
+        throw new ResponseErrorException(responseError);
+      }
 
-    var featureIdentifier = FuzionHelpers.nextTokenOfType(feature.featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
+    var featureIdentifier =
+      FuzionHelpers.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
-    Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature, featureIdentifier);
+    Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature.get(), featureIdentifier);
 
     var changes = renamePositions
       .map(sourcePosition -> Converters.ToLocation(sourcePosition))
@@ -59,35 +62,17 @@ public class Rename
   }
 
   /**
-   * get the feature that is to be renamed
-   * @param params
-   * @return
-   */
-  private static Feature getFeature(RenameParams params)
-  {
-    Optional<Object> itemToRename = CallsAndFeatures(params)
-      .findFirst();
-
-    if (itemToRename.isEmpty())
-      {
-        var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
-        throw new ResponseErrorException(responseError);
-      }
-
-    var featureToRename = getFeature(itemToRename.get());
-    return featureToRename;
-  }
-
-  /**
    *
    * @param featureToRename
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(String uri, Feature featureToRename, TokenInfo featureIdentifier)
+  private static Stream<SourcePosition> getRenamePositions(String uri, Feature featureToRename,
+    TokenInfo featureIdentifier)
   {
     var callsSourcePositions = FuzionHelpers.callsTo(uri, featureToRename).map(c -> c.pos());
-    var tokenPosition = new SourcePosition(featureToRename.pos()._sourceFile, featureToRename.pos()._line, featureToRename.pos()._column + featureIdentifier.start()._column - 1);
+    var tokenPosition = new SourcePosition(featureToRename.pos()._sourceFile, featureToRename.pos()._line,
+      featureToRename.pos()._column + featureIdentifier.start()._column - 1);
     Stream<SourcePosition> renamePositions = Stream.concat(callsSourcePositions, Stream.of(tokenPosition));
     return renamePositions;
   }
@@ -100,41 +85,18 @@ public class Rename
     return result;
   }
 
-  private static Feature getFeature(Object item)
-  {
-    if (item instanceof Call)
-      {
-        return ((Call) item).calledFeature();
-      }
-    return (Feature) item;
-  }
-
   // NYI disallow renaming of stdlib
   // NYI check for name collisions?
   // NYI should we disallow renaming if source code errors are present?
-  public static PrepareRenameResult getPrepareRenameResult(PrepareRenameParams params)
+  public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
-    var tokenPosition = FuzionHelpers.nextToken(params);
-    if (tokenPosition == null || !IsAtCallOrFeature(params, tokenPosition.start()._column))
+    var token = FuzionHelpers.CallOrFeatureToken(params);
+    if (token.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "no valid identifier.", null);
         throw new ResponseErrorException(responseError);
       }
-    return new PrepareRenameResult(Converters.ToRange(params), tokenPosition.text());
-  }
-
-  private static boolean IsAtCallOrFeature(PrepareRenameParams params, int column)
-  {
-    return CallsAndFeatures(params).map(obj -> FuzionHelpers.position(obj))
-      .filter(pos -> column == pos._column)
-      .findFirst()
-      .isPresent();
-  }
-
-  private static Stream<Object> CallsAndFeatures(TextDocumentPositionParams params)
-  {
-    return FuzionHelpers.ASTItemsOnLine(params)
-      .filter(item -> Util.HashSetOf(Feature.class, Call.class).contains(item.getClass()));
+    return new PrepareRenameResult(Converters.ToRange(token.get()), token.get().text());
   }
 
 }
