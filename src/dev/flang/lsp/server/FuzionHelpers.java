@@ -15,9 +15,6 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
-import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
-import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import dev.flang.ast.Call;
 import dev.flang.ast.Case;
@@ -32,7 +29,6 @@ import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-import dev.flang.lsp.server.feature.Rename;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
@@ -450,6 +446,7 @@ public final class FuzionHelpers
     });
   }
 
+  // NYI rename this method to tokenAt
   public static TokenInfo nextToken(TextDocumentPositionParams params)
   {
     var sourceText = sourceText(params);
@@ -590,6 +587,39 @@ public final class FuzionHelpers
         return Optional.empty();
       }
     return Optional.of(token);
+  }
+
+  private static Stream<Feature> InheritedFeatures(Feature feature)
+  {
+    return feature.inherits.stream().flatMap(c -> {
+      return Stream.concat(Stream.of(c.calledFeature()), InheritedFeatures(c.calledFeature()));
+    });
+  }
+
+  public static Feature universe(TextDocumentPositionParams params)
+  {
+    return ParserHelper.getMainFeature(Util.getUri(params)).get().universe();
+  }
+
+  public static Stream<Feature> featuresIncludingInheritedFeatures(TextDocumentPositionParams params)
+  {
+    var mainFeature = ParserHelper.getMainFeature(Util.getUri(params));
+    if (mainFeature.isEmpty())
+      {
+        return Stream.empty();
+      }
+
+    var feature = calledFeaturesSortedDesc(params)
+      .map(x -> {
+        return x.resultType().featureOfType();
+      })
+      .findFirst();
+
+    if (feature.isEmpty())
+      {
+        return Stream.empty();
+      }
+    return Stream.concat(Stream.of(feature.get()), InheritedFeatures(feature.get()));
   }
 
 }

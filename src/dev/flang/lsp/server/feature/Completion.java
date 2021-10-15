@@ -13,17 +13,12 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
 
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Log;
-import dev.flang.lsp.server.ParserHelper;
-import dev.flang.lsp.server.Util;
 
 /**
  * tries offering completions
@@ -57,31 +52,20 @@ public class Completion
   {
     var triggerCharacter = params.getContext().getTriggerCharacter();
 
-    if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked || ".".equals(triggerCharacter))
+    if (".".equals(triggerCharacter))
       {
-        Stream<Feature> features = getFeatures(params, triggerCharacter);
-
-        var sortedFeatures = features
-          .flatMap(f -> f.declaredFeatures().values().stream())
-          .distinct()
-          .filter(f -> !FuzionHelpers.IsAnonymousInnerFeature(f))
-          .collect(Collectors.toList());
-
-        var completionItems = IntStream
-          .range(0, sortedFeatures.size())
-          .mapToObj(
-            index -> {
-              var feature = sortedFeatures.get(index);
-              return buildCompletionItem(
-                Converters.ToLabel(feature),
-                getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
-            });
-
-        return Either.forLeft(completionItems.collect(Collectors.toList()));
+        return completions(FuzionHelpers.featuresIncludingInheritedFeatures(params));
+      }
+    if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
+      {
+        // NYI can we do better here?
+        return completions(Stream.of(FuzionHelpers.universe(params)));
       }
 
-    var word = getWord(params);
-    switch (word)
+    // NYI FIXME we need to move the cursor one step back
+    // before getting next token
+    var tokenText = FuzionHelpers.nextToken(params).text();
+    switch (tokenText)
       {
         case "for" :
           return Either.forLeft(Arrays.asList(buildCompletionItem("for i in start..end do",
@@ -90,46 +74,25 @@ public class Completion
     return Either.forLeft(List.of());
   }
 
-  private static Stream<Feature> getFeatures(CompletionParams params, String triggerCharacter)
+  private static Either<List<CompletionItem>, CompletionList> completions(Stream<Feature> features)
   {
-    var mainFeature = ParserHelper.getMainFeature(Util.getUri(params));
-    if(mainFeature.isEmpty()){
-      return Stream.empty();
-    }
-    var universe = mainFeature.get().universe();
+    var sortedFeatures = features
+      .flatMap(f -> f.declaredFeatures().values().stream())
+      .distinct()
+      .filter(f -> !FuzionHelpers.IsAnonymousInnerFeature(f))
+      .collect(Collectors.toList());
 
-    Stream<Feature> features;
-    if (".".equals(triggerCharacter))
-      {
-        var feature = FuzionHelpers.calledFeaturesSortedDesc(params)
-          .map(x -> {
-            return x.resultType().featureOfType();
-          })
-          .findFirst();
+    var completionItems = IntStream
+      .range(0, sortedFeatures.size())
+      .mapToObj(
+        index -> {
+          var feature = sortedFeatures.get(index);
+          return buildCompletionItem(
+            Converters.ToLabel(feature),
+            getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
+        });
 
-        if (feature.isEmpty())
-          {
-            Log.message("no feature to complete");
-            return Stream.empty();
-          }
-
-        Log.message("completing for: " + feature.get().qualifiedName());
-
-        features = Stream.concat(Stream.of(feature.get()), getInheritedFeatures(feature.get()));
-      }
-    else
-      {
-        // NYI can we do better here?
-        features = Stream.of(universe);
-      }
-    return features;
-  }
-
-  private static Stream<Feature> getInheritedFeatures(Feature feature)
-  {
-    return feature.inherits.stream().flatMap(c -> {
-      return Stream.concat(Stream.of(c.calledFeature()), getInheritedFeatures(c.calledFeature()));
-    });
+    return Either.forLeft(completionItems.collect(Collectors.toList()));
   }
 
   /**
@@ -201,24 +164,6 @@ public class Completion
     return "<" + _generics
       + (feature.generics.isOpen() ? "...": "")
       + ">";
-  }
-
-  private static @NonNull String getWord(TextDocumentPositionParams params)
-  {
-    var text = FuzionTextDocumentService.getText(Util.getUri(params)).orElseThrow();
-    var line = text.split("\\R", -1)[params.getPosition().getLine()];
-    if (line.length() == 0)
-      {
-        return "";
-      }
-    var start = params.getPosition().getCharacter();
-    do
-      {
-        --start;
-      }
-    while (start >= 0 && line.charAt(start) != ' ');
-    var word = line.substring(start + 1, params.getPosition().getCharacter());
-    return word;
   }
 
 }
