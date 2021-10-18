@@ -15,8 +15,6 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ShowDocumentParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
-import dev.flang.be.interpreter.Interpreter;
-
 public class FuzionWorkspaceService implements WorkspaceService
 {
 
@@ -56,10 +54,7 @@ public class FuzionWorkspaceService implements WorkspaceService
     var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
     try
       {
-        var result = Util.WithCapturedStdOutErr(() -> {
-          var interpreter = new Interpreter(ParserHelper.FUIR(uri));
-          interpreter.run();
-        }, 10000);
+        var result = FuzionHelpers.Run(uri);
         Config.languageClient().showMessage(result);
       }
     catch (IOException | InterruptedException | ExecutionException | TimeoutException | StackOverflowError e)

@@ -8,9 +8,12 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -29,6 +32,7 @@ import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
+import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
@@ -620,6 +624,16 @@ public final class FuzionHelpers
         return Stream.empty();
       }
     return Stream.concat(Stream.of(feature.get()), InheritedFeatures(feature.get()));
+  }
+
+  public static MessageParams Run(String uri)
+    throws IOException, InterruptedException, ExecutionException, TimeoutException
+  {
+    var result = Util.WithCapturedStdOutErr(() -> {
+      var interpreter = new Interpreter(ParserHelper.FUIR(uri));
+      interpreter.run();
+    }, 10000);
+    return result;
   }
 
 }
