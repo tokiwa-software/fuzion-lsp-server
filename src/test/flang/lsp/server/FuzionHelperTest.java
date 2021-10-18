@@ -181,14 +181,6 @@ class FuzionHelperTest
     assertEquals("enim ad minim veniam", text);
   }
 
-  @Test
-  void Run() throws IOException, InterruptedException, ExecutionException, TimeoutException
-  {
-    FuzionTextDocumentService.setText("uri", HelloWorld);
-    var message = FuzionHelpers.Run("uri");
-    assertEquals("Hello World!\n", message.getMessage());
-  }
-
   /**
    * test if we can run more than one program
    * successfully and thus statically held stuff does not
@@ -209,13 +201,6 @@ class FuzionHelperTest
     var message = FuzionHelpers.Run("uri");
 
     assertEquals("Hello World!\n", message.getMessage());
-  }
-
-  @Test
-  void RunThrowsTimeoutException() throws IOException, InterruptedException, ExecutionException, TimeoutException
-  {
-    FuzionTextDocumentService.setText("uri", ManOrBoy);
-    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("uri", 500));
   }
 
   @Test
