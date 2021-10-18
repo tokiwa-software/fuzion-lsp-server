@@ -50,6 +50,7 @@ public class Rename
     var featureIdentifier =
       FuzionHelpers.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
+    // NYI rename feature used like this "fun myBaseName"
     Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature.get(), featureIdentifier);
 
     var changes = renamePositions
@@ -71,9 +72,17 @@ public class Rename
     TokenInfo featureIdentifier)
   {
     var callsSourcePositions = FuzionHelpers.callsTo(uri, featureToRename).map(c -> c.pos());
-    var tokenPosition = new SourcePosition(featureToRename.pos()._sourceFile, featureToRename.pos()._line,
-      featureToRename.pos()._column + featureIdentifier.start()._column - 1);
-    Stream<SourcePosition> renamePositions = Stream.concat(callsSourcePositions, Stream.of(tokenPosition));
+    SourcePosition pos = featureToRename.pos;
+
+    // special case for renaming lamdba args
+    if (featureToRename.outer() != null &&
+      featureToRename.outer().outer() != null &&
+      featureToRename.outer().outer().featureName().baseName().startsWith("#fun"))
+      {
+        pos = new SourcePosition(pos._sourceFile, pos._line, pos._column - featureIdentifier.text().length() - 1);
+      }
+
+    Stream<SourcePosition> renamePositions = Stream.concat(callsSourcePositions, Stream.of(pos));
     return renamePositions;
   }
 
