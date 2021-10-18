@@ -629,10 +629,16 @@ public final class FuzionHelpers
   public static MessageParams Run(String uri)
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
+    return Run(uri, 10000);
+  }
+
+  public static MessageParams Run(String uri, int timeout)
+    throws IOException, InterruptedException, ExecutionException, TimeoutException
+  {
     var result = Util.WithCapturedStdOutErr(() -> {
       var interpreter = new Interpreter(ParserHelper.FUIR(uri));
       interpreter.run();
-    }, 10000);
+    }, timeout);
     return result;
   }
 

@@ -1,15 +1,23 @@
 package test.flang.lsp.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.LSPSecurityManager;
 import dev.flang.lsp.server.Util;
 import dev.flang.parser.Lexer.Token;
 
@@ -35,6 +43,48 @@ class FuzionHelperTest
       (0..10) | n ->
         say \"manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}\"
             """;
+
+  private static final String HelloWorld = """
+      HelloWorld is
+        say "Hello World!"
+    """;
+
+  private static final String PythagoreanTriple = """
+      pythagoreanTriple is
+        cₘₐₓ := 100    # max length of hypothenuse
+
+        # iterate over all interesting real/imag pairs while c<max
+        for real in 1..cₘₐₓ do
+          for
+            # imag >= real is not interesting, v².real or v².imag would be negative
+            # so we end imag at real-1
+            imag in 1..real-1
+
+            v := complex real imag
+            v² := v * v
+            f := v².real.gcd v².imag  # 1 or 2 (if real+imag is even)
+            a := v².real / f
+            b := v².imag / f
+            c := v .abs² / f
+          while c < cₘₐₓ
+            if real.gcd imag = 1  # filter duplicates
+              say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
+    """;
+
+  private static SecurityManager SecurityManager;
+
+  @BeforeAll
+  static void IgnoreExits()
+  {
+    SecurityManager = System.getSecurityManager();
+    System.setSecurityManager(new LSPSecurityManager());
+  }
+
+  @AfterAll
+  static void RestoreSecurityManager()
+  {
+    System.setSecurityManager(SecurityManager);
+  }
 
   @Test
   void NextTokenOfType_at_start()
@@ -130,5 +180,55 @@ class FuzionHelperTest
     var text = FuzionHelpers.stringAt("uri", new Range(new Position(1, 3), new Position(1, 23)));
     assertEquals("enim ad minim veniam", text);
   }
+
+  @Test
+  void Run() throws IOException, InterruptedException, ExecutionException, TimeoutException
+  {
+    FuzionTextDocumentService.setText("uri", HelloWorld);
+    var message = FuzionHelpers.Run("uri");
+    assertEquals("Hello World!\n", message.getMessage());
+  }
+
+  /**
+   * test if we can run more than one program
+   * successfully and thus statically held stuff does not
+   * get in the way.
+   * @throws IOException
+   * @throws InterruptedException
+   * @throws ExecutionException
+   * @throws TimeoutException
+   */
+  @Test
+  void RunMultiple() throws IOException, InterruptedException, ExecutionException, TimeoutException
+  {
+    FuzionTextDocumentService.setText("uri", HelloWorld);
+    FuzionTextDocumentService.setText("uri2", PythagoreanTriple);
+
+    FuzionHelpers.Run("uri");
+    FuzionHelpers.Run("uri2");
+    var message = FuzionHelpers.Run("uri");
+
+    assertEquals("Hello World!\n", message.getMessage());
+  }
+
+  @Test
+  void RunThrowsTimeoutException() throws IOException, InterruptedException, ExecutionException, TimeoutException
+  {
+    FuzionTextDocumentService.setText("uri", ManOrBoy);
+    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("uri", 500));
+  }
+
+  @Test
+  void RunSuccessfulAfterRunWithTimeoutException()
+    throws IOException, InterruptedException, ExecutionException, TimeoutException
+  {
+    FuzionTextDocumentService.setText("uri", ManOrBoy);
+    FuzionTextDocumentService.setText("uri2", HelloWorld);
+    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("uri", 500));
+    assertEquals("Hello World!\n", FuzionHelpers.Run("uri2").getMessage());
+  }
+
+
+
 }
 

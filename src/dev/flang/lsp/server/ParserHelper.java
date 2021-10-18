@@ -11,6 +11,7 @@ import org.eclipse.lsp4j.MessageType;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
+import dev.flang.be.interpreter.Instance;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
@@ -109,7 +110,11 @@ public class ParserHelper
 
     var frontEndOptions = uri2ParserCache.get(uri).frontEndOptions();
     var air = new MiddleEnd(frontEndOptions, uri2ParserCache.get(uri).mir()).air();
-    return new Optimizer(frontEndOptions, air).fuir(false);
+    var fuir = new Optimizer(frontEndOptions, air).fuir(false);
+    // NYI remove this once unnecessary
+    Interpreter.clear();
+    Instance.universe = new Instance(Clazzes.universe.get());
+    return fuir;
   }
 
   private static MIR MIR(FrontEndOptions frontEndOptions)
@@ -121,8 +126,8 @@ public class ParserHelper
         Types.clear();
         FeatureName.clear();
         Clazzes.clear();
-        Interpreter.clear();
-        return new FrontEnd(frontEndOptions).createMIR();
+        var result = new FrontEnd(frontEndOptions).createMIR();
+        return result;
       });
     });
     return mir;
