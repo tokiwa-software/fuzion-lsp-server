@@ -557,20 +557,16 @@ public final class FuzionHelpers
    */
   public static Optional<Feature> feature(TextDocumentPositionParams params)
   {
-    Optional<Object> callOrFeature = callsAndFeaturesAt(params)
+    var token = FuzionHelpers.nextToken(params);
+    return callsAndFeaturesAt(params).map(callOrFeature -> {
+      if (callOrFeature instanceof Call)
+        {
+          return ((Call) callOrFeature).calledFeature();
+        }
+      return (Feature) callOrFeature;
+    })
+      .filter(x -> x.featureName().baseName().equals(token.text()))
       .findFirst();
-
-    if (callOrFeature.isEmpty())
-      {
-        return Optional.empty();
-      }
-
-    var item = callOrFeature.get();
-    if (item instanceof Call)
-      {
-        return Optional.of(((Call) item).calledFeature());
-      }
-    return Optional.of((Feature) item);
   }
 
   public static Optional<TokenInfo> CallOrFeatureToken(TextDocumentPositionParams params)
