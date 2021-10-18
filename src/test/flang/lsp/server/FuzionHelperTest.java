@@ -15,6 +15,27 @@ import dev.flang.parser.Lexer.Token;
 
 class FuzionHelperTest
 {
+  private static final String LoremIpsum =
+    """
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+          """;
+
+  private static final String ManOrBoy = """
+    man_or_boy is
+
+      a(k i32, x1, x2, x3, x4, x5 () -> i32) i32 is
+        b => set k := k - 1; a k (() -> b) x1 x2 x3 x4
+        if k <= 0 x4() + x5() else b
+
+      K(n i32) () -> i32 is () -> n
+
+      (0..10) | n ->
+        say \"manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}\"
+            """;
+
   @Test
   void NextTokenOfType_at_start()
   {
@@ -39,18 +60,7 @@ class FuzionHelperTest
   void NextToken_a()
   {
 
-    FuzionTextDocumentService.setText("uri", """
-      man_or_boy is
-
-        a(k i32, x1, x2, x3, x4, x5 () -> i32) i32 is
-          b => set k := k - 1; a k (() -> b) x1 x2 x3 x4
-          if k <= 0 x4() + x5() else b
-
-        K(n i32) () -> i32 is () -> n
-
-        (0..10) | n ->
-          say \"manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}\"
-              """);
+    FuzionTextDocumentService.setText("uri", ManOrBoy);
 
     var nextToken =
       FuzionHelpers.nextToken(new TextDocumentPositionParams(new TextDocumentIdentifier("uri"), new Position(2, 2)));
@@ -62,18 +72,7 @@ class FuzionHelperTest
   void NextToken_i32()
   {
 
-    FuzionTextDocumentService.setText("uri", """
-      man_or_boy is
-
-        a(k i32, x1, x2, x3, x4, x5 () -> i32) i32 is
-          b => set k := k - 1; a k (() -> b) x1 x2 x3 x4
-          if k <= 0 x4() + x5() else b
-
-        K(n i32) () -> i32 is () -> n
-
-        (0..10) | n ->
-          say \"manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}\"
-              """);
+    FuzionTextDocumentService.setText("uri", ManOrBoy);
 
     var nextToken =
       FuzionHelpers.nextToken(new TextDocumentPositionParams(new TextDocumentIdentifier("uri"), new Position(6, 7)));
@@ -84,18 +83,7 @@ class FuzionHelperTest
   @Test
   void EndOfToken_man_or_boy()
   {
-    FuzionTextDocumentService.setText("uri", """
-      man_or_boy is
-
-        a(k i32, x1, x2, x3, x4, x5 () -> i32) i32 is
-          b => set k := k - 1; a k (() -> b) x1 x2 x3 x4
-          if k <= 0 x4() + x5() else b
-
-        K(n i32) () -> i32 is () -> n
-
-        (0..10) | n ->
-          say \"manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}\"
-          """);
+    FuzionTextDocumentService.setText("uri", ManOrBoy);
 
     var endOfToken = FuzionHelpers.endOfToken("uri", new Position(0, 0));
     assertEquals(10, endOfToken.getCharacter());
@@ -106,18 +94,7 @@ class FuzionHelperTest
   @Test
   void EndOfToken_i32()
   {
-    FuzionTextDocumentService.setText("uri", """
-      man_or_boy is
-
-        a(k i32, x1, x2, x3, x4, x5 () -> i32) i32 is
-          b => set k := k - 1; a k (() -> b) x1 x2 x3 x4
-          if k <= 0 x4() + x5() else b
-
-        K(n i32) () -> i32 is () -> n
-
-        (0..10) | n ->
-          say \"manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}\"
-          """);
+    FuzionTextDocumentService.setText("uri", ManOrBoy);
 
     var endOfToken = FuzionHelpers.endOfToken("uri", new Position(2, 6));
     assertEquals(9, endOfToken.getCharacter());
@@ -127,18 +104,7 @@ class FuzionHelperTest
   @Test
   void EndOfToken_opening_brace()
   {
-    FuzionTextDocumentService.setText("uri", """
-      man_or_boy is
-
-        a(k i32, x1, x2, x3, x4, x5 () -> i32) i32 is
-          b => set k := k - 1; a k (() -> b) x1 x2 x3 x4
-          if k <= 0 x4() + x5() else b
-
-        K(n i32) () -> i32 is () -> n
-
-        (0..10) | n ->
-          say \"manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}\"
-          """);
+    FuzionTextDocumentService.setText("uri", ManOrBoy);
 
     var endOfToken = FuzionHelpers.endOfToken("uri", new Position(2, 3));
     assertEquals(4, endOfToken.getCharacter());
@@ -149,13 +115,7 @@ class FuzionHelperTest
   void StringAt_multi_line()
   {
 
-    FuzionTextDocumentService.setText("uri",
-      """
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
-            """);
+    FuzionTextDocumentService.setText("uri", LoremIpsum);
     var text = FuzionHelpers.stringAt("uri", new Range(new Position(1, 3), new Position(2, 4)));
     assertEquals(
       "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis",
@@ -166,13 +126,7 @@ class FuzionHelperTest
   void StringAt_single_line()
   {
 
-    FuzionTextDocumentService.setText("uri",
-      """
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
-        """);
+    FuzionTextDocumentService.setText("uri", LoremIpsum);
     var text = FuzionHelpers.stringAt("uri", new Range(new Position(1, 3), new Position(1, 23)));
     assertEquals("enim ad minim veniam", text);
   }
