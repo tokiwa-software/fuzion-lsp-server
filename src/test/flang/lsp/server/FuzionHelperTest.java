@@ -11,13 +11,10 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
-import dev.flang.lsp.server.LSPSecurityManager;
 import dev.flang.lsp.server.Util;
 import dev.flang.parser.Lexer.Token;
 
@@ -71,20 +68,6 @@ class FuzionHelperTest
               say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
     """;
 
-  private static SecurityManager SecurityManager;
-
-  @BeforeAll
-  static void IgnoreExits()
-  {
-    SecurityManager = System.getSecurityManager();
-    System.setSecurityManager(new LSPSecurityManager());
-  }
-
-  @AfterAll
-  static void RestoreSecurityManager()
-  {
-    System.setSecurityManager(SecurityManager);
-  }
 
   @Test
   void NextTokenOfType_at_start()
@@ -209,11 +192,14 @@ class FuzionHelperTest
   {
     FuzionTextDocumentService.setText("uri", ManOrBoy);
     FuzionTextDocumentService.setText("uri2", HelloWorld);
-    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("uri", 500));
+    FuzionTextDocumentService.setText("uri3", PythagoreanTriple);
+
+    // NYI this will not throw once fuzion gets faster, how to test properly?
+    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("uri", 100));
+    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("uri3", 50));
+
     assertEquals("Hello World!\n", FuzionHelpers.Run("uri2").getMessage());
   }
-
-
 
 }
 

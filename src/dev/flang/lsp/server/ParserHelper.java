@@ -11,13 +11,14 @@ import org.eclipse.lsp4j.MessageType;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
+import dev.flang.be.interpreter.ChoiceIdAsRef;
 import dev.flang.be.interpreter.Instance;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
 import dev.flang.ir.Clazzes;
-import dev.flang.lsp.server.records.ParserCache;
+import dev.flang.lsp.server.records.ParserCacheRecord;
 import dev.flang.me.MiddleEnd;
 import dev.flang.mir.MIR;
 import dev.flang.opt.Optimizer;
@@ -36,7 +37,7 @@ public class ParserHelper
    * maps temporary files which are fed to the parser to their original uri.
    */
   private static TreeMap<String, String> tempFile2Uri = new TreeMap<>();
-  private static TreeMap<String, ParserCache> uri2ParserCache = new TreeMap<>();
+  private static TreeMap<String, ParserCacheRecord> uri2ParserCache = new TreeMap<>();
   private static TreeMap<String, String> uri2SourceText = new TreeMap<>();
 
   /**
@@ -78,18 +79,20 @@ public class ParserHelper
     return uri2ParserCache.containsKey(uri) && sourceText.equals(uri2SourceText.get(uri));
   }
 
-  private static void createMIRandCache(String uri)
+  private static ParserCacheRecord createMIRandCache(String uri)
   {
     var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
-    uri2ParserCache.put(uri, parserCache(uri));
+    var result = parserCacheRecord(uri);
+    uri2ParserCache.put(uri, result);
     uri2SourceText.put(uri, sourceText);
+    return result;
   }
 
-  private static ParserCache parserCache(String uri)
+  private static ParserCacheRecord parserCacheRecord(String uri)
   {
     var frontEndOptions = FrontEndOptions(uri);
     var mir = MIR(frontEndOptions);
-    return new ParserCache(mir, frontEndOptions);
+    return new ParserCacheRecord(mir, frontEndOptions);
   }
 
   private static void afterParsing(String uri, Feature mainFeature)
@@ -105,15 +108,21 @@ public class ParserHelper
 
   public static FUIR FUIR(String uri)
   {
-    // NYI remove recreation of MIR
-    createMIRandCache(uri);
+     // NYI remove this once unnecessary
+     Interpreter.clear();
+     Instance.universe = null;
+     ChoiceIdAsRef.preallocated_.clear();
 
-    var frontEndOptions = uri2ParserCache.get(uri).frontEndOptions();
-    var air = new MiddleEnd(frontEndOptions, uri2ParserCache.get(uri).mir()).air();
-    var fuir = new Optimizer(frontEndOptions, air).fuir(false);
+    // NYI remove recreation of MIR
+    var parserCacheRecord = createMIRandCache(uri);
+
+
+    var air = new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir()).air();
+
     // NYI remove this once unnecessary
-    Interpreter.clear();
     Instance.universe = new Instance(Clazzes.universe.get());
+
+    var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir(false);
     return fuir;
   }
 

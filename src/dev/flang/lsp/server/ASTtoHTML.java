@@ -21,7 +21,6 @@ import dev.flang.ast.Function;
 import dev.flang.ast.Generic;
 import dev.flang.ast.If;
 import dev.flang.ast.Impl;
-import dev.flang.ast.InitArray;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Match;
 import dev.flang.ast.ReturnType;
