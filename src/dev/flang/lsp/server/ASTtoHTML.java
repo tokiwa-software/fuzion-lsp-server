@@ -22,6 +22,7 @@ import dev.flang.ast.Generic;
 import dev.flang.ast.If;
 import dev.flang.ast.Impl;
 import dev.flang.ast.InitArray;
+import dev.flang.ast.InlineArray;
 import dev.flang.ast.Match;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
@@ -266,9 +267,9 @@ public class ASTtoHTML extends FeatureVisitor
   }
 
   @Override
-  public Expr action(InitArray i, Feature outer)
+  public Expr action(InlineArray i, Feature outer)
   {
-    Print("InitArray", PosToString(FuzionHelpers.position(i)), i.toString());
+    Print("InlineArray", PosToString(FuzionHelpers.position(i)), i.toString());
     return i;
   }
 

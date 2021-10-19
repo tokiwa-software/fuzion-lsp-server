@@ -19,7 +19,7 @@ import dev.flang.ast.Function;
 import dev.flang.ast.Generic;
 import dev.flang.ast.If;
 import dev.flang.ast.Impl;
-import dev.flang.ast.InitArray;
+import dev.flang.ast.InlineArray;
 import dev.flang.ast.Match;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
@@ -186,10 +186,10 @@ public class HeirsVisitor extends FeatureVisitor
   }
 
   @Override
-  public Expr action(InitArray i, Feature outer)
+  public Expr action(InlineArray i, Feature outer)
   {
     result.put(i, outer);
-    return i;
+    return super.action(i, outer);
   }
 
   @Override

@@ -27,6 +27,8 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
+import dev.flang.ast.InlineArray;
+import dev.flang.ast.Expr;
 import dev.flang.ast.Impl.Kind;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
@@ -86,6 +88,14 @@ public final class FuzionHelpers
     if (entry instanceof Case)
       {
         return ((Case) entry).pos;
+      }
+    if (entry instanceof InlineArray)
+      {
+        return ((InlineArray) entry).pos();
+      }
+    if (entry instanceof Expr)
+      {
+        return ((Expr) entry).pos();
       }
     // NYI
     if (entry instanceof ReturnType)
