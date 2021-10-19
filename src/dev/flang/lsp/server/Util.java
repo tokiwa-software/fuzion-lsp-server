@@ -104,12 +104,7 @@ public class Util
     var err = System.err;
     try
       {
-        var inputStream = new PipedInputStream();
-        PrintStream outputStream = new PrintStream(new PipedOutputStream(inputStream));
-        System.setOut(outputStream);
-        System.setErr(outputStream);
-
-        return TryRunWithTimeout(runnable, timeOutInMilliSeconds, inputStream, outputStream);
+        return TryRunWithTimeout(runnable, timeOutInMilliSeconds);
       } finally
       {
         System.setOut(out);
@@ -117,13 +112,18 @@ public class Util
       }
   }
 
-  private static MessageParams TryRunWithTimeout(Runnable runnable, long timeOutInMilliSeconds,
-    PipedInputStream inputStream,
-    PrintStream outputStream) throws IOException, InterruptedException, ExecutionException, TimeoutException
+  private static MessageParams TryRunWithTimeout(Runnable runnable, long timeOutInMilliSeconds)
+    throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     Future<?> future = executor.submit(runnable);
+
+    var inputStream = new PipedInputStream();
+    var outputStream = new PrintStream(new PipedOutputStream(inputStream));
+    System.setOut(outputStream);
+    System.setErr(outputStream);
+
     try
       {
         future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
@@ -131,13 +131,14 @@ public class Util
         return new MessageParams(MessageType.Info, new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
       } finally
       {
-        if (!future.isCancelled() && !future.isDone())
+        if (!future.isCancelled() || !future.isDone())
           {
             future.cancel(true);
           }
-        executor.shutdown();
+        executor.shutdownNow();
         outputStream.close();
         inputStream.close();
+        executor.awaitTermination(1, TimeUnit.DAYS);
       }
   }
 
