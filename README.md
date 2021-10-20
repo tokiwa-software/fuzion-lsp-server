@@ -37,7 +37,7 @@
     - M-x package-install RET company RET
 - add the following code to ~/.emacs.d/fuzion-lsp.el to enable [https://github.com/emacs-lsp/lsp-mode](lsp-mode)
 
-```lisp
+```elisp
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/"))
