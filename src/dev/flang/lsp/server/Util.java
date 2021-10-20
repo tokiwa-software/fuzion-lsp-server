@@ -142,6 +142,12 @@ public class Util
       }
   }
 
+  public static void RunInBackground(Runnable runnable)
+  {
+    Thread thread = new Thread(runnable);
+    thread.start();
+  }
+
   private static <T> T callOrPanic(Callable<T> callable)
   {
     try

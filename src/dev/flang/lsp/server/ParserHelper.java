@@ -33,6 +33,7 @@ import dev.flang.util.SourcePosition;
 public class ParserHelper
 {
 
+  private static final String PARSER_LOCK = "";
   /**
    * maps temporary files which are fed to the parser to their original uri.
    */
@@ -81,11 +82,13 @@ public class ParserHelper
 
   private static ParserCacheRecord createMIRandCache(String uri)
   {
-    var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
-    var result = parserCacheRecord(uri);
-    uri2ParserCache.put(uri, result);
-    uri2SourceText.put(uri, sourceText);
-    return result;
+    synchronized(PARSER_LOCK){
+      var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
+      var result = parserCacheRecord(uri);
+      uri2ParserCache.put(uri, result);
+      uri2SourceText.put(uri, sourceText);
+      return result;
+    }
   }
 
   private static ParserCacheRecord parserCacheRecord(String uri)

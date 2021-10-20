@@ -35,23 +35,24 @@ public class FuzionWorkspaceService implements WorkspaceService
   @Override
   public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
   {
+    var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
+
     switch (Commands.valueOf(params.getCommand()))
       {
-        case showSyntaxTree :
-          showSyntaxTree(params);
-          return CompletableFuture.completedFuture(null);
-        case evaluate :
-          evaluate(params);
-          return CompletableFuture.completedFuture(null);
-        default:
-          Util.WriteStackTrace(new Exception("not implemented"));
-          return CompletableFuture.completedFuture(null);
+      case showSyntaxTree :
+        Util.RunInBackground(() -> showSyntaxTree(uri));
+        return CompletableFuture.completedFuture(null);
+      case evaluate :
+        Util.RunInBackground(() -> evaluate(uri));
+        return CompletableFuture.completedFuture(null);
+      default:
+        Util.WriteStackTrace(new Exception("not implemented"));
+        return CompletableFuture.completedFuture(null);
       }
   }
 
-  private void evaluate(ExecuteCommandParams params)
+  private void evaluate(String uri)
   {
-    var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
     try
       {
         var result = FuzionHelpers.Run(uri);
@@ -69,9 +70,8 @@ public class FuzionWorkspaceService implements WorkspaceService
 
   }
 
-  private void showSyntaxTree(ExecuteCommandParams params)
+  private void showSyntaxTree(String uri)
   {
-    var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
     var feature = FuzionHelpers.baseFeature(uri);
     if (feature.isEmpty())
       {
