@@ -204,7 +204,7 @@ public final class FuzionHelpers
 
   /**
    * returns the outermost feature found in uri
-   * @param uri
+   * @param params
    * @return
    */
   private static Optional<Feature> baseFeature(TextDocumentIdentifier params)
@@ -212,6 +212,11 @@ public final class FuzionHelpers
     return baseFeature(Util.getUri(params));
   }
 
+    /**
+   * returns the outermost feature found in uri
+   * @param uri
+   * @return
+   */
   public static Optional<Feature> baseFeature(String uri)
   {
     var baseFeature = allOf(uri, Feature.class)
