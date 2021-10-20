@@ -36,7 +36,7 @@ JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 all: classes
 	java -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
-tcp:
+tcp: classes
 	java -Xss$(JAVA_STACKSIZE)m -Xmx$(JAVA_MAXHEAP)m -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
