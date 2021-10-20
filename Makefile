@@ -82,6 +82,7 @@ build_fuzion:
 	make -C fuzion
 
 clean:
+	make -C fuzion clean
 	rm -fR classes
 	rm -f out.jar
 
