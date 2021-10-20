@@ -79,7 +79,7 @@ jars/junit-jupiter-api-5.8.1.jar:
 	wget -O $@ https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.8.1/$(@F)
 
 build_fuzion:
-	make -C fuzion
+	make -s -C fuzion 2> /dev/null
 
 clean:
 	make -C fuzion clean
