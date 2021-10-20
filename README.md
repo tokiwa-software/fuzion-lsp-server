@@ -18,6 +18,9 @@
 ### Transport stdio
 - run `make stdio`
 
+## Tests
+- make run_tests
+
 ## Clients
 |Client|Repository|
 |---|---|
