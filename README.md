@@ -1,7 +1,7 @@
 # A language server implementation for Fuzion
 
 ## Requirements
-- java version 16 or higher
+- java version 17 or higher
 - GNU-Make
 - wget
 
@@ -21,10 +21,10 @@
 ## Clients
 |Client|Repository|
 |---|---|
-|vscode|this|
+|vscode|https://github.com/tokiwa-software/vscode-fuzion|
 |vim||
-|emacs|not necessary, see below|
-|eclipse (theia)|with this vscode extension|
+|emacs|see instructions below|
+|eclipse (theia)|https://github.com/tokiwa-software/vscode-fuzion|
 
 ### Emacs
 - Note: fuzionlsp_stdio (from ./bin/) needs to be in $PATH
@@ -94,18 +94,18 @@
 
 |Feature|Status|
 |---|---|
-|diagnostics|☐|
-|completion|☐|
+|diagnostics|☑|
+|completion|☑|
 |completion resolve|☐|
-|hover|☐|
+|hover|☑|
 |signatureHelp|☐|
 |declaration|☐|
-|definition|☐|
+|definition|☑|
 |typeDefinition|☐|
 |implementation|☐|
-|references|☐|
+|references|☑|
 |documentHighlight|☐|
-|documentSymbol|☐|
+|documentSymbol|☑|
 |codeAction|☐|
 |codeAction resolve|☐|
 |codeLens|☐|
@@ -118,8 +118,8 @@
 |formatting|☐|
 |rangeFormatting|☐|
 |onTypeFormatting|☐|
-|rename|☐|
-|prepareRename|☐|
+|rename|☑|
+|prepareRename|☑|
 |foldingRange|☐|
 |selectionRange|☐|
 |prepareCallHierarchy|☐|
