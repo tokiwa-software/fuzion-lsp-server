@@ -6,10 +6,10 @@
 - wget
 
 ## Run
-- make
+- `make`
 
 ## Debug
-- make debug
+- `make debug`
 
 ## Usage
 ### Transport socket
@@ -19,7 +19,7 @@
 - run `make stdio`
 
 ## Tests
-- make run_tests
+- `make run_tests`
 
 ## Clients
 |Client|Repository|
