@@ -89,6 +89,10 @@ public class FuzionTextDocumentService implements TextDocumentService
       {
         Util.WriteStackTraceAndExit(1);
       }
+    if (!uri.startsWith("file://"))
+      {
+        Util.WriteStackTraceAndExit(1);
+      }
     textDocuments.put(uri, text);
   }
 

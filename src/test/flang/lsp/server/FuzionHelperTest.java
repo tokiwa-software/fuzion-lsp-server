@@ -119,10 +119,10 @@ class FuzionHelperTest
   void NextToken_a()
   {
 
-    FuzionTextDocumentService.setText("uri", ManOrBoy);
+    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
     var nextToken =
-      FuzionHelpers.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("uri"), new Position(2, 2)));
+      FuzionHelpers.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(2, 2)));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -131,10 +131,10 @@ class FuzionHelperTest
   void NextToken_i32()
   {
 
-    FuzionTextDocumentService.setText("uri", ManOrBoy);
+    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
     var nextToken =
-      FuzionHelpers.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("uri"), new Position(6, 7)));
+      FuzionHelpers.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(6, 7)));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }
@@ -142,9 +142,9 @@ class FuzionHelperTest
   @Test
   void EndOfToken_man_or_boy()
   {
-    FuzionTextDocumentService.setText("uri", ManOrBoy);
+    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
-    var endOfToken = FuzionHelpers.endOfToken("uri", new Position(0, 0));
+    var endOfToken = FuzionHelpers.endOfToken("file://uri", new Position(0, 0));
     assertEquals(10, endOfToken.getCharacter());
     assertEquals(0, endOfToken.getLine());
 
@@ -153,9 +153,9 @@ class FuzionHelperTest
   @Test
   void EndOfToken_i32()
   {
-    FuzionTextDocumentService.setText("uri", ManOrBoy);
+    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
-    var endOfToken = FuzionHelpers.endOfToken("uri", new Position(2, 6));
+    var endOfToken = FuzionHelpers.endOfToken("file://uri", new Position(2, 6));
     assertEquals(9, endOfToken.getCharacter());
     assertEquals(2, endOfToken.getLine());
   }
@@ -163,9 +163,9 @@ class FuzionHelperTest
   @Test
   void EndOfToken_opening_brace()
   {
-    FuzionTextDocumentService.setText("uri", ManOrBoy);
+    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
-    var endOfToken = FuzionHelpers.endOfToken("uri", new Position(2, 3));
+    var endOfToken = FuzionHelpers.endOfToken("file://uri", new Position(2, 3));
     assertEquals(4, endOfToken.getCharacter());
     assertEquals(2, endOfToken.getLine());
   }
@@ -174,8 +174,8 @@ class FuzionHelperTest
   void StringAt_multi_line()
   {
 
-    FuzionTextDocumentService.setText("uri", LoremIpsum);
-    var text = FuzionHelpers.stringAt("uri", new Range(new Position(1, 3), new Position(2, 4)));
+    FuzionTextDocumentService.setText("file://uri", LoremIpsum);
+    var text = FuzionHelpers.stringAt("file://uri", new Range(new Position(1, 3), new Position(2, 4)));
     assertEquals(
       "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis",
       text);
@@ -185,8 +185,8 @@ class FuzionHelperTest
   void StringAt_single_line()
   {
 
-    FuzionTextDocumentService.setText("uri", LoremIpsum);
-    var text = FuzionHelpers.stringAt("uri", new Range(new Position(1, 3), new Position(1, 23)));
+    FuzionTextDocumentService.setText("file://uri", LoremIpsum);
+    var text = FuzionHelpers.stringAt("file://uri", new Range(new Position(1, 3), new Position(1, 23)));
     assertEquals("enim ad minim veniam", text);
   }
 
@@ -202,12 +202,12 @@ class FuzionHelperTest
   @Test
   void RunMultiple() throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
-    FuzionTextDocumentService.setText("uri", HelloWorld);
-    FuzionTextDocumentService.setText("uri2", PythagoreanTriple);
+    FuzionTextDocumentService.setText("file://uri", HelloWorld);
+    FuzionTextDocumentService.setText("file://uri2", PythagoreanTriple);
 
-    FuzionHelpers.Run("uri");
-    FuzionHelpers.Run("uri2");
-    var message = FuzionHelpers.Run("uri");
+    FuzionHelpers.Run("file://uri");
+    FuzionHelpers.Run("file://uri2");
+    var message = FuzionHelpers.Run("file://uri");
 
     assertEquals("Hello World!\n", message.getMessage());
   }
@@ -216,15 +216,15 @@ class FuzionHelperTest
   void RunSuccessfulAfterRunWithTimeoutException()
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
-    FuzionTextDocumentService.setText("uri", ManOrBoy);
-    FuzionTextDocumentService.setText("uri2", HelloWorld);
-    FuzionTextDocumentService.setText("uri3", PythagoreanTriple);
+    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
+    FuzionTextDocumentService.setText("file://uri2", HelloWorld);
+    FuzionTextDocumentService.setText("file://uri3", PythagoreanTriple);
 
     // NYI this will not throw once fuzion gets faster, how to test properly?
-    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("uri", 100));
-    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("uri3", 50));
+    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("file://uri", 100));
+    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("file://uri3", 50));
 
-    assertEquals("Hello World!\n", FuzionHelpers.Run("uri2").getMessage());
+    assertEquals("Hello World!\n", FuzionHelpers.Run("file://uri2").getMessage());
   }
 
 }

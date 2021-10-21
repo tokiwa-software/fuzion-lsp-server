@@ -39,14 +39,14 @@ public class ParserHelperTest
   @Test
   void getMainFeatureTest()
   {
-    FuzionTextDocumentService.setText("uri", """
+    FuzionTextDocumentService.setText("file://uri", """
 HelloWorld is
   say "Hello World!"
             """);
-    var mainFeature = ParserHelper.getMainFeature("uri");
+    var mainFeature = ParserHelper.getMainFeature("file://uri");
     assertEquals(0, Errors.count());
     assertEquals(true, mainFeature.isPresent());
     assertEquals("HelloWorld", mainFeature.get().featureName().baseName());
-    assertEquals("uri", ParserHelper.getUri(mainFeature.get().pos()));
+    assertEquals("file://uri", ParserHelper.getUri(mainFeature.get().pos()));
   }
 }
