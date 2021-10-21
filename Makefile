@@ -94,3 +94,9 @@ run_tests: classes
 
 run_tests_suspended: classes
 	PRECONDITIONS=true POSTCONDITIONS=true java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000 -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -Xmx$(JAVA_MAXHEAP)m -jar jars/junit-platform-console-standalone-1.8.1.jar --details=verbose -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) -p test.flang.lsp.server
+
+profile: PID = $(shell ps aux | grep fuzion-lsp-server | grep lsp4j | head -n 1 | awk '{print $$2}')
+profile:
+# https://github.com/jvm-profiling-tools/async-profiler
+	profiler.sh -d 30 -f /tmp/flamegraph.html $(PID)
+	x-www-browser /tmp/flamegraph.html
