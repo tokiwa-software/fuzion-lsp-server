@@ -138,7 +138,6 @@ public class Completion
 
     var generics = genericsSnippet(feature, _generics);
 
-    Log.message(feature.featureName().baseName() + generics + arguments);
     return feature.featureName().baseName() + generics + arguments;
   }
 
