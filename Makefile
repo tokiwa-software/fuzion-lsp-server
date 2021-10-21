@@ -30,7 +30,7 @@ FUZION_HOME = '${CURDIR}/fuzion/build'
 JAVA_STACKSIZE=16
 JAVA_MAXHEAP=256
 
-JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar
+JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar:jars/org.eclipse.xtext.xbase.lib-2.25.0.jar:jars/guava-31.0.1-jre.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 all: classes
@@ -77,6 +77,16 @@ jars/junit-platform-console-standalone-1.8.1.jar:
 jars/junit-jupiter-api-5.8.1.jar:
 	mkdir -p $(@D)
 	wget -O $@ https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.8.1/$(@F)
+
+# https://github.com/eclipse/lsp4j/issues/494
+jars/org.eclipse.xtext.xbase.lib-2.25.0.jar:
+	mkdir -p $(@D)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.xbase.lib/2.25.0/$(@F)
+
+# https://github.com/eclipse/lsp4j/issues/494
+jars/guava-31.0.1-jre.jar:
+	mkdir -p $(@D)
+	wget -O $@ https://repo1.maven.org/maven2/com/google/guava/guava/31.0.1-jre/$(@F)
 
 build_fuzion:
 	make -s -C fuzion 2> /dev/null
