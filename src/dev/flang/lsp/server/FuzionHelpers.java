@@ -370,21 +370,21 @@ public final class FuzionHelpers
   /**
    * NYI replace by real end of feature once we have this information in the AST
    * !!!CACHED via Memory.EndOfFeature!!!
-   * @param baseFeature
+   * @param feature
    * @return
    */
-  public static SourcePosition endOfFeature(Feature baseFeature)
+  public static SourcePosition endOfFeature(Feature feature)
   {
-    var uri = Converters.ToLocation(baseFeature.pos()).getUri();
-    if (!Memory.EndOfFeature.containsKey(baseFeature))
+    var uri = Converters.ToLocation(feature.pos()).getUri();
+    if (!Memory.EndOfFeature.containsKey(feature))
       {
         SourcePosition endOfFeature = HeirsVisitor
-          .visit(baseFeature)
+          .visit(feature)
           .entrySet()
           .stream()
           .filter(entry -> entry.getValue() != null)
           .filter(IsItemInFile(uri))
-          .filter(entry -> entry.getValue().compareTo(baseFeature) == 0)
+          .filter(entry -> entry.getValue().compareTo(feature) == 0)
           .map(entry -> position(entry.getKey()))
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
@@ -392,12 +392,12 @@ public final class FuzionHelpers
               endOfToken(uri, Converters.ToPosition(position)).getCharacter() + 1);
           })
           .findFirst()
-          .orElse(baseFeature.pos());
+          .orElse(feature.pos());
 
-        Memory.EndOfFeature.put(baseFeature, endOfFeature);
+        Memory.EndOfFeature.put(feature, endOfFeature);
       }
 
-    return Memory.EndOfFeature.get(baseFeature);
+    return Memory.EndOfFeature.get(feature);
   }
 
   public static boolean IsAnonymousInnerFeature(Feature f)
