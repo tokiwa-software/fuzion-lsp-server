@@ -238,11 +238,11 @@ public final class FuzionHelpers
     return baseFeature(Util.getUri(params));
   }
 
-    /**
-   * returns the outermost feature found in uri
-   * @param uri
-   * @return
-   */
+  /**
+  * returns the outermost feature found in uri
+  * @param uri
+  * @return
+  */
   public static Optional<Feature> baseFeature(String uri)
   {
     var baseFeature = allOf(uri, Feature.class)
@@ -491,8 +491,7 @@ public final class FuzionHelpers
     });
   }
 
-  // NYI rename this method to tokenAt
-  public static TokenInfo nextToken(TextDocumentPositionParams params)
+  public static TokenInfo rawTokenAt(TextDocumentPositionParams params)
   {
     var sourceText = sourceText(params);
     return Util.WithTextInputStream(sourceText, () -> {
@@ -505,7 +504,24 @@ public final class FuzionHelpers
         {
           lexer.nextRaw();
         }
-      return tokenInfo(lexer);
+      return tokenInfo(params.getTextDocument().getUri(), lexer);
+    });
+  }
+
+  public static TokenInfo tokenAt(TextDocumentPositionParams params)
+  {
+    var sourceText = sourceText(params);
+    return Util.WithTextInputStream(sourceText, () -> {
+
+      var lexer = new Lexer(SourceFile.STDIN);
+      lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
+
+      while (lexer.current() != Token.t_eof
+        && lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
+        {
+          lexer.next();
+        }
+      return tokenInfo(params.getTextDocument().getUri(), lexer);
     });
   }
 
@@ -536,7 +552,13 @@ public final class FuzionHelpers
 
   private static TokenInfo tokenInfo(Lexer lexer)
   {
-    var start = lexer.sourcePos(lexer.pos());
+    return tokenInfo("file://", lexer);
+  }
+
+  private static TokenInfo tokenInfo(String uri, Lexer lexer)
+  {
+    var lexerSourcePosition = lexer.sourcePos(lexer.pos());
+    var start = new SourcePosition(Converters.ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column) ;
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
     return new TokenInfo(start, tokenString);
   }
@@ -582,7 +604,7 @@ public final class FuzionHelpers
   public static Position endOfToken(String uri, Position start)
   {
     var textDocumentPosition = new TextDocumentPositionParams(new TextDocumentIdentifier(uri), start);
-    var token = nextToken(textDocumentPosition);
+    var token = rawTokenAt(textDocumentPosition);
     return Converters.ToPosition(token.end());
   }
 
@@ -598,7 +620,7 @@ public final class FuzionHelpers
    */
   public static Optional<Feature> feature(TextDocumentPositionParams params)
   {
-    var token = FuzionHelpers.nextToken(params);
+    var token = FuzionHelpers.rawTokenAt(params);
     return callsAndFeaturesAt(params).map(callOrFeature -> {
       if (callOrFeature instanceof Call)
         {
@@ -612,7 +634,7 @@ public final class FuzionHelpers
 
   public static Optional<TokenInfo> CallOrFeatureToken(TextDocumentPositionParams params)
   {
-    var token = FuzionHelpers.nextToken(params);
+    var token = FuzionHelpers.rawTokenAt(params);
     if (token == null)
       {
         return Optional.empty();

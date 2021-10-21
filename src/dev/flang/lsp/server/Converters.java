@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DocumentSymbol;
@@ -33,16 +34,19 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 /**
  * collection of static methods converting dev.flang objects to lsp4j
  */
-public final class Converters {
+public final class Converters
+{
 
   public static Position ToPosition(SourcePosition sourcePosition)
   {
@@ -62,10 +66,11 @@ public final class Converters {
 
   public static Range ToRange(TextDocumentPositionParams params)
   {
-    var tokenIdent = FuzionHelpers.nextToken(params);
+    var tokenIdent = FuzionHelpers.rawTokenAt(params);
     var line = params.getPosition().getLine();
     var characterStart = tokenIdent.start()._column - 1;
-    return new Range(new Position(line, characterStart), new Position(line, characterStart + tokenIdent.text().length()));
+    return new Range(new Position(line, characterStart),
+      new Position(line, characterStart + tokenIdent.text().length()));
   }
 
   public static DocumentSymbol ToDocumentSymbol(Feature feature)
@@ -94,6 +99,17 @@ public final class Converters {
     var start = ToPosition(tokenInfo.start());
     var end = ToPosition(tokenInfo.end());
     return new Range(start, end);
+  }
+
+  public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
+  {
+    return new TextDocumentPositionParams(new TextDocumentIdentifier(ParserHelper.getUri(sourcePosition)),
+      Converters.ToPosition(sourcePosition));
+  }
+
+  public static SourceFile ToSourceFile(String uri)
+  {
+    return new SourceFile(Path.of(uri.substring("file://".length() - 1)));
   }
 
 }

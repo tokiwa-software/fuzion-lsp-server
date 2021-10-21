@@ -47,6 +47,7 @@ import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
 
@@ -97,7 +98,18 @@ public class Rename
   private static Stream<SourcePosition> getRenamePositions(String uri, Feature featureToRename,
     TokenInfo featureIdentifier)
   {
-    var callsSourcePositions = FuzionHelpers.callsTo(uri, featureToRename).map(c -> c.pos());
+    var callsSourcePositions = FuzionHelpers
+      .callsTo(uri, featureToRename)
+      .map(c -> c.pos())
+      .map(pos -> {
+        if (IsAtFunKeyword(pos))
+          {
+            var nextPosition = Converters.ToTextDocumentPosition(
+              new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length()));
+            pos = FuzionHelpers.tokenAt(nextPosition).start();
+          }
+        return pos;
+      });
     SourcePosition pos = featureToRename.pos;
 
     // special case for renaming lamdba args
@@ -110,6 +122,11 @@ public class Rename
 
     Stream<SourcePosition> renamePositions = Stream.concat(callsSourcePositions, Stream.of(pos));
     return renamePositions;
+  }
+
+  private static boolean IsAtFunKeyword(SourcePosition pos)
+  {
+    return FuzionHelpers.tokenAt(Converters.ToTextDocumentPosition(pos)).text().equals(Lexer.Token.t_fun.toString());
   }
 
   private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)

@@ -122,7 +122,7 @@ class FuzionHelperTest
     FuzionTextDocumentService.setText("uri", ManOrBoy);
 
     var nextToken =
-      FuzionHelpers.nextToken(new TextDocumentPositionParams(new TextDocumentIdentifier("uri"), new Position(2, 2)));
+      FuzionHelpers.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("uri"), new Position(2, 2)));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -134,7 +134,7 @@ class FuzionHelperTest
     FuzionTextDocumentService.setText("uri", ManOrBoy);
 
     var nextToken =
-      FuzionHelpers.nextToken(new TextDocumentPositionParams(new TextDocumentIdentifier("uri"), new Position(6, 7)));
+      FuzionHelpers.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("uri"), new Position(6, 7)));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }

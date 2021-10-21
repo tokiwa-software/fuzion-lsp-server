@@ -90,7 +90,7 @@ public class Completion
 
     // NYI FIXME we need to move the cursor one step back
     // before getting next token
-    var tokenText = FuzionHelpers.nextToken(params).text();
+    var tokenText = FuzionHelpers.rawTokenAt(params).text();
     switch (tokenText)
       {
         case "for" :
