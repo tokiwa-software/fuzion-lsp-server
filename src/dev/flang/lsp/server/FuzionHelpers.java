@@ -420,8 +420,11 @@ public final class FuzionHelpers
   }
 
   /**
+   * tries to find the closest feature at given
+   * position that is declared, called or used by a type
+     * NYI test this method!
    * @param params
-   * @return
+
    */
   public static Optional<Feature> featureAt(TextDocumentPositionParams params)
   {
@@ -479,9 +482,13 @@ public final class FuzionHelpers
       .filter(call -> call.calledFeature().equals(feature));
   }
 
-  static String sourceText(TextDocumentPositionParams params)
+  static String sourceText(TextDocumentPositionParams params){
+    return sourceText(params.getTextDocument().getUri());
+  }
+
+
+  static String sourceText(String uri)
   {
-    String uri = params.getTextDocument().getUri();
     var sourceText = FuzionTextDocumentService.getText(uri);
     if (sourceText.isPresent())
       {
@@ -499,14 +506,15 @@ public final class FuzionHelpers
       }
   }
 
+  /**
+   * extract range of source
+   * @param uri
+   * @param range
+   * @return
+   */
   public static String stringAt(String uri, Range range)
   {
-    var optionalText = FuzionTextDocumentService.getText(uri);
-    if (optionalText.isEmpty())
-      {
-        return "error";
-      }
-    var lines = optionalText.get()
+    var lines = sourceText(uri)
       .lines()
       .skip(range.getStart().getLine())
       .limit(range.getEnd().getLine() - range.getStart().getLine() + 1)
@@ -595,11 +603,6 @@ public final class FuzionHelpers
     });
   }
 
-  public static Feature universe(TextDocumentPositionParams params)
-  {
-    return ParserHelper.getMainFeature(Util.getUri(params)).get().universe();
-  }
-
   public static Stream<Feature> featuresIncludingInheritedFeatures(TextDocumentPositionParams params)
   {
     var mainFeature = ParserHelper.getMainFeature(Util.getUri(params));
@@ -625,11 +628,6 @@ public final class FuzionHelpers
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     return Run(uri, 10000);
-  }
-
-  public static Feature universe(String uri)
-  {
-    return ParserHelper.getMainFeature(uri).get().universe();
   }
 
   public static MessageParams Run(String uri, int timeout)

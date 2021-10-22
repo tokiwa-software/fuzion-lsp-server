@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -224,6 +225,16 @@ public class ParserHelper
         Log.message(e.getStackTrace().toString(), MessageType.Error);
         return null;
       }
+  }
+
+  public static Feature universe(String uri)
+  {
+    return getMainFeature(uri).get().universe();
+  }
+
+  public static Feature universe(TextDocumentPositionParams params)
+  {
+    return universe(Util.getUri(params));
   }
 
 }

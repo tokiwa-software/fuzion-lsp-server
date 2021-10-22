@@ -45,6 +45,7 @@ import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.LexerUtil;
+import dev.flang.lsp.server.ParserHelper;
 
 /**
  * tries offering completions
@@ -85,7 +86,7 @@ public class Completion
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
       {
         // NYI can we do better here?
-        return completions(Stream.of(FuzionHelpers.universe(params)));
+        return completions(Stream.of(ParserHelper.universe(params)));
       }
 
     // NYI FIXME we need to move the cursor one step back
