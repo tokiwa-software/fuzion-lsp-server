@@ -42,6 +42,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -347,5 +348,10 @@ public class Util
   {
     return Path.of(uri.substring("file:".length()));
   }
+
+  public static Comparator<? super Object> CompareByHashCode =
+    Comparator.comparing(obj -> obj, (obj1, obj2) -> {
+      return obj1.hashCode() - obj2.hashCode();
+    });
 
 }
