@@ -28,6 +28,8 @@ package dev.flang.lsp.server;
 
 import java.util.HashSet;
 
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.lsp.server.records.TokenInfo;
@@ -135,6 +137,13 @@ public class LexerUtil
         }
       return lexer.current() == Token.t_comment;
     });
+  }
+
+  public static Position endOfToken(String uri, Position start)
+  {
+    var textDocumentPosition = new TextDocumentPositionParams(new TextDocumentIdentifier(uri), start);
+    var token = rawTokenAt(textDocumentPosition);
+    return Converters.ToPosition(token.end());
   }
 
 }

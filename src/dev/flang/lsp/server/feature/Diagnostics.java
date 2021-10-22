@@ -36,7 +36,7 @@ import org.eclipse.lsp4j.Range;
 
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.Converters;
-import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.LexerUtil;
 import dev.flang.lsp.server.Log;
 import dev.flang.lsp.server.ParserHelper;
 import dev.flang.util.Errors;
@@ -60,7 +60,7 @@ public class Diagnostics
     var errorDiagnostics =
       Errors.errors().stream().filter(error -> ParserHelper.getUri(error.pos).equals(uri)).map((error) -> {
         var start = Converters.ToPosition(error.pos);
-        var end = FuzionHelpers.endOfToken(uri, start);
+        var end = LexerUtil.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;
         return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Error, "fuzion language server");
       });
@@ -68,7 +68,7 @@ public class Diagnostics
     var warningDiagnostics =
       Errors.warnings().stream().filter(error -> ParserHelper.getUri(error.pos).equals(uri)).map((error) -> {
         var start = Converters.ToPosition(error.pos);
-        var end = FuzionHelpers.endOfToken(uri, start);
+        var end = LexerUtil.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;
         return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Warning, "fuzion language server");
       });

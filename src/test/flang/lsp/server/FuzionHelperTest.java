@@ -146,7 +146,7 @@ class FuzionHelperTest
   {
     FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
-    var endOfToken = FuzionHelpers.endOfToken("file://uri", new Position(0, 0));
+    var endOfToken = LexerUtil.endOfToken("file://uri", new Position(0, 0));
     assertEquals(10, endOfToken.getCharacter());
     assertEquals(0, endOfToken.getLine());
 
@@ -157,7 +157,7 @@ class FuzionHelperTest
   {
     FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
-    var endOfToken = FuzionHelpers.endOfToken("file://uri", new Position(2, 6));
+    var endOfToken = LexerUtil.endOfToken("file://uri", new Position(2, 6));
     assertEquals(9, endOfToken.getCharacter());
     assertEquals(2, endOfToken.getLine());
   }
@@ -167,7 +167,7 @@ class FuzionHelperTest
   {
     FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
-    var endOfToken = FuzionHelpers.endOfToken("file://uri", new Position(2, 3));
+    var endOfToken = LexerUtil.endOfToken("file://uri", new Position(2, 3));
     assertEquals(4, endOfToken.getCharacter());
     assertEquals(2, endOfToken.getLine());
   }

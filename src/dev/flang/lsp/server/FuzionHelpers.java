@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -403,7 +402,7 @@ public final class FuzionHelpers
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
             return new SourcePosition(position._sourceFile, position._line,
-              endOfToken(uri, Converters.ToPosition(position)).getCharacter() + 1);
+              LexerUtil.endOfToken(uri, Converters.ToPosition(position)).getCharacter() + 1);
           })
           .findFirst()
           .orElse(feature.pos());
@@ -543,13 +542,6 @@ public final class FuzionHelpers
           }
       }
     return result;
-  }
-
-  public static Position endOfToken(String uri, Position start)
-  {
-    var textDocumentPosition = new TextDocumentPositionParams(new TextDocumentIdentifier(uri), start);
-    var token = LexerUtil.rawTokenAt(textDocumentPosition);
-    return Converters.ToPosition(token.end());
   }
 
   private static Stream<Object> callsAndFeaturesAt(TextDocumentPositionParams params)
