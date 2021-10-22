@@ -41,6 +41,8 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.LexerUtil;
+import dev.flang.lsp.server.ParserHelper;
 import dev.flang.lsp.server.Util;
 import dev.flang.parser.Lexer.Token;
 
@@ -98,7 +100,7 @@ class FuzionHelperTest
   @Test
   void NextTokenOfType_at_start()
   {
-    var foundToken = FuzionHelpers.nextTokenOfType(", aösldkjf", Util.HashSetOf(Token.t_comma));
+    var foundToken = LexerUtil.nextTokenOfType(", aösldkjf", Util.HashSetOf(Token.t_comma));
 
     assertEquals(1, foundToken.start()._column);
     assertEquals(2, foundToken.end()._column);
@@ -108,7 +110,7 @@ class FuzionHelperTest
   @Test
   void NextTokenOfType_at_end()
   {
-    var foundToken = FuzionHelpers.nextTokenOfType("1234,", Util.HashSetOf(Token.t_comma));
+    var foundToken = LexerUtil.nextTokenOfType("1234,", Util.HashSetOf(Token.t_comma));
 
     assertEquals(5, foundToken.start()._column);
     assertEquals(6, foundToken.end()._column);
@@ -122,7 +124,7 @@ class FuzionHelperTest
     FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
     var nextToken =
-      FuzionHelpers.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(2, 2)));
+      LexerUtil.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(2, 2)));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -134,7 +136,7 @@ class FuzionHelperTest
     FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
     var nextToken =
-      FuzionHelpers.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(6, 7)));
+      LexerUtil.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(6, 7)));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }
@@ -225,6 +227,31 @@ class FuzionHelperTest
     assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("file://uri3", 50));
 
     assertEquals("Hello World!\n", FuzionHelpers.Run("file://uri2").getMessage());
+  }
+
+  @Test
+  void Features(){
+    FuzionTextDocumentService.setText("file://uri", HelloWorld);
+    FuzionTextDocumentService.setText("file://uri2", ManOrBoy);
+    assertEquals(2, FuzionHelpers.Features("file://uri").count());
+    assertEquals(43, FuzionHelpers.Features("file://uri2").count());
+  }
+
+  @Test
+  void CommentOf(){
+    var CommentExample = """
+outerFeat is
+  # this should not be part of comment
+
+  # first comment line
+  # second comment line
+  innerFeat is
+    say "nothing"
+""";
+    FuzionTextDocumentService.setText("file://uri", CommentExample);
+    var innerFeature = ParserHelper.getMainFeature("file://uri").get().declaredFeatures().values().stream().skip(1).findFirst().orElseThrow();
+    assertEquals("# first comment line\n# second comment line", FuzionHelpers.CommentOf(innerFeature));
+
   }
 
 }

@@ -66,7 +66,7 @@ public final class Converters
 
   public static Range ToRange(TextDocumentPositionParams params)
   {
-    var tokenIdent = FuzionHelpers.rawTokenAt(params);
+    var tokenIdent = LexerUtil.rawTokenAt(params);
     var line = params.getPosition().getLine();
     var characterStart = tokenIdent.start()._column - 1;
     return new Range(new Position(line, characterStart),

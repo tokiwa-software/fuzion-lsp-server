@@ -45,6 +45,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.LexerUtil;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
@@ -61,7 +62,7 @@ public class Rename
 
   public static WorkspaceEdit getWorkspaceEdit(RenameParams params)
   {
-    if (!FuzionHelpers.IsValidIdentifier(params.getNewName()))
+    if (!LexerUtil.IsValidIdentifier(params.getNewName()))
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "new name no valid identifier.", null);
         throw new ResponseErrorException(responseError);
@@ -75,7 +76,7 @@ public class Rename
       }
 
     var featureIdentifier =
-      FuzionHelpers.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
+      LexerUtil.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
     // NYI rename feature used like this "fun myBaseName"
     Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature.get(), featureIdentifier);
@@ -106,7 +107,7 @@ public class Rename
           {
             var nextPosition = Converters.ToTextDocumentPosition(
               new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length()));
-            pos = FuzionHelpers.tokenAt(nextPosition).start();
+            pos = LexerUtil.tokenAt(nextPosition).start();
           }
         return pos;
       });
@@ -126,7 +127,7 @@ public class Rename
 
   private static boolean IsAtFunKeyword(SourcePosition pos)
   {
-    return FuzionHelpers.tokenAt(Converters.ToTextDocumentPosition(pos)).text().equals(Lexer.Token.t_fun.toString());
+    return LexerUtil.tokenAt(Converters.ToTextDocumentPosition(pos)).text().equals(Lexer.Token.t_fun.toString());
   }
 
   private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)

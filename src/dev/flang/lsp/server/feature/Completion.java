@@ -44,7 +44,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.Log;
+import dev.flang.lsp.server.LexerUtil;
 
 /**
  * tries offering completions
@@ -90,7 +90,7 @@ public class Completion
 
     // NYI FIXME we need to move the cursor one step back
     // before getting next token
-    var tokenText = FuzionHelpers.rawTokenAt(params).text();
+    var tokenText = LexerUtil.rawTokenAt(params).text();
     switch (tokenText)
       {
         case "for" :

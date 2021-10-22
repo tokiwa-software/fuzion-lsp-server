@@ -55,6 +55,8 @@ import org.eclipse.lsp4j.PrepareRenameResult;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SignatureHelp;
+import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -69,6 +71,7 @@ import dev.flang.lsp.server.feature.DocumentSymbols;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Rename;
+import dev.flang.lsp.server.feature.SignatureHelper;
 
 public class FuzionTextDocumentService implements TextDocumentService
 {
@@ -231,8 +234,6 @@ public class FuzionTextDocumentService implements TextDocumentService
     return CompletableFuture.completedFuture(Either.forRight(Rename.getPrepareRenameResult(params)));
   }
 
-
-
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
   {
@@ -250,6 +251,12 @@ public class FuzionTextDocumentService implements TextDocumentService
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
   {
     return CompletableFuture.completedFuture(CodeLenses.getCodeLenses(params));
+  }
+
+  @Override
+  public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
+  {
+    return CompletableFuture.completedFuture(SignatureHelper.getSignatureHelp(params));
   }
 
 }

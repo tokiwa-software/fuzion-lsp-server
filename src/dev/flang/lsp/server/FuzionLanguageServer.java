@@ -39,6 +39,7 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -64,9 +65,15 @@ public class FuzionLanguageServer implements LanguageServer
     initializeCodeActions(capabilities);
     initializeDocumentSymbol(capabilities);
     initializeCodeLens(capabilities);
+    initializeSignatureHelp(capabilities);
 
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeSignatureHelp(ServerCapabilities capabilities)
+  {
+    capabilities.setSignatureHelpProvider(new SignatureHelpOptions(List.of(" ")));
   }
 
   private void initializeCodeLens(ServerCapabilities capabilities)

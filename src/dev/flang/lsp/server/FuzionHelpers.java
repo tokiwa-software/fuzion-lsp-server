@@ -30,13 +30,16 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.MessageParams;
@@ -49,22 +52,20 @@ import dev.flang.ast.Call;
 import dev.flang.ast.Case;
 import dev.flang.ast.Cond;
 import dev.flang.ast.Contract;
+import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
-import dev.flang.ast.InlineArray;
-import dev.flang.ast.Expr;
 import dev.flang.ast.Impl.Kind;
+import dev.flang.ast.InlineArray;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
-import dev.flang.parser.Lexer;
-import dev.flang.parser.Lexer.Token;
-import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -465,67 +466,7 @@ public final class FuzionHelpers
       .filter(call -> call.calledFeature().equals(feature));
   }
 
-  public static Boolean IsValidIdentifier(String str)
-  {
-    var isIdentifier = Util.WithTextInputStream(str, () -> {
-      var lexer = new Lexer(SourceFile.STDIN);
-      return lexer.current() == Token.t_ident;
-    });
-    return isIdentifier;
-  }
-
-  /**
-   * @param str example: "infix %%"
-   * @return example: text: "%%", start: 7
-   */
-  public static TokenInfo nextTokenOfType(String str, HashSet<Token> tokens)
-  {
-    return Util.WithTextInputStream(str, () -> {
-      var lexer = new Lexer(SourceFile.STDIN);
-
-      while (lexer.current() != Token.t_eof && !tokens.contains(lexer.current()))
-        {
-          lexer.next();
-        }
-      return tokenInfo(lexer);
-    });
-  }
-
-  public static TokenInfo rawTokenAt(TextDocumentPositionParams params)
-  {
-    var sourceText = sourceText(params);
-    return Util.WithTextInputStream(sourceText, () -> {
-
-      var lexer = new Lexer(SourceFile.STDIN);
-      lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
-
-      while (lexer.current() != Token.t_eof
-        && lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
-        {
-          lexer.nextRaw();
-        }
-      return tokenInfo(params.getTextDocument().getUri(), lexer);
-    });
-  }
-
-  public static TokenInfo tokenAt(TextDocumentPositionParams params)
-  {
-    var sourceText = sourceText(params);
-    return Util.WithTextInputStream(sourceText, () -> {
-
-      var lexer = new Lexer(SourceFile.STDIN);
-      lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
-
-      while (lexer.current() != Token.t_eof
-        && lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
-        {
-          lexer.next();
-        }
-      return tokenInfo(params.getTextDocument().getUri(), lexer);
-    });
-  }
-
-  private static String sourceText(TextDocumentPositionParams params)
+  static String sourceText(TextDocumentPositionParams params)
   {
     String uri = params.getTextDocument().getUri();
     var sourceText = FuzionTextDocumentService.getText(uri);
@@ -543,24 +484,6 @@ public final class FuzionHelpers
         Util.WriteStackTraceAndExit(1, e);
         return null;
       }
-  }
-
-  private static boolean lexerEndPosIsBeforeOrAtTextDocumentPosition(TextDocumentPositionParams params, Lexer lexer)
-  {
-    return (lexer.sourcePos()._column - 1) <= params.getPosition().getCharacter();
-  }
-
-  private static TokenInfo tokenInfo(Lexer lexer)
-  {
-    return tokenInfo("file://", lexer);
-  }
-
-  private static TokenInfo tokenInfo(String uri, Lexer lexer)
-  {
-    var lexerSourcePosition = lexer.sourcePos(lexer.pos());
-    var start = new SourcePosition(Converters.ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column) ;
-    var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
-    return new TokenInfo(start, tokenString);
   }
 
   public static String stringAt(String uri, Range range)
@@ -604,7 +527,7 @@ public final class FuzionHelpers
   public static Position endOfToken(String uri, Position start)
   {
     var textDocumentPosition = new TextDocumentPositionParams(new TextDocumentIdentifier(uri), start);
-    var token = rawTokenAt(textDocumentPosition);
+    var token = LexerUtil.rawTokenAt(textDocumentPosition);
     return Converters.ToPosition(token.end());
   }
 
@@ -620,7 +543,7 @@ public final class FuzionHelpers
    */
   public static Optional<Feature> feature(TextDocumentPositionParams params)
   {
-    var token = FuzionHelpers.rawTokenAt(params);
+    var token = LexerUtil.rawTokenAt(params);
     return callsAndFeaturesAt(params).map(callOrFeature -> {
       if (callOrFeature instanceof Call)
         {
@@ -634,7 +557,7 @@ public final class FuzionHelpers
 
   public static Optional<TokenInfo> CallOrFeatureToken(TextDocumentPositionParams params)
   {
-    var token = FuzionHelpers.rawTokenAt(params);
+    var token = LexerUtil.rawTokenAt(params);
     if (token == null)
       {
         return Optional.empty();
@@ -691,6 +614,11 @@ public final class FuzionHelpers
     return Run(uri, 10000);
   }
 
+  public static Feature universe(String uri)
+  {
+    return ParserHelper.getMainFeature(uri).get().universe();
+  }
+
   public static MessageParams Run(String uri, int timeout)
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
@@ -699,6 +627,104 @@ public final class FuzionHelpers
       interpreter.run();
     }, timeout);
     return result;
+  }
+
+  public static Stream<Feature> outerFeatures(Feature feature)
+  {
+    if (feature.outer() == null)
+      {
+        return Stream.of(feature.outer());
+      }
+    return Stream.concat(Stream.of(feature.outer()), outerFeatures(feature.outer()));
+  }
+
+  /**
+   * returns all features declared in uri
+   * @param uri
+   * @return
+   */
+  public static Stream<Feature> Features(String uri)
+  {
+    var baseFeature = baseFeature(uri);
+    if (baseFeature.isEmpty())
+      {
+        return Stream.empty();
+      }
+    return DeclaredFeaturesRecursive(baseFeature.get());
+  }
+
+  private static Stream<Feature> DeclaredFeaturesRecursive(Feature feature)
+  {
+    return Stream.concat(Stream.of(feature),
+      feature.declaredFeatures().values().stream().flatMap(f -> DeclaredFeaturesRecursive(f)));
+  }
+
+  /**
+   * check if a feature contains a given call
+   * @param call
+   * @return
+   */
+  private static Predicate<? super Feature> contains(Call call)
+  {
+    return f -> {
+      var calls = new TreeSet<Call>(Util.CompareByHashCode);
+      f.visit(new FeatureVisitor() {
+        public Expr action(Call c, Feature outer)
+        {
+          calls.add(c);
+          return super.action(c, outer);
+        }
+      });
+      return calls.contains(call);
+    };
+  }
+
+  /**
+   * @param call
+   * @return
+   */
+  public static Feature featureOf(Call call)
+  {
+    var uri = ParserHelper.getUri(call.pos);
+    return Features(uri)
+      .filter(contains(call))
+      .findFirst()
+      .orElseThrow();
+  }
+
+  private static String LineAt(TextDocumentPositionParams param)
+  {
+    return FuzionHelpers.sourceText(param)
+      .split(System.lineSeparator())[param.getPosition().getLine()];
+  }
+
+  public static String CommentOf(Feature feature)
+  {
+    var textDocumentPosition = Converters.ToTextDocumentPosition(feature.pos());
+    var commentLines = new ArrayList<String>();
+    while (true)
+      {
+        if (textDocumentPosition.getPosition().getLine() != 0)
+          {
+            var position = textDocumentPosition.getPosition();
+            position.setLine(textDocumentPosition.getPosition().getLine() - 1);
+            textDocumentPosition.setPosition(position);
+          }
+        else
+          {
+            break;
+          }
+        if (LexerUtil.isCommentLine(textDocumentPosition))
+          {
+            commentLines.add(LineAt(textDocumentPosition));
+          }
+        else
+          {
+            break;
+          }
+      }
+    Collections.reverse(commentLines);
+    return commentLines.stream().map(line -> line.trim()).collect(Collectors.joining(System.lineSeparator()));
   }
 
 }
