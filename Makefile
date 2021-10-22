@@ -29,6 +29,7 @@ JAVA_FILES = $(shell find $(SOURCEDIR) -name '*.java')
 FUZION_HOME = '${CURDIR}/fuzion/build'
 JAVA_STACKSIZE=16
 JAVA_MAXHEAP=256
+VERSION=0.2.0
 
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar:jars/org.eclipse.xtext.xbase.lib-2.25.0.jar:jars/guava-31.0.1-jre.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
@@ -110,3 +111,7 @@ profile:
 # https://github.com/jvm-profiling-tools/async-profiler
 	profiler.sh -d 30 -f /tmp/flamegraph.html $(PID)
 	x-www-browser /tmp/flamegraph.html
+
+release: jar
+	rm -f fuzion_language_server_$(VERSION).zip
+	7z a -tzip fuzion_language_server_$(VERSION).zip out.jar README.md LICENSE bin/fuzion_language_server jars/*.jar fuzion/build/bin/ fuzion/build/lib/ fuzion/build/modules/

@@ -35,7 +35,7 @@
 |eclipse (theia)|https://github.com/tokiwa-software/vscode-fuzion|
 
 ### Emacs
-- Note: fuzionlsp_stdio (from ./bin/) needs to be in $PATH
+- Note: fuzion_language_server (from ./bin/) needs to be in $PATH
 - install lsp-mode, flycheck and company for emacs using
     - M-x package-install RET lsp-mode
     - M-x package-install RET flycheck
@@ -77,7 +77,7 @@
   :link '(url-link ""))
 
 (lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection "fuzionlsp_stdio")
+ (make-lsp-client :new-connection (lsp-stdio-connection "fuzion_language_server")
                   :major-modes '(fuzion-mode)
                   :priority -1
                   :server-id 'fuzionls))

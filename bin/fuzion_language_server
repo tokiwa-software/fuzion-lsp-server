@@ -16,7 +16,10 @@ set -euo pipefail
 # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
+JAVA_STACKSIZE=16
+JAVA_MAXHEAP=256
+FUZION_HOME=$(realpath -s "$SCRIPTPATH/../fuzion/build")
 
 cd $SCRIPTPATH/../
 
-make -s stdio
+java -Xss${JAVA_STACKSIZE}m -Xmx${JAVA_MAXHEAP}m -Dfuzion.home=$FUZION_HOME -Dfile.encoding=UTF-8 -jar out.jar dev.flang.lsp.server.Main "$@"
