@@ -29,6 +29,7 @@ package dev.flang.lsp.server;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,6 +68,7 @@ import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceFile;
 
 /**
  * wild mixture of
@@ -76,78 +78,61 @@ public final class FuzionHelpers
 {
 
   // NYI remove once we have ISourcePosition interface
-  // NYI return Optional<SourcePosition>
   /**
    * getPosition of ASTItem
    * @param entry
    * @return
    */
-  public static SourcePosition position(Object entry)
-  {
-    var result = getPositionOrNull(entry);
-    if (result != null)
-      {
-        return result;
-      }
-    // Log.write("no src pos found for: " + entry.getClass());
-    // NYI what to return?
-    return SourcePosition.builtIn;
-  }
-
-  private static SourcePosition getPositionOrNull(Object entry)
+  public static Optional<SourcePosition> sourcePosition(Object entry)
   {
     if (entry instanceof Stmnt)
       {
-        return ((Stmnt) entry).pos();
+        return Optional.ofNullable(((Stmnt) entry).pos());
       }
     if (entry instanceof Type)
       {
-        return ((Type) entry).pos;
+        return Optional.ofNullable(((Type) entry).pos);
       }
     if (entry instanceof Impl)
       {
-        return ((Impl) entry).pos;
+        return Optional.ofNullable(((Impl) entry).pos);
       }
     if (entry instanceof Generic)
       {
-        return ((Generic) entry)._pos;
+        return Optional.ofNullable(((Generic) entry)._pos);
       }
     if (entry instanceof Case)
       {
-        return ((Case) entry).pos;
+        return Optional.ofNullable(((Case) entry).pos);
       }
     if (entry instanceof InlineArray)
       {
-        return ((InlineArray) entry).pos();
+        return Optional.ofNullable(((InlineArray) entry).pos());
       }
     if (entry instanceof Expr)
       {
-        return ((Expr) entry).pos();
+        return Optional.ofNullable(((Expr) entry).pos());
       }
-    // NYI
     if (entry instanceof ReturnType)
       {
-        return SourcePosition.builtIn;
+        return Optional.empty();
       }
-    // NYI
     if (entry instanceof Cond)
       {
-        return SourcePosition.builtIn;
+        return Optional.empty();
       }
-    // NYI
     if (entry instanceof FormalGenerics)
       {
-        return SourcePosition.builtIn;
+        return Optional.empty();
       }
-    // NYI
     if (entry instanceof Contract)
       {
-        return SourcePosition.builtIn;
+        return Optional.empty();
       }
 
     System.err.println(entry.getClass());
     Util.WriteStackTraceAndExit(1);
-    return null;
+    return Optional.empty();
   }
 
   /**
@@ -183,8 +168,12 @@ public final class FuzionHelpers
     return (entry) -> {
       var astItem = entry.getKey();
       var cursorPosition = Util.getPosition(params);
-      var sourcePosition = FuzionHelpers.position(astItem);
-      return cursorPosition.getLine() == Converters.ToPosition(sourcePosition).getLine();
+      var sourcePositionOption = FuzionHelpers.sourcePosition(astItem);
+      if (sourcePositionOption.isEmpty())
+        {
+          return false;
+        }
+      return cursorPosition.getLine() == Converters.ToPosition(sourcePositionOption.get()).getLine();
     };
   }
 
@@ -192,16 +181,24 @@ public final class FuzionHelpers
   {
     return (entry) -> {
       var astItem = entry.getKey();
-      var sourcePosition = FuzionHelpers.position(astItem);
-      return !sourcePosition.isBuiltIn();
+      var sourcePositionOption = FuzionHelpers.sourcePosition(astItem);
+      if (sourcePositionOption.isEmpty())
+        {
+          return false;
+        }
+      return !sourcePositionOption.get().isBuiltIn();
     };
   }
 
   private static Predicate<? super Entry<Object, Feature>> IsItemInFile(String uri)
   {
     return (entry) -> {
-      var sourcePosition = FuzionHelpers.position(entry.getKey());
-      return uri.equals(ParserHelper.getUri(sourcePosition));
+      var sourcePositionOption = FuzionHelpers.sourcePosition(entry.getKey());
+      if (sourcePositionOption.isEmpty())
+        {
+          return false;
+        }
+      return uri.equals(ParserHelper.getUri(sourcePositionOption.get()));
     };
   }
 
@@ -217,13 +214,17 @@ public final class FuzionHelpers
       var outer = entry.getValue();
       var cursorPosition = Util.getPosition(params);
 
-      var sourcePosition = FuzionHelpers.position(astItem);
+      var sourcePositionOption = FuzionHelpers.sourcePosition(astItem);
+      if (sourcePositionOption.isEmpty())
+        {
+          return false;
+        }
 
       boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
         || Util.ComparePosition(cursorPosition,
           Converters.ToPosition(FuzionHelpers.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
-        Util.ComparePosition(cursorPosition, Converters.ToPosition(sourcePosition)) >= 0;
+        Util.ComparePosition(cursorPosition, Converters.ToPosition(sourcePositionOption.get())) >= 0;
 
       return ItemPositionIsBeforeOrAtCursorPosition && BuiltInOrEndAfterCursor;
     };
@@ -265,11 +266,21 @@ public final class FuzionHelpers
 
   public static Comparator<? super Object> CompareBySourcePosition =
     Comparator.comparing(obj -> obj, (obj1, obj2) -> {
-      if (obj1.equals(obj2))
+      var sourcePositionOption1 = sourcePosition(obj1);
+      var sourcePositionOption2 = sourcePosition(obj2);
+      if (sourcePositionOption1.isEmpty() || sourcePositionOption2.isEmpty())
         {
-          return 0;
+          if (sourcePositionOption1.isEmpty() && sourcePositionOption2.isEmpty())
+            {
+              return 0;
+            }
+          if (sourcePositionOption1.isEmpty())
+            {
+              return -1;
+            }
+          return 1;
         }
-      return position(obj1).compareTo(position(obj2));
+      return sourcePositionOption1.get().compareTo(sourcePositionOption2.get());
     });
 
   private static Comparator<? super Call> CompareByEndOfCall =
@@ -386,7 +397,9 @@ public final class FuzionHelpers
           .filter(entry -> entry.getValue() != null)
           .filter(IsItemInFile(uri))
           .filter(entry -> entry.getValue().compareTo(feature) == 0)
-          .map(entry -> position(entry.getKey()))
+          .map(entry -> sourcePosition(entry.getKey()))
+          .filter(sourcePositionOption -> sourcePositionOption.isPresent())
+          .map(sourcePosition -> sourcePosition.get())
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
             return new SourcePosition(position._sourceFile, position._line,
@@ -564,7 +577,7 @@ public final class FuzionHelpers
       }
     var column = token.start()._column;
     var isCallOrFeature = FuzionHelpers.callsAndFeaturesAt(params)
-      .map(obj -> position(obj))
+      .map(obj -> sourcePosition(obj).get())
       .filter(pos -> column == pos._column)
       .findFirst()
       .isPresent();
@@ -725,6 +738,13 @@ public final class FuzionHelpers
       }
     Collections.reverse(commentLines);
     return commentLines.stream().map(line -> line.trim()).collect(Collectors.joining(System.lineSeparator()));
+  }
+
+  private static final SourcePosition NotPresent = new SourcePosition(new SourceFile(Path.of("--none--")), 0, 0);
+
+  public static SourcePosition sourcePositionOrBuiltIn(Object obj)
+  {
+    return sourcePosition(obj).orElse(NotPresent);
   }
 
 }
