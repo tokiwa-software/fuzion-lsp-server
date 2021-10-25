@@ -29,6 +29,7 @@ package dev.flang.lsp.server;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.TreeMap;
 
@@ -109,13 +110,14 @@ public class ParserHelper
 
   private static ParserCacheRecord createMIRandCache(String uri)
   {
-    synchronized(PARSER_LOCK){
-      var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
-      var result = parserCacheRecord(uri);
-      uri2ParserCache.put(uri, result);
-      uri2SourceText.put(uri, sourceText);
-      return result;
-    }
+    synchronized (PARSER_LOCK)
+      {
+        var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
+        var result = parserCacheRecord(uri);
+        uri2ParserCache.put(uri, result);
+        uri2SourceText.put(uri, sourceText);
+        return result;
+      }
   }
 
   private static ParserCacheRecord parserCacheRecord(String uri)
@@ -138,10 +140,10 @@ public class ParserHelper
 
   public static FUIR FUIR(String uri)
   {
-     // NYI remove this once unnecessary
-     Interpreter.clear();
-     Instance.universe = null;
-     ChoiceIdAsRef.preallocated_.clear();
+    // NYI remove this once unnecessary
+    Interpreter.clear();
+    Instance.universe = null;
+    ChoiceIdAsRef.preallocated_.clear();
 
     // NYI remove recreation of MIR
     var parserCacheRecord = createMIRandCache(uri);
@@ -152,7 +154,7 @@ public class ParserHelper
     // NYI remove this once unnecessary
     Instance.universe = new Instance(Clazzes.universe.get());
 
-    var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir(false);
+    var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir();
     return fuir;
   }
 
@@ -181,8 +183,9 @@ public class ParserHelper
 
   private static FrontEndOptions FrontEndOptions(File tempFile)
   {
+    var fuzionHome = Path.of(System.getProperty("fuzion.home"));
     var frontEndOptions =
-      new FrontEndOptions(0, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
+      new FrontEndOptions(0, fuzionHome, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
     return frontEndOptions;
   }
 
