@@ -458,6 +458,9 @@ public final class FuzionHelpers
 
   private static boolean IsArgument(Feature feature)
   {
+    if(feature.pos().isBuiltIn()){
+      return false;
+    }
     return allOf(ParserHelper.getUri(feature.pos()), Feature.class)
       .anyMatch(f -> f.arguments.contains(feature));
   }
