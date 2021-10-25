@@ -1,4 +1,4 @@
-# A language server implementation for Fuzion
+# <img src="fuzion/assets/logo.svg" alt="fuzion logo" width="25" /> A language server implementation for Fuzion
 
 ## Requirements
 - java version 17 or higher
