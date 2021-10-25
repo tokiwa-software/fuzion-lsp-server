@@ -170,7 +170,7 @@ public class Completion
           {
             return "${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
           }
-        return "fun (${" + (index + 1) + ":}) =>";
+        return "${" + (index + 1) + ":} ->";
       })
       .collect(Collectors.joining(", "));
   }
