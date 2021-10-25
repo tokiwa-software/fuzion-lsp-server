@@ -106,7 +106,7 @@
 |completion|☑|
 |completion resolve|☐|
 |hover|☑|
-|signatureHelp|☐|
+|signatureHelp|☑|
 |declaration|☐|
 |definition|☑|
 |typeDefinition|☐|
