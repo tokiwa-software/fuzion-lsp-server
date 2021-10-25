@@ -653,7 +653,8 @@ public final class FuzionHelpers
       {
         return Stream.of(feature.outer());
       }
-    return Stream.concat(Stream.of(feature.outer()), outerFeatures(feature.outer()));
+    return Stream.concat(Stream.of(feature.outer()), outerFeatures(feature.outer()))
+      .filter(f -> f != null);
   }
 
   /**
