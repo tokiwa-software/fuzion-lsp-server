@@ -47,7 +47,7 @@ public class SignatureHelper
 
   public static SignatureHelp getSignatureHelp(SignatureHelpParams params)
   {
-    Optional<Call> call = FuzionHelpers.ASTItemsOnLine(params)
+    Optional<Call> call = FuzionHelpers.ASTItemsBeforeOrAtCursor(params)
       .filter(item -> Util.HashSetOf(Call.class).contains(item.getClass()))
       .map(c -> (Call) c)
       .findFirst();

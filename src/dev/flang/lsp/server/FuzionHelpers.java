@@ -140,8 +140,7 @@ public final class FuzionHelpers
    * @param params
    * @return
    */
-  // NYI rename, misleading only items before or at cursor
-  public static Stream<Object> ASTItemsOnLine(TextDocumentPositionParams params)
+  public static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
     var baseFeature = baseFeature(params.getTextDocument());
     if (baseFeature.isEmpty())
@@ -426,7 +425,7 @@ public final class FuzionHelpers
    */
   public static Optional<Feature> featureAt(TextDocumentPositionParams params)
   {
-    return ASTItemsOnLine(params)
+    return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {
         if (astItem instanceof Feature)
           {
@@ -561,7 +560,7 @@ public final class FuzionHelpers
 
   private static Stream<Object> callsAndFeaturesAt(TextDocumentPositionParams params)
   {
-    return ASTItemsOnLine(params)
+    return ASTItemsBeforeOrAtCursor(params)
       .filter(item -> Util.HashSetOf(Feature.class, Call.class).contains(item.getClass()));
   }
 
