@@ -254,5 +254,28 @@ outerFeat is
 
   }
 
+  @Test
+  void featureAt(){
+    var sourceText = """
+myfeat is
+
+  myi32 :i32 is
+
+  print(x, y myi32, z i32) =>
+    say "$x"
+""";
+    FuzionTextDocumentService.setText("file://uri", sourceText);
+
+    var feature = FuzionHelpers.featureAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(5, 4))).get();
+    assertEquals("say", feature.featureName().baseName());
+
+    feature = FuzionHelpers.featureAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(4, 8))).get();
+    assertEquals("myi32", feature.featureName().baseName());
+
+    feature = FuzionHelpers.featureAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(4, 20))).get();
+    assertEquals("i32", feature.featureName().baseName());
+
+  }
+
 }
 

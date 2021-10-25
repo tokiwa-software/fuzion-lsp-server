@@ -166,6 +166,7 @@ public class HeirsVisitor extends FeatureVisitor
     result.put(f, outer);
     Log.increaseIndentation();
 
+    f.arguments.forEach(argument -> argument.visit(this, f));
     // NYI their is also resultType and resultField?
     f.returnType.visit(this, outer);
     f.resultType().visit(this, outer);

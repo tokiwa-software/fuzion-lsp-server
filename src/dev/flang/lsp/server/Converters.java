@@ -109,7 +109,10 @@ public final class Converters
 
   public static SourceFile ToSourceFile(String uri)
   {
-    return new SourceFile(Path.of(uri.substring("file://".length() - 1)));
+    return Util.WithRedirectedStdErr(() -> {
+      var fileName = Path.of(uri.substring("file://".length() - 1));
+      return new SourceFile(fileName);
+    });
   }
 
 }

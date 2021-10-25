@@ -190,9 +190,14 @@ public class ASTtoHTML extends FeatureVisitor
   public Stmnt action(Feature f, Feature outer)
   {
     Print("Feature", PosToString(FuzionHelpers.sourcePositionOrBuiltIn(f)), f.qualifiedName(), () -> {
-      var visitations = new TreeMap<Object, Feature>(FuzionHelpers.CompareBySourcePosition);
+      var visitations = new TreeMap<Object, Feature>(FuzionHelpers.CompareBySourcePosition.thenComparing(Util.CompareByHashCode));
 
       Log.increaseIndentation();
+
+      for(Feature argument : f.arguments)
+      {
+        visitations.put(argument, f);
+      }
 
       visitations.put(f.resultType(), f);
 

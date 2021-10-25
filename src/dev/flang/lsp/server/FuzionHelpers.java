@@ -67,7 +67,6 @@ import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.SourceFile;
 
 /**
  * wild mixture of
@@ -141,6 +140,7 @@ public final class FuzionHelpers
    * @param params
    * @return
    */
+  // NYI rename, misleading only items before or at cursor
   public static Stream<Object> ASTItemsOnLine(TextDocumentPositionParams params)
   {
     var baseFeature = baseFeature(params.getTextDocument());
@@ -423,7 +423,6 @@ public final class FuzionHelpers
    * position that is declared, called or used by a type
      * NYI test this method!
    * @param params
-
    */
   public static Optional<Feature> featureAt(TextDocumentPositionParams params)
   {
@@ -444,10 +443,23 @@ public final class FuzionHelpers
         return null;
       })
       .filter(f -> f != null)
+      .map(f -> {
+        if (IsArgument(f))
+          {
+            return f.resultType().featureOfType();
+          }
+        return f;
+      })
       .filter(f -> !IsFieldLike(f))
       // NYI maybe there is a better way?
       .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()))
       .findFirst();
+  }
+
+  private static boolean IsArgument(Feature feature)
+  {
+    return allOf(ParserHelper.getUri(feature.pos()), Feature.class)
+      .anyMatch(f -> f.arguments.contains(feature));
   }
 
   /**
@@ -481,10 +493,10 @@ public final class FuzionHelpers
       .filter(call -> call.calledFeature().equals(feature));
   }
 
-  static String sourceText(TextDocumentPositionParams params){
-    return sourceText(params.getTextDocument().getUri());
+  static String sourceText(TextDocumentPositionParams params)
+  {
+    return sourceText(Util.getUri(params));
   }
-
 
   static String sourceText(String uri)
   {
@@ -730,7 +742,7 @@ public final class FuzionHelpers
     return commentLines.stream().map(line -> line.trim()).collect(Collectors.joining(System.lineSeparator()));
   }
 
-  private static final SourcePosition NotPresent = new SourcePosition(new SourceFile(Path.of("--none--")), 0, 0);
+  private static final SourcePosition NotPresent = new SourcePosition(Converters.ToSourceFile("file://--none--"), 0, 0);
 
   public static SourcePosition sourcePositionOrBuiltIn(Object obj)
   {

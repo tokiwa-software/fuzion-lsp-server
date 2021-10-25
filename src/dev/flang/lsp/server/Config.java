@@ -32,7 +32,7 @@ public class Config
 {
 
   private static LanguageClient _languageClient;
-  private static Transport _transport = Transport.tcp;
+  private static Transport _transport = Transport.stdio;
 
   public static LanguageClient languageClient()
   {

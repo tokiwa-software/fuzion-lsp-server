@@ -169,23 +169,33 @@ public class ASTPrinter extends FeatureVisitor
   @Override
   public Stmnt action(Feature f, Feature outer)
   {
-    Print("Feature", FuzionHelpers.sourcePositionOrBuiltIn(f), f.qualifiedName(), () -> {
-      var visitations = new TreeMap<Object, Feature>(FuzionHelpers.CompareBySourcePosition);
+    Print("Feature", FuzionHelpers.sourcePositionOrBuiltIn(f), Converters.ToLabel(f), () -> {
+      var visitations =
+        new TreeMap<Object, Feature>(FuzionHelpers.CompareBySourcePosition.thenComparing(Util.CompareByHashCode));
 
       Log.increaseIndentation();
+
+      for(Feature argument : f.arguments)
+        {
+          visitations.put(argument, f);
+        }
 
       visitations.put(f.resultType(), f);
 
       visitations.put(f.generics, f);
+
       for(Call c : f.inherits)
         {
           visitations.put(c, f);
         }
+
       if (f.contract != null)
         {
           visitations.put(f.contract, f);
         }
+
       visitations.put(f.impl, f);
+
       visitations.put(f.returnType, f);
 
       f.declaredFeatures().forEach((n, feature) -> {
