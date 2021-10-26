@@ -53,13 +53,17 @@ public class SignatureHelper
         return new SignatureHelp();
       }
 
-    var featureOfCall = FuzionHelpers.featureOf(call.get());
+    var featureOfCall =
+      call.get().target instanceof Call callTarget ? callTarget.calledFeature(): FuzionHelpers.featureOf(call.get());
 
     var consideredCallTargets_declaredOrInherited = featureOfCall.declaredOrInheritedFeatures().values().stream();
     var consideredCallTargets_outerFeatures =
       FuzionHelpers.outerFeatures(featureOfCall).flatMap(f -> f.declaredFeatures().values().stream());
 
-    var calledFeature = Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures)
+    var consideredFeatures =
+      Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
+
+    var calledFeature = consideredFeatures
       .filter(f -> featureNameMatchesCallName(f, call.get()))
       .findFirst();
 

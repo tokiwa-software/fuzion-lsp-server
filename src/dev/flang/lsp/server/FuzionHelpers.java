@@ -403,7 +403,8 @@ public final class FuzionHelpers
           .map(position -> {
             var start = LexerUtil.endOfToken(uri, Converters.ToPosition(position));
             var line = FuzionHelpers.restOfLine(uri, start);
-            // NYI maybe use inverse hashset here? i.e. state which tokens can be skipped
+            // NYI maybe use inverse hashset here? i.e. state which tokens can
+            // be skipped
             var token = LexerUtil.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
               Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
             return new SourcePosition(position._sourceFile, position._line, start.getCharacter() + token.end()._column);
@@ -419,11 +420,12 @@ public final class FuzionHelpers
 
   private static String restOfLine(String uri, Position start)
   {
-    var lines = sourceText(uri)
+    var line = sourceText(uri)
       .lines()
       .skip(start.getLine())
-      .toList();
-    return lines.get(0).substring(start.getCharacter());
+      .findFirst()
+      .orElseThrow();
+    return line.length() <= start.getCharacter() ? "": line.substring(start.getCharacter());
   }
 
   public static boolean IsAnonymousInnerFeature(Feature f)
