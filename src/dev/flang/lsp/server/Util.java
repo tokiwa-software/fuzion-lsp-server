@@ -354,4 +354,11 @@ public class Util
       return obj1.hashCode() - obj2.hashCode();
     });
 
+  /**
+   * example: TextDocumentPositionParams("file://uri", 0, 0)
+   */
+  public static TextDocumentPositionParams TextDocumentPositionParams(String uri, int line, int character){
+    return new TextDocumentPositionParams(new TextDocumentIdentifier(uri), new Position(line, character));
+  }
+
 }

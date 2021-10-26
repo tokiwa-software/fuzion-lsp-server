@@ -29,7 +29,6 @@ package dev.flang.lsp.server;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -66,6 +66,7 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -400,8 +401,12 @@ public final class FuzionHelpers
           .map(sourcePosition -> sourcePosition.get())
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
-            return new SourcePosition(position._sourceFile, position._line,
-              LexerUtil.endOfToken(uri, Converters.ToPosition(position)).getCharacter() + 1);
+            var start = LexerUtil.endOfToken(uri, Converters.ToPosition(position));
+            var line = FuzionHelpers.restOfLine(uri, start);
+            // NYI maybe use inverse hashset here? i.e. state which tokens can be skipped
+            var token = LexerUtil.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
+              Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
+            return new SourcePosition(position._sourceFile, position._line, start.getCharacter() + token.end()._column);
           })
           .findFirst()
           .orElse(feature.pos());
@@ -410,6 +415,15 @@ public final class FuzionHelpers
       }
 
     return Memory.EndOfFeature.get(feature);
+  }
+
+  private static String restOfLine(String uri, Position start)
+  {
+    var lines = sourceText(uri)
+      .lines()
+      .skip(start.getLine())
+      .toList();
+    return lines.get(0).substring(start.getCharacter());
   }
 
   public static boolean IsAnonymousInnerFeature(Feature f)
@@ -457,9 +471,10 @@ public final class FuzionHelpers
 
   private static boolean IsArgument(Feature feature)
   {
-    if(feature.pos().isBuiltIn()){
-      return false;
-    }
+    if (feature.pos().isBuiltIn())
+      {
+        return false;
+      }
     return allOf(ParserHelper.getUri(feature.pos()), Feature.class)
       .anyMatch(f -> f.arguments.contains(feature));
   }
@@ -750,6 +765,15 @@ public final class FuzionHelpers
   public static SourcePosition sourcePositionOrBuiltIn(Object obj)
   {
     return sourcePosition(obj).orElse(NotPresent);
+  }
+
+  public static Optional<Call> callAt(TextDocumentPositionParams params)
+  {
+    Optional<Call> call = ASTItemsBeforeOrAtCursor(params)
+      .filter(item -> Util.HashSetOf(Call.class).contains(item.getClass()))
+      .map(c -> (Call) c)
+      .findFirst();
+    return call;
   }
 
 }

@@ -35,8 +35,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.FuzionHelpers;
@@ -124,7 +122,7 @@ class FuzionHelperTest
     FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
     var nextToken =
-      LexerUtil.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(2, 2)));
+      LexerUtil.rawTokenAt(Util.TextDocumentPositionParams("file://uri", 2, 2));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -136,7 +134,7 @@ class FuzionHelperTest
     FuzionTextDocumentService.setText("file://uri", ManOrBoy);
 
     var nextToken =
-      LexerUtil.rawTokenAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(6, 7)));
+      LexerUtil.rawTokenAt(Util.TextDocumentPositionParams("file://uri", 6, 7));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }
@@ -230,7 +228,8 @@ class FuzionHelperTest
   }
 
   @Test
-  void Features(){
+  void Features()
+  {
     FuzionTextDocumentService.setText("file://uri", HelloWorld);
     FuzionTextDocumentService.setText("file://uri2", ManOrBoy);
     assertEquals(2, FuzionHelpers.Features("file://uri").count());
@@ -238,43 +237,78 @@ class FuzionHelperTest
   }
 
   @Test
-  void CommentOf(){
+  void CommentOf()
+  {
     var CommentExample = """
-outerFeat is
-  # this should not be part of comment
+      outerFeat is
+        # this should not be part of comment
 
-  # first comment line
-  # second comment line
-  innerFeat is
-    say "nothing"
-""";
+        # first comment line
+        # second comment line
+        innerFeat is
+          say "nothing"
+      """;
     FuzionTextDocumentService.setText("file://uri", CommentExample);
-    var innerFeature = ParserHelper.getMainFeature("file://uri").get().declaredFeatures().values().stream().skip(1).findFirst().orElseThrow();
+    var innerFeature = ParserHelper.getMainFeature("file://uri")
+      .get()
+      .declaredFeatures()
+      .values()
+      .stream()
+      .skip(1)
+      .findFirst()
+      .orElseThrow();
     assertEquals("# first comment line\n# second comment line", FuzionHelpers.CommentOf(innerFeature));
 
   }
 
   @Test
-  void featureAt(){
+  void featureAt()
+  {
     var sourceText = """
-myfeat is
+      myfeat is
 
-  myi32 :i32 is
+        myi32 :i32 is
 
-  print(x, y myi32, z i32) =>
-    say "$x"
-""";
+        print(x, y myi32, z i32) =>
+          say "$x"
+      """;
     FuzionTextDocumentService.setText("file://uri", sourceText);
 
-    var feature = FuzionHelpers.featureAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(5, 4))).get();
+    var feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams("file://uri", 5, 4)).get();
     assertEquals("say", feature.featureName().baseName());
 
-    feature = FuzionHelpers.featureAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(4, 8))).get();
+    feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams("file://uri", 4, 8)).get();
     assertEquals("myi32", feature.featureName().baseName());
 
-    feature = FuzionHelpers.featureAt(new TextDocumentPositionParams(new TextDocumentIdentifier("file://uri"), new Position(4, 20))).get();
+    feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams("file://uri", 4, 20)).get();
     assertEquals("i32", feature.featureName().baseName());
 
+  }
+
+  @Test
+  void endOfFeature()
+  {
+    var sourceText = """
+      ex7 is
+        (1..10).forAll()
+              """;
+    FuzionTextDocumentService.setText("file://uri", sourceText);
+    var endOfFeature = FuzionHelpers.endOfFeature(ParserHelper.getMainFeature("file://uri").get());
+    assertEquals(2, endOfFeature._line);
+    assertEquals(19, endOfFeature._column);
+  }
+
+  @Test
+  void callAt()
+  {
+    var sourceText = """
+      ex7 is
+        (1..10).myCall()
+              """;
+    FuzionTextDocumentService.setText("file://uri", sourceText);
+    var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams("file://uri", 1, 17))
+      .get();
+    assertEquals("myCall", call.name);
   }
 
 }

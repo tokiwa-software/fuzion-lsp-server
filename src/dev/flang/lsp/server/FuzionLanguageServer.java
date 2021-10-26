@@ -73,7 +73,8 @@ public class FuzionLanguageServer implements LanguageServer
 
   private void initializeSignatureHelp(ServerCapabilities capabilities)
   {
-    capabilities.setSignatureHelpProvider(new SignatureHelpOptions(List.of(" ")));
+    // NYI which characters should trigger?
+    capabilities.setSignatureHelpProvider(new SignatureHelpOptions(List.of(" ", "(", ",")));
   }
 
   private void initializeCodeLens(ServerCapabilities capabilities)

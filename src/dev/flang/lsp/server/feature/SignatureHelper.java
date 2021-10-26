@@ -40,17 +40,13 @@ import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.Util;
 
 public class SignatureHelper
 {
 
   public static SignatureHelp getSignatureHelp(SignatureHelpParams params)
   {
-    Optional<Call> call = FuzionHelpers.ASTItemsBeforeOrAtCursor(params)
-      .filter(item -> Util.HashSetOf(Call.class).contains(item.getClass()))
-      .map(c -> (Call) c)
-      .findFirst();
+    Optional<Call> call = FuzionHelpers.callAt(params);
 
     if (call.isEmpty())
       {
