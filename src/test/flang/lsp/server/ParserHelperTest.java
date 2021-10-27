@@ -69,7 +69,5 @@ public class ParserHelperTest
     var mainFeature = ParserHelper.getMainFeature("file://uri");
     assertEquals(true, Errors.count() > 0);
     assertEquals(true, mainFeature.isPresent());
-    assertEquals("factors1", mainFeature.get().featureName().baseName());
-    assertEquals("file://uri", ParserHelper.getUri(mainFeature.get().pos()));
   }
 }
