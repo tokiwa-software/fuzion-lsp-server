@@ -40,13 +40,36 @@ public class ParserHelperTest
   void getMainFeatureTest()
   {
     FuzionTextDocumentService.setText("file://uri", """
-HelloWorld is
-  say "Hello World!"
-            """);
+      HelloWorld is
+        say "Hello World!"
+                  """);
     var mainFeature = ParserHelper.getMainFeature("file://uri");
     assertEquals(0, Errors.count());
     assertEquals(true, mainFeature.isPresent());
     assertEquals("HelloWorld", mainFeature.get().featureName().baseName());
+    assertEquals("file://uri", ParserHelper.getUri(mainFeature.get().pos()));
+  }
+
+  @Test
+  void getMainFeatureBrokenSourceCodeTest()
+  {
+    FuzionTextDocumentService.setText("file://uri", """
+      factors1 is
+
+        (1..10).forAll(x -> say "sadf")
+          (1..n) & (x -> n %% x) | fun print
+        say
+
+        (1..n) | m ->
+          say("factors of $m: " +
+              ((1..m) & (x ->  m %% x)))
+
+
+                  """);
+    var mainFeature = ParserHelper.getMainFeature("file://uri");
+    assertEquals(true, Errors.count() > 0);
+    assertEquals(true, mainFeature.isPresent());
+    assertEquals("factors1", mainFeature.get().featureName().baseName());
     assertEquals("file://uri", ParserHelper.getUri(mainFeature.get().pos()));
   }
 }
