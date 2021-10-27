@@ -758,11 +758,11 @@ public final class FuzionHelpers
     return commentLines.stream().map(line -> line.trim()).collect(Collectors.joining(System.lineSeparator()));
   }
 
-  private static final SourcePosition NotPresent = new SourcePosition(Converters.ToSourceFile("file://--none--"), 0, 0);
+  private static final SourcePosition None = new SourcePosition(Converters.ToSourceFile("file://--none--"), 0, 0);
 
-  public static SourcePosition sourcePositionOrBuiltIn(Object obj)
+  public static SourcePosition sourcePositionOrNone(Object obj)
   {
-    return sourcePosition(obj).orElse(NotPresent);
+    return sourcePosition(obj).orElse(None);
   }
 
   public static Optional<Call> callAt(TextDocumentPositionParams params)
