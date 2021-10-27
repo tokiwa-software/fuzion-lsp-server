@@ -124,11 +124,6 @@ public class ParserHelper
   {
     // NYI make this less bad
     Memory.EndOfFeature.clear();
-
-    if (Config.DEBUG())
-      {
-        ASTtoHTML.printAST(mainFeature);
-      }
   }
 
   public static FUIR FUIR(String uri)

@@ -67,7 +67,7 @@ public class FuzionLanguageServer implements LanguageServer
     initializeCodeLens(capabilities);
     initializeSignatureHelp(capabilities);
 
-    capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
+    capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
     return CompletableFuture.supplyAsync(() -> res);
   }
 

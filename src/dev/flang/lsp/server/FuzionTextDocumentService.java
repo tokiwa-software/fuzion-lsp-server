@@ -137,15 +137,26 @@ public class FuzionTextDocumentService implements TextDocumentService
 
     synchronized (textDocuments)
       {
-        var text = getText(uri).orElseThrow();
-
-        var contentChanges = params.getContentChanges();
-
-        text = applyContentChanges(text, contentChanges);
-
+        var text = SyncKindFull(params);
         setText(uri, text);
         afterSetText(uri);
       }
+  }
+
+  private String SyncKindFull(DidChangeTextDocumentParams params)
+  {
+    var contentChanges = params.getContentChanges();
+    var text = contentChanges.get(0).getText();
+    return text;
+  }
+
+  // NYI this is broken
+  private String SyncKindIncremental(DidChangeTextDocumentParams params)
+  {
+    var uri = Util.getUri(params.getTextDocument());
+    var text = getText(uri).orElseThrow();
+    var contentChanges = params.getContentChanges();
+    return applyContentChanges(text, contentChanges);
   }
 
   /**
