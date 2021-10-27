@@ -27,33 +27,35 @@ SOURCEDIR = src
 CLASSDIR = classes
 JAVAC = javac -encoding UTF8
 JAVA_FILES = $(shell find $(SOURCEDIR) -name '*.java')
-FUZION_HOME = '${CURDIR}/fuzion/build'
+FUZION_HOME = fuzion/build
 JAVA_STACKSIZE=16
 VERSION=0.2.0
 
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar:jars/org.eclipse.xtext.xbase.lib-2.25.0.jar:jars/guava-31.0.1-jre.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
+CLASSPATH=classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH)
+
 all: classes
-	java -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
+	java -cp $(CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
 tcp: classes
-	java -Xss$(JAVA_STACKSIZE)m -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
+	java -Xss$(JAVA_STACKSIZE)m -cp $(CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
 	mkdir -p $@
-	$(JAVAC) -classpath $(JARS_FOR_CLASSPATH):$(FUZION_HOME)/classes -d $@ $(JAVA_FILES)
+	$(JAVAC) -classpath $(CLASSPATH) -d $@ $(JAVA_FILES)
 
 stdio: classes
-	java -Xss$(JAVA_STACKSIZE)m -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main
+	java -Xss$(JAVA_STACKSIZE)m -cp $(CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main
 
 debug: classes
 	mkdir -p runDir
-	java -Xss$(JAVA_STACKSIZE)m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
+	java -Xss$(JAVA_STACKSIZE)m -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp $(CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
 debug_supended: classes
 	mkdir -p runDir
-	java -Xss$(JAVA_STACKSIZE)m -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000 -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
+	java -Xss$(JAVA_STACKSIZE)m -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000 -cp $(CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
 
 jars/org.eclipse.lsp4j-0.12.0.jar:
 	mkdir -p $(@D)
@@ -102,10 +104,10 @@ jar: clean classes
 	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
 
 run_tests: classes
-	PRECONDITIONS=true POSTCONDITIONS=true java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -jar jars/junit-platform-console-standalone-1.8.1.jar --details=verbose -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) -p test.flang.lsp.server
+	PRECONDITIONS=true POSTCONDITIONS=true java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -jar jars/junit-platform-console-standalone-1.8.1.jar --details=verbose -cp $(CLASSPATH) -p test.flang.lsp.server
 
 run_tests_suspended: classes
-	PRECONDITIONS=true POSTCONDITIONS=true java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000 -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -jar jars/junit-platform-console-standalone-1.8.1.jar --details=verbose -cp classes:fuzion/build/classes:$(JARS_FOR_CLASSPATH) -p test.flang.lsp.server
+	PRECONDITIONS=true POSTCONDITIONS=true java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000 -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -jar jars/junit-platform-console-standalone-1.8.1.jar --details=verbose -cp $(CLASSPATH) -p test.flang.lsp.server
 
 profile: PID = $(shell ps aux | grep fuzion-lsp-server | grep lsp4j | head -n 1 | awk -F ' ' '{print $$2}')
 profile:
