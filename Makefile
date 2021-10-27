@@ -25,6 +25,7 @@
 
 SOURCEDIR = src
 CLASSDIR = classes
+JAVAC = javac -encoding UTF8
 JAVA_FILES = $(shell find $(SOURCEDIR) -name '*.java')
 FUZION_HOME = '${CURDIR}/fuzion/build'
 JAVA_STACKSIZE=16
@@ -41,7 +42,7 @@ tcp: classes
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
 	mkdir -p $@
-	javac -classpath $(JARS_FOR_CLASSPATH):$(FUZION_HOME)/classes -d $@ $(JAVA_FILES)
+	$(JAVAC) -classpath $(JARS_FOR_CLASSPATH):$(FUZION_HOME)/classes -d $@ $(JAVA_FILES)
 
 stdio: classes
 	java -Xss$(JAVA_STACKSIZE)m -cp classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main
