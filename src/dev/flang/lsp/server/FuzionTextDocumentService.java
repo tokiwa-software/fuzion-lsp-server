@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
@@ -110,11 +111,17 @@ public class FuzionTextDocumentService implements TextDocumentService
     afterSetText(uri);
   }
 
+  final Debouncer debouncer = new Debouncer();
+
   private void afterSetText(String uri)
   {
-    // NYI turn this into an event? to run asynchronosly?
-    ParserHelper.getMainFeature(uri);
-    Diagnostics.publishDiagnostics(uri);
+    debouncer.debounce(Void.class, new Runnable() {
+      @Override
+      public void run()
+      {
+        Diagnostics.publishDiagnostics(uri);
+      }
+    }, 1000, TimeUnit.MILLISECONDS);
   }
 
   // taken from apache commons

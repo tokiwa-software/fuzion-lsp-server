@@ -249,10 +249,6 @@ public final class FuzionHelpers
     var baseFeature = allOf(uri, Feature.class)
       .filter(IsFeatureInFile(uri))
       .findFirst();
-    if (baseFeature.isPresent())
-      {
-        Log.message("baseFeature: " + baseFeature.get().qualifiedName());
-      }
     return baseFeature;
   }
 

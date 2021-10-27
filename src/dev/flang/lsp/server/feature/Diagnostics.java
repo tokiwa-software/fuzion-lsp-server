@@ -57,6 +57,10 @@ public class Diagnostics
 
   private static Stream<Diagnostic> getDiagnostics(String uri)
   {
+    // ensure that parsing has happenend for uri
+    ParserHelper.getMainFeature(uri);
+    // NYI this always returns the current global errors
+    // this may not be the errors for the uri?
     var errorDiagnostics =
       Errors.errors().stream().filter(error -> ParserHelper.getUri(error.pos).equals(uri)).map((error) -> {
         var start = Converters.ToPosition(error.pos);
