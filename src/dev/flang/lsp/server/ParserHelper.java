@@ -66,8 +66,7 @@ public class ParserHelper
    * maps temporary files which are fed to the parser to their original uri.
    */
   private static TreeMap<String, String> tempFile2Uri = new TreeMap<>();
-  private static TreeMap<String, ParserCacheRecord> uri2ParserCache = new TreeMap<>();
-  private static TreeMap<String, String> uri2SourceText = new TreeMap<>();
+  private static TreeMap<String, ParserCacheRecord> sourceText2ParserCache = new TreeMap<>();
 
   /**
    * @param uri
@@ -80,16 +79,17 @@ public class ParserHelper
         // NYI
         if (uri.contains("/lib/"))
           {
-            if (uri2ParserCache.isEmpty())
+            if (sourceText2ParserCache.isEmpty())
               {
                 return Optional.empty();
               }
-            return Optional.of(uri2ParserCache.firstEntry().getValue().mir().main());
+            return Optional.of(sourceText2ParserCache.firstEntry().getValue().mir().main());
           }
 
-        if (cacheContains(uri))
+        var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
+        if (sourceText2ParserCache.containsKey(sourceText))
           {
-            return Optional.of(uri2ParserCache.get(uri).mir().main());
+            return Optional.of(sourceText2ParserCache.get(sourceText).mir().main());
           }
 
         createMIRandCache(uri);
@@ -102,20 +102,13 @@ public class ParserHelper
       }
   }
 
-  private static boolean cacheContains(String uri)
-  {
-    var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
-    return uri2ParserCache.containsKey(uri) && sourceText.equals(uri2SourceText.get(uri));
-  }
-
   private static ParserCacheRecord createMIRandCache(String uri)
   {
     synchronized (PARSER_LOCK)
       {
         var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
         var result = parserCacheRecord(uri);
-        uri2ParserCache.put(uri, result);
-        uri2SourceText.put(uri, sourceText);
+        sourceText2ParserCache.put(sourceText, result);
         return result;
       }
   }
