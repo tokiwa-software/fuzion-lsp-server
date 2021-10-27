@@ -119,7 +119,10 @@ public class FuzionTextDocumentService implements TextDocumentService
       @Override
       public void run()
       {
-        Diagnostics.publishDiagnostics(uri);
+        // NYI can this possibly deadlock?
+        synchronized(textDocuments){
+          Diagnostics.publishDiagnostics(uri);
+        }
       }
     }, 1000, TimeUnit.MILLISECONDS);
   }
