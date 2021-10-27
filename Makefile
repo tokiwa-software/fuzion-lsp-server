@@ -98,6 +98,7 @@ clean:
 	rm -f out.jar
 
 jar: clean classes
+	bash -c "cat Manifest.template | sed 's|JARS|$(JARS)|g' > Manifest.txt"
 	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
 
 run_tests: classes

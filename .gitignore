@@ -2,3 +2,4 @@ jars/
 classes/
 *.jar
 *.zip
+Manifest.txt
