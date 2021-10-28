@@ -190,7 +190,9 @@ public class ParserHelper
       {
         return result;
       }
-    return "file://" + sourcePosition._sourceFile._fileName.toString();
+
+    return "file://"
+      + Path.of(sourcePosition._sourceFile._fileName.toString()).toAbsolutePath();
   }
 
   private static File toTempFile(String uri)

@@ -262,6 +262,28 @@ class FuzionHelperTest
   }
 
   @Test
+  void CommentOfStdLibFeature()
+  {
+    var CommentExample = """
+      myFeat is
+      """;
+    FuzionTextDocumentService.setText("file://uri", CommentExample);
+    var innerFeature = ParserHelper.getMainFeature("file://uri")
+      .get()
+      .universe()
+      .declaredFeatures()
+      .values()
+      .stream()
+      .filter(f -> f.featureName().baseName().endsWith("yak"))
+      .findFirst()
+      .get();
+    assertEquals(
+      "# A handy shortcut for stdout.print, output string representation of\n# an object, do not add a line break at the end.\n#",
+      FuzionHelpers.CommentOf(innerFeature));
+
+  }
+
+  @Test
   void featureAt()
   {
     var sourceText = """

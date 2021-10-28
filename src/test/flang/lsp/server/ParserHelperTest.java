@@ -28,11 +28,15 @@ package test.flang.lsp.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.ParserHelper;
 import dev.flang.util.Errors;
+import dev.flang.util.SourceFile;
+import dev.flang.util.SourcePosition;
 
 public class ParserHelperTest
 {
@@ -69,5 +73,12 @@ public class ParserHelperTest
     var mainFeature = ParserHelper.getMainFeature("file://uri");
     assertEquals(true, Errors.count() > 0);
     assertEquals(true, mainFeature.isPresent());
+  }
+
+  @Test
+  void getUriStdLibFile()
+  {
+    var uri = ParserHelper.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
+    assertEquals("file://" + Path.of("./").normalize().toAbsolutePath() + "/fuzion/build/lib/yak.fz", uri);
   }
 }
