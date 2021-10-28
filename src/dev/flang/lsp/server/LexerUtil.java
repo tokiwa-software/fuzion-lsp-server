@@ -86,7 +86,7 @@ public class LexerUtil
 
   private static TokenInfo tokenInfo(Lexer lexer)
   {
-    return LexerUtil.tokenInfo("file://", lexer);
+    return LexerUtil.tokenInfo("file://" + SourceFile.STDIN.toString(), lexer);
   }
 
   private static TokenInfo tokenInfo(String uri, Lexer lexer)

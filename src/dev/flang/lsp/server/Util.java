@@ -345,7 +345,7 @@ public class Util
 
   static Path PathOf(String uri)
   {
-    return Path.of(uri.substring("file:".length()));
+    return Path.of(uri.substring("file://".length()));
   }
 
   public static Comparator<? super Object> CompareByHashCode =
@@ -356,7 +356,8 @@ public class Util
   /**
    * example: TextDocumentPositionParams("file://uri", 0, 0)
    */
-  public static TextDocumentPositionParams TextDocumentPositionParams(String uri, int line, int character){
+  public static TextDocumentPositionParams TextDocumentPositionParams(String uri, int line, int character)
+  {
     return new TextDocumentPositionParams(new TextDocumentIdentifier(uri), new Position(line, character));
   }
 
