@@ -50,8 +50,6 @@ public class Main
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
 
-    System.setSecurityManager(new LSPSecurityManager());
-
     Config.setTransport(Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals)
                                                                                                           ? Transport.tcp
                                                                                                           : Transport.stdio);
