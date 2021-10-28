@@ -111,6 +111,14 @@ public final class Converters
   {
     return Util.WithRedirectedStdErr(() -> {
       var fileName = Path.of(uri.substring("file://".length()));
+      if (fileName.equals(SourceFile.STDIN))
+        {
+          return new SourceFile(SourceFile.STDIN);
+        }
+      if (fileName.equals(SourceFile.BUILT_IN))
+        {
+          return new SourceFile(SourceFile.BUILT_IN);
+        }
       return new SourceFile(fileName);
     });
   }
