@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.ServerSocket;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
@@ -53,6 +54,15 @@ public class Main
     Config.setTransport(Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals)
                                                                                                           ? Transport.tcp
                                                                                                           : Transport.stdio);
+
+    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+      @Override
+      public void uncaughtException(Thread arg0, Throwable arg1)
+      {
+        Util.WriteStackTrace(arg1);
+      }
+    });
+
     var launcher = getLauncher();
     launcher.startListening();
     Config.setLanguageClient(launcher.getRemoteProxy());
