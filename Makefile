@@ -34,7 +34,15 @@ VERSION=0.2.0
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar:jars/org.eclipse.xtext.xbase.lib-2.25.0.jar:jars/guava-31.0.1-jre.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
-CLASSPATH=classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH)
+# on windows classpath separator is ; on linux it is :
+_CLASSPATH="classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH)"
+# https://stackoverflow.com/questions/714100/os-detecting-makefile
+ifeq ($(OS),Windows_NT)     # is Windows_NT on XP, 2000, 7, Vista, 10...
+	CLASSPATH = $(subst :,;,$(_CLASSPATH))
+else
+	CLASSPATH= $(_CLASSPATH)
+endif
+
 
 all: classes
 	java -cp $(CLASSPATH) -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 dev.flang.lsp.server.Main -tcp
