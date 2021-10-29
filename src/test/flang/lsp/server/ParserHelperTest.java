@@ -32,7 +32,6 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.ParserHelper;
 import dev.flang.lsp.server.Util;
@@ -81,21 +80,7 @@ public class ParserHelperTest extends BaseTest
   void getUriStdLibFile()
   {
     var uri = ParserHelper.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
-    assertEquals(Util.toURI("file://" + Path.of("./").normalize().toAbsolutePath() + "/fuzion/build/lib/yak.fz"), uri);
-  }
-
-  @Test
-  void getUriUnix()
-  {
-    var sourceFile = Converters.ToSourceFile(Util.toURI("file:///tmp/myfile"));
-    assertEquals(Util.toURI("file:///tmp/myfile"), ParserHelper.getUri(new SourcePosition(sourceFile, 0, 0)));
-  }
-
-  @Test
-  void getUriWindows()
-  {
-    var sourceFile = Converters.ToSourceFile(Util.toURI("file:///c%3A/temp.fz"));
-    assertEquals(Util.toURI("file:///c%3A/temp.fz"), ParserHelper.getUri(new SourcePosition(sourceFile, 0, 0)));
+    assertEquals(Util.toURI(Path.of("./").normalize().toUri().toString() + "fuzion/build/lib/yak.fz"), uri);
   }
 
 }

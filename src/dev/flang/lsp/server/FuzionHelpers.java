@@ -727,7 +727,7 @@ public final class FuzionHelpers
   private static String LineAt(TextDocumentPositionParams param)
   {
     return FuzionHelpers.sourceText(param)
-      .split(System.lineSeparator())[param.getPosition().getLine()];
+      .split("\n")[param.getPosition().getLine()];
   }
 
   public static String CommentOf(Feature feature)

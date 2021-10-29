@@ -28,9 +28,10 @@ package test.flang.lsp.server;
 
 import dev.flang.lsp.server.Util;
 import java.net.URI;
+import java.nio.file.Path;
 
 public abstract class BaseTest {
-  protected static final URI uri1 = Util.toURI("file:///uri1");
-  protected static final URI uri2 = Util.toURI("file:///uri2");
-  protected static final URI uri3 = Util.toURI("file:///uri3");
+  protected static final URI uri1 = Util.toURI(Path.of("/").toUri().toString() + "uri1");
+  protected static final URI uri2 = Util.toURI(Path.of("/").toUri().toString() + "uri2");
+  protected static final URI uri3 = Util.toURI(Path.of("/").toUri().toString() + "uri3");
 }

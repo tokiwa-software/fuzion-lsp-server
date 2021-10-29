@@ -178,7 +178,7 @@ class FuzionHelperTest extends BaseTest
     FuzionTextDocumentService.setText(uri1, LoremIpsum);
     var text = FuzionHelpers.stringAt(uri1, new Range(new Position(1, 3), new Position(2, 4)));
     assertEquals(
-      "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis",
+      "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." + System.lineSeparator() + "Duis",
       text);
   }
 
@@ -210,7 +210,7 @@ class FuzionHelperTest extends BaseTest
     FuzionHelpers.Run(uri2);
     var message = FuzionHelpers.Run(uri1);
 
-    assertEquals("Hello World!\n", message.getMessage());
+    assertEquals("Hello World!" + "\n", message.getMessage());
   }
 
   @Test
@@ -225,7 +225,7 @@ class FuzionHelperTest extends BaseTest
     assertThrows(TimeoutException.class, () -> FuzionHelpers.Run(uri1, 100));
     assertThrows(TimeoutException.class, () -> FuzionHelpers.Run(uri3, 50));
 
-    assertEquals("Hello World!\n", FuzionHelpers.Run(uri2).getMessage());
+    assertEquals("Hello World!" + "\n", FuzionHelpers.Run(uri2).getMessage());
   }
 
   @Test
@@ -258,7 +258,7 @@ class FuzionHelperTest extends BaseTest
       .skip(1)
       .findFirst()
       .orElseThrow();
-    assertEquals("# first comment line\n# second comment line", FuzionHelpers.CommentOf(innerFeature));
+    assertEquals("# first comment line"+ System.lineSeparator() + "# second comment line", FuzionHelpers.CommentOf(innerFeature));
 
   }
 
@@ -279,7 +279,7 @@ class FuzionHelperTest extends BaseTest
       .findFirst()
       .get();
     assertEquals(
-      "# A handy shortcut for stdout.print, output string representation of\n# an object, do not add a line break at the end.\n#",
+      "# A handy shortcut for stdout.print, output string representation of"+ System.lineSeparator() + "# an object, do not add a line break at the end."+ System.lineSeparator() + "#",
       FuzionHelpers.CommentOf(yak));
   }
 
