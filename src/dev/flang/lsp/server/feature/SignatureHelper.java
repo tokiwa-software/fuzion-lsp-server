@@ -63,19 +63,18 @@ public class SignatureHelper
     var consideredFeatures =
       Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
 
-    var calledFeature = consideredFeatures
-      .filter(f -> featureNameMatchesCallName(f, call.get()))
-      .findFirst();
+    var calledFeatures = consideredFeatures
+      .filter(f -> featureNameMatchesCallName(f, call.get()));
 
-    if (calledFeature.isEmpty())
-      {
-        return new SignatureHelp();
-      }
+    // NYI how to "intelligently" sort the signatureinfos?
+    return new SignatureHelp(calledFeatures.map(f -> SignatureInformation(f)).collect(Collectors.toList()), 0, 0);
+  }
 
-    String description = FuzionHelpers.CommentOf(calledFeature.get());
-    var signatureInformation = new SignatureInformation(Converters.ToLabel(calledFeature.get()), description,
-      ParameterInfo(calledFeature.get()));
-    return new SignatureHelp(List.of(signatureInformation), 0, 0);
+  private static SignatureInformation SignatureInformation(Feature feature)
+  {
+    String description = FuzionHelpers.CommentOf(feature);
+    return new SignatureInformation(Converters.ToLabel(feature), description,
+      ParameterInfo(feature));
   }
 
   private static boolean featureNameMatchesCallName(Feature f, Call call)
