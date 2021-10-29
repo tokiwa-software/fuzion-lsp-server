@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,6 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.Feature;
@@ -56,7 +56,7 @@ public final class Converters
   public static Location ToLocation(SourcePosition sourcePosition)
   {
     var position = ToPosition(sourcePosition);
-    return new Location(ParserHelper.getUri(sourcePosition), new Range(position, position));
+    return new Location(ParserHelper.getUri(sourcePosition).toString(), new Range(position, position));
   }
 
   public static Range ToRange(Feature feature)
@@ -103,23 +103,22 @@ public final class Converters
 
   public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
   {
-    return new TextDocumentPositionParams(new TextDocumentIdentifier(ParserHelper.getUri(sourcePosition)),
-      Converters.ToPosition(sourcePosition));
+    return Util.TextDocumentPositionParams(ParserHelper.getUri(sourcePosition), ToPosition(sourcePosition));
   }
 
-  public static SourceFile ToSourceFile(String uri)
+  public static SourceFile ToSourceFile(URI uri)
   {
     return Util.WithRedirectedStdErr(() -> {
-      var fileName = Path.of(uri.substring("file://".length()));
-      if (fileName.equals(SourceFile.STDIN))
+      var filePath = Path.of(uri);
+      if (filePath.equals(SourceFile.STDIN))
         {
           return new SourceFile(SourceFile.STDIN);
         }
-      if (fileName.equals(SourceFile.BUILT_IN))
+      if (filePath.equals(SourceFile.BUILT_IN))
         {
           return new SourceFile(SourceFile.BUILT_IN);
         }
-      return new SourceFile(fileName);
+      return new SourceFile(filePath);
     });
   }
 

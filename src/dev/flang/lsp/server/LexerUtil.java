@@ -26,10 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
+import java.net.URI;
 import java.util.HashSet;
 
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.lsp.server.records.TokenInfo;
@@ -80,16 +80,16 @@ public class LexerUtil
         {
           lexer.nextRaw();
         }
-      return LexerUtil.tokenInfo(params.getTextDocument().getUri(), lexer);
+      return LexerUtil.tokenInfo(Util.toURI(params.getTextDocument().getUri()), lexer);
     });
   }
 
   private static TokenInfo tokenInfo(Lexer lexer)
   {
-    return LexerUtil.tokenInfo("file://" + SourceFile.STDIN.toString(), lexer);
+    return LexerUtil.tokenInfo(SourceFile.STDIN.toUri(), lexer);
   }
 
-  private static TokenInfo tokenInfo(String uri, Lexer lexer)
+  private static TokenInfo tokenInfo(URI uri, Lexer lexer)
   {
     var lexerSourcePosition = lexer.sourcePos(lexer.pos());
     var start =
@@ -116,7 +116,7 @@ public class LexerUtil
         {
           lexer.next();
         }
-      return tokenInfo(params.getTextDocument().getUri(), lexer);
+      return tokenInfo(Util.toURI(params.getTextDocument().getUri()), lexer);
     });
   }
 
@@ -139,9 +139,9 @@ public class LexerUtil
     });
   }
 
-  public static Position endOfToken(String uri, Position start)
+  public static Position endOfToken(URI uri, Position start)
   {
-    var textDocumentPosition = new TextDocumentPositionParams(new TextDocumentIdentifier(uri), start);
+    var textDocumentPosition = Util.TextDocumentPositionParams(uri, start);
     var token = rawTokenAt(textDocumentPosition);
     return Converters.ToPosition(token.end());
   }

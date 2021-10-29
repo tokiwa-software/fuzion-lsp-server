@@ -39,7 +39,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -257,9 +257,9 @@ public class Util
   {
     try
       {
-        return new URI(uri);
+        return new URI(URLDecoder.decode(uri, StandardCharsets.UTF_8.toString()));
       }
-    catch (URISyntaxException e)
+    catch (Exception e)
       {
         Util.WriteStackTraceAndExit(1);
         return null;
@@ -271,27 +271,14 @@ public class Util
     return Stream.of(values).collect(Collectors.toCollection(HashSet::new));
   }
 
-  static File toFile(String uri)
-  {
-    try
-      {
-        return new File(new URI(uri));
-      }
-    catch (URISyntaxException e)
-      {
-        Util.WriteStackTraceAndExit(1);
-        return null;
-      }
-  }
-
-  public static String getUri(TextDocumentPositionParams params)
+  public static URI getUri(TextDocumentPositionParams params)
   {
     return getUri(params.getTextDocument());
   }
 
-  public static String getUri(TextDocumentIdentifier params)
+  public static URI getUri(TextDocumentIdentifier params)
   {
-    return params.getUri();
+    return toURI(params.getUri());
   }
 
   public static Position getPosition(TextDocumentPositionParams params)
@@ -343,9 +330,9 @@ public class Util
       }
   }
 
-  static Path PathOf(String uri)
+  static Path PathOf(URI uri)
   {
-    return Path.of(uri.substring("file://".length()));
+    return Path.of(uri);
   }
 
   public static Comparator<? super Object> CompareByHashCode =
@@ -356,9 +343,19 @@ public class Util
   /**
    * example: TextDocumentPositionParams("file://uri", 0, 0)
    */
-  public static TextDocumentPositionParams TextDocumentPositionParams(String uri, int line, int character)
+  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, int line, int character)
   {
-    return new TextDocumentPositionParams(new TextDocumentIdentifier(uri), new Position(line, character));
+    return TextDocumentPositionParams(uri, new Position(line, character));
+  }
+
+  public static org.eclipse.lsp4j.TextDocumentPositionParams TextDocumentPositionParams(URI uri, Position position)
+  {
+    return new TextDocumentPositionParams(TextDocumentIdentifier(uri), position);
+  }
+
+  public static TextDocumentIdentifier TextDocumentIdentifier(URI uri)
+  {
+    return new TextDocumentIdentifier(uri.toString());
   }
 
 }

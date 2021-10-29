@@ -29,6 +29,7 @@ package dev.flang.lsp.server.feature;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.net.URI;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -96,7 +97,7 @@ public class Rename
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(String uri, Feature featureToRename,
+  private static Stream<SourcePosition> getRenamePositions(URI uri, Feature featureToRename,
     TokenInfo featureIdentifier)
   {
     var callsSourcePositions = FuzionHelpers

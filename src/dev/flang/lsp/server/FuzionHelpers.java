@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.AbstractMap.SimpleEntry;
@@ -189,7 +190,7 @@ public final class FuzionHelpers
     };
   }
 
-  private static Predicate<? super Entry<Object, Feature>> IsItemInFile(String uri)
+  private static Predicate<? super Entry<Object, Feature>> IsItemInFile(URI uri)
   {
     return (entry) -> {
       var sourcePositionOption = FuzionHelpers.sourcePosition(entry.getKey());
@@ -244,7 +245,7 @@ public final class FuzionHelpers
   * @param uri
   * @return
   */
-  public static Optional<Feature> baseFeature(String uri)
+  public static Optional<Feature> baseFeature(URI uri)
   {
     var baseFeature = allOf(uri, Feature.class)
       .filter(IsFeatureInFile(uri))
@@ -252,7 +253,7 @@ public final class FuzionHelpers
     return baseFeature;
   }
 
-  public static Predicate<? super Feature> IsFeatureInFile(String uri)
+  public static Predicate<? super Feature> IsFeatureInFile(URI uri)
   {
     return feature -> {
       return uri.equals(ParserHelper.getUri(feature.pos()));
@@ -382,7 +383,7 @@ public final class FuzionHelpers
    */
   public static SourcePosition endOfFeature(Feature feature)
   {
-    var uri = Converters.ToLocation(feature.pos()).getUri();
+    var uri = ParserHelper.getUri(feature.pos());
     if (!Memory.EndOfFeature.containsKey(feature))
       {
         SourcePosition endOfFeature = HeirsVisitor
@@ -414,7 +415,7 @@ public final class FuzionHelpers
     return Memory.EndOfFeature.get(feature);
   }
 
-  private static String restOfLine(String uri, Position start)
+  private static String restOfLine(URI uri, Position start)
   {
     var line = sourceText(uri)
       .lines()
@@ -483,7 +484,7 @@ public final class FuzionHelpers
    * @param classOfT
    * @return
    */
-  public static <T extends Object> Stream<T> allOf(String uri, Class<T> classOfT)
+  public static <T extends Object> Stream<T> allOf(URI uri, Class<T> classOfT)
   {
     var mainFeature = ParserHelper.getMainFeature(uri);
     if (mainFeature.isEmpty())
@@ -502,7 +503,7 @@ public final class FuzionHelpers
    * @param feature
    * @return all calls to this feature
    */
-  public static Stream<Call> callsTo(String uri, Feature feature)
+  public static Stream<Call> callsTo(URI uri, Feature feature)
   {
     return allOf(uri, Call.class)
       .filter(call -> call.calledFeature().equals(feature));
@@ -513,7 +514,7 @@ public final class FuzionHelpers
     return sourceText(Util.getUri(params));
   }
 
-  static String sourceText(String uri)
+  static String sourceText(URI uri)
   {
     var sourceText = FuzionTextDocumentService.getText(uri);
     if (sourceText.isPresent())
@@ -538,7 +539,7 @@ public final class FuzionHelpers
    * @param range
    * @return
    */
-  public static String stringAt(String uri, Range range)
+  public static String stringAt(URI uri, Range range)
   {
     var lines = sourceText(uri)
       .lines()
@@ -643,13 +644,13 @@ public final class FuzionHelpers
     return Stream.concat(Stream.of(feature.get()), InheritedFeatures(feature.get()));
   }
 
-  public static MessageParams Run(String uri)
+  public static MessageParams Run(URI uri)
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     return Run(uri, 10000);
   }
 
-  public static MessageParams Run(String uri, int timeout)
+  public static MessageParams Run(URI uri, int timeout)
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     var result = Util.WithCapturedStdOutErr(() -> {
@@ -674,7 +675,7 @@ public final class FuzionHelpers
    * @param uri
    * @return
    */
-  public static Stream<Feature> Features(String uri)
+  public static Stream<Feature> Features(URI uri)
   {
     var baseFeature = baseFeature(uri);
     if (baseFeature.isEmpty())
@@ -758,7 +759,7 @@ public final class FuzionHelpers
     return commentLines.stream().map(line -> line.trim()).collect(Collectors.joining(System.lineSeparator()));
   }
 
-  private static final SourcePosition None = new SourcePosition(Converters.ToSourceFile("file://--none--"), 0, 0);
+  private static final SourcePosition None = new SourcePosition(Converters.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
 
   public static SourcePosition sourcePositionOrNone(Object obj)
   {

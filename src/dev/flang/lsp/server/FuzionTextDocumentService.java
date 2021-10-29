@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.net.URI;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
@@ -79,21 +80,17 @@ public class FuzionTextDocumentService implements TextDocumentService
   /**
    * currently open text documents and their contents
    */
-  private static final HashMap<String, String> textDocuments = new HashMap<String, String>();
+  private static final HashMap<URI, String> textDocuments = new HashMap<URI, String>();
 
-  public static Optional<String> getText(String uri)
+  public static Optional<String> getText(URI uri)
   {
     var text = textDocuments.get(uri);
     return Optional.ofNullable(text);
   }
 
-  public static void setText(String uri, String text)
+  public static void setText(URI uri, String text)
   {
     if (text == null)
-      {
-        Util.WriteStackTraceAndExit(1);
-      }
-    if (!uri.startsWith("file://"))
       {
         Util.WriteStackTraceAndExit(1);
       }
@@ -104,7 +101,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   public void didOpen(DidOpenTextDocumentParams params)
   {
     var textDocument = params.getTextDocument();
-    var uri = textDocument.getUri();
+    var uri = Util.toURI(textDocument.getUri());
     var text = textDocument.getText();
 
     setText(uri, text);
@@ -113,16 +110,17 @@ public class FuzionTextDocumentService implements TextDocumentService
 
   final Debouncer debouncer = new Debouncer();
 
-  private void afterSetText(String uri)
+  private void afterSetText(URI uri)
   {
     debouncer.debounce(Void.class, new Runnable() {
       @Override
       public void run()
       {
         // NYI can this possibly deadlock?
-        synchronized(textDocuments){
-          Diagnostics.publishDiagnostics(uri);
-        }
+        synchronized (textDocuments)
+          {
+            Diagnostics.publishDiagnostics(uri);
+          }
       }
     }, 1000, TimeUnit.MILLISECONDS);
   }

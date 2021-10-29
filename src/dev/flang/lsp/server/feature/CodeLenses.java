@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,10 +56,10 @@ public class CodeLenses
     return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)), command, null);
   }
 
-  private static CodeLens codeLensEvaluateFile(String uri)
+  private static CodeLens codeLensEvaluateFile(URI uri)
   {
     Command command = new Command(Commands.evaluate.toString(), Commands.evaluate.name(),
-      List.of(uri));
+      List.of(uri.toString()));
     return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)),
       command,
       null);

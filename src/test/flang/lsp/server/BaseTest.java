@@ -20,26 +20,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ConvertersTest
+ * Source of class BaseTest
  *
  *---------------------------------------------------------------------*/
 
 package test.flang.lsp.server;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.junit.jupiter.api.Test;
-
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.Util;
+import java.net.URI;
 
-public class ConvertersTest
-{
-  @Test
-  void ToSourceFile()
-  {
-    var sourceFile = Converters.ToSourceFile(Util.toURI("file:///tmp/myfile"));
-    assertEquals("/tmp/myfile", sourceFile._fileName.toAbsolutePath().toString());
-  }
-
+public abstract class BaseTest {
+  protected static final URI uri1 = Util.toURI("file:///uri1");
+  protected static final URI uri2 = Util.toURI("file:///uri2");
+  protected static final URI uri3 = Util.toURI("file:///uri3");
 }

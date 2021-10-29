@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -66,10 +67,10 @@ public class FuzionWorkspaceService implements WorkspaceService
     switch (Commands.valueOf(params.getCommand()))
       {
       case showSyntaxTree :
-        Util.RunInBackground(() -> showSyntaxTree(uri));
+        Util.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
         return CompletableFuture.completedFuture(null);
       case evaluate :
-        Util.RunInBackground(() -> evaluate(uri));
+        Util.RunInBackground(() -> evaluate(Util.toURI(uri)));
         return CompletableFuture.completedFuture(null);
       default:
         Util.WriteStackTrace(new Exception("not implemented"));
@@ -77,7 +78,7 @@ public class FuzionWorkspaceService implements WorkspaceService
       }
   }
 
-  private void evaluate(String uri)
+  private void evaluate(URI uri)
   {
     try
       {
@@ -96,7 +97,7 @@ public class FuzionWorkspaceService implements WorkspaceService
 
   }
 
-  private void showSyntaxTree(String uri)
+  private void showSyntaxTree(URI uri)
   {
     var feature = FuzionHelpers.baseFeature(uri);
     if (feature.isEmpty())

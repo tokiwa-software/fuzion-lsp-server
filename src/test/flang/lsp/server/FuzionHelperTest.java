@@ -45,7 +45,7 @@ import dev.flang.lsp.server.ParserHelper;
 import dev.flang.lsp.server.Util;
 import dev.flang.parser.Lexer.Token;
 
-class FuzionHelperTest
+class FuzionHelperTest extends BaseTest
 {
   private static final String LoremIpsum =
     """
@@ -120,10 +120,10 @@ class FuzionHelperTest
   void NextToken_a()
   {
 
-    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
+    FuzionTextDocumentService.setText(uri1, ManOrBoy);
 
     var nextToken =
-      LexerUtil.rawTokenAt(Util.TextDocumentPositionParams("file://uri", 2, 2));
+      LexerUtil.rawTokenAt(Util.TextDocumentPositionParams(uri1, 2, 2));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -132,10 +132,10 @@ class FuzionHelperTest
   void NextToken_i32()
   {
 
-    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
+    FuzionTextDocumentService.setText(uri1, ManOrBoy);
 
     var nextToken =
-      LexerUtil.rawTokenAt(Util.TextDocumentPositionParams("file://uri", 6, 7));
+      LexerUtil.rawTokenAt(Util.TextDocumentPositionParams(uri1, 6, 7));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }
@@ -143,9 +143,9 @@ class FuzionHelperTest
   @Test
   void EndOfToken_man_or_boy()
   {
-    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
+    FuzionTextDocumentService.setText(uri1, ManOrBoy);
 
-    var endOfToken = LexerUtil.endOfToken("file://uri", new Position(0, 0));
+    var endOfToken = LexerUtil.endOfToken(uri1, new Position(0, 0));
     assertEquals(10, endOfToken.getCharacter());
     assertEquals(0, endOfToken.getLine());
 
@@ -154,9 +154,9 @@ class FuzionHelperTest
   @Test
   void EndOfToken_i32()
   {
-    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
+    FuzionTextDocumentService.setText(uri1, ManOrBoy);
 
-    var endOfToken = LexerUtil.endOfToken("file://uri", new Position(2, 6));
+    var endOfToken = LexerUtil.endOfToken(uri1, new Position(2, 6));
     assertEquals(9, endOfToken.getCharacter());
     assertEquals(2, endOfToken.getLine());
   }
@@ -164,9 +164,9 @@ class FuzionHelperTest
   @Test
   void EndOfToken_opening_brace()
   {
-    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
+    FuzionTextDocumentService.setText(uri1, ManOrBoy);
 
-    var endOfToken = LexerUtil.endOfToken("file://uri", new Position(2, 3));
+    var endOfToken = LexerUtil.endOfToken(uri1, new Position(2, 3));
     assertEquals(4, endOfToken.getCharacter());
     assertEquals(2, endOfToken.getLine());
   }
@@ -175,8 +175,8 @@ class FuzionHelperTest
   void StringAt_multi_line()
   {
 
-    FuzionTextDocumentService.setText("file://uri", LoremIpsum);
-    var text = FuzionHelpers.stringAt("file://uri", new Range(new Position(1, 3), new Position(2, 4)));
+    FuzionTextDocumentService.setText(uri1, LoremIpsum);
+    var text = FuzionHelpers.stringAt(uri1, new Range(new Position(1, 3), new Position(2, 4)));
     assertEquals(
       "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis",
       text);
@@ -186,8 +186,8 @@ class FuzionHelperTest
   void StringAt_single_line()
   {
 
-    FuzionTextDocumentService.setText("file://uri", LoremIpsum);
-    var text = FuzionHelpers.stringAt("file://uri", new Range(new Position(1, 3), new Position(1, 23)));
+    FuzionTextDocumentService.setText(uri1, LoremIpsum);
+    var text = FuzionHelpers.stringAt(uri1, new Range(new Position(1, 3), new Position(1, 23)));
     assertEquals("enim ad minim veniam", text);
   }
 
@@ -203,12 +203,12 @@ class FuzionHelperTest
   @Test
   void RunMultiple() throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
-    FuzionTextDocumentService.setText("file://uri", HelloWorld);
-    FuzionTextDocumentService.setText("file://uri2", PythagoreanTriple);
+    FuzionTextDocumentService.setText(uri1, HelloWorld);
+    FuzionTextDocumentService.setText(uri2, PythagoreanTriple);
 
-    FuzionHelpers.Run("file://uri");
-    FuzionHelpers.Run("file://uri2");
-    var message = FuzionHelpers.Run("file://uri");
+    FuzionHelpers.Run(uri1);
+    FuzionHelpers.Run(uri2);
+    var message = FuzionHelpers.Run(uri1);
 
     assertEquals("Hello World!\n", message.getMessage());
   }
@@ -217,24 +217,24 @@ class FuzionHelperTest
   void RunSuccessfulAfterRunWithTimeoutException()
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
-    FuzionTextDocumentService.setText("file://uri", ManOrBoy);
-    FuzionTextDocumentService.setText("file://uri2", HelloWorld);
-    FuzionTextDocumentService.setText("file://uri3", PythagoreanTriple);
+    FuzionTextDocumentService.setText(uri1, ManOrBoy);
+    FuzionTextDocumentService.setText(uri2, HelloWorld);
+    FuzionTextDocumentService.setText(uri3, PythagoreanTriple);
 
     // NYI this will not throw once fuzion gets faster, how to test properly?
-    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("file://uri", 100));
-    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run("file://uri3", 50));
+    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run(uri1, 100));
+    assertThrows(TimeoutException.class, () -> FuzionHelpers.Run(uri3, 50));
 
-    assertEquals("Hello World!\n", FuzionHelpers.Run("file://uri2").getMessage());
+    assertEquals("Hello World!\n", FuzionHelpers.Run(uri2).getMessage());
   }
 
   @Test
   void Features()
   {
-    FuzionTextDocumentService.setText("file://uri", HelloWorld);
-    FuzionTextDocumentService.setText("file://uri2", ManOrBoy);
-    assertEquals(2, FuzionHelpers.Features("file://uri").count());
-    assertEquals(43, FuzionHelpers.Features("file://uri2").count());
+    FuzionTextDocumentService.setText(uri1, HelloWorld);
+    FuzionTextDocumentService.setText(uri2, ManOrBoy);
+    assertEquals(2, FuzionHelpers.Features(uri1).count());
+    assertEquals(43, FuzionHelpers.Features(uri2).count());
   }
 
   @Test
@@ -249,8 +249,8 @@ class FuzionHelperTest
         innerFeat is
           say "nothing"
       """;
-    FuzionTextDocumentService.setText("file://uri", CommentExample);
-    var innerFeature = ParserHelper.getMainFeature("file://uri")
+    FuzionTextDocumentService.setText(uri1, CommentExample);
+    var innerFeature = ParserHelper.getMainFeature(uri1)
       .get()
       .declaredFeatures()
       .values()
@@ -268,8 +268,8 @@ class FuzionHelperTest
     var CommentExample = """
       myFeat is
       """;
-    FuzionTextDocumentService.setText("file://uri", CommentExample);
-    var yak = ParserHelper.getMainFeature("file://uri")
+    FuzionTextDocumentService.setText(uri1, CommentExample);
+    var yak = ParserHelper.getMainFeature(uri1)
       .get()
       .universe()
       .declaredFeatures()
@@ -289,8 +289,8 @@ class FuzionHelperTest
     var CommentExample = """
       myFeat is
       """;
-    FuzionTextDocumentService.setText("file://uri", CommentExample);
-    var myFeatIs = ParserHelper.getMainFeature("file://uri")
+    FuzionTextDocumentService.setText(uri1, CommentExample);
+    var myFeatIs = ParserHelper.getMainFeature(uri1)
       .get();
     var sourceText = FuzionHelpers.sourceText(Converters.ToTextDocumentPosition(myFeatIs.pos()));
     assertEquals(true, sourceText.contains("myFeat is"));
@@ -302,8 +302,8 @@ class FuzionHelperTest
     var CommentExample = """
       myFeat is
       """;
-    FuzionTextDocumentService.setText("file://uri", CommentExample);
-    var yak = ParserHelper.getMainFeature("file://uri")
+    FuzionTextDocumentService.setText(uri1, CommentExample);
+    var yak = ParserHelper.getMainFeature(uri1)
       .get()
       .universe()
       .declaredFeatures()
@@ -327,15 +327,15 @@ class FuzionHelperTest
         print(x, y myi32, z i32) =>
           say "$x"
       """;
-    FuzionTextDocumentService.setText("file://uri", sourceText);
+    FuzionTextDocumentService.setText(uri1, sourceText);
 
-    var feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams("file://uri", 5, 4)).get();
+    var feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 5, 4)).get();
     assertEquals("say", feature.featureName().baseName());
 
-    feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams("file://uri", 4, 8)).get();
+    feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 4, 8)).get();
     assertEquals("myi32", feature.featureName().baseName());
 
-    feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams("file://uri", 4, 20)).get();
+    feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 4, 20)).get();
     assertEquals("i32", feature.featureName().baseName());
 
   }
@@ -347,8 +347,8 @@ class FuzionHelperTest
       ex7 is
         (1..10).forAll()
               """;
-    FuzionTextDocumentService.setText("file://uri", sourceText);
-    var endOfFeature = FuzionHelpers.endOfFeature(ParserHelper.getMainFeature("file://uri").get());
+    FuzionTextDocumentService.setText(uri1, sourceText);
+    var endOfFeature = FuzionHelpers.endOfFeature(ParserHelper.getMainFeature(uri1).get());
     assertEquals(2, endOfFeature._line);
     assertEquals(19, endOfFeature._column);
   }
@@ -360,8 +360,8 @@ class FuzionHelperTest
       ex7 is
         (1..10).myCall()
               """;
-    FuzionTextDocumentService.setText("file://uri", sourceText);
-    var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams("file://uri", 1, 17))
+    FuzionTextDocumentService.setText(uri1, sourceText);
+    var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams(uri1, 1, 17))
       .get();
     assertEquals("myCall", call.name);
   }

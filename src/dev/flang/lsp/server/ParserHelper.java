@@ -29,6 +29,7 @@ package dev.flang.lsp.server;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -65,19 +66,19 @@ public class ParserHelper
   /**
    * maps temporary files which are fed to the parser to their original uri.
    */
-  private static TreeMap<String, String> tempFile2Uri = new TreeMap<>();
+  private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
   private static TreeMap<String, ParserCacheRecord> sourceText2ParserCache = new TreeMap<>();
 
   /**
    * @param uri
    */
-  public static Optional<Feature> getMainFeature(String uri)
+  public static Optional<Feature> getMainFeature(URI uri)
   {
     synchronized (tempFile2Uri)
       {
 
         // NYI
-        if (uri.contains("/lib/"))
+        if (uri.toString().contains("/lib/"))
           {
             if (sourceText2ParserCache.isEmpty())
               {
@@ -102,7 +103,7 @@ public class ParserHelper
       }
   }
 
-  private static ParserCacheRecord createMIRandCache(String uri)
+  private static ParserCacheRecord createMIRandCache(URI uri)
   {
     synchronized (PARSER_LOCK)
       {
@@ -113,20 +114,20 @@ public class ParserHelper
       }
   }
 
-  private static ParserCacheRecord parserCacheRecord(String uri)
+  private static ParserCacheRecord parserCacheRecord(URI uri)
   {
     var frontEndOptions = FrontEndOptions(uri);
     var mir = MIR(frontEndOptions);
     return new ParserCacheRecord(mir, frontEndOptions);
   }
 
-  private static void afterParsing(String uri, Feature mainFeature)
+  private static void afterParsing(URI uri, Feature mainFeature)
   {
     // NYI make this less bad
     Memory.EndOfFeature.clear();
   }
 
-  public static FUIR FUIR(String uri)
+  public static FUIR FUIR(URI uri)
   {
     // NYI remove this once unnecessary
     Interpreter.clear();
@@ -162,7 +163,7 @@ public class ParserHelper
     return mir;
   }
 
-  private static FrontEndOptions FrontEndOptions(String uri)
+  private static FrontEndOptions FrontEndOptions(URI uri)
   {
     File tempFile = ParserHelper.toTempFile(uri);
     var frontEndOptions = FrontEndOptions(tempFile);
@@ -178,27 +179,32 @@ public class ParserHelper
   }
 
   /**
-   * get original URI of given sourcePosition
+   * get original URI of given sourcePosition if present
    * necessary because we are feeding the parser temporary files
    * @param sourcePosition
    * @return
    */
-  public static String getUri(SourcePosition sourcePosition)
+  public static URI getUri(SourcePosition sourcePosition)
   {
-    var result = tempFile2Uri.get("file:" + sourcePosition._sourceFile._fileName.toString());
+    var result = tempFile2Uri.get(sourcePosition._sourceFile._fileName.toString());
     if (result != null)
       {
         return result;
       }
-
-    return "file://"
-      + Path.of(sourcePosition._sourceFile._fileName.toString()).toAbsolutePath();
+    return sourcePosition._sourceFile._fileName.toUri();
   }
 
-  private static File toTempFile(String uri)
+  private static File toTempFile(URI uri)
   {
     File sourceFile = Util.writeToTempFile(FuzionTextDocumentService.getText(uri).orElseThrow());
-    tempFile2Uri.put(sourceFile.toURI().toString(), uri);
+    try
+      {
+        tempFile2Uri.put(sourceFile.toPath().toString(), uri);
+      }
+    catch (Exception e)
+      {
+        Util.WriteStackTraceAndExit(1, e);
+      }
     return sourceFile;
   }
 
@@ -220,7 +226,7 @@ public class ParserHelper
       }
   }
 
-  public static Feature universe(String uri)
+  public static Feature universe(URI uri)
   {
     return getMainFeature(uri).get().universe();
   }

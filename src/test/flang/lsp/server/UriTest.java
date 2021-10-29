@@ -20,26 +20,30 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ConvertersTest
+ * Source of class UriTest
  *
  *---------------------------------------------------------------------*/
 
 package test.flang.lsp.server;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.Converters;
-import dev.flang.lsp.server.Util;
-
-public class ConvertersTest
+public class UriTest
 {
   @Test
-  void ToSourceFile()
+  void UriTest() throws URISyntaxException, UnsupportedEncodingException
   {
-    var sourceFile = Converters.ToSourceFile(Util.toURI("file:///tmp/myfile"));
-    assertEquals("/tmp/myfile", sourceFile._fileName.toAbsolutePath().toString());
+    assertTrue(new URI("file:/c:/temp.fz").equals(new URI(URLDecoder.decode("file:///c%3A/temp.fz", StandardCharsets.UTF_8.toString()))));
+    assertTrue(Path.of(new URI("file:/c:/temp.fz")).toUri().equals(new URI(URLDecoder.decode("file:///c%3A/temp.fz", StandardCharsets.UTF_8.toString()))));
   }
 
 }

@@ -32,32 +32,34 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.ParserHelper;
+import dev.flang.lsp.server.Util;
 import dev.flang.util.Errors;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
-public class ParserHelperTest
+public class ParserHelperTest extends BaseTest
 {
   @Test
   void getMainFeatureTest()
   {
-    FuzionTextDocumentService.setText("file://uri", """
+    FuzionTextDocumentService.setText(uri1, """
       HelloWorld is
         say "Hello World!"
                   """);
-    var mainFeature = ParserHelper.getMainFeature("file://uri");
+    var mainFeature = ParserHelper.getMainFeature(uri1);
     assertEquals(0, Errors.count());
     assertEquals(true, mainFeature.isPresent());
     assertEquals("HelloWorld", mainFeature.get().featureName().baseName());
-    assertEquals("file://uri", ParserHelper.getUri(mainFeature.get().pos()));
+    assertEquals(uri1, ParserHelper.getUri(mainFeature.get().pos()));
   }
 
   @Test
   void getMainFeatureBrokenSourceCodeTest()
   {
-    FuzionTextDocumentService.setText("file://uri", """
+    FuzionTextDocumentService.setText(uri1, """
       factors1 is
 
         (1..10).forAll(x -> say "sadf")
@@ -70,7 +72,7 @@ public class ParserHelperTest
 
 
                   """);
-    var mainFeature = ParserHelper.getMainFeature("file://uri");
+    var mainFeature = ParserHelper.getMainFeature(uri1);
     assertEquals(true, Errors.count() > 0);
     assertEquals(true, mainFeature.isPresent());
   }
@@ -79,6 +81,21 @@ public class ParserHelperTest
   void getUriStdLibFile()
   {
     var uri = ParserHelper.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
-    assertEquals("file://" + Path.of("./").normalize().toAbsolutePath() + "/fuzion/build/lib/yak.fz", uri);
+    assertEquals(Util.toURI("file://" + Path.of("./").normalize().toAbsolutePath() + "/fuzion/build/lib/yak.fz"), uri);
   }
+
+  @Test
+  void getUriUnix()
+  {
+    var sourceFile = Converters.ToSourceFile(Util.toURI("file:///tmp/myfile"));
+    assertEquals(Util.toURI("file:///tmp/myfile"), ParserHelper.getUri(new SourcePosition(sourceFile, 0, 0)));
+  }
+
+  @Test
+  void getUriWindows()
+  {
+    var sourceFile = Converters.ToSourceFile(Util.toURI("file:///c%3A/temp.fz"));
+    assertEquals(Util.toURI("file:///c%3A/temp.fz"), ParserHelper.getUri(new SourcePosition(sourceFile, 0, 0)));
+  }
+
 }

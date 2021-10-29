@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
+import java.net.URI;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,14 +49,14 @@ import dev.flang.util.Errors;
 public class Diagnostics
 {
 
-  public static void publishDiagnostics(String uri)
+  public static void publishDiagnostics(URI uri)
   {
-    var diagnostics = new PublishDiagnosticsParams(uri, getDiagnostics(uri).collect(Collectors.toList()));
+    var diagnostics = new PublishDiagnosticsParams(uri.toString(), getDiagnostics(uri).collect(Collectors.toList()));
     Log.message("publishing diagnostics: " + diagnostics.getDiagnostics().size());
     Config.languageClient().publishDiagnostics(diagnostics);
   }
 
-  private static Stream<Diagnostic> getDiagnostics(String uri)
+  private static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     // ensure that parsing has happenend for uri
     ParserHelper.getMainFeature(uri);
