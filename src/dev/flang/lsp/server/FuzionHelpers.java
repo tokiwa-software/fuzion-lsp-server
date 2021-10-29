@@ -508,7 +508,7 @@ public final class FuzionHelpers
       .filter(call -> call.calledFeature().equals(feature));
   }
 
-  static String sourceText(TextDocumentPositionParams params)
+  public static String sourceText(TextDocumentPositionParams params)
   {
     return sourceText(Util.getUri(params));
   }

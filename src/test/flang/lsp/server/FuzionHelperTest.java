@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Test;
 
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.LexerUtil;
@@ -268,7 +269,7 @@ class FuzionHelperTest
       myFeat is
       """;
     FuzionTextDocumentService.setText("file://uri", CommentExample);
-    var innerFeature = ParserHelper.getMainFeature("file://uri")
+    var yak = ParserHelper.getMainFeature("file://uri")
       .get()
       .universe()
       .declaredFeatures()
@@ -279,8 +280,40 @@ class FuzionHelperTest
       .get();
     assertEquals(
       "# A handy shortcut for stdout.print, output string representation of\n# an object, do not add a line break at the end.\n#",
-      FuzionHelpers.CommentOf(innerFeature));
+      FuzionHelpers.CommentOf(yak));
+  }
 
+  @Test
+  void SourceText()
+  {
+    var CommentExample = """
+      myFeat is
+      """;
+    FuzionTextDocumentService.setText("file://uri", CommentExample);
+    var myFeatIs = ParserHelper.getMainFeature("file://uri")
+      .get();
+    var sourceText = FuzionHelpers.sourceText(Converters.ToTextDocumentPosition(myFeatIs.pos()));
+    assertEquals(true, sourceText.contains("myFeat is"));
+  }
+
+  @Test
+  void SourceTextStdLibFile()
+  {
+    var CommentExample = """
+      myFeat is
+      """;
+    FuzionTextDocumentService.setText("file://uri", CommentExample);
+    var yak = ParserHelper.getMainFeature("file://uri")
+      .get()
+      .universe()
+      .declaredFeatures()
+      .values()
+      .stream()
+      .filter(f -> f.featureName().baseName().endsWith("yak"))
+      .findFirst()
+      .get();
+    var sourceText = FuzionHelpers.sourceText(Converters.ToTextDocumentPosition(yak.pos()));
+    assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
   }
 
   @Test
