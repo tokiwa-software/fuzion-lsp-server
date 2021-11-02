@@ -78,7 +78,7 @@ public class Main
         case tcp :
           try (var serverSocket = new ServerSocket(0))
             {
-
+              System.out.println("Property os.name: " + System.getProperty("os.name"));
               System.out.println("socket opened on port: " + serverSocket.getLocalPort());
               var socket = serverSocket.accept();
               return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
