@@ -112,10 +112,10 @@ jar: clean classes
 	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
 
 run_tests: classes
-	PRECONDITIONS=true POSTCONDITIONS=true java -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -jar jars/junit-platform-console-standalone-1.8.1.jar --details=verbose -cp $(CLASSPATH) -p test.flang.lsp.server
+	PRECONDITIONS=true POSTCONDITIONS=true java -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -jar jars/junit-platform-console-standalone-1.8.1.jar  --fail-if-no-tests --disable-banner --details=verbose -cp $(CLASSPATH) -p test.flang.lsp.server
 
 run_tests_suspended: classes
-	PRECONDITIONS=true POSTCONDITIONS=true java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000 -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -jar jars/junit-platform-console-standalone-1.8.1.jar --details=verbose -cp $(CLASSPATH) -p test.flang.lsp.server
+	PRECONDITIONS=true POSTCONDITIONS=true java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000 -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m -jar jars/junit-platform-console-standalone-1.8.1.jar --fail-if-no-tests --disable-banner --details=verbose -cp $(CLASSPATH) -p test.flang.lsp.server
 
 profile: PID = $(shell ps aux | grep fuzion-lsp-server | grep lsp4j | head -n 1 | awk -F ' ' '{print $$2}')
 profile:
