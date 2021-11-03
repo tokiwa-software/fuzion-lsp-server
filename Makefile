@@ -118,13 +118,13 @@ run_tests_tagged: classes
 	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS) --include-tag=TAG
 
 run_tests_tagged_suspended: classes
-	$(CONDITIONS) java $(DEBUGGER_SUSPENDED)$(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar  $(JUNIT_ARGS) --include-tag=TAG
+	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar  $(JUNIT_ARGS) --include-tag=TAG
 
 run_tests: classes
 	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
 
 run_tests_suspended: classes
-	$(CONDITIONS) java $(DEBUGGER_SUSPENDED)$(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
+	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
 
 profile: PID = $(shell ps aux | grep fuzion-lsp-server | grep lsp4j | head -n 1 | awk -F ' ' '{print $$2}')
 profile:
