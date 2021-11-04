@@ -39,13 +39,16 @@ import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Case;
+import dev.flang.ast.Check;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
+import dev.flang.ast.Function;
 import dev.flang.ast.If;
 import dev.flang.ast.Match;
 import dev.flang.ast.Type;
 import dev.flang.ast.Nop;
 import dev.flang.ast.NumLiteral;
+import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Tag;
@@ -81,27 +84,43 @@ public class ASTWalker
       .stream()
       .forEach(f -> TraverseFeature(f, callback));
 
-    callback.apply(feature.returnType(), feature);
-    callback.apply(feature.resultType(), feature);
+    TraverseReturnType(feature.returnType(), feature, callback);
+    TraverseType(feature.resultType(), feature, callback);
 
     if (FuzionHelpers.IsRoutineOrRoutineDef(feature))
       {
         TraverseExpression(feature.code(), feature, callback);
       }
 
-    ParserHelper.DeclaredFeatures(feature)
+    ParserHelper.AllDeclaredFeatures(feature)
       .forEach(f -> TraverseFeature(f, callback));
+  }
+
+  private static void TraverseReturnType(ReturnType returnType, AbstractFeature outer,
+    BiFunction<Object, AbstractFeature, Boolean> callback)
+  {
+    if (!callback.apply(returnType, outer))
+      {
+        return;
+      }
   }
 
   private static void TraverseCase(Case c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    callback.apply(c, outer);
+    if (!callback.apply(c, outer))
+      {
+        return;
+      }
     TraverseBlock(c.code, outer, callback);
   }
 
   private static void TraverseStatement(Stmnt s, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
+    if (!callback.apply(s, outer))
+      {
+        return;
+      }
     if (AbstractFeature.class.isAssignableFrom(s.getClass()))
       {
         TraverseFeature((AbstractFeature) s, callback);
@@ -118,12 +137,15 @@ public class ASTWalker
       }
     if (s instanceof Assign a)
       {
-        callback.apply(a, outer);
         TraverseExpression(a._value, outer, callback);
         if (a._target != null)
           {
             TraverseExpression(a._target, outer, callback);
           }
+        return;
+      }
+    if (s instanceof Check c)
+      {
         return;
       }
 
@@ -133,22 +155,28 @@ public class ASTWalker
   private static void TraverseBlock(Block b, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    callback.apply(b, outer);
+    if (!callback.apply(b, outer))
+      {
+        return;
+      }
     b.statements_.forEach(s -> TraverseStatement(s, outer, callback));
   }
 
   private static void TraverseType(Type t, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    callback.apply(t, outer);
-    // NYI should we walk deeper here?
+    if (!callback.apply(t, outer))
+      {
+        return;
+      }
   }
 
   private static void TraverseExpression(Expr expr, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    if(expr == null){
-      return;
-    }
+    if (expr == null)
+      {
+        return;
+      }
     if (!callback.apply(expr, outer))
       {
         return;
@@ -194,6 +222,11 @@ public class ASTWalker
           {
             TraverseExpression(i.elseIf, outer, callback);
           }
+        return;
+      }
+    if (expr instanceof Function f)
+      {
+        TraverseType(f.type(), outer, callback);
         return;
       }
 
