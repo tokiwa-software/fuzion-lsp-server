@@ -34,7 +34,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
-import dev.flang.ast.Feature;
+import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 
@@ -54,7 +54,7 @@ public class Definition
     return getDefinition(feature.get());
   }
 
-  private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(Feature obj)
+  private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(AbstractFeature obj)
 	{
     // NYI find better way
     if(obj.toString().startsWith("INVISIBLE")){

@@ -49,6 +49,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.ast.Case;
 import dev.flang.ast.Cond;
@@ -150,9 +151,7 @@ public final class FuzionHelpers
         return Stream.empty();
       }
 
-    var astItems = HeirsVisitor.visit(baseFeature.get())
-      .entrySet()
-      .stream()
+    var astItems = ASTWalker.Traverse(baseFeature.get())
       .filter(IsItemNotBuiltIn(params))
       .filter(IsItemInFile(Util.getUri(params)))
       .filter(IsItemOnSameLineAsCursor(params))
@@ -163,7 +162,8 @@ public final class FuzionHelpers
     return astItems;
   }
 
-  private static Predicate<? super Entry<Object, Feature>> IsItemOnSameLineAsCursor(TextDocumentPositionParams params)
+  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemOnSameLineAsCursor(
+    TextDocumentPositionParams params)
   {
     return (entry) -> {
       var astItem = entry.getKey();
@@ -177,7 +177,7 @@ public final class FuzionHelpers
     };
   }
 
-  private static Predicate<? super Entry<Object, Feature>> IsItemNotBuiltIn(TextDocumentPositionParams params)
+  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemNotBuiltIn(TextDocumentPositionParams params)
   {
     return (entry) -> {
       var astItem = entry.getKey();
@@ -190,7 +190,7 @@ public final class FuzionHelpers
     };
   }
 
-  private static Predicate<? super Entry<Object, Feature>> IsItemInFile(URI uri)
+  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemInFile(URI uri)
   {
     return (entry) -> {
       var sourcePositionOption = FuzionHelpers.sourcePosition(entry.getKey());
@@ -207,7 +207,7 @@ public final class FuzionHelpers
    * @param params
    * @return
    */
-  private static Predicate<? super Entry<Object, Feature>> IsItemInScope(TextDocumentPositionParams params)
+  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemInScope(TextDocumentPositionParams params)
   {
     return (entry) -> {
       var astItem = entry.getKey();
@@ -235,7 +235,7 @@ public final class FuzionHelpers
    * @param params
    * @return
    */
-  private static Optional<Feature> baseFeature(TextDocumentIdentifier params)
+  private static Optional<AbstractFeature> baseFeature(TextDocumentIdentifier params)
   {
     return baseFeature(Util.getUri(params));
   }
@@ -245,15 +245,15 @@ public final class FuzionHelpers
   * @param uri
   * @return
   */
-  public static Optional<Feature> baseFeature(URI uri)
+  public static Optional<AbstractFeature> baseFeature(URI uri)
   {
-    var baseFeature = allOf(uri, Feature.class)
+    var baseFeature = allOf(uri, AbstractFeature.class)
       .filter(IsFeatureInFile(uri))
       .findFirst();
     return baseFeature;
   }
 
-  public static Predicate<? super Feature> IsFeatureInFile(URI uri)
+  public static Predicate<? super AbstractFeature> IsFeatureInFile(URI uri)
   {
     return feature -> {
       return uri.equals(ParserHelper.getUri(feature.pos()));
@@ -288,38 +288,23 @@ public final class FuzionHelpers
       return endOfCall(obj1).compareTo(endOfCall(obj2));
     });
 
-  public static boolean IsRoutineOrRoutineDef(Feature feature)
+  public static boolean IsRoutineOrRoutineDef(AbstractFeature feature)
   {
-    return IsRoutineOrRoutineDef(feature.impl);
+    return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.implKind());
   }
 
-  public static boolean IsRoutineOrRoutineDef(Impl impl)
-  {
-    return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(impl.kind_);
-  }
-
-  public static boolean IsFieldLike(Feature feature)
-  {
-    return IsFieldLike(feature.impl);
-  }
-
-  public static boolean IsFieldLike(Impl impl)
+  public static boolean IsFieldLike(AbstractFeature feature)
   {
     return Util.HashSetOf(Kind.Field, Kind.FieldActual, Kind.FieldDef, Kind.FieldInit, Kind.FieldIter)
-      .contains(impl.kind_);
+      .contains(feature.implKind());
   }
 
-  public static boolean IsIntrinsic(Feature feature)
+  public static boolean IsIntrinsic(AbstractFeature feature)
   {
-    return IsIntrinsic(feature.impl);
+    return feature.implKind() == Kind.Intrinsic;
   }
 
-  public static boolean IsIntrinsic(Impl impl)
-  {
-    return impl.kind_ == Kind.Intrinsic;
-  }
-
-  public static Stream<Feature> calledFeaturesSortedDesc(TextDocumentPositionParams params)
+  public static Stream<AbstractFeature> calledFeaturesSortedDesc(TextDocumentPositionParams params)
   {
     var baseFeature = baseFeature(params.getTextDocument());
     if (baseFeature.isEmpty())
@@ -327,12 +312,10 @@ public final class FuzionHelpers
         return Stream.empty();
       }
 
-    return HeirsVisitor.visit(baseFeature.get())
-      .entrySet()
-      .stream()
+    return ASTWalker.Traverse(baseFeature.get())
       .filter(IsItemInFile(Util.getUri(params)))
       .filter(entry -> entry.getKey() instanceof Call)
-      .map(entry -> new SimpleEntry<Call, Feature>((Call) entry.getKey(), entry.getValue()))
+      .map(entry -> new SimpleEntry<Call, AbstractFeature>((Call) entry.getKey(), entry.getValue()))
       .filter(entry -> PositionIsAfterOrAtCursor(params, endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
       .map(entry -> entry.getKey())
@@ -381,15 +364,12 @@ public final class FuzionHelpers
    * @param feature
    * @return
    */
-  public static SourcePosition endOfFeature(Feature feature)
+  public static SourcePosition endOfFeature(AbstractFeature feature)
   {
     var uri = ParserHelper.getUri(feature.pos());
     if (!Memory.EndOfFeature.containsKey(feature))
       {
-        SourcePosition endOfFeature = HeirsVisitor
-          .visit(feature)
-          .entrySet()
-          .stream()
+        SourcePosition endOfFeature = ASTWalker.Traverse(feature)
           .filter(entry -> entry.getValue() != null)
           .filter(IsItemInFile(uri))
           .filter(entry -> entry.getValue().compareTo(feature) == 0)
@@ -425,7 +405,7 @@ public final class FuzionHelpers
     return line.length() <= start.getCharacter() ? "": line.substring(start.getCharacter());
   }
 
-  public static boolean IsAnonymousInnerFeature(Feature f)
+  public static boolean IsAnonymousInnerFeature(AbstractFeature f)
   {
     return f.featureName().baseName().startsWith("#");
   }
@@ -436,13 +416,13 @@ public final class FuzionHelpers
      * NYI test this method!
    * @param params
    */
-  public static Optional<Feature> featureAt(TextDocumentPositionParams params)
+  public static Optional<AbstractFeature> featureAt(TextDocumentPositionParams params)
   {
     return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {
-        if (astItem instanceof Feature)
+        if (astItem instanceof AbstractFeature)
           {
-            return (Feature) astItem;
+            return (AbstractFeature) astItem;
           }
         if (astItem instanceof Call)
           {
@@ -468,34 +448,29 @@ public final class FuzionHelpers
       .findFirst();
   }
 
-  private static boolean IsArgument(Feature feature)
+  private static boolean IsArgument(AbstractFeature feature)
   {
     if (feature.pos().isBuiltIn())
       {
         return false;
       }
-    return allOf(ParserHelper.getUri(feature.pos()), Feature.class)
-      .anyMatch(f -> f.arguments.contains(feature));
+    return allOf(ParserHelper.getUri(feature.pos()), AbstractFeature.class)
+      .anyMatch(f -> f.arguments().contains(feature));
   }
 
   /**
-   * example: allOf(Call.class) returns all Calls
+   * example: allOf(uri, Call.class) returns all Calls
    * @param <T>
    * @param classOfT
    * @return
    */
   public static <T extends Object> Stream<T> allOf(URI uri, Class<T> classOfT)
   {
-    var mainFeature = ParserHelper.getMainFeature(uri);
-    if (mainFeature.isEmpty())
-      {
-        return Stream.empty();
-      }
-    var universe = mainFeature.get().universe();
-    return HeirsVisitor.visit(universe)
-      .keySet()
-      .stream()
-      .filter(obj -> obj.getClass().equals(classOfT))
+    var universe = ParserHelper.universe(uri);
+
+    return ASTWalker.Traverse(universe)
+      .map(e -> e.getKey())
+      .filter(obj -> classOfT.isAssignableFrom(obj.getClass()))
       .map(obj -> (T) obj);
   }
 
@@ -503,7 +478,7 @@ public final class FuzionHelpers
    * @param feature
    * @return all calls to this feature
    */
-  public static Stream<Call> callsTo(URI uri, Feature feature)
+  public static Stream<Call> callsTo(URI uri, AbstractFeature feature)
   {
     return allOf(uri, Call.class)
       .filter(call -> call.calledFeature().equals(feature));
@@ -575,14 +550,16 @@ public final class FuzionHelpers
   private static Stream<Object> callsAndFeaturesAt(TextDocumentPositionParams params)
   {
     return ASTItemsBeforeOrAtCursor(params)
-      .filter(item -> Util.HashSetOf(Feature.class, Call.class).contains(item.getClass()));
+      .filter(item -> Util.HashSetOf(AbstractFeature.class, Call.class)
+        .stream()
+        .anyMatch(cl -> cl.isAssignableFrom(item.getClass())));
   }
 
   /**
    * @param params
    * @return feature at textdocumentposition or empty
    */
-  public static Optional<Feature> feature(TextDocumentPositionParams params)
+  public static Optional<AbstractFeature> feature(TextDocumentPositionParams params)
   {
     var token = LexerUtil.rawTokenAt(params);
     return callsAndFeaturesAt(params).map(callOrFeature -> {
@@ -590,7 +567,7 @@ public final class FuzionHelpers
         {
           return ((Call) callOrFeature).calledFeature();
         }
-      return (Feature) callOrFeature;
+      return (AbstractFeature) callOrFeature;
     })
       .filter(x -> x.featureName().baseName().equals(token.text()))
       .findFirst();
@@ -616,14 +593,14 @@ public final class FuzionHelpers
     return Optional.of(token);
   }
 
-  private static Stream<Feature> InheritedFeatures(Feature feature)
+  private static Stream<AbstractFeature> InheritedFeatures(AbstractFeature feature)
   {
-    return feature.inherits.stream().flatMap(c -> {
+    return feature.inherits().stream().flatMap(c -> {
       return Stream.concat(Stream.of(c.calledFeature()), InheritedFeatures(c.calledFeature()));
     });
   }
 
-  public static Stream<Feature> featuresIncludingInheritedFeatures(TextDocumentPositionParams params)
+  public static Stream<AbstractFeature> featuresIncludingInheritedFeatures(TextDocumentPositionParams params)
   {
     var mainFeature = ParserHelper.getMainFeature(Util.getUri(params));
     if (mainFeature.isEmpty())
@@ -660,7 +637,7 @@ public final class FuzionHelpers
     return result;
   }
 
-  public static Stream<Feature> outerFeatures(Feature feature)
+  public static Stream<AbstractFeature> outerFeatures(AbstractFeature feature)
   {
     if (feature.outer() == null)
       {
@@ -675,7 +652,7 @@ public final class FuzionHelpers
    * @param uri
    * @return
    */
-  public static Stream<Feature> Features(URI uri)
+  public static Stream<AbstractFeature> Features(URI uri)
   {
     var baseFeature = baseFeature(uri);
     if (baseFeature.isEmpty())
@@ -685,10 +662,10 @@ public final class FuzionHelpers
     return DeclaredFeaturesRecursive(baseFeature.get());
   }
 
-  private static Stream<Feature> DeclaredFeaturesRecursive(Feature feature)
+  private static Stream<AbstractFeature> DeclaredFeaturesRecursive(AbstractFeature feature)
   {
     return Stream.concat(Stream.of(feature),
-      feature.declaredFeatures().values().stream().flatMap(f -> DeclaredFeaturesRecursive(f)));
+      ParserHelper.DeclaredFeatures(feature).flatMap(f -> DeclaredFeaturesRecursive(f)));
   }
 
   /**
@@ -696,10 +673,11 @@ public final class FuzionHelpers
    * @param call
    * @return
    */
-  private static Predicate<? super Feature> contains(Call call)
+  private static Predicate<? super AbstractFeature> contains(Call call)
   {
     return f -> {
       var calls = new TreeSet<Call>(Util.CompareByHashCode);
+      // NYI replace visitor
       f.visit(new FeatureVisitor() {
         public Expr action(Call c, Feature outer)
         {
@@ -715,7 +693,7 @@ public final class FuzionHelpers
    * @param call
    * @return
    */
-  public static Feature featureOf(Call call)
+  public static AbstractFeature featureOf(Call call)
   {
     var uri = ParserHelper.getUri(call.pos);
     return Features(uri)
@@ -730,7 +708,7 @@ public final class FuzionHelpers
       .split("\n")[param.getPosition().getLine()];
   }
 
-  public static String CommentOf(Feature feature)
+  public static String CommentOf(AbstractFeature feature)
   {
     var textDocumentPosition = Converters.ToTextDocumentPosition(feature.pos());
     var commentLines = new ArrayList<String>();
@@ -759,7 +737,8 @@ public final class FuzionHelpers
     return commentLines.stream().map(line -> line.trim()).collect(Collectors.joining(System.lineSeparator()));
   }
 
-  private static final SourcePosition None = new SourcePosition(Converters.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
+  private static final SourcePosition None =
+    new SourcePosition(Converters.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
 
   public static SourcePosition sourcePositionOrNone(Object obj)
   {
@@ -769,10 +748,11 @@ public final class FuzionHelpers
   public static Optional<Call> callAt(TextDocumentPositionParams params)
   {
     Optional<Call> call = ASTItemsBeforeOrAtCursor(params)
-      .filter(item -> Util.HashSetOf(Call.class).contains(item.getClass()))
+      .filter(item -> Util.HashSetOf(Call.class).stream().anyMatch(cl -> cl.isAssignableFrom(item.getClass())))
       .map(c -> (Call) c)
       .findFirst();
     return call;
   }
+
 
 }

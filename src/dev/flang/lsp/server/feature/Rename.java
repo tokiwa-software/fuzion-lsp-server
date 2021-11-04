@@ -26,10 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
+import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.net.URI;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -43,7 +43,7 @@ import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
-import dev.flang.ast.Feature;
+import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.LexerUtil;
@@ -97,7 +97,7 @@ public class Rename
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(URI uri, Feature featureToRename,
+  private static Stream<SourcePosition> getRenamePositions(URI uri, AbstractFeature featureToRename,
     TokenInfo featureIdentifier)
   {
     var callsSourcePositions = FuzionHelpers
@@ -112,7 +112,7 @@ public class Rename
           }
         return pos;
       });
-    SourcePosition pos = featureToRename.pos;
+    var pos = featureToRename.pos();
 
     // special case for renaming lamdba args
     if (featureToRename.outer() != null &&

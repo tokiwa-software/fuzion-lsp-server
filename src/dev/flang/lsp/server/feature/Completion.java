@@ -41,7 +41,7 @@ import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
-import dev.flang.ast.Feature;
+import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.LexerUtil;
@@ -101,10 +101,10 @@ public class Completion
     return Either.forLeft(List.of());
   }
 
-  private static Either<List<CompletionItem>, CompletionList> completions(Stream<Feature> features)
+  private static Either<List<CompletionItem>, CompletionList> completions(Stream<AbstractFeature> features)
   {
     var sortedFeatures = features
-      .flatMap(f -> f.declaredFeatures().values().stream())
+      .flatMap(f -> ParserHelper.DeclaredFeatures(f))
       .distinct()
       .filter(f -> !FuzionHelpers.IsAnonymousInnerFeature(f))
       .collect(Collectors.toList());
@@ -126,14 +126,14 @@ public class Completion
    * @param feature
    * @return example: psMap<${4:K -> ordered<psMap.K>}, ${5:V}>(${1:data}, ${2:size}, ${3:fill})
    */
-  private static String getInsertText(Feature feature)
+  private static String getInsertText(AbstractFeature feature)
   {
     if (!FuzionHelpers.IsRoutineOrRoutineDef(feature))
       {
         return feature.featureName().baseName();
       }
 
-    var arguments = "(" + getArguments(feature.arguments) + ")";
+    var arguments = "(" + getArguments(feature.arguments()) + ")";
 
     var _generics = getGenerics(feature);
 
@@ -145,12 +145,13 @@ public class Completion
   /**
    * @return ${4:K -> ordered<psMap.K>}, ${5:V}
    */
-  private static String getGenerics(Feature feature)
+  private static String getGenerics(AbstractFeature feature)
   {
     var _generics = IntStream
-      .range(0, feature.generics.list.size())
+      .range(0, feature.generics().list.size())
       .mapToObj(index -> {
-        return "${" + (index + 1 + feature.arguments.size()) + ":" + feature.generics.list.get(index).toString() + "}";
+        return "${" + (index + 1 + feature.arguments().size()) + ":" + feature.generics().list.get(index).toString()
+          + "}";
       })
       .collect(Collectors.joining(", "));
     return _generics;
@@ -160,7 +161,7 @@ public class Completion
    * @param arguments
    * @return ${1:data}, ${2:size}, ${3:fill}
    */
-  private static String getArguments(List<Feature> arguments)
+  private static String getArguments(List<AbstractFeature> arguments)
   {
     return IntStream
       .range(0, arguments.size())
@@ -181,14 +182,14 @@ public class Completion
    * @param _generics
    * @return <${4:K -> ordered<psMap.K>}, ${5:V}>
    */
-  private static String genericsSnippet(Feature feature, String _generics)
+  private static String genericsSnippet(AbstractFeature feature, String _generics)
   {
-    if (!feature.generics.isOpen() && feature.generics.list.isEmpty())
+    if (!feature.generics().isOpen() && feature.generics().list.isEmpty())
       {
         return "";
       }
     return "<" + _generics
-      + (feature.generics.isOpen() ? "...": "")
+      + (feature.generics().isOpen() ? "...": "")
       + ">";
   }
 

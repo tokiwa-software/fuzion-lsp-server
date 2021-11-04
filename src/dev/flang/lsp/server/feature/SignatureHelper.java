@@ -36,10 +36,11 @@ import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SignatureInformation;
 
+import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.ParserHelper;
 
 public class SignatureHelper
 {
@@ -56,12 +57,12 @@ public class SignatureHelper
     var featureOfCall =
       call.get().target instanceof Call callTarget ? callTarget.calledFeature(): FuzionHelpers.featureOf(call.get());
 
-    var consideredCallTargets_declaredOrInherited = featureOfCall.declaredOrInheritedFeatures().values().stream();
-    var consideredCallTargets_outerFeatures =
-      FuzionHelpers.outerFeatures(featureOfCall).flatMap(f -> f.declaredFeatures().values().stream());
+      var consideredCallTargets_declaredOrInherited = ParserHelper.DeclaredOrInheritedFeatures(featureOfCall);
+      var consideredCallTargets_outerFeatures =
+        FuzionHelpers.outerFeatures(featureOfCall).flatMap(f -> ParserHelper.DeclaredFeatures(f));
 
-    var consideredFeatures =
-      Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
+      var consideredFeatures =
+        Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
 
     var calledFeatures = consideredFeatures
       .filter(f -> featureNameMatchesCallName(f, call.get()));
@@ -70,21 +71,21 @@ public class SignatureHelper
     return new SignatureHelp(calledFeatures.map(f -> SignatureInformation(f)).collect(Collectors.toList()), 0, 0);
   }
 
-  private static SignatureInformation SignatureInformation(Feature feature)
+  private static SignatureInformation SignatureInformation(AbstractFeature feature)
   {
     String description = FuzionHelpers.CommentOf(feature);
     return new SignatureInformation(Converters.ToLabel(feature), description,
       ParameterInfo(feature));
   }
 
-  private static boolean featureNameMatchesCallName(Feature f, Call call)
+  private static boolean featureNameMatchesCallName(AbstractFeature f, Call call)
   {
     return f.featureName().baseName().equals(call.name);
   }
 
-  private static List<ParameterInformation> ParameterInfo(Feature calledFeature)
+  private static List<ParameterInformation> ParameterInfo(AbstractFeature calledFeature)
   {
-    return calledFeature.arguments.stream()
+    return calledFeature.arguments().stream()
       .map(
         arg -> new ParameterInformation("NYI" + arg.featureName().baseName() + " " + arg.thisType().toString()))
       .collect(Collectors.toList());

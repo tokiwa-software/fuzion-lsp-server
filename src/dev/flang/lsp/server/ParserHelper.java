@@ -33,12 +33,15 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.ast.Feature;
+import dev.flang.air.Clazzes;
+import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.Resolution;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.ChoiceIdAsRef;
 import dev.flang.be.interpreter.Instance;
@@ -46,10 +49,8 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
-import dev.flang.ir.Clazzes;
 import dev.flang.lsp.server.records.ParserCacheRecord;
 import dev.flang.me.MiddleEnd;
-import dev.flang.mir.MIR;
 import dev.flang.opt.Optimizer;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
@@ -68,15 +69,27 @@ public class ParserHelper
    */
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
   private static TreeMap<String, ParserCacheRecord> sourceText2ParserCache = new TreeMap<>();
+  // NYI get rid of this
+  private static Resolution currentResolution;
+
+  /**
+   * @param uri
+   * @return main feature in source text, may return universe
+   */
+  public static Optional<AbstractFeature> getMainFeature(URI uri)
+  {
+    // NYI get rid of this
+    currentResolution = getParserCacheRecord(uri).map(x -> x.frontEnd().res()).get();
+    return getParserCacheRecord(uri).map(x -> x.mir().main());
+  }
 
   /**
    * @param uri
    */
-  public static Optional<Feature> getMainFeature(URI uri)
+  private static Optional<ParserCacheRecord> getParserCacheRecord(URI uri)
   {
     synchronized (tempFile2Uri)
       {
-
         // NYI
         if (uri.toString().contains("/lib/"))
           {
@@ -84,20 +97,25 @@ public class ParserHelper
               {
                 return Optional.empty();
               }
-            return Optional.of(sourceText2ParserCache.firstEntry().getValue().mir().main());
+            return Optional.of(sourceText2ParserCache.firstEntry().getValue());
           }
 
-        var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
-        if (sourceText2ParserCache.containsKey(sourceText))
+        var sourceText = FuzionTextDocumentService.getText(uri);
+        if (sourceText.isEmpty())
           {
-            return Optional.of(sourceText2ParserCache.get(sourceText).mir().main());
+            return Optional.empty();
+          }
+
+        if (sourceText2ParserCache.containsKey(sourceText.get()))
+          {
+            return Optional.of(sourceText2ParserCache.get(sourceText.get()));
           }
 
         createMIRandCache(uri);
 
-        var result = getMainFeature(uri).get();
+        var result = getParserCacheRecord(uri).get();
 
-        afterParsing(uri, result);
+        afterParsing(uri, result.mir().main());
 
         return Optional.of(result);
       }
@@ -110,18 +128,36 @@ public class ParserHelper
         var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
         var result = parserCacheRecord(uri);
         sourceText2ParserCache.put(sourceText, result);
+        // NYI get rid of this
+        currentResolution = getParserCacheRecord(uri).map(x -> x.frontEnd().res()).get();
         return result;
       }
   }
 
-  private static ParserCacheRecord parserCacheRecord(URI uri)
+  private static Stream<AbstractFeature> allFeatures(Resolution res, AbstractFeature f)
   {
-    var frontEndOptions = FrontEndOptions(uri);
-    var mir = MIR(frontEndOptions);
-    return new ParserCacheRecord(mir, frontEndOptions);
+    var df = res._module.declaredFeatures(f).values().stream();
+    return Stream.concat(Stream.of(f), df.flatMap(dfc -> allFeatures(res, dfc)));
   }
 
-  private static void afterParsing(URI uri, Feature mainFeature)
+  private static ParserCacheRecord parserCacheRecord(URI uri)
+  {
+    return Util.WithRedirectedStdOut(() -> {
+      return Util.WithRedirectedStdErr(() -> {
+        // NYI remove once we can create MIR multiple times
+        Errors.clear();
+        Types.clear();
+        FeatureName.clear();
+        Clazzes.clear();
+        var frontEndOptions = FrontEndOptions(uri);
+        var frontEnd = new FrontEnd(frontEndOptions);
+        var mir = frontEnd.createMIR();
+        return new ParserCacheRecord(mir, frontEndOptions, frontEnd);
+      });
+    });
+  }
+
+  private static void afterParsing(URI uri, AbstractFeature mainFeature)
   {
     // NYI make this less bad
     Memory.EndOfFeature.clear();
@@ -137,30 +173,15 @@ public class ParserHelper
     // NYI remove recreation of MIR
     var parserCacheRecord = createMIRandCache(uri);
 
-
-    var air = new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir()).air();
+    var air =
+      new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(), parserCacheRecord.frontEnd().res())
+        .air();
 
     // NYI remove this once unnecessary
     Instance.universe = new Instance(Clazzes.universe.get());
 
     var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir();
     return fuir;
-  }
-
-  private static MIR MIR(FrontEndOptions frontEndOptions)
-  {
-    var mir = Util.WithRedirectedStdOut(() -> {
-      return Util.WithRedirectedStdErr(() -> {
-        // NYI remove once we can create MIR multiple times
-        Errors.clear();
-        Types.clear();
-        FeatureName.clear();
-        Clazzes.clear();
-        var result = new FrontEnd(frontEndOptions).createMIR();
-        return result;
-      });
-    });
-    return mir;
   }
 
   private static FrontEndOptions FrontEndOptions(URI uri)
@@ -226,14 +247,39 @@ public class ParserHelper
       }
   }
 
-  public static Feature universe(URI uri)
+  public static AbstractFeature universe(URI uri)
   {
-    return getMainFeature(uri).get().universe();
+    // NYI get rid of this
+    currentResolution = getParserCacheRecord(uri).map(x -> x.frontEnd().res()).get();
+    return getParserCacheRecord(uri).map(x -> x.mir().universe()).orElseThrow();
   }
 
-  public static Feature universe(TextDocumentPositionParams params)
+  public static AbstractFeature universe(TextDocumentPositionParams params)
   {
     return universe(Util.getUri(params));
   }
+
+  static Stream<AbstractFeature> AllDeclaredFeatures(AbstractFeature f)
+  {
+    // NYI get rid of this
+    return currentResolution._module.declaredFeatures(f)
+      .values()
+      .stream();
+  }
+
+  public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
+  {
+    // NYI get rid of this
+    return currentResolution._module.declaredOrInheritedFeatures(f)
+      .values()
+      .stream();
+  }
+
+  public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
+  {
+    return AllDeclaredFeatures(f)
+      .filter(feat -> !FuzionHelpers.IsAnonymousInnerFeature(feat));
+  }
+
 
 }

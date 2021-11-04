@@ -27,14 +27,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.feature;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
+import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.ParserHelper;
 import dev.flang.lsp.server.Util;
 
 public class DocumentSymbols
@@ -49,12 +52,22 @@ public class DocumentSymbols
 
     var feature = baseFeature.get();
 
-    var rootSymbol = Converters.ToDocumentSymbol(feature);
+    var rootSymbol = DocumentSymbols.DocumentSymbolTree(feature);
 
-    var visitor =  new DocumentSymbolVisitor(rootSymbol);
-
-    feature.visit(visitor, feature.outer());
     return List.of(Either.forRight(rootSymbol));
+  }
+
+  public static DocumentSymbol DocumentSymbolTree(AbstractFeature feature)
+  {
+    var documentSymbol = Converters.ToDocumentSymbol(feature);
+    var children = ParserHelper.DeclaredFeatures(feature)
+      .filter(f -> !FuzionHelpers.IsFieldLike(f))
+      .map(f -> {
+        return DocumentSymbolTree(f);
+      })
+      .collect(Collectors.toList());
+    documentSymbol.setChildren(children);
+    return documentSymbol;
   }
 
 }

@@ -28,15 +28,22 @@ package test.flang.lsp.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Call;
+import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
@@ -178,7 +185,8 @@ class FuzionHelperTest extends BaseTest
     FuzionTextDocumentService.setText(uri1, LoremIpsum);
     var text = FuzionHelpers.stringAt(uri1, new Range(new Position(1, 3), new Position(2, 4)));
     assertEquals(
-      "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." + System.lineSeparator() + "Duis",
+      "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        + System.lineSeparator() + "Duis",
       text);
   }
 
@@ -201,6 +209,7 @@ class FuzionHelperTest extends BaseTest
    * @throws TimeoutException
    */
   @Test
+  @Tag("TAG")
   void RunMultiple() throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     FuzionTextDocumentService.setText(uri1, HelloWorld);
@@ -233,8 +242,8 @@ class FuzionHelperTest extends BaseTest
   {
     FuzionTextDocumentService.setText(uri1, HelloWorld);
     FuzionTextDocumentService.setText(uri2, ManOrBoy);
-    assertEquals(2, FuzionHelpers.Features(uri1).count());
-    assertEquals(43, FuzionHelpers.Features(uri2).count());
+    assertEquals(1, FuzionHelpers.Features(uri1).count());
+    assertEquals(13, FuzionHelpers.Features(uri2).count());
   }
 
   @Test
@@ -250,15 +259,12 @@ class FuzionHelperTest extends BaseTest
           say "nothing"
       """;
     FuzionTextDocumentService.setText(uri1, CommentExample);
-    var innerFeature = ParserHelper.getMainFeature(uri1)
-      .get()
-      .declaredFeatures()
-      .values()
-      .stream()
-      .skip(1)
+    var innerFeature = ParserHelper
+      .DeclaredFeatures(ParserHelper.getMainFeature(uri1).get())
       .findFirst()
       .orElseThrow();
-    assertEquals("# first comment line"+ System.lineSeparator() + "# second comment line", FuzionHelpers.CommentOf(innerFeature));
+    assertEquals("# first comment line" + System.lineSeparator() + "# second comment line",
+      FuzionHelpers.CommentOf(innerFeature));
 
   }
 
@@ -269,17 +275,14 @@ class FuzionHelperTest extends BaseTest
       myFeat is
       """;
     FuzionTextDocumentService.setText(uri1, CommentExample);
-    var yak = ParserHelper.getMainFeature(uri1)
-      .get()
-      .universe()
-      .declaredFeatures()
-      .values()
-      .stream()
+    var yak = ParserHelper
+      .DeclaredFeatures(ParserHelper.universe(uri1))
       .filter(f -> f.featureName().baseName().endsWith("yak"))
       .findFirst()
       .get();
     assertEquals(
-      "# A handy shortcut for stdout.print, output string representation of"+ System.lineSeparator() + "# an object, do not add a line break at the end."+ System.lineSeparator() + "#",
+      "# A handy shortcut for stdout.print, output string representation of" + System.lineSeparator()
+        + "# an object, do not add a line break at the end." + System.lineSeparator() + "#",
       FuzionHelpers.CommentOf(yak));
   }
 
@@ -303,12 +306,8 @@ class FuzionHelperTest extends BaseTest
       myFeat is
       """;
     FuzionTextDocumentService.setText(uri1, CommentExample);
-    var yak = ParserHelper.getMainFeature(uri1)
-      .get()
-      .universe()
-      .declaredFeatures()
-      .values()
-      .stream()
+    var yak = ParserHelper
+      .DeclaredFeatures(ParserHelper.universe(uri1))
       .filter(f -> f.featureName().baseName().endsWith("yak"))
       .findFirst()
       .get();
@@ -364,6 +363,62 @@ class FuzionHelperTest extends BaseTest
     var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams(uri1, 1, 17))
       .get();
     assertEquals("myCall", call.name);
+  }
+
+  @Test
+  void noSourceText()
+  {
+    var sourceText = """
+      """;
+    FuzionTextDocumentService.setText(uri1, sourceText);
+    var f = ParserHelper.getMainFeature(uri1);
+    assertEquals("#universe", f.get().qualifiedName());
+  }
+
+  @Test
+  void declaredFeatures()
+  {
+    var sourceText = """
+        example is
+          childFeat1 is
+            grandChild1 is
+            grandChild2 is
+          childFeat2 is
+            grandChild3 is
+      """;
+    FuzionTextDocumentService.setText(uri1, sourceText);
+    var f = ParserHelper.getMainFeature(uri1);
+    var df = ParserHelper.DeclaredFeatures(f.get()).collect(Collectors.toList());
+    assertEquals(2, df.size());
+    assertTrue(df.stream().anyMatch(x -> x.featureName().baseName().equals("childFeat1")));
+  }
+
+  @Test
+  void allOf()
+  {
+    FuzionTextDocumentService.setText(uri1, HelloWorld);
+    assertEquals("HelloWorld", FuzionHelpers
+      .allOf(uri1, AbstractFeature.class)
+      .filter(FuzionHelpers.IsFeatureInFile(uri1))
+      .findFirst()
+      .get()
+      .featureName()
+      .baseName());
+    assertEquals("say", FuzionHelpers
+      .allOf(uri1, Call.class)
+      .filter(call -> uri1.equals(ParserHelper.getUri(call.pos())))
+      .findFirst()
+      .get()
+      .calledFeature()
+      .featureName()
+      .baseName());
+  }
+
+  @Test
+  void declaredFeaturesUniverse()
+  {
+    FuzionTextDocumentService.setText(uri1, HelloWorld);
+    assertTrue(ParserHelper.DeclaredFeatures(ParserHelper.universe(uri1)).count() > 10);
   }
 
 }

@@ -37,7 +37,12 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Assign;
+import dev.flang.ast.Block;
+import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
+import dev.flang.ast.If;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -59,7 +64,7 @@ public final class Converters
     return new Location(ParserHelper.getUri(sourcePosition).toString(), new Range(position, position));
   }
 
-  public static Range ToRange(Feature feature)
+  public static Range ToRange(AbstractFeature feature)
   {
     return new Range(ToPosition(feature.pos()), ToPosition(FuzionHelpers.endOfFeature(feature)));
   }
@@ -73,7 +78,7 @@ public final class Converters
       new Position(line, characterStart + tokenIdent.text().length()));
   }
 
-  public static DocumentSymbol ToDocumentSymbol(Feature feature)
+  public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
   {
     return new DocumentSymbol(Converters.ToLabel(feature), SymbolKind.Key, ToRange(feature), ToRange(feature));
   }
@@ -82,16 +87,17 @@ public final class Converters
    * @param feature
    * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
    */
-  public static String ToLabel(Feature feature)
+  public static String ToLabel(AbstractFeature feature)
   {
     if (!FuzionHelpers.IsRoutineOrRoutineDef(feature))
       {
         return feature.featureName().baseName();
       }
-    var arguments = "(" + feature.arguments.stream()
+    var arguments = "(" + feature.arguments()
+      .stream()
       .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
       .collect(Collectors.joining(", ")) + ")";
-    return feature.featureName().baseName() + feature.generics + arguments + " => " + feature.resultType();
+    return feature.featureName().baseName() + feature.generics() + arguments + " => " + feature.resultType();
   }
 
   public static Range ToRange(TokenInfo tokenInfo)
@@ -120,6 +126,34 @@ public final class Converters
         }
       return new SourceFile(filePath);
     });
+  }
+
+  public static String ToLabel(Object item)
+  {
+    try
+      {
+        if (item instanceof If || item instanceof Block)
+          {
+            return "";
+          }
+        if (item instanceof Call c)
+          {
+            return c.calledFeature().qualifiedName();
+          }
+        if (item instanceof Assign a)
+          {
+            return a._assignedField.qualifiedName();
+          }
+        if (item instanceof AbstractFeature af)
+          {
+            return ToLabel(af);
+          }
+        return item.toString();
+      }
+    catch (Exception e)
+      {
+        return "";
+      }
   }
 
 }

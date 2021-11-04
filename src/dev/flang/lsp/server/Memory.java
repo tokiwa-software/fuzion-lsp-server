@@ -28,7 +28,7 @@ package dev.flang.lsp.server;
 
 import java.util.TreeMap;
 
-import dev.flang.ast.Feature;
+import dev.flang.ast.AbstractFeature;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -36,5 +36,5 @@ import dev.flang.util.SourcePosition;
  */
 public final class Memory
 {
-  public static final TreeMap<Feature, SourcePosition> EndOfFeature = new TreeMap<>();
+  public static final TreeMap<AbstractFeature, SourcePosition> EndOfFeature = new TreeMap<>();
 }
