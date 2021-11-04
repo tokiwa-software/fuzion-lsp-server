@@ -209,7 +209,6 @@ class FuzionHelperTest extends BaseTest
    * @throws TimeoutException
    */
   @Test
-  @Tag("TAG")
   void RunMultiple() throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     FuzionTextDocumentService.setText(uri1, HelloWorld);
