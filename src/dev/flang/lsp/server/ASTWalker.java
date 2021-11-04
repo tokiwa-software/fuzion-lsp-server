@@ -146,6 +146,9 @@ public class ASTWalker
   private static void TraverseExpression(Expr expr, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
+    if(expr == null){
+      return;
+    }
     if (!callback.apply(expr, outer))
       {
         return;
