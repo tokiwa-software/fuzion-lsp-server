@@ -126,7 +126,7 @@ run_tests: classes
 run_tests_suspended: classes
 	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
 
-profile: PID = $(shell ps aux | grep fuzion-lsp-server | grep lsp4j | head -n 1 | awk -F ' ' '{print $$2}')
+profile: PID = $(shell ps aux | grep agentlib:jdwp | grep lsp4j |grep -v grep  |tail -n 1 | awk -F ' ' '{print $$2}')
 profile:
 	sudo sysctl kernel.perf_event_paranoid=1
 # https://github.com/jvm-profiling-tools/async-profiler
