@@ -31,6 +31,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 public class Config
 {
 
+  public static final boolean ComputeAsync = false;
   private static LanguageClient _languageClient;
   private static Transport _transport = Transport.stdio;
 

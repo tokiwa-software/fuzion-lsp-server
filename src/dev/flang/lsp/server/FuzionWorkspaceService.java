@@ -68,13 +68,13 @@ public class FuzionWorkspaceService implements WorkspaceService
       {
         case showSyntaxTree :
           Util.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
-          return CompletableFuture.completedFuture(null);
+          return Util.Compute(() -> null);
         case evaluate :
           Util.RunInBackground(() -> evaluate(Util.toURI(uri)));
-          return CompletableFuture.completedFuture(null);
+          return Util.Compute(() -> null);
         default:
           Util.WriteStackTrace(new Exception("not implemented"));
-          return CompletableFuture.completedFuture(null);
+          return Util.Compute(() -> null);
       }
   }
 
@@ -102,7 +102,7 @@ public class FuzionWorkspaceService implements WorkspaceService
     var feature = FuzionHelpers.baseFeature(uri);
     if (feature.isEmpty())
       {
-        CompletableFuture.completedFuture(null);
+        Util.Compute(() -> null);
       }
     var ast = FuzionHelpers.AST(feature.get());
     var file = Util.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");

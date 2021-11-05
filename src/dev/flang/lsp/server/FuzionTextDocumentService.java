@@ -26,12 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.net.URI;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
@@ -212,19 +212,20 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position)
   {
-    return CompletableFuture.completedFuture(Completion.getCompletions(position));
+    return Util.Compute(() -> Completion.getCompletions(position));
+
   }
 
   @Override
   public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
   {
-    return CompletableFuture.completedFuture(unresolved);
+    return Util.Compute(() -> unresolved);
   }
 
   @Override
   public CompletableFuture<Hover> hover(HoverParams params)
   {
-    return CompletableFuture.completedFuture(Hovering.getHover(params));
+    return Util.Compute(() -> Hovering.getHover(params));
   }
 
   @Override
@@ -232,50 +233,50 @@ public class FuzionTextDocumentService implements TextDocumentService
     DefinitionParams params)
   {
 
-    return CompletableFuture.completedFuture(Definition.getDefinitionLocation(params));
+    return Util.Compute(() -> Definition.getDefinitionLocation(params));
   }
 
   @Override
   public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
   {
-    return CompletableFuture.completedFuture(References.getReferences(params));
+    return Util.Compute(() -> References.getReferences(params));
   }
 
   @Override
   public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
   {
-    return CompletableFuture.completedFuture(Rename.getWorkspaceEdit(params));
+    return Util.Compute(() -> Rename.getWorkspaceEdit(params));
   }
 
   @Override
   public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
   {
-    return CompletableFuture.completedFuture(Either.forRight(Rename.getPrepareRenameResult(params)));
+    return Util.Compute(() -> Either.forRight(Rename.getPrepareRenameResult(params)));
   }
 
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
   {
-    return CompletableFuture.completedFuture(null);
+    return Util.Compute(() -> null);
   }
 
 
   @Override
   public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
   {
-    return CompletableFuture.completedFuture(DocumentSymbols.getDocumentSymbols(params));
+    return Util.Compute(() -> DocumentSymbols.getDocumentSymbols(params));
   }
 
   @Override
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
   {
-    return CompletableFuture.completedFuture(CodeLenses.getCodeLenses(params));
+    return Util.Compute(() -> CodeLenses.getCodeLenses(params));
   }
 
   @Override
   public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
   {
-    return CompletableFuture.completedFuture(SignatureHelper.getSignatureHelp(params));
+    return Util.Compute(() -> SignatureHelper.getSignatureHelp(params));
   }
 
 }

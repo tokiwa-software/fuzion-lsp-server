@@ -45,6 +45,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,12 +61,16 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 
 /**
  * utils which are independent of fuzion
  */
 public class Util
 {
+  private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
+  private static final int MAX_EXECUTION_TIME_MS = 500;
+
   static final PrintStream DEV_NULL = new PrintStream(OutputStream.nullOutputStream());
 
   static byte[] getBytes(String text)
@@ -184,7 +189,7 @@ public class Util
    * @param <T>
    * @param cancelToken
    * @param callable
-   * @param periodInMs
+   * @param intervallCancelledCheckInMs
    * @param maxExecutionTimeInMs
    * @return
    * @throws InterruptedException
@@ -192,7 +197,7 @@ public class Util
    * @throws TimeoutException
    */
   public static <T> T RunWithPeriodicCancelCheck(
-    CancelChecker cancelToken, Callable<T> callable, int periodInMs, int maxExecutionTimeInMs)
+    CancelChecker cancelToken, Callable<T> callable, int intervallCancelledCheckInMs, int maxExecutionTimeInMs)
     throws InterruptedException, ExecutionException, TimeoutException
   {
     Future<T> future = executor.submit(callable);
@@ -204,7 +209,7 @@ public class Util
           {
             try
               {
-                future.get(periodInMs, TimeUnit.MILLISECONDS);
+                future.get(intervallCancelledCheckInMs, TimeUnit.MILLISECONDS);
                 completed = true;
               }
             // when timeout occurs we check
@@ -212,7 +217,7 @@ public class Util
             // or if cancelToken wants to cancel execution
             catch (TimeoutException e)
               {
-                timeElapsedInMs += periodInMs;
+                timeElapsedInMs += intervallCancelledCheckInMs;
                 if (timeElapsedInMs >= maxExecutionTimeInMs)
                   {
                     throw e;
@@ -404,6 +409,41 @@ public class Util
     for(int i = 1; i < stackTrace.length; i++)
       sb.append("\tat " + stackTrace[i] + System.lineSeparator());
     return sb.toString();
+  }
+
+  public static <T> CompletableFuture<T> Compute(Callable<T> callable)
+  {
+    if (Config.ComputeAsync)
+      {
+        return ComputeAsyncWithTimeout(callable);
+      }
+    try
+      {
+        return CompletableFuture.completedFuture(callable.call());
+      }
+    catch (Exception e)
+      {
+        throw new RuntimeException(e);
+      }
+  }
+
+  private static <T> CompletableFuture<T> ComputeAsyncWithTimeout(Callable<T> callable)
+  {
+    return CompletableFutures.computeAsync(cancelChecker -> {
+      try
+        {
+          return Util.RunWithPeriodicCancelCheck(cancelChecker, callable, INTERVALL_CHECK_CANCELLED_MS,
+            MAX_EXECUTION_TIME_MS);
+        }
+      catch (InterruptedException | ExecutionException | TimeoutException e)
+        {
+          if (Config.DEBUG())
+            {
+              WriteStackTrace(e);
+            }
+          return null;
+        }
+    });
   }
 
   private static String String(Throwable e)
