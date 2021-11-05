@@ -34,8 +34,7 @@ DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,addre
 CONDITIONS = PRECONDITIONS=true POSTCONDITIONS=true
 JAVA_ARGS =  -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m
 JUNIT_ARGS = --fail-if-no-tests --disable-banner --details=verbose -cp $(CLASSPATH) -p test.flang.lsp.server
-# NYI tests should run in parallel
-# JUNIT_ARGS = --fail-if-no-tests --disable-banner --details=verbose --config=junit.jupiter.execution.parallel.enabled=true --config=junit.jupiter.execution.parallel.mode.default=concurrent -cp $(CLASSPATH) -p test.flang.lsp.server
+JUNIT_ARGS_PARALLEL = --config=junit.jupiter.execution.parallel.enabled=true --config=junit.jupiter.execution.parallel.mode.default=concurrent
 
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.12.0.jar:jars/org.eclipse.lsp4j.generator-0.12.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.12.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar:jars/org.eclipse.xtext.xbase.lib-2.25.0.jar:jars/guava-31.0.1-jre.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
@@ -124,6 +123,9 @@ run_tests_tagged_suspended: classes
 
 run_tests: classes
 	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
+
+run_tests_parallel: classes
+	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS) $(JUNIT_ARGS_PARALLEL)
 
 run_tests_suspended: classes
 	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
