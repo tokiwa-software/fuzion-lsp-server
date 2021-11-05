@@ -420,5 +420,21 @@ class FuzionHelperTest extends BaseTest
     assertTrue(ParserHelper.DeclaredFeatures(ParserHelper.universe(uri1)).count() > 10);
   }
 
+  @Test
+  void ASTbrokenSource()
+  {
+    var sourceText = """
+      ex is
+        (1..10).
+            """;
+    FuzionTextDocumentService.setText(uri1, sourceText);
+    var ex = ParserHelper.getMainFeature(uri1).get();
+    var ast = FuzionHelpers.AST(ex);
+    assertTrue(ast.contains("Call:hasInterval"));
+    assertTrue(ast.contains("Call:#universe"));
+  }
+
+
+
 }
 

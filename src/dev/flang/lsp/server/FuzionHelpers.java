@@ -754,5 +754,27 @@ public final class FuzionHelpers
     return call;
   }
 
+  public static String AST(AbstractFeature feature)
+  {
+    var ast = ASTWalker.Traverse(feature)
+      .reduce("", (a, b) -> {
+        var item = b.getKey();
+        var position = sourcePosition(item);
+        // NYI
+        var indent = 0;
+        if (position.isEmpty())
+          {
+            return a;
+          }
+        return a + System.lineSeparator()
+          + " ".repeat(indent * 2) + position.get()._line + ":" + position.get()._column + ":"
+          + item.getClass().getSimpleName() + ":" + Converters.ToLabel(item);
+      }, String::concat);
+    return ast;
+  }
 
+  public static boolean IsAbstractFeature(Object o)
+  {
+    return AbstractFeature.class.isAssignableFrom(o.getClass());
+  }
 }

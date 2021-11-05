@@ -104,24 +104,9 @@ public class FuzionWorkspaceService implements WorkspaceService
       {
         CompletableFuture.completedFuture(null);
       }
-    var ast = ASTWalker.Traverse(feature.get())
-      .reduce("", (a, b) -> {
-        var item = b.getKey();
-        var position = FuzionHelpers.sourcePosition(item);
-        // NYI
-        var indent = 0;
-        if (position.isEmpty())
-          {
-            return a;
-          }
-        return a + System.lineSeparator()
-          + " ".repeat(indent * 2) + position.get()._line + ":" + position.get()._column + ":"
-          + item.getClass().getSimpleName() + ":" + Converters.ToLabel(item);
-      }, String::concat);
+    var ast = FuzionHelpers.AST(feature.get());
     var file = Util.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }
-
-
 
 }
