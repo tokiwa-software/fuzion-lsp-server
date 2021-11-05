@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.ast.AbstractFeature;
@@ -332,7 +333,55 @@ class FuzionHelperTest extends BaseTest
 
     feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 4, 20)).get();
     assertEquals("i32", feature.featureName().baseName());
+  }
 
+  @Test
+  void featureAtWithinLoop()
+  {
+    var sourceText = """
+      ex8 is
+        for s in ["one", "two", "three"] do
+          say "$s"
+                """;
+    FuzionTextDocumentService.setText(uri1, sourceText);
+    var feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 2, 4))
+      .get();
+    assertEquals("say", feature.featureName().baseName());
+  }
+
+  @Test
+  void featureAtWithinFunction()
+  {
+    var sourceText = """
+      ex is
+        (1..10).forAll(num -> say num)
+                  """;
+    FuzionTextDocumentService.setText(uri1, sourceText);
+
+    assertEquals("infix ..", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 4))
+      .get()
+      .featureName()
+      .baseName());
+
+    assertEquals("forAll", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 10))
+      .get()
+      .featureName()
+      .baseName());
+
+    assertEquals("forAll", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 16))
+      .get()
+      .featureName()
+      .baseName());
+
+    assertEquals("say", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 24))
+      .get()
+      .featureName()
+      .baseName());
+
+    assertEquals("say", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 26))
+      .get()
+      .featureName()
+      .baseName());
   }
 
   @Test
@@ -359,20 +408,6 @@ class FuzionHelperTest extends BaseTest
     var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams(uri1, 1, 17))
       .get();
     assertEquals("myCall", call.name);
-  }
-
-  @Test
-  void callAtWithinLoop()
-  {
-    var sourceText = """
-      ex8 is
-        for s in ["one", "two", "three"] do
-          say "$s"
-                """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
-    var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams(uri1, 2, 4))
-      .get();
-    assertEquals("say", call.name);
   }
 
   @Test

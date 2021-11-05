@@ -413,7 +413,6 @@ public final class FuzionHelpers
   /**
    * tries to find the closest feature at given
    * position that is declared, called or used by a type
-     * NYI test this method!
    * @param params
    */
   public static Optional<AbstractFeature> featureAt(TextDocumentPositionParams params)
@@ -435,6 +434,7 @@ public final class FuzionHelpers
         return null;
       })
       .filter(f -> f != null)
+      .filter(f -> !IsAnonymousInnerFeature(f))
       .map(f -> {
         if (IsArgument(f))
           {
