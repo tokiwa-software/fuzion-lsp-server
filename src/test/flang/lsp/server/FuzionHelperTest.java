@@ -37,13 +37,10 @@ import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.ast.Feature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
@@ -362,6 +359,20 @@ class FuzionHelperTest extends BaseTest
     var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams(uri1, 1, 17))
       .get();
     assertEquals("myCall", call.name);
+  }
+
+  @Test
+  void callAtWithinLoop()
+  {
+    var sourceText = """
+      ex8 is
+        for s in ["one", "two", "three"] do
+          say "$s"
+                """;
+    FuzionTextDocumentService.setText(uri1, sourceText);
+    var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams(uri1, 2, 4))
+      .get();
+    assertEquals("say", call.name);
   }
 
   @Test
