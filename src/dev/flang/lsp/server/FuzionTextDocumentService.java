@@ -158,7 +158,7 @@ public class FuzionTextDocumentService implements TextDocumentService
     return text;
   }
 
-  // NYI this is broken
+  // NYI this is broken (on windows)
   private String SyncKindIncremental(DidChangeTextDocumentParams params)
   {
     var uri = Util.getUri(params.getTextDocument());
