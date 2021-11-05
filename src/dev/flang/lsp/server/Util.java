@@ -320,14 +320,35 @@ public class Util
 
   public static void WriteStackTrace(Throwable e)
   {
+    var stackTrace = String(e) + System.lineSeparator()
+      + "======" + System.lineSeparator()
+      + Thread.getAllStackTraces()
+        .entrySet()
+        .stream()
+        .map(entry -> "Thread: " + entry.getKey().getName() + System.lineSeparator() + String(entry.getValue()))
+        .collect(Collectors.joining(System.lineSeparator()));
+
     var file =
-      Util.writeToTempFile(e.getMessage() + System.lineSeparator() + toString(e), "fuzion-lsp-crash", ".log", false);
+      Util.writeToTempFile(stackTrace, "fuzion-lsp-crash", ".log", false);
     if (Config.DEBUG())
       {
         Config.languageClient()
           .showMessage(new MessageParams(MessageType.Error,
             "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
       }
+  }
+
+  private static String String(StackTraceElement[] stackTrace)
+  {
+    var sb = new StringBuilder();
+    for(int i = 1; i < stackTrace.length; i++)
+      sb.append("\tat " + stackTrace[i] + System.lineSeparator());
+    return sb.toString();
+  }
+
+  private static String String(Throwable e)
+  {
+    return e.getMessage() + System.lineSeparator() + toString(e);
   }
 
   static Path PathOf(URI uri)
