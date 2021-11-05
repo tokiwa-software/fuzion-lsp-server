@@ -59,6 +59,7 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 
 /**
  * utils which are independent of fuzion
@@ -80,6 +81,11 @@ public class Util
       }
     return byteArray;
   }
+
+  public static Comparator<? super Object> CompareByHashCode =
+    Comparator.comparing(obj -> obj, (obj1, obj2) -> {
+      return obj1.hashCode() - obj2.hashCode();
+    });
 
   public static File writeToTempFile(String text)
   {
@@ -113,66 +119,120 @@ public class Util
       }
   }
 
-  /**
-   * this ugly method executes a runnable within a given time and
-   * captures both stdout and stderr along the way.
-   * @param runnable
-   * @param timeOutInMilliSeconds
-   * @return
-   * @throws IOException
-   * @throws TimeoutException
-   * @throws ExecutionException
-   * @throws InterruptedException
-   */
+  private static final PrintStream StdOut = System.out;
+
+  // for now we have to run most things more or less sequentially
+  private static ExecutorService executor = Executors.newSingleThreadExecutor();
+
   public static MessageParams WithCapturedStdOutErr(Runnable runnable, long timeOutInMilliSeconds)
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
-    var out = System.out;
-    var err = System.err;
+    Future<String> future = executor.submit(WithCapturedStdOutErr(runnable));
     try
       {
-        return TryRunWithTimeout(runnable, timeOutInMilliSeconds);
-      } finally
-      {
-        System.setOut(out);
-        System.setErr(err);
-      }
-  }
-
-  private static MessageParams TryRunWithTimeout(Runnable runnable, long timeOutInMilliSeconds)
-    throws IOException, InterruptedException, ExecutionException, TimeoutException
-  {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    Future<?> future = executor.submit(runnable);
-
-    var inputStream = new PipedInputStream();
-    var outputStream = new PrintStream(new PipedOutputStream(inputStream));
-    System.setOut(outputStream);
-    System.setErr(outputStream);
-
-    try
-      {
-        future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
-        outputStream.close();
-        return new MessageParams(MessageType.Info, new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+        var result = future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
+        return new MessageParams(MessageType.Info, result);
       } finally
       {
         if (!future.isCancelled() || !future.isDone())
           {
             future.cancel(true);
           }
-        executor.shutdownNow();
-        outputStream.close();
-        inputStream.close();
-        executor.awaitTermination(1, TimeUnit.DAYS);
       }
+  }
+
+  /**
+   * @param runnable
+   * @return callable to be run on an executor.
+   * The result of the callable is everything that is written to stdout/stderr by the runnable.
+   */
+  private static Callable<String> WithCapturedStdOutErr(Runnable runnable)
+  {
+    return () -> {
+      if (StdOut.hashCode() != System.out.hashCode())
+        {
+          throw new RuntimeException(
+            "System.out compromised. Expected the same stdout as to when StdOut was initialized but found different.");
+        }
+      var out = System.out;
+      var err = System.err;
+      var inputStream = new PipedInputStream();
+      var outputStream = new PrintStream(new PipedOutputStream(inputStream));
+      try
+        {
+          System.setOut(outputStream);
+          System.setErr(outputStream);
+          runnable.run();
+          // close outputstream so that reading of inputstream does not run
+          // inifinitly.
+          outputStream.close();
+          return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        } finally
+        {
+          outputStream.close();
+          inputStream.close();
+          System.setOut(out);
+          System.setErr(err);
+        }
+    };
+  }
+
+  /**
+   * run callable on single thread executor.
+   * periodically check if callable meanwhile has been cancelled
+   * and/or maximum execution time has been reached
+   * @param <T>
+   * @param cancelToken
+   * @param callable
+   * @param periodInMs
+   * @param maxExecutionTimeInMs
+   * @return
+   * @throws InterruptedException
+   * @throws ExecutionException
+   * @throws TimeoutException
+   */
+  public static <T> T RunWithPeriodicCancelCheck(
+    CancelChecker cancelToken, Callable<T> callable, int periodInMs, int maxExecutionTimeInMs)
+    throws InterruptedException, ExecutionException, TimeoutException
+  {
+    Future<T> future = executor.submit(callable);
+    try
+      {
+        var timeElapsedInMs = 0;
+        var completed = false;
+        while (!completed)
+          {
+            try
+              {
+                future.get(periodInMs, TimeUnit.MILLISECONDS);
+                completed = true;
+              }
+            // when timeout occurs we check
+            // if maxExecutionTime has been reached
+            // or if cancelToken wants to cancel execution
+            catch (TimeoutException e)
+              {
+                timeElapsedInMs += periodInMs;
+                if (timeElapsedInMs >= maxExecutionTimeInMs)
+                  {
+                    throw e;
+                  }
+                cancelToken.checkCanceled();
+              }
+          }
+      } finally
+      {
+        if (!future.isCancelled() || !future.isDone())
+          {
+            future.cancel(true);
+          }
+      }
+    return future.get();
   }
 
   public static void RunInBackground(Runnable runnable)
   {
-    Thread thread = new Thread(runnable);
-    thread.start();
+    executor.submit(runnable);
   }
 
   private static <T> T callOrPanic(Callable<T> callable)
@@ -355,11 +415,6 @@ public class Util
   {
     return Path.of(uri);
   }
-
-  public static Comparator<? super Object> CompareByHashCode =
-    Comparator.comparing(obj -> obj, (obj1, obj2) -> {
-      return obj1.hashCode() - obj2.hashCode();
-    });
 
   /**
    * example: TextDocumentPositionParams("file://uri", 0, 0)
