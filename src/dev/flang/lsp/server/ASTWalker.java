@@ -27,8 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server;
 
 import java.util.Comparator;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -45,13 +45,13 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
 import dev.flang.ast.Match;
-import dev.flang.ast.Type;
 import dev.flang.ast.Nop;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Tag;
+import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
 
@@ -117,11 +117,7 @@ public class ASTWalker
   private static void TraverseStatement(Stmnt s, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    if (!callback.apply(s, outer))
-      {
-        return;
-      }
-    if (AbstractFeature.class.isAssignableFrom(s.getClass()))
+    if (FuzionHelpers.IsAbstractFeature(s))
       {
         TraverseFeature((AbstractFeature) s, callback);
         return;
@@ -177,27 +173,20 @@ public class ASTWalker
       {
         return;
       }
-    if (!callback.apply(expr, outer))
+    if (expr instanceof Block b)
       {
+        TraverseBlock(b, outer, callback);
         return;
       }
-
     if (expr instanceof Match m)
       {
         TraverseExpression(m.subject, outer, callback);
         m.cases.forEach(c -> TraverseCase(c, outer, callback));
         return;
       }
-    if (expr instanceof Block b)
-      {
-        TraverseBlock(b, outer, callback);
-        return;
-      }
     if (expr instanceof Call c)
       {
-        c.generics.forEach(g -> TraverseType(g, outer, callback));
-        c._actuals.forEach(a -> TraverseExpression(a, outer, callback));
-        TraverseExpression(c.target, outer, callback);
+        TraverseCall(c, outer, callback);
         return;
       }
     if (expr instanceof Tag t)
@@ -236,6 +225,27 @@ public class ASTWalker
         return;
       }
     throw new RuntimeException("TraverseExpression NYI: " + expr.getClass());
+  }
+
+  private static void TraverseCall(Call c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
+  {
+    if (!callback.apply(c, outer))
+      {
+        return;
+      }
+    c.generics.forEach(g -> TraverseType(g, outer, callback));
+    c._actuals.forEach(a -> TraverseExpression(a, outer, callback));
+    // this should be enough to not run into an infinite recursion...
+    if (!IsSameSourceFile(c.target, outer))
+      {
+        return;
+      }
+    TraverseExpression(c.target, outer, callback);
+  }
+
+  private static boolean IsSameSourceFile(Expr e, AbstractFeature outer)
+  {
+    return e.pos()._sourceFile.equals(outer.pos()._sourceFile);
   }
 
 }
