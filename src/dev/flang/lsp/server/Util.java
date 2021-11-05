@@ -371,7 +371,13 @@ public class Util
 
   public static void WriteStackTraceAndExit(int status, Throwable e)
   {
-    WriteStackTrace(e);
+    var filePath = WriteStackTrace(e);
+    if (Config.DEBUG())
+      {
+        Config.languageClient()
+          .showMessage(new MessageParams(MessageType.Error,
+            "fuzion language server crashed." + System.lineSeparator() + " Log: " + filePath));
+      }
     System.exit(status);
   }
 
@@ -383,7 +389,7 @@ public class Util
     return sw.toString();
   }
 
-  public static void WriteStackTrace(Throwable e)
+  public static String WriteStackTrace(Throwable e)
   {
     var stackTrace = String(e) + System.lineSeparator()
       + "======" + System.lineSeparator()
@@ -393,14 +399,8 @@ public class Util
         .map(entry -> "Thread: " + entry.getKey().getName() + System.lineSeparator() + String(entry.getValue()))
         .collect(Collectors.joining(System.lineSeparator()));
 
-    var file =
-      Util.writeToTempFile(stackTrace, "fuzion-lsp-crash", ".log", false);
-    if (Config.DEBUG())
-      {
-        Config.languageClient()
-          .showMessage(new MessageParams(MessageType.Error,
-            "fuzion language server crashed." + System.lineSeparator() + " Log: " + file.getAbsolutePath()));
-      }
+    return Util.writeToTempFile(stackTrace, "fuzion-lsp-crash", ".log", false)
+      .getAbsolutePath();
   }
 
   private static String String(StackTraceElement[] stackTrace)
