@@ -68,6 +68,8 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
 
@@ -198,7 +200,7 @@ public final class FuzionHelpers
         {
           return false;
         }
-      return uri.equals(ParserHelper.getUri(sourcePositionOption.get()));
+      return uri.equals(FuzionParser.getUri(sourcePositionOption.get()));
     };
   }
 
@@ -256,7 +258,7 @@ public final class FuzionHelpers
   public static Predicate<? super AbstractFeature> IsFeatureInFile(URI uri)
   {
     return feature -> {
-      return uri.equals(ParserHelper.getUri(feature.pos()));
+      return uri.equals(FuzionParser.getUri(feature.pos()));
     };
   }
 
@@ -366,7 +368,7 @@ public final class FuzionHelpers
    */
   public static SourcePosition endOfFeature(AbstractFeature feature)
   {
-    var uri = ParserHelper.getUri(feature.pos());
+    var uri = FuzionParser.getUri(feature.pos());
     if (!Memory.EndOfFeature.containsKey(feature))
       {
         SourcePosition endOfFeature = ASTWalker.Traverse(feature)
@@ -378,11 +380,11 @@ public final class FuzionHelpers
           .map(sourcePosition -> sourcePosition.get())
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
-            var start = LexerUtil.endOfToken(uri, Converters.ToPosition(position));
+            var start = FuzionLexer.endOfToken(uri, Converters.ToPosition(position));
             var line = FuzionHelpers.restOfLine(uri, start);
             // NYI maybe use inverse hashset here? i.e. state which tokens can
             // be skipped
-            var token = LexerUtil.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
+            var token = FuzionLexer.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
               Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
             return new SourcePosition(position._sourceFile, position._line, start.getCharacter() + token.end()._column);
           })
@@ -454,7 +456,7 @@ public final class FuzionHelpers
       {
         return false;
       }
-    return allOf(ParserHelper.getUri(feature.pos()), AbstractFeature.class)
+    return allOf(FuzionParser.getUri(feature.pos()), AbstractFeature.class)
       .anyMatch(f -> f.arguments().contains(feature));
   }
 
@@ -466,7 +468,7 @@ public final class FuzionHelpers
    */
   public static <T extends Object> Stream<T> allOf(URI uri, Class<T> classOfT)
   {
-    var universe = ParserHelper.universe(uri);
+    var universe = FuzionParser.universe(uri);
 
     return ASTWalker.Traverse(universe)
       .map(e -> e.getKey())
@@ -561,7 +563,7 @@ public final class FuzionHelpers
    */
   public static Optional<AbstractFeature> feature(TextDocumentPositionParams params)
   {
-    var token = LexerUtil.rawTokenAt(params);
+    var token = FuzionLexer.rawTokenAt(params);
     return callsAndFeaturesAt(params).map(callOrFeature -> {
       if (callOrFeature instanceof Call)
         {
@@ -575,7 +577,7 @@ public final class FuzionHelpers
 
   public static Optional<TokenInfo> CallOrFeatureToken(TextDocumentPositionParams params)
   {
-    var token = LexerUtil.rawTokenAt(params);
+    var token = FuzionLexer.rawTokenAt(params);
     if (token == null)
       {
         return Optional.empty();
@@ -602,7 +604,7 @@ public final class FuzionHelpers
 
   public static Stream<AbstractFeature> featuresIncludingInheritedFeatures(TextDocumentPositionParams params)
   {
-    var mainFeature = ParserHelper.getMainFeature(Util.getUri(params));
+    var mainFeature = FuzionParser.getMainFeature(Util.getUri(params));
     if (mainFeature.isEmpty())
       {
         return Stream.empty();
@@ -631,7 +633,7 @@ public final class FuzionHelpers
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
     var result = Util.WithCapturedStdOutErr(() -> {
-      var interpreter = new Interpreter(ParserHelper.FUIR(uri));
+      var interpreter = new Interpreter(FuzionParser.FUIR(uri));
       interpreter.run();
     }, timeout);
     return result;
@@ -665,7 +667,7 @@ public final class FuzionHelpers
   private static Stream<AbstractFeature> DeclaredFeaturesRecursive(AbstractFeature feature)
   {
     return Stream.concat(Stream.of(feature),
-      ParserHelper.DeclaredFeatures(feature).flatMap(f -> DeclaredFeaturesRecursive(f)));
+      FuzionParser.DeclaredFeatures(feature).flatMap(f -> DeclaredFeaturesRecursive(f)));
   }
 
   /**
@@ -695,7 +697,7 @@ public final class FuzionHelpers
    */
   public static AbstractFeature featureOf(Call call)
   {
-    var uri = ParserHelper.getUri(call.pos);
+    var uri = FuzionParser.getUri(call.pos);
     return Features(uri)
       .filter(contains(call))
       .findFirst()
@@ -724,7 +726,7 @@ public final class FuzionHelpers
           {
             break;
           }
-        if (LexerUtil.isCommentLine(textDocumentPosition))
+        if (FuzionLexer.isCommentLine(textDocumentPosition))
           {
             commentLines.add(LineAt(textDocumentPosition));
           }

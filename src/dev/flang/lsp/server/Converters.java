@@ -44,6 +44,8 @@ import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
 import dev.flang.ast.If;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -61,7 +63,7 @@ public final class Converters
   public static Location ToLocation(SourcePosition sourcePosition)
   {
     var position = ToPosition(sourcePosition);
-    return new Location(ParserHelper.getUri(sourcePosition).toString(), new Range(position, position));
+    return new Location(FuzionParser.getUri(sourcePosition).toString(), new Range(position, position));
   }
 
   public static Range ToRange(AbstractFeature feature)
@@ -71,7 +73,7 @@ public final class Converters
 
   public static Range ToRange(TextDocumentPositionParams params)
   {
-    var tokenIdent = LexerUtil.rawTokenAt(params);
+    var tokenIdent = FuzionLexer.rawTokenAt(params);
     var line = params.getPosition().getLine();
     var characterStart = tokenIdent.start()._column - 1;
     return new Range(new Position(line, characterStart),
@@ -109,7 +111,7 @@ public final class Converters
 
   public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
   {
-    return Util.TextDocumentPositionParams(ParserHelper.getUri(sourcePosition), ToPosition(sourcePosition));
+    return Util.TextDocumentPositionParams(FuzionParser.getUri(sourcePosition), ToPosition(sourcePosition));
   }
 
   public static SourceFile ToSourceFile(URI uri)

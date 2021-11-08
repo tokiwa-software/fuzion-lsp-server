@@ -46,9 +46,9 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.LexerUtil;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
@@ -63,7 +63,7 @@ public class Rename
 
   public static WorkspaceEdit getWorkspaceEdit(RenameParams params)
   {
-    if (!LexerUtil.IsValidIdentifier(params.getNewName()))
+    if (!FuzionLexer.IsValidIdentifier(params.getNewName()))
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "new name no valid identifier.", null);
         throw new ResponseErrorException(responseError);
@@ -77,7 +77,7 @@ public class Rename
       }
 
     var featureIdentifier =
-      LexerUtil.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
+      FuzionLexer.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
     // NYI rename feature used like this "fun myBaseName"
     Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature.get(), featureIdentifier);
@@ -108,7 +108,7 @@ public class Rename
           {
             var nextPosition = Converters.ToTextDocumentPosition(
               new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length()));
-            pos = LexerUtil.tokenAt(nextPosition).start();
+            pos = FuzionLexer.tokenAt(nextPosition).start();
           }
         return pos;
       });
@@ -128,7 +128,7 @@ public class Rename
 
   private static boolean IsAtFunKeyword(SourcePosition pos)
   {
-    return LexerUtil.tokenAt(Converters.ToTextDocumentPosition(pos)).text().equals(Lexer.Token.t_fun.toString());
+    return FuzionLexer.tokenAt(Converters.ToTextDocumentPosition(pos)).text().equals(Lexer.Token.t_fun.toString());
   }
 
   private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)

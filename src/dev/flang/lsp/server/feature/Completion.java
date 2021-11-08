@@ -44,8 +44,8 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.LexerUtil;
-import dev.flang.lsp.server.ParserHelper;
+import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.util.FuzionParser;
 
 /**
  * tries offering completions
@@ -86,12 +86,12 @@ public class Completion
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
       {
         // NYI can we do better here?
-        return completions(Stream.of(ParserHelper.universe(params)));
+        return completions(Stream.of(FuzionParser.universe(params)));
       }
 
     // NYI FIXME we need to move the cursor one step back
     // before getting next token
-    var tokenText = LexerUtil.rawTokenAt(params).text();
+    var tokenText = FuzionLexer.rawTokenAt(params).text();
     switch (tokenText)
       {
         case "for" :
@@ -104,7 +104,7 @@ public class Completion
   private static Either<List<CompletionItem>, CompletionList> completions(Stream<AbstractFeature> features)
   {
     var sortedFeatures = features
-      .flatMap(f -> ParserHelper.DeclaredFeatures(f))
+      .flatMap(f -> FuzionParser.DeclaredFeatures(f))
       .distinct()
       .filter(f -> !FuzionHelpers.IsAnonymousInnerFeature(f))
       .collect(Collectors.toList());

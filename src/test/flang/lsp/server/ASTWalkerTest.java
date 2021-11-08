@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.FuzionTextDocumentService;
-import dev.flang.lsp.server.ParserHelper;
+import dev.flang.lsp.server.util.FuzionParser;
 
 public class ASTWalkerTest extends BaseTest
 {
@@ -46,6 +46,6 @@ public class ASTWalkerTest extends BaseTest
       say "$s maps to {x[s]}"
   """;
     FuzionTextDocumentService.setText(uri1, sourceText);
-    ASTWalker.Traverse(ParserHelper.getMainFeature(uri1).get());
+    ASTWalker.Traverse(FuzionParser.getMainFeature(uri1).get());
   }
 }

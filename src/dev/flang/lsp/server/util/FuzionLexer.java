@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server;
+package dev.flang.lsp.server.util;
 
 import java.net.URI;
 import java.util.HashSet;
@@ -32,13 +32,16 @@ import java.util.HashSet;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import dev.flang.lsp.server.Converters;
+import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
-public class LexerUtil
+public class FuzionLexer
 {
 
   public static Boolean IsValidIdentifier(String str)
@@ -63,7 +66,7 @@ public class LexerUtil
         {
           lexer.next();
         }
-      return LexerUtil.tokenInfo(lexer);
+      return FuzionLexer.tokenInfo(lexer);
     });
   }
 
@@ -76,17 +79,17 @@ public class LexerUtil
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
 
       while (lexer.current() != Token.t_eof
-        && LexerUtil.lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
+        && FuzionLexer.lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
         {
           lexer.nextRaw();
         }
-      return LexerUtil.tokenInfo(Util.toURI(params.getTextDocument().getUri()), lexer);
+      return FuzionLexer.tokenInfo(Util.toURI(params.getTextDocument().getUri()), lexer);
     });
   }
 
   private static TokenInfo tokenInfo(Lexer lexer)
   {
-    return LexerUtil.tokenInfo(SourceFile.STDIN.toUri(), lexer);
+    return FuzionLexer.tokenInfo(SourceFile.STDIN.toUri(), lexer);
   }
 
   private static TokenInfo tokenInfo(URI uri, Lexer lexer)

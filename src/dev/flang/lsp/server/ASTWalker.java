@@ -54,6 +54,7 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
+import dev.flang.lsp.server.util.FuzionParser;
 
 public class ASTWalker
 {
@@ -92,7 +93,7 @@ public class ASTWalker
         TraverseExpression(feature.code(), feature, callback);
       }
 
-    ParserHelper.AllDeclaredFeatures(feature)
+    FuzionParser.AllDeclaredFeatures(feature)
       .forEach(f -> TraverseFeature(f, callback));
   }
 

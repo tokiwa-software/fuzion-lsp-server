@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server;
+package dev.flang.lsp.server.util;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -49,6 +49,11 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
+import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.Log;
+import dev.flang.lsp.server.Memory;
+import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.ParserCacheRecord;
 import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
@@ -60,7 +65,7 @@ import dev.flang.util.SourcePosition;
  * - caches parsing results.
  * - provides a function to get the original URI of a SourcePosition
  */
-public class ParserHelper
+public class FuzionParser
 {
 
   private static final String PARSER_LOCK = "";
@@ -134,12 +139,6 @@ public class ParserHelper
       }
   }
 
-  private static Stream<AbstractFeature> allFeatures(Resolution res, AbstractFeature f)
-  {
-    var df = res._module.declaredFeatures(f).values().stream();
-    return Stream.concat(Stream.of(f), df.flatMap(dfc -> allFeatures(res, dfc)));
-  }
-
   private static ParserCacheRecord parserCacheRecord(URI uri)
   {
     return Util.WithRedirectedStdOut(() -> {
@@ -186,7 +185,7 @@ public class ParserHelper
 
   private static FrontEndOptions FrontEndOptions(URI uri)
   {
-    File tempFile = ParserHelper.toTempFile(uri);
+    File tempFile = FuzionParser.toTempFile(uri);
     var frontEndOptions = FrontEndOptions(tempFile);
     return frontEndOptions;
   }
@@ -259,7 +258,7 @@ public class ParserHelper
     return universe(Util.getUri(params));
   }
 
-  static Stream<AbstractFeature> AllDeclaredFeatures(AbstractFeature f)
+  public static Stream<AbstractFeature> AllDeclaredFeatures(AbstractFeature f)
   {
     // NYI get rid of this
     return currentResolution._module.declaredFeatures(f)

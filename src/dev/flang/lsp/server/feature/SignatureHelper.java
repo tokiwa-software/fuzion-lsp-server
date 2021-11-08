@@ -40,7 +40,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.ParserHelper;
+import dev.flang.lsp.server.util.FuzionParser;
 
 public class SignatureHelper
 {
@@ -57,9 +57,9 @@ public class SignatureHelper
     var featureOfCall =
       call.get().target instanceof Call callTarget ? callTarget.calledFeature(): FuzionHelpers.featureOf(call.get());
 
-      var consideredCallTargets_declaredOrInherited = ParserHelper.DeclaredOrInheritedFeatures(featureOfCall);
+      var consideredCallTargets_declaredOrInherited = FuzionParser.DeclaredOrInheritedFeatures(featureOfCall);
       var consideredCallTargets_outerFeatures =
-        FuzionHelpers.outerFeatures(featureOfCall).flatMap(f -> ParserHelper.DeclaredFeatures(f));
+        FuzionHelpers.outerFeatures(featureOfCall).flatMap(f -> FuzionParser.DeclaredFeatures(f));
 
       var consideredFeatures =
         Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);

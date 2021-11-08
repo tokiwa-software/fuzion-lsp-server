@@ -37,9 +37,9 @@ import org.eclipse.lsp4j.Range;
 
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.Converters;
-import dev.flang.lsp.server.LexerUtil;
 import dev.flang.lsp.server.Log;
-import dev.flang.lsp.server.ParserHelper;
+import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.util.Errors;
 
 /**
@@ -59,21 +59,21 @@ public class Diagnostics
   private static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     // ensure that parsing has happenend for uri
-    ParserHelper.getMainFeature(uri);
+    FuzionParser.getMainFeature(uri);
     // NYI this always returns the current global errors
     // this may not be the errors for the uri?
     var errorDiagnostics =
-      Errors.errors().stream().filter(error -> ParserHelper.getUri(error.pos).equals(uri)).map((error) -> {
+      Errors.errors().stream().filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
         var start = Converters.ToPosition(error.pos);
-        var end = LexerUtil.endOfToken(uri, start);
+        var end = FuzionLexer.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;
         return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Error, "fuzion language server");
       });
 
     var warningDiagnostics =
-      Errors.warnings().stream().filter(error -> ParserHelper.getUri(error.pos).equals(uri)).map((error) -> {
+      Errors.warnings().stream().filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
         var start = Converters.ToPosition(error.pos);
-        var end = LexerUtil.endOfToken(uri, start);
+        var end = FuzionLexer.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;
         return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Warning, "fuzion language server");
       });

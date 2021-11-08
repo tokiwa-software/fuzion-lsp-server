@@ -33,8 +33,8 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.FuzionTextDocumentService;
-import dev.flang.lsp.server.ParserHelper;
 import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.util.Errors;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -48,11 +48,11 @@ public class ParserHelperTest extends BaseTest
       HelloWorld is
         say "Hello World!"
                   """);
-    var mainFeature = ParserHelper.getMainFeature(uri1);
+    var mainFeature = FuzionParser.getMainFeature(uri1);
     assertEquals(0, Errors.count());
     assertEquals(true, mainFeature.isPresent());
     assertEquals("HelloWorld", mainFeature.get().featureName().baseName());
-    assertEquals(uri1, ParserHelper.getUri(mainFeature.get().pos()));
+    assertEquals(uri1, FuzionParser.getUri(mainFeature.get().pos()));
   }
 
   @Test
@@ -71,7 +71,7 @@ public class ParserHelperTest extends BaseTest
 
 
                   """);
-    var mainFeature = ParserHelper.getMainFeature(uri1);
+    var mainFeature = FuzionParser.getMainFeature(uri1);
     assertEquals(true, Errors.count() > 0);
     assertEquals(true, mainFeature.isPresent());
   }
@@ -79,7 +79,7 @@ public class ParserHelperTest extends BaseTest
   @Test
   void getUriStdLibFile()
   {
-    var uri = ParserHelper.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
+    var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
     assertEquals(Util.toURI(Path.of("./").normalize().toUri().toString() + "fuzion/build/lib/yak.fz"), uri);
   }
 
