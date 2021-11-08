@@ -392,7 +392,7 @@ class FuzionHelperTest extends BaseTest
         (1..10).forAll()
               """;
     SourceText.setText(uri1, sourceText);
-    var endOfFeature = FuzionHelpers.endOfFeature(FuzionParser.getMainFeature(uri1).get());
+    var endOfFeature = FuzionParser.endOfFeature(FuzionParser.getMainFeature(uri1).get());
     assertEquals(2, endOfFeature._line);
     assertEquals(19, endOfFeature._column);
   }

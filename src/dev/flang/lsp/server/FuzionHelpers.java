@@ -68,9 +68,7 @@ import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.Log;
-import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -192,7 +190,7 @@ public final class FuzionHelpers
     };
   }
 
-  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemInFile(URI uri)
+  public static Predicate<? super Entry<Object, AbstractFeature>> IsItemInFile(URI uri)
   {
     return (entry) -> {
       var sourcePositionOption = FuzionHelpers.sourcePosition(entry.getKey());
@@ -224,7 +222,7 @@ public final class FuzionHelpers
 
       boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
         || Util.ComparePosition(cursorPosition,
-          Bridge.ToPosition(FuzionHelpers.endOfFeature(outer))) <= 0;
+          Bridge.ToPosition(FuzionParser.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
         Util.ComparePosition(cursorPosition, Bridge.ToPosition(sourcePositionOption.get())) >= 0;
 
@@ -318,7 +316,7 @@ public final class FuzionHelpers
       .filter(IsItemInFile(Util.getUri(params)))
       .filter(entry -> entry.getKey() instanceof Call)
       .map(entry -> new SimpleEntry<Call, AbstractFeature>((Call) entry.getKey(), entry.getValue()))
-      .filter(entry -> PositionIsAfterOrAtCursor(params, endOfFeature(entry.getValue())))
+      .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
       .map(entry -> entry.getKey())
       .filter(c -> !IsAnonymousInnerFeature(c.calledFeature()))
@@ -358,43 +356,6 @@ public final class FuzionHelpers
   private static boolean PositionIsBeforeCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
   {
     return Util.ComparePosition(Util.getPosition(params), Bridge.ToPosition(sourcePosition)) > 0;
-  }
-
-  /**
-   * NYI replace by real end of feature once we have this information in the AST
-   * !!!CACHED via Memory.EndOfFeature!!!
-   * @param feature
-   * @return
-   */
-  public static SourcePosition endOfFeature(AbstractFeature feature)
-  {
-    var uri = FuzionParser.getUri(feature.pos());
-    if (!Memory.EndOfFeature.containsKey(feature))
-      {
-        SourcePosition endOfFeature = ASTWalker.Traverse(feature)
-          .filter(entry -> entry.getValue() != null)
-          .filter(IsItemInFile(uri))
-          .filter(entry -> entry.getValue().compareTo(feature) == 0)
-          .map(entry -> sourcePosition(entry.getKey()))
-          .filter(sourcePositionOption -> sourcePositionOption.isPresent())
-          .map(sourcePosition -> sourcePosition.get())
-          .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
-          .map(position -> {
-            var start = FuzionLexer.endOfToken(uri, Bridge.ToPosition(position));
-            var line = SourceText.RestOfLine(LSP4jUtils.TextDocumentPositionParams(uri, start));
-            // NYI maybe use inverse hashset here? i.e. state which tokens can
-            // be skipped
-            var token = FuzionLexer.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
-              Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
-            return new SourcePosition(position._sourceFile, position._line, start.getCharacter() + token.end()._column);
-          })
-          .findFirst()
-          .orElse(feature.pos());
-
-        Memory.EndOfFeature.put(feature, endOfFeature);
-      }
-
-    return Memory.EndOfFeature.get(feature);
   }
 
   public static boolean IsAnonymousInnerFeature(AbstractFeature f)

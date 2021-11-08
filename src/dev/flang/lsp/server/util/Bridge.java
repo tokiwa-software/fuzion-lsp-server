@@ -37,7 +37,6 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -60,7 +59,7 @@ public class Bridge {
 
   public static Range ToRange(AbstractFeature feature)
   {
-    return new Range(ToPosition(feature.pos()), ToPosition(FuzionHelpers.endOfFeature(feature)));
+    return new Range(ToPosition(feature.pos()), ToPosition(FuzionParser.endOfFeature(feature)));
   }
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)

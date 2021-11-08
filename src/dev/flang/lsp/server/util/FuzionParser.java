@@ -31,6 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Stream;
@@ -49,13 +50,14 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
+import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.Memory;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.ParserCacheRecord;
 import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
@@ -153,12 +155,6 @@ public class FuzionParser
         return new ParserCacheRecord(mir, frontEndOptions, frontEnd);
       });
     });
-  }
-
-  private static void afterParsing(URI uri, AbstractFeature mainFeature)
-  {
-    // NYI make this less bad
-    Memory.EndOfFeature.clear();
   }
 
   public static FUIR FUIR(URI uri)
@@ -277,6 +273,50 @@ public class FuzionParser
   {
     return AllDeclaredFeatures(f)
       .filter(feat -> !FuzionHelpers.IsAnonymousInnerFeature(feat));
+  }
+
+  private static final TreeMap<AbstractFeature, SourcePosition> EndOfFeature = new TreeMap<>();
+
+  private static void afterParsing(URI uri, AbstractFeature mainFeature)
+  {
+    // NYI make this less bad
+    EndOfFeature.clear();
+  }
+
+  /**
+   * NYI replace by real end of feature once we have this information in the AST
+   * @param feature
+   * @return
+   */
+  public static SourcePosition endOfFeature(AbstractFeature feature)
+  {
+    var uri = getUri(feature.pos());
+    if (!EndOfFeature.containsKey(feature))
+      {
+        SourcePosition endOfFeature = ASTWalker.Traverse(feature)
+          .filter(entry -> entry.getValue() != null)
+          .filter(FuzionHelpers.IsItemInFile(uri))
+          .filter(entry -> entry.getValue().compareTo(feature) == 0)
+          .map(entry -> FuzionHelpers.sourcePosition(entry.getKey()))
+          .filter(sourcePositionOption -> sourcePositionOption.isPresent())
+          .map(sourcePosition -> sourcePosition.get())
+          .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
+          .map(position -> {
+            var start = FuzionLexer.endOfToken(uri, Bridge.ToPosition(position));
+            var line = SourceText.RestOfLine(LSP4jUtils.TextDocumentPositionParams(uri, start));
+            // NYI maybe use inverse hashset here? i.e. state which tokens can
+            // be skipped
+            var token = FuzionLexer.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
+              Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
+            return new SourcePosition(position._sourceFile, position._line, start.getCharacter() + token.end()._column);
+          })
+          .findFirst()
+          .orElse(feature.pos());
+
+        EndOfFeature.put(feature, endOfFeature);
+      }
+
+    return EndOfFeature.get(feature);
   }
 
 
