@@ -399,7 +399,7 @@ public class Util
         .map(entry -> "Thread: " + entry.getKey().getName() + System.lineSeparator() + String(entry.getValue()))
         .collect(Collectors.joining(System.lineSeparator()));
 
-    return Util.writeToTempFile(stackTrace, "fuzion-lsp-crash", ".log", false)
+    return Util.writeToTempFile(stackTrace, "fuzion-lsp-crash" + String.valueOf(System.currentTimeMillis()), ".log", false)
       .getAbsolutePath();
   }
 
