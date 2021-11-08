@@ -58,7 +58,6 @@ import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -101,19 +100,6 @@ public class FuzionTextDocumentService implements TextDocumentService
     }, 1000, TimeUnit.MILLISECONDS);
   }
 
-  // taken from apache commons
-  public static int ordinalIndexOf(String str, String substr, int n)
-  {
-    if (n == 0)
-      {
-        return -1;
-      }
-    int pos = str.indexOf(substr);
-    while (--n > 0 && pos != -1)
-      pos = str.indexOf(substr, pos + 1);
-    return pos;
-  }
-
   @Override
   public void didChange(DidChangeTextDocumentParams params)
   {
@@ -131,45 +117,6 @@ public class FuzionTextDocumentService implements TextDocumentService
     return text;
   }
 
-  // NYI this is broken (on windows)
-  private String SyncKindIncremental(DidChangeTextDocumentParams params)
-  {
-    var uri = Util.getUri(params.getTextDocument());
-    var text = SourceText.getText(uri).orElseThrow();
-    var contentChanges = params.getContentChanges();
-    return applyContentChanges(text, contentChanges);
-  }
-
-  /**
-   * sort descending by line then descending by character
-   *
-   * @param contentChanges
-   */
-  private void reverseSort(List<TextDocumentContentChangeEvent> contentChanges)
-  {
-    contentChanges.sort((left, right) -> {
-      if (right.getRange().getStart().getLine() == left.getRange().getStart().getLine())
-        {
-          return Integer.compare(right.getRange().getStart().getCharacter(), left.getRange().getStart().getCharacter());
-        }
-      else
-        {
-          return Integer.compare(right.getRange().getStart().getLine(), left.getRange().getStart().getLine());
-        }
-    });
-  }
-
-  private String applyContentChanges(String text, List<TextDocumentContentChangeEvent> contentChanges)
-  {
-    reverseSort(contentChanges);
-    return contentChanges.stream().reduce(text, (_text, contentChange) -> {
-      var start = ordinalIndexOf(_text, System.lineSeparator(), contentChange.getRange().getStart().getLine()) + 1
-        + contentChange.getRange().getStart().getCharacter();
-      var end = ordinalIndexOf(_text, System.lineSeparator(), contentChange.getRange().getEnd().getLine()) + 1
-        + contentChange.getRange().getEnd().getCharacter();
-      return _text.substring(0, start) + contentChange.getText() + _text.substring(end, _text.length());
-    }, String::concat);
-  }
 
   @Override
   public void didClose(DidCloseTextDocumentParams params)
