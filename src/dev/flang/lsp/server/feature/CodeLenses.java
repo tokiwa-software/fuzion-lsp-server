@@ -37,8 +37,8 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
-import dev.flang.lsp.server.Commands;
 import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.enums.Commands;
 
 public class CodeLenses
 {

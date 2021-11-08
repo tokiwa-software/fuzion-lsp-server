@@ -33,6 +33,7 @@ import org.eclipse.lsp4j.MarkupKind;
 
 import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.util.FuzionLexer;
 
 /**
  * on hover returns signature of call
@@ -43,8 +44,7 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var range = Converters.ToRange(params);
-
+    var range = FuzionLexer.rawTokenAt(params).toRange();
     var feature = FuzionHelpers.featureAt(params);
     if (feature.isEmpty())
       {

@@ -42,6 +42,8 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ShowDocumentParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import dev.flang.lsp.server.enums.Commands;
+
 public class FuzionWorkspaceService implements WorkspaceService
 {
 

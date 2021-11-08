@@ -28,6 +28,8 @@ package dev.flang.lsp.server;
 
 import org.eclipse.lsp4j.services.LanguageClient;
 
+import dev.flang.lsp.server.enums.Transport;
+
 public class Config
 {
 

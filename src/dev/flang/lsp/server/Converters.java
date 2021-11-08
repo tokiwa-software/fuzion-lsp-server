@@ -47,15 +47,6 @@ import dev.flang.lsp.server.util.FuzionLexer;
 public final class Converters
 {
 
-  public static Range ToRange(TextDocumentPositionParams params)
-  {
-    var tokenIdent = FuzionLexer.rawTokenAt(params);
-    var line = params.getPosition().getLine();
-    var characterStart = tokenIdent.start()._column - 1;
-    return new Range(new Position(line, characterStart),
-      new Position(line, characterStart + tokenIdent.text().length()));
-  }
-
   /**
    * @param feature
    * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>

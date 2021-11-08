@@ -37,6 +37,7 @@ import java.net.ServerSocket;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
+import dev.flang.lsp.server.enums.Transport;
 import dev.flang.util.Errors;
 
 /**

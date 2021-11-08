@@ -24,9 +24,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server;
+package dev.flang.lsp.server.enums;
 
-enum Transport
+public enum Transport
 {
   stdio, tcp
 }

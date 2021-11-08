@@ -63,6 +63,8 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 
+import dev.flang.lsp.server.enums.Transport;
+
 /**
  * utils which are independent of fuzion
  */

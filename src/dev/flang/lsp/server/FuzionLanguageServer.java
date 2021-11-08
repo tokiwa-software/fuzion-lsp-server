@@ -45,6 +45,8 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import dev.flang.lsp.server.enums.Commands;
+
 /**
  * does the initialization of language server features
  */
