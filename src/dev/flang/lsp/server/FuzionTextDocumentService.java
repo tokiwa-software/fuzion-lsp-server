@@ -27,9 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -78,26 +76,6 @@ import dev.flang.lsp.server.util.Debouncer;
 
 public class FuzionTextDocumentService implements TextDocumentService
 {
-  /**
-   * currently open text documents and their contents
-   */
-  private static final HashMap<URI, String> textDocuments = new HashMap<URI, String>();
-
-  public static Optional<String> getText(URI uri)
-  {
-    var text = textDocuments.get(uri);
-    return Optional.ofNullable(text);
-  }
-
-  public static void setText(URI uri, String text)
-  {
-    if (text == null)
-      {
-        Util.WriteStackTraceAndExit(1);
-      }
-    textDocuments.put(uri, text);
-  }
-
   @Override
   public void didOpen(DidOpenTextDocumentParams params)
   {
@@ -105,7 +83,7 @@ public class FuzionTextDocumentService implements TextDocumentService
     var uri = Util.toURI(textDocument.getUri());
     var text = textDocument.getText();
 
-    setText(uri, text);
+    SourceText.setText(uri, text);
     afterSetText(uri);
   }
 
@@ -117,11 +95,8 @@ public class FuzionTextDocumentService implements TextDocumentService
       @Override
       public void run()
       {
-        // NYI can this possibly deadlock?
-        synchronized (textDocuments)
-          {
-            Diagnostics.publishDiagnostics(uri);
-          }
+        // NYI make thread safe or okay to fail
+        Diagnostics.publishDiagnostics(uri);
       }
     }, 1000, TimeUnit.MILLISECONDS);
   }
@@ -143,13 +118,10 @@ public class FuzionTextDocumentService implements TextDocumentService
   public void didChange(DidChangeTextDocumentParams params)
   {
     var uri = Util.getUri(params.getTextDocument());
+    var text = SyncKindFull(params);
+    SourceText.setText(uri, text);
+    afterSetText(uri);
 
-    synchronized (textDocuments)
-      {
-        var text = SyncKindFull(params);
-        setText(uri, text);
-        afterSetText(uri);
-      }
   }
 
   private String SyncKindFull(DidChangeTextDocumentParams params)
@@ -163,7 +135,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   private String SyncKindIncremental(DidChangeTextDocumentParams params)
   {
     var uri = Util.getUri(params.getTextDocument());
-    var text = getText(uri).orElseThrow();
+    var text = SourceText.getText(uri).orElseThrow();
     var contentChanges = params.getContentChanges();
     return applyContentChanges(text, contentChanges);
   }

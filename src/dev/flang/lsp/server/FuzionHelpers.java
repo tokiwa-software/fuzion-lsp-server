@@ -28,8 +28,6 @@ package dev.flang.lsp.server;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,8 +42,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
@@ -72,6 +68,7 @@ import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.Log;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
@@ -384,7 +381,7 @@ public final class FuzionHelpers
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
             var start = FuzionLexer.endOfToken(uri, Bridge.ToPosition(position));
-            var line = FuzionHelpers.restOfLine(uri, start);
+            var line = SourceText.RestOfLine(LSP4jUtils.TextDocumentPositionParams(uri, start));
             // NYI maybe use inverse hashset here? i.e. state which tokens can
             // be skipped
             var token = FuzionLexer.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
@@ -398,16 +395,6 @@ public final class FuzionHelpers
       }
 
     return Memory.EndOfFeature.get(feature);
-  }
-
-  private static String restOfLine(URI uri, Position start)
-  {
-    var line = sourceText(uri)
-      .lines()
-      .skip(start.getLine())
-      .findFirst()
-      .orElseThrow();
-    return line.length() <= start.getCharacter() ? "": line.substring(start.getCharacter());
   }
 
   public static boolean IsAnonymousInnerFeature(AbstractFeature f)
@@ -487,69 +474,6 @@ public final class FuzionHelpers
   {
     return allOf(uri, Call.class)
       .filter(call -> call.calledFeature().equals(feature));
-  }
-
-  public static String sourceText(TextDocumentPositionParams params)
-  {
-    return sourceText(Util.getUri(params));
-  }
-
-  static String sourceText(URI uri)
-  {
-    var sourceText = FuzionTextDocumentService.getText(uri);
-    if (sourceText.isPresent())
-      {
-        return sourceText.get();
-      }
-    try
-      {
-        return String.join(System.lineSeparator(),
-          Files.readAllLines(Util.PathOf(uri), StandardCharsets.UTF_8));
-      }
-    catch (IOException e)
-      {
-        Util.WriteStackTraceAndExit(1, e);
-        return null;
-      }
-  }
-
-  /**
-   * extract range of source
-   * @param uri
-   * @param range
-   * @return
-   */
-  public static String stringAt(URI uri, Range range)
-  {
-    var lines = sourceText(uri)
-      .lines()
-      .skip(range.getStart().getLine())
-      .limit(range.getEnd().getLine() - range.getStart().getLine() + 1)
-      .toList();
-    if (lines.size() == 1)
-      {
-        return lines.get(0).substring(range.getStart().getCharacter(), range.getEnd().getCharacter());
-      }
-    var result = "";
-    for(int i = 0; i < lines.size(); i++)
-      {
-        // first line
-        if (i == 0)
-          {
-            result += lines.get(i).substring(range.getStart().getCharacter()) + System.lineSeparator();
-          }
-        // last line
-        else if (i + 1 == lines.size())
-          {
-            result += lines.get(i).substring(0, range.getEnd().getCharacter());
-          }
-        // middle line
-        else
-          {
-            result += lines.get(i) + System.lineSeparator();
-          }
-      }
-    return result;
   }
 
   private static Stream<Object> callsAndFeaturesAt(TextDocumentPositionParams params)
@@ -707,12 +631,6 @@ public final class FuzionHelpers
       .orElseThrow();
   }
 
-  private static String LineAt(TextDocumentPositionParams param)
-  {
-    return FuzionHelpers.sourceText(param)
-      .split("\n")[param.getPosition().getLine()];
-  }
-
   public static String CommentOf(AbstractFeature feature)
   {
     var textDocumentPosition = Bridge.ToTextDocumentPosition(feature.pos());
@@ -731,7 +649,7 @@ public final class FuzionHelpers
           }
         if (FuzionLexer.isCommentLine(textDocumentPosition))
           {
-            commentLines.add(LineAt(textDocumentPosition));
+            commentLines.add(SourceText.LineAt(textDocumentPosition));
           }
         else
           {

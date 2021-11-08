@@ -29,7 +29,7 @@ package test.flang.lsp.server;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.ASTWalker;
-import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.util.FuzionParser;
 
 public class ASTWalkerTest extends BaseTest
@@ -45,7 +45,7 @@ public class ASTWalkerTest extends BaseTest
     for s in ["one", "two", "three"] do
       say "$s maps to {x[s]}"
   """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
     ASTWalker.Traverse(FuzionParser.getMainFeature(uri1).get());
   }
 }

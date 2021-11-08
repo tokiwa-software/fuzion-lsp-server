@@ -365,7 +365,7 @@ public class Util
     return result;
   }
 
-  static void WriteStackTraceAndExit(int status)
+  public static void WriteStackTraceAndExit(int status)
   {
     var throwable = CurrentStacktrace();
     WriteStackTraceAndExit(status, throwable);
@@ -459,7 +459,7 @@ public class Util
     });
   }
 
-  static Path PathOf(URI uri)
+  public static Path PathOf(URI uri)
   {
     return Path.of(uri);
   }

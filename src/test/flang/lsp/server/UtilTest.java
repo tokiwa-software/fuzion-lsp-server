@@ -43,8 +43,8 @@ import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.MaxExecutionTimeExceededException;
+import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
@@ -59,7 +59,7 @@ public class UtilTest extends BaseTest
       ex is
         (1..10).
             """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
 
     final ArrayList<Object> results = new ArrayList<>(2);
     results.add(0, null);

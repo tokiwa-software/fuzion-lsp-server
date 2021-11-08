@@ -50,8 +50,8 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Memory;
+import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.ParserCacheRecord;
 import dev.flang.me.MiddleEnd;
@@ -104,7 +104,7 @@ public class FuzionParser
             return Optional.of(sourceText2ParserCache.firstEntry().getValue());
           }
 
-        var sourceText = FuzionTextDocumentService.getText(uri);
+        var sourceText = SourceText.getText(uri);
         if (sourceText.isEmpty())
           {
             return Optional.empty();
@@ -129,7 +129,7 @@ public class FuzionParser
   {
     synchronized (PARSER_LOCK)
       {
-        var sourceText = FuzionTextDocumentService.getText(uri).orElseThrow();
+        var sourceText = SourceText.getText(uri).orElseThrow();
         var result = parserCacheRecord(uri);
         sourceText2ParserCache.put(sourceText, result);
         // NYI get rid of this
@@ -215,7 +215,7 @@ public class FuzionParser
 
   private static File toTempFile(URI uri)
   {
-    File sourceFile = Util.writeToTempFile(FuzionTextDocumentService.getText(uri).orElseThrow());
+    File sourceFile = Util.writeToTempFile(SourceText.getText(uri).orElseThrow());
     try
       {
         tempFile2Uri.put(sourceFile.toPath().toString(), uri);

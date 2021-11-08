@@ -32,7 +32,7 @@ import java.util.HashSet;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
@@ -71,7 +71,7 @@ public class FuzionLexer
 
   public static TokenInfo rawTokenAt(TextDocumentPositionParams params)
   {
-    var sourceText = FuzionHelpers.sourceText(params);
+    var sourceText = SourceText.getText(params).get();
     return Util.WithTextInputStream(sourceText, () -> {
 
       var lexer = new Lexer(SourceFile.STDIN);
@@ -107,7 +107,7 @@ public class FuzionLexer
 
   public static TokenInfo tokenAt(TextDocumentPositionParams params)
   {
-    var sourceText = FuzionHelpers.sourceText(params);
+    var sourceText = SourceText.getText(params).get();
     return Util.WithTextInputStream(sourceText, () -> {
 
       var lexer = new Lexer(SourceFile.STDIN);
@@ -124,7 +124,7 @@ public class FuzionLexer
 
   public static boolean isCommentLine(TextDocumentPositionParams params)
   {
-    var sourceText = FuzionHelpers.sourceText(params);
+    var sourceText = SourceText.getText(params).get();
     return Util.WithTextInputStream(sourceText, () -> {
       var lexer = new Lexer(SourceFile.STDIN);
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));

@@ -42,12 +42,12 @@ import org.junit.jupiter.api.Test;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.parser.Lexer.Token;
 
 class FuzionHelperTest extends BaseTest
@@ -125,7 +125,7 @@ class FuzionHelperTest extends BaseTest
   void NextToken_a()
   {
 
-    FuzionTextDocumentService.setText(uri1, ManOrBoy);
+    SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
       FuzionLexer.rawTokenAt(LSP4jUtils.TextDocumentPositionParams(uri1, 2, 2));
@@ -137,7 +137,7 @@ class FuzionHelperTest extends BaseTest
   void NextToken_i32()
   {
 
-    FuzionTextDocumentService.setText(uri1, ManOrBoy);
+    SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
       FuzionLexer.rawTokenAt(LSP4jUtils.TextDocumentPositionParams(uri1, 6, 7));
@@ -148,7 +148,7 @@ class FuzionHelperTest extends BaseTest
   @Test
   void EndOfToken_man_or_boy()
   {
-    FuzionTextDocumentService.setText(uri1, ManOrBoy);
+    SourceText.setText(uri1, ManOrBoy);
 
     var endOfToken = FuzionLexer.endOfToken(uri1, new Position(0, 0));
     assertEquals(10, endOfToken.getCharacter());
@@ -159,7 +159,7 @@ class FuzionHelperTest extends BaseTest
   @Test
   void EndOfToken_i32()
   {
-    FuzionTextDocumentService.setText(uri1, ManOrBoy);
+    SourceText.setText(uri1, ManOrBoy);
 
     var endOfToken = FuzionLexer.endOfToken(uri1, new Position(2, 6));
     assertEquals(9, endOfToken.getCharacter());
@@ -169,7 +169,7 @@ class FuzionHelperTest extends BaseTest
   @Test
   void EndOfToken_opening_brace()
   {
-    FuzionTextDocumentService.setText(uri1, ManOrBoy);
+    SourceText.setText(uri1, ManOrBoy);
 
     var endOfToken = FuzionLexer.endOfToken(uri1, new Position(2, 3));
     assertEquals(4, endOfToken.getCharacter());
@@ -180,8 +180,8 @@ class FuzionHelperTest extends BaseTest
   void StringAt_multi_line()
   {
 
-    FuzionTextDocumentService.setText(uri1, LoremIpsum);
-    var text = FuzionHelpers.stringAt(uri1, new Range(new Position(1, 3), new Position(2, 4)));
+    SourceText.setText(uri1, LoremIpsum);
+    var text = SourceText.getText(uri1, new Range(new Position(1, 3), new Position(2, 4)));
     assertEquals(
       "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
         + System.lineSeparator() + "Duis",
@@ -192,8 +192,8 @@ class FuzionHelperTest extends BaseTest
   void StringAt_single_line()
   {
 
-    FuzionTextDocumentService.setText(uri1, LoremIpsum);
-    var text = FuzionHelpers.stringAt(uri1, new Range(new Position(1, 3), new Position(1, 23)));
+    SourceText.setText(uri1, LoremIpsum);
+    var text = SourceText.getText(uri1, new Range(new Position(1, 3), new Position(1, 23)));
     assertEquals("enim ad minim veniam", text);
   }
 
@@ -209,8 +209,8 @@ class FuzionHelperTest extends BaseTest
   @Test
   void RunMultiple() throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
-    FuzionTextDocumentService.setText(uri1, HelloWorld);
-    FuzionTextDocumentService.setText(uri2, PythagoreanTriple);
+    SourceText.setText(uri1, HelloWorld);
+    SourceText.setText(uri2, PythagoreanTriple);
 
     FuzionHelpers.Run(uri1);
     FuzionHelpers.Run(uri2);
@@ -223,9 +223,9 @@ class FuzionHelperTest extends BaseTest
   void RunSuccessfulAfterRunWithTimeoutException()
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
-    FuzionTextDocumentService.setText(uri1, ManOrBoy);
-    FuzionTextDocumentService.setText(uri2, HelloWorld);
-    FuzionTextDocumentService.setText(uri3, PythagoreanTriple);
+    SourceText.setText(uri1, ManOrBoy);
+    SourceText.setText(uri2, HelloWorld);
+    SourceText.setText(uri3, PythagoreanTriple);
 
     // NYI this will not throw once fuzion gets faster, how to test properly?
     assertThrows(TimeoutException.class, () -> FuzionHelpers.Run(uri1, 100));
@@ -237,8 +237,8 @@ class FuzionHelperTest extends BaseTest
   @Test
   void Features()
   {
-    FuzionTextDocumentService.setText(uri1, HelloWorld);
-    FuzionTextDocumentService.setText(uri2, ManOrBoy);
+    SourceText.setText(uri1, HelloWorld);
+    SourceText.setText(uri2, ManOrBoy);
     assertEquals(1, FuzionHelpers.Features(uri1).count());
     assertEquals(13, FuzionHelpers.Features(uri2).count());
   }
@@ -255,7 +255,7 @@ class FuzionHelperTest extends BaseTest
         innerFeat is
           say "nothing"
       """;
-    FuzionTextDocumentService.setText(uri1, CommentExample);
+    SourceText.setText(uri1, CommentExample);
     var innerFeature = FuzionParser
       .DeclaredFeatures(FuzionParser.getMainFeature(uri1).get())
       .findFirst()
@@ -271,7 +271,7 @@ class FuzionHelperTest extends BaseTest
     var CommentExample = """
       myFeat is
       """;
-    FuzionTextDocumentService.setText(uri1, CommentExample);
+    SourceText.setText(uri1, CommentExample);
     var yak = FuzionParser
       .DeclaredFeatures(FuzionParser.universe(uri1))
       .filter(f -> f.featureName().baseName().endsWith("yak"))
@@ -289,11 +289,11 @@ class FuzionHelperTest extends BaseTest
     var CommentExample = """
       myFeat is
       """;
-    FuzionTextDocumentService.setText(uri1, CommentExample);
+    SourceText.setText(uri1, CommentExample);
     var myFeatIs = FuzionParser.getMainFeature(uri1)
       .get();
-    var sourceText = FuzionHelpers.sourceText(Bridge.ToTextDocumentPosition(myFeatIs.pos()));
-    assertEquals(true, sourceText.contains("myFeat is"));
+    var sourceText = SourceText.getText(Bridge.ToTextDocumentPosition(myFeatIs.pos()));
+    assertEquals(true, sourceText.get().contains("myFeat is"));
   }
 
   @Test
@@ -302,14 +302,14 @@ class FuzionHelperTest extends BaseTest
     var CommentExample = """
       myFeat is
       """;
-    FuzionTextDocumentService.setText(uri1, CommentExample);
+    SourceText.setText(uri1, CommentExample);
     var yak = FuzionParser
       .DeclaredFeatures(FuzionParser.universe(uri1))
       .filter(f -> f.featureName().baseName().endsWith("yak"))
       .findFirst()
       .get();
-    var sourceText = FuzionHelpers.sourceText(Bridge.ToTextDocumentPosition(yak.pos()));
-    assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
+    var sourceText = SourceText.getText(Bridge.ToTextDocumentPosition(yak.pos()));
+    assertEquals(true, sourceText.get().contains("yak(s ref Object) => stdout.print(s)"));
   }
 
   @Test
@@ -323,7 +323,7 @@ class FuzionHelperTest extends BaseTest
         print(x, y myi32, z i32) =>
           say "$x"
       """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
 
     var feature = FuzionHelpers.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 5, 4)).get();
     assertEquals("say", feature.featureName().baseName());
@@ -343,7 +343,7 @@ class FuzionHelperTest extends BaseTest
         for s in ["one", "two", "three"] do
           say "$s"
                 """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
     var feature = FuzionHelpers.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 2, 4))
       .get();
     assertEquals("say", feature.featureName().baseName());
@@ -356,7 +356,7 @@ class FuzionHelperTest extends BaseTest
       ex is
         (1..10).forAll(num -> say num)
                   """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
 
     assertEquals("infix ..", FuzionHelpers.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 4))
       .get()
@@ -391,7 +391,7 @@ class FuzionHelperTest extends BaseTest
       ex7 is
         (1..10).forAll()
               """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
     var endOfFeature = FuzionHelpers.endOfFeature(FuzionParser.getMainFeature(uri1).get());
     assertEquals(2, endOfFeature._line);
     assertEquals(19, endOfFeature._column);
@@ -404,7 +404,7 @@ class FuzionHelperTest extends BaseTest
       ex7 is
         (1..10).myCall()
               """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
     var call = FuzionHelpers.callAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 17))
       .get();
     assertEquals("myCall", call.name);
@@ -415,7 +415,7 @@ class FuzionHelperTest extends BaseTest
   {
     var sourceText = """
       """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
     var f = FuzionParser.getMainFeature(uri1);
     assertEquals("#universe", f.get().qualifiedName());
   }
@@ -431,7 +431,7 @@ class FuzionHelperTest extends BaseTest
           childFeat2 is
             grandChild3 is
       """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
     var f = FuzionParser.getMainFeature(uri1);
     var df = FuzionParser.DeclaredFeatures(f.get()).collect(Collectors.toList());
     assertEquals(2, df.size());
@@ -441,7 +441,7 @@ class FuzionHelperTest extends BaseTest
   @Test
   void allOf()
   {
-    FuzionTextDocumentService.setText(uri1, HelloWorld);
+    SourceText.setText(uri1, HelloWorld);
     assertEquals("HelloWorld", FuzionHelpers
       .allOf(uri1, AbstractFeature.class)
       .filter(FuzionHelpers.IsFeatureInFile(uri1))
@@ -462,7 +462,7 @@ class FuzionHelperTest extends BaseTest
   @Test
   void declaredFeaturesUniverse()
   {
-    FuzionTextDocumentService.setText(uri1, HelloWorld);
+    SourceText.setText(uri1, HelloWorld);
     assertTrue(FuzionParser.DeclaredFeatures(FuzionParser.universe(uri1)).count() > 10);
   }
 
@@ -473,7 +473,7 @@ class FuzionHelperTest extends BaseTest
       ex is
         (1..10).
             """;
-    FuzionTextDocumentService.setText(uri1, sourceText);
+    SourceText.setText(uri1, sourceText);
     var ex = FuzionParser.getMainFeature(uri1).get();
     var ast = FuzionHelpers.AST(ex);
     assertTrue(ast.contains("Call:hasInterval"));

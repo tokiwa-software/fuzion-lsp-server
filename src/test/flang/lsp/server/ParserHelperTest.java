@@ -32,7 +32,7 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.util.Errors;
@@ -44,7 +44,7 @@ public class ParserHelperTest extends BaseTest
   @Test
   void getMainFeatureTest()
   {
-    FuzionTextDocumentService.setText(uri1, """
+    SourceText.setText(uri1, """
       HelloWorld is
         say "Hello World!"
                   """);
@@ -58,7 +58,7 @@ public class ParserHelperTest extends BaseTest
   @Test
   void getMainFeatureBrokenSourceCodeTest()
   {
-    FuzionTextDocumentService.setText(uri1, """
+    SourceText.setText(uri1, """
       factors1 is
 
         (1..10).forAll(x -> say "sadf")
