@@ -250,7 +250,7 @@ public class FuzionParser
 
   public static AbstractFeature universe(TextDocumentPositionParams params)
   {
-    return universe(Util.getUri(params));
+    return universe(LSP4jUtils.getUri(params));
   }
 
   public static Stream<AbstractFeature> AllDeclaredFeatures(AbstractFeature f)

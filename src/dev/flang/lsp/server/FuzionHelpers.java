@@ -68,6 +68,7 @@ import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.Log;
 import dev.flang.util.SourcePosition;
 
@@ -153,7 +154,7 @@ public final class FuzionHelpers
 
     var astItems = ASTWalker.Traverse(baseFeature.get())
       .filter(IsItemNotBuiltIn(params))
-      .filter(IsItemInFile(Util.getUri(params)))
+      .filter(IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(IsItemOnSameLineAsCursor(params))
       .filter(IsItemInScope(params))
       .map(entry -> entry.getKey())
@@ -167,7 +168,7 @@ public final class FuzionHelpers
   {
     return (entry) -> {
       var astItem = entry.getKey();
-      var cursorPosition = Util.getPosition(params);
+      var cursorPosition = LSP4jUtils.getPosition(params);
       var sourcePositionOption = FuzionHelpers.sourcePosition(astItem);
       if (sourcePositionOption.isEmpty())
         {
@@ -212,7 +213,7 @@ public final class FuzionHelpers
     return (entry) -> {
       var astItem = entry.getKey();
       var outer = entry.getValue();
-      var cursorPosition = Util.getPosition(params);
+      var cursorPosition = LSP4jUtils.getPosition(params);
 
       var sourcePositionOption = FuzionHelpers.sourcePosition(astItem);
       if (sourcePositionOption.isEmpty())
@@ -221,10 +222,10 @@ public final class FuzionHelpers
         }
 
       boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
-        || Util.ComparePosition(cursorPosition,
+        || LSP4jUtils.ComparePosition(cursorPosition,
           Bridge.ToPosition(FuzionParser.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
-        Util.ComparePosition(cursorPosition, Bridge.ToPosition(sourcePositionOption.get())) >= 0;
+        LSP4jUtils.ComparePosition(cursorPosition, Bridge.ToPosition(sourcePositionOption.get())) >= 0;
 
       return ItemPositionIsBeforeOrAtCursorPosition && BuiltInOrEndAfterCursor;
     };
@@ -237,7 +238,7 @@ public final class FuzionHelpers
    */
   private static Optional<AbstractFeature> baseFeature(TextDocumentIdentifier params)
   {
-    return baseFeature(Util.getUri(params));
+    return baseFeature(LSP4jUtils.getUri(params));
   }
 
   /**
@@ -313,7 +314,7 @@ public final class FuzionHelpers
       }
 
     return ASTWalker.Traverse(baseFeature.get())
-      .filter(IsItemInFile(Util.getUri(params)))
+      .filter(IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof Call)
       .map(entry -> new SimpleEntry<Call, AbstractFeature>((Call) entry.getKey(), entry.getValue()))
       .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
@@ -350,12 +351,12 @@ public final class FuzionHelpers
 
   private static boolean PositionIsAfterOrAtCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
   {
-    return Util.ComparePosition(Util.getPosition(params), Bridge.ToPosition(sourcePosition)) <= 0;
+    return LSP4jUtils.ComparePosition(LSP4jUtils.getPosition(params), Bridge.ToPosition(sourcePosition)) <= 0;
   }
 
   private static boolean PositionIsBeforeCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
   {
-    return Util.ComparePosition(Util.getPosition(params), Bridge.ToPosition(sourcePosition)) > 0;
+    return LSP4jUtils.ComparePosition(LSP4jUtils.getPosition(params), Bridge.ToPosition(sourcePosition)) > 0;
   }
 
   public static boolean IsAnonymousInnerFeature(AbstractFeature f)
@@ -492,7 +493,7 @@ public final class FuzionHelpers
 
   public static Stream<AbstractFeature> featuresIncludingInheritedFeatures(TextDocumentPositionParams params)
   {
-    var mainFeature = FuzionParser.getMainFeature(Util.getUri(params));
+    var mainFeature = FuzionParser.getMainFeature(LSP4jUtils.getUri(params));
     if (mainFeature.isEmpty())
       {
         return Stream.empty();

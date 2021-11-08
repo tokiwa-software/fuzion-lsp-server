@@ -57,9 +57,6 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 
@@ -337,32 +334,6 @@ public class Util
   public static <T> HashSet<T> HashSetOf(T... values)
   {
     return Stream.of(values).collect(Collectors.toCollection(HashSet::new));
-  }
-
-  public static URI getUri(TextDocumentPositionParams params)
-  {
-    return getUri(params.getTextDocument());
-  }
-
-  public static URI getUri(TextDocumentIdentifier params)
-  {
-    return toURI(params.getUri());
-  }
-
-  public static Position getPosition(TextDocumentPositionParams params)
-  {
-    return params.getPosition();
-  }
-
-  public static int ComparePosition(Position position1, Position position2)
-  {
-    var result = position1.getLine() < position2.getLine() ? -1: position1.getLine() > position2.getLine() ? +1: 0;
-    if (result == 0)
-      {
-        result = position1.getCharacter() < position2.getCharacter() ? -1
-                          : position1.getCharacter() > position2.getCharacter() ? +1: 0;
-      }
-    return result;
   }
 
   public static void WriteStackTraceAndExit(int status)

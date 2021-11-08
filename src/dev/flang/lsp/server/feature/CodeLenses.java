@@ -37,14 +37,14 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
-import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.enums.Commands;
+import dev.flang.lsp.server.util.LSP4jUtils;
 
 public class CodeLenses
 {
   public static List<CodeLens> getCodeLenses(CodeLensParams params)
   {
-    var uri = Util.getUri(params.getTextDocument());
+    var uri = LSP4jUtils.getUri(params.getTextDocument());
     return Stream.of(codeLensEvaluateFile(uri), codeLensShowSyntaxTree(params))
       .collect(Collectors.toList());
   }

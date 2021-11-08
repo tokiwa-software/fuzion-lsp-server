@@ -36,6 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import dev.flang.lsp.server.util.LSP4jUtils;
+
 public class SourceText
 {
   /**
@@ -64,7 +66,7 @@ public class SourceText
 
   public static Optional<String> getText(TextDocumentPositionParams params)
   {
-    return getText(Util.getUri(params));
+    return getText(LSP4jUtils.getUri(params));
   }
 
   private static Optional<String> ReadFromDisk(URI uri)

@@ -33,14 +33,14 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 
 import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.util.LSP4jUtils;
 
 public class SyncIncremental
 {
   // NYI this is broken (on windows)
   public String SyncKindIncremental(DidChangeTextDocumentParams params)
   {
-    var uri = Util.getUri(params.getTextDocument());
+    var uri = LSP4jUtils.getUri(params.getTextDocument());
     var text = SourceText.getText(uri).orElseThrow();
     var contentChanges = params.getContentChanges();
     return applyContentChanges(text, contentChanges);

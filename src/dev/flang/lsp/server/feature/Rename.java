@@ -81,7 +81,7 @@ public class Rename
       FuzionLexer.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
     // NYI rename feature used like this "fun myBaseName"
-    Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature.get(), featureIdentifier);
+    Stream<SourcePosition> renamePositions = getRenamePositions(LSP4jUtils.getUri(params), feature.get(), featureIdentifier);
 
     var changes = renamePositions
       .map(sourcePosition -> Bridge.ToLocation(sourcePosition))

@@ -72,6 +72,7 @@ import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Rename;
 import dev.flang.lsp.server.feature.SignatureHelper;
 import dev.flang.lsp.server.util.Debouncer;
+import dev.flang.lsp.server.util.LSP4jUtils;
 
 public class FuzionTextDocumentService implements TextDocumentService
 {
@@ -103,7 +104,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public void didChange(DidChangeTextDocumentParams params)
   {
-    var uri = Util.getUri(params.getTextDocument());
+    var uri = LSP4jUtils.getUri(params.getTextDocument());
     var text = SyncKindFull(params);
     SourceText.setText(uri, text);
     afterSetText(uri);

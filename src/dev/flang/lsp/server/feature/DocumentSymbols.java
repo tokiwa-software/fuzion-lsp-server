@@ -36,15 +36,15 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.FuzionHelpers;
-import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.LSP4jUtils;
 
 public class DocumentSymbols
 {
   public static List<Either<SymbolInformation, DocumentSymbol>> getDocumentSymbols(DocumentSymbolParams params)
   {
-    var baseFeature = FuzionHelpers.baseFeature(Util.getUri(params.getTextDocument()));
+    var baseFeature = FuzionHelpers.baseFeature(LSP4jUtils.getUri(params.getTextDocument()));
     if (baseFeature.isEmpty())
       {
         return List.of();
