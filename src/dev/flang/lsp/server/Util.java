@@ -393,7 +393,7 @@ public class Util
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
     th.printStackTrace(pw);
-    return sw.toString();
+    return th.getMessage() + System.lineSeparator() + sw.toString();
   }
 
   public static String WriteStackTrace(Throwable e)
@@ -455,11 +455,6 @@ public class Util
           return null;
         }
     });
-  }
-
-  private static String String(Throwable e)
-  {
-    return e.getMessage() + System.lineSeparator() + toString(e);
   }
 
   static Path PathOf(URI uri)
