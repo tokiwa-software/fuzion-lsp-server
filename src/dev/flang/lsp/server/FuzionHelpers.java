@@ -66,6 +66,8 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.Bridge;
+import dev.flang.lsp.server.util.Concurrency;
+import dev.flang.lsp.server.util.ErrorHandling;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.LSP4jUtils;
@@ -133,7 +135,7 @@ public final class FuzionHelpers
       }
 
     System.err.println(entry.getClass());
-    Util.WriteStackTraceAndExit(1);
+    ErrorHandling.WriteStackTraceAndExit(1);
     return Optional.empty();
   }
 
@@ -521,7 +523,7 @@ public final class FuzionHelpers
   public static MessageParams Run(URI uri, int timeout)
     throws IOException, InterruptedException, ExecutionException, TimeoutException
   {
-    var result = Util.WithCapturedStdOutErr(() -> {
+    var result = Concurrency.WithCapturedStdOutErrSync(() -> {
       var interpreter = new Interpreter(FuzionParser.FUIR(uri));
       interpreter.run();
     }, timeout);

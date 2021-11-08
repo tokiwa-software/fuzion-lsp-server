@@ -142,8 +142,8 @@ public class FuzionParser
 
   private static ParserCacheRecord parserCacheRecord(URI uri)
   {
-    return Util.WithRedirectedStdOut(() -> {
-      return Util.WithRedirectedStdErr(() -> {
+    return IO.WithRedirectedStdOut(() -> {
+      return IO.WithRedirectedStdErr(() -> {
         // NYI remove once we can create MIR multiple times
         Errors.clear();
         Types.clear();
@@ -211,14 +211,14 @@ public class FuzionParser
 
   private static File toTempFile(URI uri)
   {
-    File sourceFile = Util.writeToTempFile(SourceText.getText(uri).orElseThrow());
+    File sourceFile = IO.writeToTempFile(SourceText.getText(uri).orElseThrow());
     try
       {
         tempFile2Uri.put(sourceFile.toPath().toString(), uri);
       }
     catch (Exception e)
       {
-        Util.WriteStackTraceAndExit(1, e);
+        ErrorHandling.WriteStackTraceAndExit(1, e);
       }
     return sourceFile;
   }

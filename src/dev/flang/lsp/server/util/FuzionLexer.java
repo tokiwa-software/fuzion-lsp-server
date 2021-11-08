@@ -45,7 +45,7 @@ public class FuzionLexer
 
   public static Boolean IsValidIdentifier(String str)
   {
-    var isIdentifier = Util.WithTextInputStream(str, () -> {
+    var isIdentifier = IO.WithTextInputStream(str, () -> {
       var lexer = new Lexer(SourceFile.STDIN);
       return lexer.current() == Token.t_ident;
     });
@@ -58,7 +58,7 @@ public class FuzionLexer
    */
   public static TokenInfo nextTokenOfType(String str, HashSet<Token> tokens)
   {
-    return Util.WithTextInputStream(str, () -> {
+    return IO.WithTextInputStream(str, () -> {
       var lexer = new Lexer(SourceFile.STDIN);
 
       while (lexer.current() != Token.t_eof && !tokens.contains(lexer.current()))
@@ -72,7 +72,7 @@ public class FuzionLexer
   public static TokenInfo rawTokenAt(TextDocumentPositionParams params)
   {
     var sourceText = SourceText.getText(params).get();
-    return Util.WithTextInputStream(sourceText, () -> {
+    return IO.WithTextInputStream(sourceText, () -> {
 
       var lexer = new Lexer(SourceFile.STDIN);
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
@@ -108,7 +108,7 @@ public class FuzionLexer
   public static TokenInfo tokenAt(TextDocumentPositionParams params)
   {
     var sourceText = SourceText.getText(params).get();
-    return Util.WithTextInputStream(sourceText, () -> {
+    return IO.WithTextInputStream(sourceText, () -> {
 
       var lexer = new Lexer(SourceFile.STDIN);
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
@@ -125,7 +125,7 @@ public class FuzionLexer
   public static boolean isCommentLine(TextDocumentPositionParams params)
   {
     var sourceText = SourceText.getText(params).get();
-    return Util.WithTextInputStream(sourceText, () -> {
+    return IO.WithTextInputStream(sourceText, () -> {
       var lexer = new Lexer(SourceFile.STDIN);
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
       lexer.nextRaw();

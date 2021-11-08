@@ -36,6 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import dev.flang.lsp.server.util.ErrorHandling;
+import dev.flang.lsp.server.util.IO;
 import dev.flang.lsp.server.util.LSP4jUtils;
 
 public class SourceText
@@ -49,7 +51,7 @@ public class SourceText
   {
     if (text == null)
       {
-        Util.WriteStackTraceAndExit(1);
+        ErrorHandling.WriteStackTraceAndExit(1);
       }
     textDocuments.put(uri, text);
   }
@@ -71,7 +73,7 @@ public class SourceText
 
   private static Optional<String> ReadFromDisk(URI uri)
   {
-    var path = Util.PathOf(uri);
+    var path = IO.PathOf(uri);
     try
       {
         var lines = Files.readAllLines(path, StandardCharsets.UTF_8);

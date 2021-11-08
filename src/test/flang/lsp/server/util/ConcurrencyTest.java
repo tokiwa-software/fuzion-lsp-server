@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server;
+package test.flang.lsp.server.util;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -43,13 +43,15 @@ import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.MaxExecutionTimeExceededException;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.feature.Completion;
+import dev.flang.lsp.server.util.Concurrency;
 import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.lsp.server.util.concurrent.MaxExecutionTimeExceededException;
+import test.flang.lsp.server.BaseTest;
 
-public class UtilTest extends BaseTest
+public class ConcurrencyTest extends BaseTest
 {
 
   @Test
@@ -71,7 +73,8 @@ public class UtilTest extends BaseTest
           {
             var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
               new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
-            return Util.RunWithPeriodicCancelCheck(cancelChecker, () -> Completion.getCompletions(completionParams),
+            return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
+              () -> Completion.getCompletions(completionParams),
               5, 10);
           }
         catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
@@ -95,10 +98,11 @@ public class UtilTest extends BaseTest
           {
             var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
               new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
-            return Util.RunWithPeriodicCancelCheck(cancelChecker, () -> Completion.getCompletions(completionParams),
+            return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
+              () -> Completion.getCompletions(completionParams),
               5, 5000);
           }
-        catch (InterruptedException | ExecutionException | TimeoutException| MaxExecutionTimeExceededException e)
+        catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
           {
             return null;
           }

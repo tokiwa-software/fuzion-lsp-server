@@ -44,6 +44,9 @@ import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.enums.Commands;
+import dev.flang.lsp.server.util.Concurrency;
+import dev.flang.lsp.server.util.ErrorHandling;
+import dev.flang.lsp.server.util.IO;
 
 public class Command {
   public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
@@ -53,14 +56,14 @@ public class Command {
     switch (Commands.valueOf(params.getCommand()))
       {
         case showSyntaxTree :
-          Util.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
-          return Util.Compute(() -> null);
+          Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
+          return Concurrency.Compute(() -> null);
         case evaluate :
-          Util.RunInBackground(() -> evaluate(Util.toURI(uri)));
-          return Util.Compute(() -> null);
+          Concurrency.RunInBackground(() -> evaluate(Util.toURI(uri)));
+          return Concurrency.Compute(() -> null);
         default:
-          Util.WriteStackTrace(new Exception("not implemented"));
-          return Util.Compute(() -> null);
+          ErrorHandling.WriteStackTrace(new Exception("not implemented"));
+          return Concurrency.Compute(() -> null);
       }
   }
 
@@ -87,10 +90,10 @@ public class Command {
     var feature = FuzionHelpers.baseFeature(uri);
     if (feature.isEmpty())
       {
-        Util.Compute(() -> null);
+        Concurrency.Compute(() -> null);
       }
     var ast = FuzionHelpers.AST(feature.get());
-    var file = Util.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
+    var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }
 

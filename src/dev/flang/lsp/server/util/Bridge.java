@@ -37,7 +37,6 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.Util;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -69,7 +68,7 @@ public class Bridge {
 
   public static SourceFile ToSourceFile(URI uri)
   {
-    return Util.WithRedirectedStdErr(() -> {
+    return IO.WithRedirectedStdErr(() -> {
       var filePath = Path.of(uri);
       if (filePath.equals(SourceFile.STDIN))
         {

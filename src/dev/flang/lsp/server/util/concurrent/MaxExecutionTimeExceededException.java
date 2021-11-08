@@ -1,4 +1,4 @@
-package dev.flang.lsp.server;
+package dev.flang.lsp.server.util.concurrent;
 
 public class MaxExecutionTimeExceededException extends Exception
 {

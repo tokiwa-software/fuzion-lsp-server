@@ -26,18 +26,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.ServerSocket;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.lsp.server.enums.Transport;
+import dev.flang.lsp.server.util.ErrorHandling;
 import dev.flang.util.Errors;
 
 /**
@@ -60,7 +61,7 @@ public class Main
       @Override
       public void uncaughtException(Thread arg0, Throwable arg1)
       {
-        Util.WriteStackTrace(arg1);
+        ErrorHandling.WriteStackTrace(arg1);
       }
     });
 
@@ -85,7 +86,7 @@ public class Main
               return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
             }
         default:
-          Util.WriteStackTraceAndExit(1);
+          ErrorHandling.WriteStackTraceAndExit(1);
           return null;
       }
   }
@@ -99,7 +100,7 @@ public class Main
       .setInput(in)
       .setOutput(out)
       .setExceptionHandler((e) -> {
-        Util.WriteStackTrace(e);
+        ErrorHandling.WriteStackTrace(e);
         return null;
       })
       .create();
