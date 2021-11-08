@@ -38,8 +38,8 @@ import org.eclipse.lsp4j.SignatureInformation;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.FuzionParser;
 
 public class SignatureHelper
@@ -74,7 +74,7 @@ public class SignatureHelper
   private static SignatureInformation SignatureInformation(AbstractFeature feature)
   {
     String description = FuzionHelpers.CommentOf(feature);
-    return new SignatureInformation(Converters.ToLabel(feature), description,
+    return new SignatureInformation(ASTItem.ToLabel(feature), description,
       ParameterInfo(feature));
   }
 

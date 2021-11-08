@@ -20,38 +20,33 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class SignatureHelperTest
+ * Source of class LSP4jUtils
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server.feature;
+package dev.flang.lsp.server.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.net.URI;
 
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.SignatureHelpParams;
-import org.junit.jupiter.api.Test;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.lsp.server.FuzionTextDocumentService;
-import dev.flang.lsp.server.feature.SignatureHelper;
-import dev.flang.lsp.server.util.LSP4jUtils;
-import test.flang.lsp.server.BaseTest;
-
-public class SignatureHelperTest extends BaseTest
+public final class LSP4jUtils
 {
-  private static final String HelloWorld = """
-      HelloWorld is
-        say "
-    """;
-
-  @Test
-  void getSignatureHelp()
+  public static TextDocumentIdentifier TextDocumentIdentifier(URI uri)
   {
-    FuzionTextDocumentService.setText(uri1, HelloWorld);
-    var signatureHelp =
-      SignatureHelper.getSignatureHelp(new SignatureHelpParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 5)));
-    assertEquals("say() => unit", signatureHelp.getSignatures().get(0).getLabel());
-    assertEquals("say(s Object) => unit", signatureHelp.getSignatures().get(1).getLabel());
+    return new TextDocumentIdentifier(uri.toString());
+  }
+
+  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, Position position)
+  {
+    return new TextDocumentPositionParams(TextDocumentIdentifier(uri), position);
+  }
+
+  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, int line, int character)
+  {
+    return TextDocumentPositionParams(uri, new Position(line, character));
   }
 
 }

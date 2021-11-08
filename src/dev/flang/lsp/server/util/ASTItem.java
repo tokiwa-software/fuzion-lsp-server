@@ -20,49 +20,22 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Converters
+ * Source of class ASTItem
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server;
+package dev.flang.lsp.server.util;
 
-import java.net.URI;
 import java.util.stream.Collectors;
-
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
 import dev.flang.ast.If;
-import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.FuzionHelpers;
 
-/**
- * collection of static methods converting dev.flang objects to lsp4j
- */
-public final class Converters
-{
-
-  /**
-   * @param feature
-   * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
-   */
-  public static String ToLabel(AbstractFeature feature)
-  {
-    if (!FuzionHelpers.IsRoutineOrRoutineDef(feature))
-      {
-        return feature.featureName().baseName();
-      }
-    var arguments = "(" + feature.arguments()
-      .stream()
-      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
-      .collect(Collectors.joining(", ")) + ")";
-    return feature.featureName().baseName() + feature.generics() + arguments + " => " + feature.resultType();
-  }
+public class ASTItem {
 
   public static String ToLabel(Object item)
   {
@@ -82,7 +55,7 @@ public final class Converters
           }
         if (item instanceof AbstractFeature af)
           {
-            return ToLabel(af);
+            return ASTItem.ToLabel(af);
           }
         return item.toString();
       }
@@ -92,19 +65,21 @@ public final class Converters
       }
   }
 
-  public static TextDocumentIdentifier TextDocumentIdentifier(URI uri)
+  /**
+   * @param feature
+   * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
+   */
+  public static String ToLabel(AbstractFeature feature)
   {
-    return new TextDocumentIdentifier(uri.toString());
-  }
-
-  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, Position position)
-  {
-    return new TextDocumentPositionParams(TextDocumentIdentifier(uri), position);
-  }
-
-  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, int line, int character)
-  {
-    return TextDocumentPositionParams(uri, new Position(line, character));
+    if (!FuzionHelpers.IsRoutineOrRoutineDef(feature))
+      {
+        return feature.featureName().baseName();
+      }
+    var arguments = "(" + feature.arguments()
+      .stream()
+      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
+      .collect(Collectors.joining(", ")) + ")";
+    return feature.featureName().baseName() + feature.generics() + arguments + " => " + feature.resultType();
   }
 
 }

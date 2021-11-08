@@ -32,7 +32,6 @@ import java.util.HashSet;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
@@ -144,7 +143,7 @@ public class FuzionLexer
 
   public static Position endOfToken(URI uri, Position start)
   {
-    var textDocumentPosition = Converters.TextDocumentPositionParams(uri, start);
+    var textDocumentPosition = LSP4jUtils.TextDocumentPositionParams(uri, start);
     var token = rawTokenAt(textDocumentPosition);
     return Bridge.ToPosition(token.end());
   }

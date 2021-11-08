@@ -68,6 +68,7 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
@@ -772,7 +773,7 @@ public final class FuzionHelpers
           }
         return a + System.lineSeparator()
           + " ".repeat(indent * 2) + position.get()._line + ":" + position.get()._column + ":"
-          + item.getClass().getSimpleName() + ":" + Converters.ToLabel(item);
+          + item.getClass().getSimpleName() + ":" + ASTItem.ToLabel(item);
       }, String::concat);
     return ast;
   }

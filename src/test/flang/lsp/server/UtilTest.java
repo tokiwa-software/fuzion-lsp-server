@@ -43,11 +43,11 @@ import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.MaxExecutionTimeExceededException;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.feature.Completion;
+import dev.flang.lsp.server.util.LSP4jUtils;
 
 public class UtilTest extends BaseTest
 {
@@ -69,7 +69,7 @@ public class UtilTest extends BaseTest
       var one = CompletableFutures.computeAsync(cancelChecker -> {
         try
           {
-            var completionParams = new CompletionParams(Converters.TextDocumentIdentifier(uri1), new Position(1, 11),
+            var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
               new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
             return Util.RunWithPeriodicCancelCheck(cancelChecker, () -> Completion.getCompletions(completionParams),
               5, 10);
@@ -93,7 +93,7 @@ public class UtilTest extends BaseTest
       var two = CompletableFutures.computeAsync(cancelChecker -> {
         try
           {
-            var completionParams = new CompletionParams(Converters.TextDocumentIdentifier(uri1), new Position(1, 11),
+            var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
               new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
             return Util.RunWithPeriodicCancelCheck(cancelChecker, () -> Completion.getCompletions(completionParams),
               5, 5000);

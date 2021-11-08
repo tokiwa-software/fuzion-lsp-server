@@ -44,11 +44,11 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.lsp.server.util.Bridge;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;

@@ -31,8 +31,8 @@ import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.FuzionLexer;
 
 /**
@@ -51,7 +51,7 @@ public class Hovering
         return null;
       }
 
-    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, Converters.ToLabel(feature.get()));
+    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, ASTItem.ToLabel(feature.get()));
     return new Hover(markupContent, range);
   }
 
