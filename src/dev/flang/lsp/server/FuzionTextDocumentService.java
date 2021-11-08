@@ -74,6 +74,7 @@ import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Rename;
 import dev.flang.lsp.server.feature.SignatureHelper;
+import dev.flang.lsp.server.util.Debouncer;
 
 public class FuzionTextDocumentService implements TextDocumentService
 {
