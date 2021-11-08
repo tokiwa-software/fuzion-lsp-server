@@ -462,9 +462,6 @@ public class Util
     return Path.of(uri);
   }
 
-  /**
-   * example: TextDocumentPositionParams("file://uri", 0, 0)
-   */
   public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, int line, int character)
   {
     return TextDocumentPositionParams(uri, new Position(line, character));
