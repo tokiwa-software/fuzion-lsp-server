@@ -42,10 +42,10 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.parser.Lexer.Token;
@@ -292,7 +292,7 @@ class FuzionHelperTest extends BaseTest
     FuzionTextDocumentService.setText(uri1, CommentExample);
     var myFeatIs = FuzionParser.getMainFeature(uri1)
       .get();
-    var sourceText = FuzionHelpers.sourceText(Converters.ToTextDocumentPosition(myFeatIs.pos()));
+    var sourceText = FuzionHelpers.sourceText(Bridge.ToTextDocumentPosition(myFeatIs.pos()));
     assertEquals(true, sourceText.contains("myFeat is"));
   }
 
@@ -308,7 +308,7 @@ class FuzionHelperTest extends BaseTest
       .filter(f -> f.featureName().baseName().endsWith("yak"))
       .findFirst()
       .get();
-    var sourceText = FuzionHelpers.sourceText(Converters.ToTextDocumentPosition(yak.pos()));
+    var sourceText = FuzionHelpers.sourceText(Bridge.ToTextDocumentPosition(yak.pos()));
     assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
   }
 

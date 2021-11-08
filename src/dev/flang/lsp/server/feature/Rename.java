@@ -48,6 +48,7 @@ import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
@@ -83,7 +84,7 @@ public class Rename
     Stream<SourcePosition> renamePositions = getRenamePositions(Util.getUri(params), feature.get(), featureIdentifier);
 
     var changes = renamePositions
-      .map(sourcePosition -> Converters.ToLocation(sourcePosition))
+      .map(sourcePosition -> Bridge.ToLocation(sourcePosition))
       .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
         getTextEdit(location, featureIdentifier.text().length(), params.getNewName())))
       .collect(Collectors.groupingBy(e -> e.getKey(), Collectors.mapping(e -> e.getValue(), Collectors.toList())));
@@ -106,7 +107,7 @@ public class Rename
       .map(pos -> {
         if (IsAtFunKeyword(pos))
           {
-            var nextPosition = Converters.ToTextDocumentPosition(
+            var nextPosition = Bridge.ToTextDocumentPosition(
               new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length()));
             pos = FuzionLexer.tokenAt(nextPosition).start();
           }
@@ -128,7 +129,7 @@ public class Rename
 
   private static boolean IsAtFunKeyword(SourcePosition pos)
   {
-    return FuzionLexer.tokenAt(Converters.ToTextDocumentPosition(pos)).text().equals(Lexer.Token.t_fun.toString());
+    return FuzionLexer.tokenAt(Bridge.ToTextDocumentPosition(pos)).text().equals(Lexer.Token.t_fun.toString());
   }
 
   private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)

@@ -36,10 +36,10 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 
 import dev.flang.lsp.server.Config;
-import dev.flang.lsp.server.Converters;
-import dev.flang.lsp.server.Log;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.Log;
 import dev.flang.util.Errors;
 
 /**
@@ -64,7 +64,7 @@ public class Diagnostics
     // this may not be the errors for the uri?
     var errorDiagnostics =
       Errors.errors().stream().filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
-        var start = Converters.ToPosition(error.pos);
+        var start = Bridge.ToPosition(error.pos);
         var end = FuzionLexer.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;
         return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Error, "fuzion language server");
@@ -72,7 +72,7 @@ public class Diagnostics
 
     var warningDiagnostics =
       Errors.warnings().stream().filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
-        var start = Converters.ToPosition(error.pos);
+        var start = Bridge.ToPosition(error.pos);
         var end = FuzionLexer.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;
         return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Warning, "fuzion language server");

@@ -35,8 +35,8 @@ import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.util.Bridge;
 
 /**
  * tries to provide the definition of a call
@@ -60,7 +60,7 @@ public class Definition
     if(obj.toString().startsWith("INVISIBLE")){
       return getDefinition(obj.outer());
     }
-    Location location = Converters.ToLocation(obj.pos());
+    Location location = Bridge.ToLocation(obj.pos());
     return Either.forLeft(Arrays.asList(location));
 	}
 

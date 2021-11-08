@@ -35,9 +35,9 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionParser;
 
 public class DocumentSymbols
@@ -59,7 +59,7 @@ public class DocumentSymbols
 
   public static DocumentSymbol DocumentSymbolTree(AbstractFeature feature)
   {
-    var documentSymbol = Converters.ToDocumentSymbol(feature);
+    var documentSymbol = Bridge.ToDocumentSymbol(feature);
     var children = FuzionParser.DeclaredFeatures(feature)
       .filter(f -> !FuzionHelpers.IsFieldLike(f))
       .map(f -> {

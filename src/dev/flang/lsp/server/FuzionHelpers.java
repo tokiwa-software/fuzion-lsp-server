@@ -68,8 +68,10 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.Log;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
 
@@ -175,7 +177,7 @@ public final class FuzionHelpers
         {
           return false;
         }
-      return cursorPosition.getLine() == Converters.ToPosition(sourcePositionOption.get()).getLine();
+      return cursorPosition.getLine() == Bridge.ToPosition(sourcePositionOption.get()).getLine();
     };
   }
 
@@ -224,9 +226,9 @@ public final class FuzionHelpers
 
       boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
         || Util.ComparePosition(cursorPosition,
-          Converters.ToPosition(FuzionHelpers.endOfFeature(outer))) <= 0;
+          Bridge.ToPosition(FuzionHelpers.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
-        Util.ComparePosition(cursorPosition, Converters.ToPosition(sourcePositionOption.get())) >= 0;
+        Util.ComparePosition(cursorPosition, Bridge.ToPosition(sourcePositionOption.get())) >= 0;
 
       return ItemPositionIsBeforeOrAtCursorPosition && BuiltInOrEndAfterCursor;
     };
@@ -352,12 +354,12 @@ public final class FuzionHelpers
 
   private static boolean PositionIsAfterOrAtCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
   {
-    return Util.ComparePosition(Util.getPosition(params), Converters.ToPosition(sourcePosition)) <= 0;
+    return Util.ComparePosition(Util.getPosition(params), Bridge.ToPosition(sourcePosition)) <= 0;
   }
 
   private static boolean PositionIsBeforeCursor(TextDocumentPositionParams params, SourcePosition sourcePosition)
   {
-    return Util.ComparePosition(Util.getPosition(params), Converters.ToPosition(sourcePosition)) > 0;
+    return Util.ComparePosition(Util.getPosition(params), Bridge.ToPosition(sourcePosition)) > 0;
   }
 
   /**
@@ -380,7 +382,7 @@ public final class FuzionHelpers
           .map(sourcePosition -> sourcePosition.get())
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
           .map(position -> {
-            var start = FuzionLexer.endOfToken(uri, Converters.ToPosition(position));
+            var start = FuzionLexer.endOfToken(uri, Bridge.ToPosition(position));
             var line = FuzionHelpers.restOfLine(uri, start);
             // NYI maybe use inverse hashset here? i.e. state which tokens can
             // be skipped
@@ -712,7 +714,7 @@ public final class FuzionHelpers
 
   public static String CommentOf(AbstractFeature feature)
   {
-    var textDocumentPosition = Converters.ToTextDocumentPosition(feature.pos());
+    var textDocumentPosition = Bridge.ToTextDocumentPosition(feature.pos());
     var commentLines = new ArrayList<String>();
     while (true)
       {
@@ -740,7 +742,7 @@ public final class FuzionHelpers
   }
 
   private static final SourcePosition None =
-    new SourcePosition(Converters.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
+    new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
 
   public static SourcePosition sourcePositionOrNone(Object obj)
   {

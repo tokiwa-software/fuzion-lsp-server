@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ParserHelper
+ * Source of class FuzionParser
  *
  *---------------------------------------------------------------------*/
 
@@ -51,7 +51,6 @@ import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
-import dev.flang.lsp.server.Log;
 import dev.flang.lsp.server.Memory;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.ParserCacheRecord;

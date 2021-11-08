@@ -26,50 +26,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
-import java.net.URI;
-import java.nio.file.Path;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.DocumentSymbol;
-import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
-import dev.flang.ast.Feature;
 import dev.flang.ast.If;
 import dev.flang.lsp.server.records.TokenInfo;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
-import dev.flang.lsp.server.util.FuzionParser;
-import dev.flang.util.SourceFile;
-import dev.flang.util.SourcePosition;
 
 /**
  * collection of static methods converting dev.flang objects to lsp4j
  */
 public final class Converters
 {
-
-  public static Position ToPosition(SourcePosition sourcePosition)
-  {
-    return new Position(sourcePosition._line - 1, sourcePosition._column - 1);
-  }
-
-  public static Location ToLocation(SourcePosition sourcePosition)
-  {
-    var position = ToPosition(sourcePosition);
-    return new Location(FuzionParser.getUri(sourcePosition).toString(), new Range(position, position));
-  }
-
-  public static Range ToRange(AbstractFeature feature)
-  {
-    return new Range(ToPosition(feature.pos()), ToPosition(FuzionHelpers.endOfFeature(feature)));
-  }
 
   public static Range ToRange(TextDocumentPositionParams params)
   {
@@ -78,11 +54,6 @@ public final class Converters
     var characterStart = tokenIdent.start()._column - 1;
     return new Range(new Position(line, characterStart),
       new Position(line, characterStart + tokenIdent.text().length()));
-  }
-
-  public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
-  {
-    return new DocumentSymbol(Converters.ToLabel(feature), SymbolKind.Key, ToRange(feature), ToRange(feature));
   }
 
   /**
@@ -104,30 +75,9 @@ public final class Converters
 
   public static Range ToRange(TokenInfo tokenInfo)
   {
-    var start = ToPosition(tokenInfo.start());
-    var end = ToPosition(tokenInfo.end());
+    var start = Bridge.ToPosition(tokenInfo.start());
+    var end = Bridge.ToPosition(tokenInfo.end());
     return new Range(start, end);
-  }
-
-  public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
-  {
-    return Util.TextDocumentPositionParams(FuzionParser.getUri(sourcePosition), ToPosition(sourcePosition));
-  }
-
-  public static SourceFile ToSourceFile(URI uri)
-  {
-    return Util.WithRedirectedStdErr(() -> {
-      var filePath = Path.of(uri);
-      if (filePath.equals(SourceFile.STDIN))
-        {
-          return new SourceFile(SourceFile.STDIN);
-        }
-      if (filePath.equals(SourceFile.BUILT_IN))
-        {
-          return new SourceFile(SourceFile.BUILT_IN);
-        }
-      return new SourceFile(filePath);
-    });
   }
 
   public static String ToLabel(Object item)

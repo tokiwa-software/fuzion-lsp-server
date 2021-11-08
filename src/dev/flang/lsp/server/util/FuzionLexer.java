@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class LexerUtil
+ * Source of class FuzionLexer
  *
  *---------------------------------------------------------------------*/
 
@@ -32,7 +32,6 @@ import java.util.HashSet;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
@@ -96,7 +95,7 @@ public class FuzionLexer
   {
     var lexerSourcePosition = lexer.sourcePos(lexer.pos());
     var start =
-      new SourcePosition(Converters.ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
+      new SourcePosition(Bridge.ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
     return new TokenInfo(start, tokenString);
   }
@@ -146,7 +145,7 @@ public class FuzionLexer
   {
     var textDocumentPosition = Util.TextDocumentPositionParams(uri, start);
     var token = rawTokenAt(textDocumentPosition);
-    return Converters.ToPosition(token.end());
+    return Bridge.ToPosition(token.end());
   }
 
 }
