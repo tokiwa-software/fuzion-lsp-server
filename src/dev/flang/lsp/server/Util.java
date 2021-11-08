@@ -207,6 +207,7 @@ public class Util
         var completed = false;
         while (!completed)
           {
+            cancelToken.checkCanceled();
             try
               {
                 future.get(intervallCancelledCheckInMs, TimeUnit.MILLISECONDS);
@@ -222,7 +223,6 @@ public class Util
                   {
                     throw e;
                   }
-                cancelToken.checkCanceled();
               }
           }
       } finally
