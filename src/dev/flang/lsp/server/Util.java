@@ -195,10 +195,11 @@ public class Util
    * @throws InterruptedException
    * @throws ExecutionException
    * @throws TimeoutException
+   * @throws MaxExecutionTimeExceededException
    */
   public static <T> T RunWithPeriodicCancelCheck(
     CancelChecker cancelToken, Callable<T> callable, int intervallCancelledCheckInMs, int maxExecutionTimeInMs)
-    throws InterruptedException, ExecutionException, TimeoutException
+    throws InterruptedException, ExecutionException, TimeoutException, MaxExecutionTimeExceededException
   {
     Future<T> future = executor.submit(callable);
     try
@@ -221,7 +222,7 @@ public class Util
                 timeElapsedInMs += intervallCancelledCheckInMs;
                 if (timeElapsedInMs >= maxExecutionTimeInMs)
                   {
-                    throw e;
+                    throw new MaxExecutionTimeExceededException("max execution time exceeded.", e);
                   }
               }
           }
@@ -364,9 +365,15 @@ public class Util
 
   static void WriteStackTraceAndExit(int status)
   {
+    var throwable = CurrentStacktrace();
+    WriteStackTraceAndExit(status, throwable);
+  }
+
+  private static Throwable CurrentStacktrace()
+  {
     var throwable = new Throwable();
     throwable.fillInStackTrace();
-    WriteStackTraceAndExit(status, throwable);
+    return throwable;
   }
 
   public static void WriteStackTraceAndExit(int status, Throwable e)
@@ -391,7 +398,7 @@ public class Util
 
   public static String WriteStackTrace(Throwable e)
   {
-    var stackTrace = String(e) + System.lineSeparator()
+    var stackTrace = toString(e) + System.lineSeparator()
       + "======" + System.lineSeparator()
       + Thread.getAllStackTraces()
         .entrySet()
@@ -399,7 +406,8 @@ public class Util
         .map(entry -> "Thread: " + entry.getKey().getName() + System.lineSeparator() + String(entry.getValue()))
         .collect(Collectors.joining(System.lineSeparator()));
 
-    return Util.writeToTempFile(stackTrace, "fuzion-lsp-crash" + String.valueOf(System.currentTimeMillis()), ".log", false)
+    return Util
+      .writeToTempFile(stackTrace, "fuzion-lsp-crash" + String.valueOf(System.currentTimeMillis()), ".log", false)
       .getAbsolutePath();
   }
 
@@ -429,16 +437,19 @@ public class Util
 
   private static <T> CompletableFuture<T> ComputeAsyncWithTimeout(Callable<T> callable)
   {
+    // NYI log time of computations
+    final Throwable context = Config.DEBUG() ? CurrentStacktrace(): null;
     return CompletableFutures.computeAsync(cancelChecker -> {
       try
         {
           return Util.RunWithPeriodicCancelCheck(cancelChecker, callable, INTERVALL_CHECK_CANCELLED_MS,
             MAX_EXECUTION_TIME_MS);
         }
-      catch (InterruptedException | ExecutionException | TimeoutException e)
+      catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
         {
           if (Config.DEBUG())
             {
+              WriteStackTrace(context);
               WriteStackTrace(e);
             }
           return null;

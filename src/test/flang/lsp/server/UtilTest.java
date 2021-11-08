@@ -44,6 +44,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.FuzionTextDocumentService;
+import dev.flang.lsp.server.MaxExecutionTimeExceededException;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.feature.Completion;
 
@@ -72,7 +73,7 @@ public class UtilTest extends BaseTest
             return Util.RunWithPeriodicCancelCheck(cancelChecker, () -> Completion.getCompletions(completionParams),
               5, 10);
           }
-        catch (InterruptedException | ExecutionException | TimeoutException e)
+        catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
           {
             return e;
           }
@@ -96,7 +97,7 @@ public class UtilTest extends BaseTest
             return Util.RunWithPeriodicCancelCheck(cancelChecker, () -> Completion.getCompletions(completionParams),
               5, 5000);
           }
-        catch (InterruptedException | ExecutionException | TimeoutException e)
+        catch (InterruptedException | ExecutionException | TimeoutException| MaxExecutionTimeExceededException e)
           {
             return null;
           }
