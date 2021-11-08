@@ -37,11 +37,11 @@ import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.FuzionTextDocumentService;
 import dev.flang.lsp.server.Util;
@@ -128,7 +128,7 @@ class FuzionHelperTest extends BaseTest
     FuzionTextDocumentService.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(Util.TextDocumentPositionParams(uri1, 2, 2));
+      FuzionLexer.rawTokenAt(Converters.TextDocumentPositionParams(uri1, 2, 2));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -140,7 +140,7 @@ class FuzionHelperTest extends BaseTest
     FuzionTextDocumentService.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(Util.TextDocumentPositionParams(uri1, 6, 7));
+      FuzionLexer.rawTokenAt(Converters.TextDocumentPositionParams(uri1, 6, 7));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }
@@ -325,13 +325,13 @@ class FuzionHelperTest extends BaseTest
       """;
     FuzionTextDocumentService.setText(uri1, sourceText);
 
-    var feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 5, 4)).get();
+    var feature = FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 5, 4)).get();
     assertEquals("say", feature.featureName().baseName());
 
-    feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 4, 8)).get();
+    feature = FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 4, 8)).get();
     assertEquals("myi32", feature.featureName().baseName());
 
-    feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 4, 20)).get();
+    feature = FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 4, 20)).get();
     assertEquals("i32", feature.featureName().baseName());
   }
 
@@ -344,7 +344,7 @@ class FuzionHelperTest extends BaseTest
           say "$s"
                 """;
     FuzionTextDocumentService.setText(uri1, sourceText);
-    var feature = FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 2, 4))
+    var feature = FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 2, 4))
       .get();
     assertEquals("say", feature.featureName().baseName());
   }
@@ -358,27 +358,27 @@ class FuzionHelperTest extends BaseTest
                   """;
     FuzionTextDocumentService.setText(uri1, sourceText);
 
-    assertEquals("infix ..", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 4))
+    assertEquals("infix ..", FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 1, 4))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("forAll", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 10))
+    assertEquals("forAll", FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 1, 10))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("forAll", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 16))
+    assertEquals("forAll", FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 1, 16))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("say", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 24))
+    assertEquals("say", FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 1, 24))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("say", FuzionHelpers.featureAt(Util.TextDocumentPositionParams(uri1, 1, 26))
+    assertEquals("say", FuzionHelpers.featureAt(Converters.TextDocumentPositionParams(uri1, 1, 26))
       .get()
       .featureName()
       .baseName());
@@ -405,7 +405,7 @@ class FuzionHelperTest extends BaseTest
         (1..10).myCall()
               """;
     FuzionTextDocumentService.setText(uri1, sourceText);
-    var call = FuzionHelpers.callAt(Util.TextDocumentPositionParams(uri1, 1, 17))
+    var call = FuzionHelpers.callAt(Converters.TextDocumentPositionParams(uri1, 1, 17))
       .get();
     assertEquals("myCall", call.name);
   }

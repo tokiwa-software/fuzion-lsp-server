@@ -30,11 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelpParams;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import dev.flang.lsp.server.Converters;
 import dev.flang.lsp.server.FuzionTextDocumentService;
-import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.feature.SignatureHelper;
 import test.flang.lsp.server.BaseTest;
 
@@ -50,7 +49,7 @@ public class SignatureHelperTest extends BaseTest
   {
     FuzionTextDocumentService.setText(uri1, HelloWorld);
     var signatureHelp =
-      SignatureHelper.getSignatureHelp(new SignatureHelpParams(Util.TextDocumentIdentifier(uri1), new Position(1, 5)));
+      SignatureHelper.getSignatureHelp(new SignatureHelpParams(Converters.TextDocumentIdentifier(uri1), new Position(1, 5)));
     assertEquals("say() => unit", signatureHelp.getSignatures().get(0).getLabel());
     assertEquals("say(s Object) => unit", signatureHelp.getSignatures().get(1).getLabel());
   }

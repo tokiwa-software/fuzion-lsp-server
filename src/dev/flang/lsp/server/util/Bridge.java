@@ -87,7 +87,7 @@ public class Bridge {
 
   public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
   {
-    return Util.TextDocumentPositionParams(FuzionParser.getUri(sourcePosition), ToPosition(sourcePosition));
+    return Converters.TextDocumentPositionParams(FuzionParser.getUri(sourcePosition), ToPosition(sourcePosition));
   }
 
 }

@@ -151,7 +151,7 @@ public class Rename
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "no valid identifier.", null);
         throw new ResponseErrorException(responseError);
       }
-    return new PrepareRenameResult(Converters.ToRange(token.get()), token.get().text());
+    return new PrepareRenameResult(token.get().toRange(), token.get().text());
   }
 
 }

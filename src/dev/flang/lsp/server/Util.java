@@ -462,19 +462,4 @@ public class Util
     return Path.of(uri);
   }
 
-  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, int line, int character)
-  {
-    return TextDocumentPositionParams(uri, new Position(line, character));
-  }
-
-  public static org.eclipse.lsp4j.TextDocumentPositionParams TextDocumentPositionParams(URI uri, Position position)
-  {
-    return new TextDocumentPositionParams(TextDocumentIdentifier(uri), position);
-  }
-
-  public static TextDocumentIdentifier TextDocumentIdentifier(URI uri)
-  {
-    return new TextDocumentIdentifier(uri.toString());
-  }
-
 }

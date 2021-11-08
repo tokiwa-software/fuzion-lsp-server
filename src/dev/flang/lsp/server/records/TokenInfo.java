@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.records;
 
+import org.eclipse.lsp4j.Range;
+
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -33,7 +36,15 @@ import dev.flang.util.SourcePosition;
  */
 public record TokenInfo(SourcePosition start, String text)
 {
-  public SourcePosition end(){
+  public SourcePosition end()
+  {
     return new SourcePosition(start._sourceFile, start._line, start._column + text.length());
+  }
+
+  public Range toRange()
+  {
+    var start = Bridge.ToPosition(this.start());
+    var end = Bridge.ToPosition(this.end());
+    return new Range(start, end);
   }
 }

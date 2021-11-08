@@ -26,10 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
+import java.net.URI;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
@@ -37,8 +39,6 @@ import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
 import dev.flang.ast.If;
-import dev.flang.lsp.server.records.TokenInfo;
-import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 
 /**
@@ -73,13 +73,6 @@ public final class Converters
     return feature.featureName().baseName() + feature.generics() + arguments + " => " + feature.resultType();
   }
 
-  public static Range ToRange(TokenInfo tokenInfo)
-  {
-    var start = Bridge.ToPosition(tokenInfo.start());
-    var end = Bridge.ToPosition(tokenInfo.end());
-    return new Range(start, end);
-  }
-
   public static String ToLabel(Object item)
   {
     try
@@ -106,6 +99,21 @@ public final class Converters
       {
         return "";
       }
+  }
+
+  public static TextDocumentIdentifier TextDocumentIdentifier(URI uri)
+  {
+    return new TextDocumentIdentifier(uri.toString());
+  }
+
+  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, Position position)
+  {
+    return new TextDocumentPositionParams(TextDocumentIdentifier(uri), position);
+  }
+
+  public static TextDocumentPositionParams TextDocumentPositionParams(URI uri, int line, int character)
+  {
+    return TextDocumentPositionParams(uri, new Position(line, character));
   }
 
 }
