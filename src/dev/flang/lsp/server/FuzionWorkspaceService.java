@@ -26,23 +26,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import com.google.gson.JsonPrimitive;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.MessageType;
-import org.eclipse.lsp4j.ShowDocumentParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
-import dev.flang.lsp.server.enums.Commands;
+import dev.flang.lsp.server.feature.Command;
 
 public class FuzionWorkspaceService implements WorkspaceService
 {
@@ -64,51 +55,8 @@ public class FuzionWorkspaceService implements WorkspaceService
   @Override
   public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
   {
-    var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
-
-    switch (Commands.valueOf(params.getCommand()))
-      {
-        case showSyntaxTree :
-          Util.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
-          return Util.Compute(() -> null);
-        case evaluate :
-          Util.RunInBackground(() -> evaluate(Util.toURI(uri)));
-          return Util.Compute(() -> null);
-        default:
-          Util.WriteStackTrace(new Exception("not implemented"));
-          return Util.Compute(() -> null);
-      }
+    return Command.Execute(params);
   }
 
-  private void evaluate(URI uri)
-  {
-    try
-      {
-        var result = FuzionHelpers.Run(uri);
-        Config.languageClient().showMessage(result);
-      }
-    catch (IOException | InterruptedException | ExecutionException | TimeoutException | StackOverflowError e)
-      {
-        var message = e.getMessage();
-        if (message != null)
-          {
-            Config.languageClient()
-              .showMessage(new MessageParams(MessageType.Error, message));
-          }
-      }
-
-  }
-
-  private void showSyntaxTree(URI uri)
-  {
-    var feature = FuzionHelpers.baseFeature(uri);
-    if (feature.isEmpty())
-      {
-        Util.Compute(() -> null);
-      }
-    var ast = FuzionHelpers.AST(feature.get());
-    var file = Util.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
-    Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
-  }
 
 }

@@ -1,0 +1,97 @@
+/*
+
+This file is part of the Fuzion language server protocol implementation.
+
+The Fuzion language server protocol implementation is free software: you can redistribute it
+and/or modify it under the terms of the GNU General Public License as published
+by the Free Software Foundation, version 3 of the License.
+
+The Fuzion language server protocol implementation is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+License for more details.
+
+You should have received a copy of the GNU General Public License along with The
+Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+*/
+
+/*-----------------------------------------------------------------------
+ *
+ * Tokiwa Software GmbH, Germany
+ *
+ * Source of class Command
+ *
+ *---------------------------------------------------------------------*/
+
+
+package dev.flang.lsp.server.feature;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import com.google.gson.JsonPrimitive;
+
+import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.ShowDocumentParams;
+
+import dev.flang.lsp.server.Config;
+import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.enums.Commands;
+
+public class Command {
+  public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
+  {
+    var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
+
+    switch (Commands.valueOf(params.getCommand()))
+      {
+        case showSyntaxTree :
+          Util.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
+          return Util.Compute(() -> null);
+        case evaluate :
+          Util.RunInBackground(() -> evaluate(Util.toURI(uri)));
+          return Util.Compute(() -> null);
+        default:
+          Util.WriteStackTrace(new Exception("not implemented"));
+          return Util.Compute(() -> null);
+      }
+  }
+
+  private static void evaluate(URI uri)
+  {
+    try
+      {
+        var result = FuzionHelpers.Run(uri);
+        Config.languageClient().showMessage(result);
+      }
+    catch (IOException | InterruptedException | ExecutionException | TimeoutException | StackOverflowError e)
+      {
+        var message = e.getMessage();
+        if (message != null)
+          {
+            Config.languageClient()
+              .showMessage(new MessageParams(MessageType.Error, message));
+          }
+      }
+  }
+
+  private static void showSyntaxTree(URI uri)
+  {
+    var feature = FuzionHelpers.baseFeature(uri);
+    if (feature.isEmpty())
+      {
+        Util.Compute(() -> null);
+      }
+    var ast = FuzionHelpers.AST(feature.get());
+    var file = Util.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
+    Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
+  }
+
+}
