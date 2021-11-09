@@ -27,11 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import com.google.gson.JsonPrimitive;
 
@@ -41,14 +38,17 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ShowDocumentParams;
 
 import dev.flang.lsp.server.Config;
-import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.enums.Commands;
 import dev.flang.lsp.server.util.Concurrency;
 import dev.flang.lsp.server.util.ErrorHandling;
+import dev.flang.lsp.server.util.FeatureTool;
+import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.IO;
+import dev.flang.lsp.server.util.QueryAST;
 
-public class Command {
+public class Command
+{
   public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
   {
     var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
@@ -71,10 +71,10 @@ public class Command {
   {
     try
       {
-        var result = FuzionHelpers.Run(uri);
+        var result = FuzionParser.Run(uri);
         Config.languageClient().showMessage(result);
       }
-    catch (IOException | InterruptedException | ExecutionException | TimeoutException | StackOverflowError e)
+    catch (Exception e)
       {
         var message = e.getMessage();
         if (message != null)
@@ -87,12 +87,12 @@ public class Command {
 
   private static void showSyntaxTree(URI uri)
   {
-    var feature = FuzionHelpers.baseFeature(uri);
+    var feature = QueryAST.baseFeature(uri);
     if (feature.isEmpty())
       {
         Concurrency.Compute(() -> null);
       }
-    var ast = FuzionHelpers.AST(feature.get());
+    var ast = FeatureTool.AST(feature.get());
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }

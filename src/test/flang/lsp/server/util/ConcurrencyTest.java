@@ -20,13 +20,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class UtilTest
+ * Source of class ConcurrencyTest
  *
  *---------------------------------------------------------------------*/
 
 package test.flang.lsp.server.util;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +42,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.Concurrency;
 import dev.flang.lsp.server.util.LSP4jUtils;
@@ -55,7 +52,7 @@ public class ConcurrencyTest extends BaseTest
 {
 
   @Test
-  void RunWithPeriodicCancelCheck() throws InterruptedException, ExecutionException
+  public void RunWithPeriodicCancelCheck() throws InterruptedException, ExecutionException
   {
     var sourceText = """
       ex is

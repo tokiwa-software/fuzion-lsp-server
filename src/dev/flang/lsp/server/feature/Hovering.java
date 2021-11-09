@@ -31,9 +31,9 @@ import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 
-import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.util.QueryAST;
 
 /**
  * on hover returns signature of call
@@ -45,7 +45,7 @@ public class Hovering
   public static Hover getHover(HoverParams params)
   {
     var range = FuzionLexer.rawTokenAt(params).toRange();
-    var feature = FuzionHelpers.featureAt(params);
+    var feature = QueryAST.featureAt(params);
     if (feature.isEmpty())
       {
         return null;

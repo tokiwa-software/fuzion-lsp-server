@@ -32,9 +32,10 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 
-import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.util.Bridge;
+import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.lsp.server.util.QueryAST;
 
 /**
  * return list of references for feature at cursor position
@@ -45,12 +46,12 @@ public class References
 
   public static List<? extends Location> getReferences(ReferenceParams params)
   {
-    var feature = FuzionHelpers.featureAt(params);
+    var feature = QueryAST.featureAt(params);
     if (feature.isEmpty())
       {
         return List.of();
       }
-    return FuzionHelpers.callsTo(LSP4jUtils.getUri(params), feature.get())
+    return QueryAST.callsTo(LSP4jUtils.getUri(params), feature.get())
       .map(call -> Bridge.ToLocation(call.pos()))
       .collect(Collectors.toList());
   }

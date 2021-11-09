@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -36,38 +35,20 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.util.concurrent.MaxExecutionTimeExceededException;
 
-public class Concurrency {
+public class Concurrency
+{
 
   private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
   private static final int MAX_EXECUTION_TIME_MS = 500;
 
   // for now we have to run most things more or less sequentially
   private static ExecutorService executor = Executors.newSingleThreadExecutor();
-
-  public static MessageParams WithCapturedStdOutErrSync(Runnable runnable, long timeOutInMilliSeconds)
-    throws IOException, InterruptedException, ExecutionException, TimeoutException
-  {
-    Future<String> future = executor.submit(IO.WithCapturedStdOutErr(runnable));
-    try
-      {
-        var result = future.get(timeOutInMilliSeconds, TimeUnit.MILLISECONDS);
-        return new MessageParams(MessageType.Info, result);
-      } finally
-      {
-        if (!future.isCancelled() || !future.isDone())
-          {
-            future.cancel(true);
-          }
-      }
-  }
 
   public static void RunInBackground(Runnable runnable)
   {
@@ -100,7 +81,9 @@ public class Concurrency {
         var completed = false;
         while (!completed)
           {
-            cancelToken.checkCanceled();
+            if(cancelToken != null){
+              cancelToken.checkCanceled();
+            }
             try
               {
                 future.get(intervallCancelledCheckInMs, TimeUnit.MILLISECONDS);

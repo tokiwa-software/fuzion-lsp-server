@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
@@ -51,7 +52,6 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
 import dev.flang.lsp.server.ASTWalker;
-import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.ParserCacheRecord;
@@ -94,37 +94,34 @@ public class FuzionParser
    */
   private static Optional<ParserCacheRecord> getParserCacheRecord(URI uri)
   {
-    synchronized (tempFile2Uri)
+    // NYI
+    if (uri.toString().contains("/lib/"))
       {
-        // NYI
-        if (uri.toString().contains("/lib/"))
-          {
-            if (sourceText2ParserCache.isEmpty())
-              {
-                return Optional.empty();
-              }
-            return Optional.of(sourceText2ParserCache.firstEntry().getValue());
-          }
-
-        var sourceText = SourceText.getText(uri);
-        if (sourceText.isEmpty())
+        if (sourceText2ParserCache.isEmpty())
           {
             return Optional.empty();
           }
-
-        if (sourceText2ParserCache.containsKey(sourceText.get()))
-          {
-            return Optional.of(sourceText2ParserCache.get(sourceText.get()));
-          }
-
-        createMIRandCache(uri);
-
-        var result = getParserCacheRecord(uri).get();
-
-        afterParsing(uri, result.mir().main());
-
-        return Optional.of(result);
+        return Optional.of(sourceText2ParserCache.firstEntry().getValue());
       }
+
+    var sourceText = SourceText.getText(uri);
+    if (sourceText.isEmpty())
+      {
+        return Optional.empty();
+      }
+
+    if (sourceText2ParserCache.containsKey(sourceText.get()))
+      {
+        return Optional.of(sourceText2ParserCache.get(sourceText.get()));
+      }
+
+    createMIRandCache(uri);
+
+    var result = getParserCacheRecord(uri).get();
+
+    afterParsing(uri, result.mir().main());
+
+    return Optional.of(result);
   }
 
   private static ParserCacheRecord createMIRandCache(URI uri)
@@ -144,11 +141,7 @@ public class FuzionParser
   {
     return IO.WithRedirectedStdOut(() -> {
       return IO.WithRedirectedStdErr(() -> {
-        // NYI remove once we can create MIR multiple times
-        Errors.clear();
-        Types.clear();
-        FeatureName.clear();
-        Clazzes.clear();
+        ClearStaticallyHeldStuffInFuzionCompiler();
         var frontEndOptions = FrontEndOptions(uri);
         var frontEnd = new FrontEnd(frontEndOptions);
         var mir = frontEnd.createMIR();
@@ -157,7 +150,18 @@ public class FuzionParser
     });
   }
 
-  public static FUIR FUIR(URI uri)
+  /**
+   * NYI remove once we can create MIR multiple times
+  */
+  private static void ClearStaticallyHeldStuffInFuzionCompiler()
+  {
+    Errors.clear();
+    Types.clear();
+    FeatureName.clear();
+    Clazzes.clear();
+  }
+
+  private static Optional<FUIR> FUIR(URI uri)
   {
     // NYI remove this once unnecessary
     Interpreter.clear();
@@ -167,6 +171,11 @@ public class FuzionParser
     // NYI remove recreation of MIR
     var parserCacheRecord = createMIRandCache(uri);
 
+    if (Errors.count() >= 0)
+      {
+        return Optional.empty();
+      }
+
     var air =
       new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(), parserCacheRecord.frontEnd().res())
         .air();
@@ -175,7 +184,7 @@ public class FuzionParser
     Instance.universe = new Instance(Clazzes.universe.get());
 
     var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir();
-    return fuir;
+    return Optional.of(fuir);
   }
 
   private static FrontEndOptions FrontEndOptions(URI uri)
@@ -272,7 +281,7 @@ public class FuzionParser
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
   {
     return AllDeclaredFeatures(f)
-      .filter(feat -> !FuzionHelpers.IsAnonymousInnerFeature(feat));
+      .filter(feat -> !FeatureTool.IsAnonymousInnerFeature(feat));
   }
 
   private static final TreeMap<AbstractFeature, SourcePosition> EndOfFeature = new TreeMap<>();
@@ -295,9 +304,9 @@ public class FuzionParser
       {
         SourcePosition endOfFeature = ASTWalker.Traverse(feature)
           .filter(entry -> entry.getValue() != null)
-          .filter(FuzionHelpers.IsItemInFile(uri))
+          .filter(ASTItem.IsItemInFile(uri))
           .filter(entry -> entry.getValue().compareTo(feature) == 0)
-          .map(entry -> FuzionHelpers.sourcePosition(entry.getKey()))
+          .map(entry -> ASTItem.sourcePosition(entry.getKey()))
           .filter(sourcePositionOption -> sourcePositionOption.isPresent())
           .map(sourcePosition -> sourcePosition.get())
           .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
@@ -319,5 +328,29 @@ public class FuzionParser
     return EndOfFeature.get(feature);
   }
 
+  private static Optional<Interpreter> Interpreter(URI uri)
+  {
+    return FuzionParser.FUIR(uri).map(f -> new Interpreter(f));
+  }
+
+  public static MessageParams Run(URI uri)
+    throws Exception
+  {
+    return Run(uri, 10000);
+  }
+
+  public static MessageParams Run(URI uri, int timeout)
+    throws Exception
+  {
+    var result = Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(() -> {
+      var interpreter = FuzionParser.Interpreter(uri);
+      interpreter.ifPresent(i -> i.run());
+      if (interpreter.isEmpty())
+        {
+          throw new RuntimeException("Interpreter could not be created.");
+        }
+    }), timeout, timeout);
+    return new MessageParams(MessageType.Info, result);
+  }
 
 }

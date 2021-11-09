@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.junit.jupiter.api.Test;
@@ -45,7 +43,7 @@ public class SignatureHelperTest extends BaseTest
     """;
 
   @Test
-  void getSignatureHelp()
+  public void getSignatureHelp()
   {
     SourceText.setText(uri1, HelloWorld);
     var signatureHelp =

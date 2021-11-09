@@ -54,6 +54,8 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
+import dev.flang.lsp.server.util.ASTItem;
+import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionParser;
 
 public class ASTWalker
@@ -88,7 +90,7 @@ public class ASTWalker
     TraverseReturnType(feature.returnType(), feature, callback);
     TraverseType(feature.resultType(), feature, callback);
 
-    if (FuzionHelpers.IsRoutineOrRoutineDef(feature))
+    if (FeatureTool.IsRoutineOrRoutineDef(feature))
       {
         TraverseExpression(feature.code(), feature, callback);
       }
@@ -118,7 +120,7 @@ public class ASTWalker
   private static void TraverseStatement(Stmnt s, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    if (FuzionHelpers.IsAbstractFeature(s))
+    if (ASTItem.IsAbstractFeature(s))
       {
         TraverseFeature((AbstractFeature) s, callback);
         return;

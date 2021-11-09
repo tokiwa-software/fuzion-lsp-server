@@ -36,7 +36,7 @@ public class ASTWalkerTest extends BaseTest
 {
 
   @Test
-  void NoStackOverflow(){
+  public void NoStackOverflow(){
     var sourceText = """
   ex8 is
 

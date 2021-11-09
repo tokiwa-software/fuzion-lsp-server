@@ -38,16 +38,18 @@ import org.eclipse.lsp4j.SignatureInformation;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.util.ASTItem;
+import dev.flang.lsp.server.util.CallTool;
+import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.QueryAST;
 
 public class SignatureHelper
 {
 
   public static SignatureHelp getSignatureHelp(SignatureHelpParams params)
   {
-    Optional<Call> call = FuzionHelpers.callAt(params);
+    Optional<Call> call = QueryAST.callAt(params);
 
     if (call.isEmpty())
       {
@@ -55,11 +57,11 @@ public class SignatureHelper
       }
 
     var featureOfCall =
-      call.get().target instanceof Call callTarget ? callTarget.calledFeature(): FuzionHelpers.featureOf(call.get());
+      call.get().target instanceof Call callTarget ? callTarget.calledFeature(): CallTool.featureOf(call.get());
 
       var consideredCallTargets_declaredOrInherited = FuzionParser.DeclaredOrInheritedFeatures(featureOfCall);
       var consideredCallTargets_outerFeatures =
-        FuzionHelpers.outerFeatures(featureOfCall).flatMap(f -> FuzionParser.DeclaredFeatures(f));
+        FeatureTool.outerFeatures(featureOfCall).flatMap(f -> FuzionParser.DeclaredFeatures(f));
 
       var consideredFeatures =
         Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
@@ -73,7 +75,7 @@ public class SignatureHelper
 
   private static SignatureInformation SignatureInformation(AbstractFeature feature)
   {
-    String description = FuzionHelpers.CommentOf(feature);
+    String description = FeatureTool.CommentOf(feature);
     return new SignatureInformation(ASTItem.ToLabel(feature), description,
       ParameterInfo(feature));
   }

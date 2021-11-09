@@ -42,10 +42,11 @@ import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.util.ASTItem;
+import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.QueryAST;
 
 /**
  * tries offering completions
@@ -81,7 +82,7 @@ public class Completion
 
     if (".".equals(triggerCharacter))
       {
-        return completions(FuzionHelpers.featuresIncludingInheritedFeatures(params));
+        return completions(QueryAST.featuresIncludingInheritedFeatures(params));
       }
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
       {
@@ -106,7 +107,7 @@ public class Completion
     var sortedFeatures = features
       .flatMap(f -> FuzionParser.DeclaredFeatures(f))
       .distinct()
-      .filter(f -> !FuzionHelpers.IsAnonymousInnerFeature(f))
+      .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
       .collect(Collectors.toList());
 
     var completionItems = IntStream
@@ -128,7 +129,7 @@ public class Completion
    */
   private static String getInsertText(AbstractFeature feature)
   {
-    if (!FuzionHelpers.IsRoutineOrRoutineDef(feature))
+    if (!FeatureTool.IsRoutineOrRoutineDef(feature))
       {
         return feature.featureName().baseName();
       }

@@ -44,12 +44,12 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.FuzionHelpers;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
@@ -70,7 +70,7 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
-    var feature = FuzionHelpers.feature(params);
+    var feature = QueryAST.feature(params);
     if (feature.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
@@ -101,7 +101,7 @@ public class Rename
   private static Stream<SourcePosition> getRenamePositions(URI uri, AbstractFeature featureToRename,
     TokenInfo featureIdentifier)
   {
-    var callsSourcePositions = FuzionHelpers
+    var callsSourcePositions = QueryAST
       .callsTo(uri, featureToRename)
       .map(c -> c.pos())
       .map(pos -> {
@@ -145,7 +145,7 @@ public class Rename
   // NYI should we disallow renaming if source code errors are present?
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
-    var token = FuzionHelpers.CallOrFeatureToken(params);
+    var token = QueryAST.CallOrFeatureToken(params);
     if (token.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "no valid identifier.", null);

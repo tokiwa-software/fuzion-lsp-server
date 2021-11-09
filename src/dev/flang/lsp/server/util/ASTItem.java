@@ -26,16 +26,33 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
+import java.net.URI;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
+import dev.flang.ast.Case;
+import dev.flang.ast.Cond;
+import dev.flang.ast.Contract;
+import dev.flang.ast.Expr;
+import dev.flang.ast.FormalGenerics;
+import dev.flang.ast.Generic;
 import dev.flang.ast.If;
-import dev.flang.lsp.server.FuzionHelpers;
+import dev.flang.ast.Impl;
+import dev.flang.ast.InlineArray;
+import dev.flang.ast.ReturnType;
+import dev.flang.ast.Stmnt;
+import dev.flang.ast.Type;
+import dev.flang.lsp.server.Util;
+import dev.flang.util.SourcePosition;
 
-public class ASTItem {
+public class ASTItem
+{
 
   public static String ToLabel(Object item)
   {
@@ -47,7 +64,10 @@ public class ASTItem {
           }
         if (item instanceof Call c)
           {
-            return c.calledFeature().qualifiedName();
+            if(c.calledFeature_ != null){
+              return c.calledFeature().qualifiedName();
+            }
+            return "called feature not know.";
           }
         if (item instanceof Assign a)
           {
@@ -71,7 +91,7 @@ public class ASTItem {
    */
   public static String ToLabel(AbstractFeature feature)
   {
-    if (!FuzionHelpers.IsRoutineOrRoutineDef(feature))
+    if (!FeatureTool.IsRoutineOrRoutineDef(feature))
       {
         return feature.featureName().baseName();
       }
@@ -82,4 +102,86 @@ public class ASTItem {
     return feature.featureName().baseName() + feature.generics() + arguments + " => " + feature.resultType();
   }
 
+  // NYI remove once we have ISourcePosition interface
+  /**
+   * getPosition of ASTItem
+   * @param entry
+   * @return
+   */
+  public static Optional<SourcePosition> sourcePosition(Object entry)
+  {
+    if (entry instanceof Stmnt)
+      {
+        return Optional.ofNullable(((Stmnt) entry).pos());
+      }
+    if (entry instanceof Type)
+      {
+        return Optional.ofNullable(((Type) entry).pos);
+      }
+    if (entry instanceof Impl)
+      {
+        return Optional.ofNullable(((Impl) entry).pos);
+      }
+    if (entry instanceof Generic)
+      {
+        return Optional.ofNullable(((Generic) entry)._pos);
+      }
+    if (entry instanceof Case)
+      {
+        return Optional.ofNullable(((Case) entry).pos);
+      }
+    if (entry instanceof InlineArray)
+      {
+        return Optional.ofNullable(((InlineArray) entry).pos());
+      }
+    if (entry instanceof Expr)
+      {
+        return Optional.ofNullable(((Expr) entry).pos());
+      }
+    if (entry instanceof ReturnType)
+      {
+        return Optional.empty();
+      }
+    if (entry instanceof Cond)
+      {
+        return Optional.empty();
+      }
+    if (entry instanceof FormalGenerics)
+      {
+        return Optional.empty();
+      }
+    if (entry instanceof Contract)
+      {
+        return Optional.empty();
+      }
+
+    System.err.println(entry.getClass());
+    ErrorHandling.WriteStackTraceAndExit(1);
+    return Optional.empty();
+  }
+
+  private static final SourcePosition None =
+    new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
+
+  public static SourcePosition sourcePositionOrNone(Object obj)
+  {
+    return ASTItem.sourcePosition(obj).orElse(None);
+  }
+
+  public static boolean IsAbstractFeature(Object o)
+  {
+    return AbstractFeature.class.isAssignableFrom(o.getClass());
+  }
+
+  static Predicate<? super Entry<Object, AbstractFeature>> IsItemInFile(URI uri)
+  {
+    return (entry) -> {
+      var sourcePositionOption = sourcePosition(entry.getKey());
+      if (sourcePositionOption.isEmpty())
+        {
+          return false;
+        }
+      return uri.equals(FuzionParser.getUri(sourcePositionOption.get()));
+    };
+  }
 }
