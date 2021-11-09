@@ -27,12 +27,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
-import java.util.concurrent.TimeoutException;
-
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.lsp.server.util.concurrent.MaxExecutionTimeExceededException;
 import test.flang.lsp.server.BaseTest;
 
 public class CommandTest extends BaseTest{
@@ -57,16 +56,15 @@ public class CommandTest extends BaseTest{
   }
 
   @Test
-  public void RunSuccessfulAfterRunWithTimeoutException()
-    throws Exception
+  public void RunSuccessfulAfterRunWithTimeoutException() throws Exception
   {
     SourceText.setText(uri1, ManOrBoy);
     SourceText.setText(uri2, HelloWorld);
     SourceText.setText(uri3, PythagoreanTriple);
 
     // NYI this will not throw once fuzion gets faster, how to test properly?
-    assertThrows(TimeoutException.class, () -> FuzionParser.Run(uri1, 100));
-    assertThrows(TimeoutException.class, () -> FuzionParser.Run(uri3, 50));
+    assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri1, 100));
+    assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri3, 50));
 
     assertEquals("Hello World!" + "\n", FuzionParser.Run(uri2).getMessage());
   }
