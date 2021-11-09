@@ -55,6 +55,7 @@ tcp: classes
 	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
 
 classes: $(JAVA_FILES) $(JARS) build_fuzion
+	rm -Rf $@
 	mkdir -p $@
 	$(JAVAC) -classpath $(CLASSPATH) -d $@ $(JAVA_FILES)
 
