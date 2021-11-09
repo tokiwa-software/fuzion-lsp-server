@@ -171,7 +171,7 @@ public class FuzionParser
     // NYI remove recreation of MIR
     var parserCacheRecord = createMIRandCache(uri);
 
-    if (Errors.count() >= 0)
+    if (Errors.count() > 0)
       {
         return Optional.empty();
       }
