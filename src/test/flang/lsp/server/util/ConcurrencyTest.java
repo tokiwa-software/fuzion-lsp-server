@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -39,6 +41,7 @@ import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
@@ -60,59 +63,10 @@ public class ConcurrencyTest extends BaseTest
             """;
     SourceText.setText(uri1, sourceText);
 
-    final ArrayList<Object> results = new ArrayList<>(2);
-    results.add(0, null);
-    results.add(1, null);
+    final ArrayList<Object> results = new ArrayList<>();
 
-    var request1 = new Thread(() -> {
-      var one = CompletableFutures.computeAsync(cancelChecker -> {
-        try
-          {
-            var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
-              new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
-            return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
-              () -> Completion.getCompletions(completionParams),
-              5, 10);
-          }
-        catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
-          {
-            return e;
-          }
-      });
-      try
-        {
-          results.set(0, one.get());
-        }
-      catch (Exception e)
-        {
-          results.set(0, e);
-        }
-    });
-
-    var request2 = new Thread(() -> {
-      var two = CompletableFutures.computeAsync(cancelChecker -> {
-        try
-          {
-            var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
-              new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
-            return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
-              () -> Completion.getCompletions(completionParams),
-              5, 5000);
-          }
-        catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
-          {
-            return null;
-          }
-      });
-      try
-        {
-          results.set(1, two.get());
-        }
-      catch (Exception e)
-        {
-          throw new RuntimeException(e);
-        }
-    });
+    var request1 = createRequest(results, 0, 10);
+    var request2 = createRequest(results, 1, 5000);
 
     // start
     request1.start();
@@ -121,9 +75,38 @@ public class ConcurrencyTest extends BaseTest
     request1.join();
     request2.join();
 
-    assertTrue(results.get(0) instanceof Exception);
+    assertTrue(results.get(0) instanceof MaxExecutionTimeExceededException);
     assertTrue(((Either<List<CompletionItem>, CompletionList>) results.get(1)).getLeft().size() > 10);
 
+  }
+
+  private Thread createRequest(final ArrayList<Object> results, int index, int maxExcecutionTime)
+  {
+    results.add(index, null);
+    return new Thread(() -> {
+      var one = CompletableFutures.computeAsync(cancelChecker -> {
+        try
+          {
+            var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
+              new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
+            return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
+              () -> Completion.getCompletions(completionParams),
+              5, maxExcecutionTime);
+          }
+        catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
+          {
+            return e;
+          }
+      });
+      try
+        {
+          results.set(index, one.get());
+        }
+      catch (Exception e)
+        {
+          results.set(index, e);
+        }
+    });
   }
 
 }

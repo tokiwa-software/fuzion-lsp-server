@@ -29,11 +29,9 @@ package test.flang.lsp.server.feature;
 
 import java.util.concurrent.TimeoutException;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.feature.Command;
 import dev.flang.lsp.server.util.FuzionParser;
 import test.flang.lsp.server.BaseTest;
 
