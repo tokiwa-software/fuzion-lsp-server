@@ -145,7 +145,9 @@ public class FuzionParser
         var frontEndOptions = FrontEndOptions(uri);
         var frontEnd = new FrontEnd(frontEndOptions);
         var mir = frontEnd.createMIR();
-        return new ParserCacheRecord(mir, frontEndOptions, frontEnd);
+        var errors = Errors.errors();
+        var warnings = Errors.warnings();
+        return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings);
       });
     });
   }
@@ -351,6 +353,16 @@ public class FuzionParser
         }
     }), timeout, timeout);
     return new MessageParams(MessageType.Info, result);
+  }
+
+  public static Stream<Errors.Error> Warnings(URI uri)
+  {
+    return getParserCacheRecord(uri).map(x -> x.warnings()).get().stream();
+  }
+
+  public static Stream<Errors.Error> Errors(URI uri)
+  {
+    return getParserCacheRecord(uri).map(x -> x.errors()).get().stream();
   }
 
 }

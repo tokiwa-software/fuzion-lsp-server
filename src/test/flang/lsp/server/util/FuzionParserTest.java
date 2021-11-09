@@ -105,7 +105,7 @@ public class FuzionParserTest extends BaseTest
         say "Hello World!"
                   """);
     var mainFeature = FuzionParser.getMainFeature(uri1);
-    assertEquals(0, Errors.count());
+    assertEquals(0, FuzionParser.Errors(uri1).count());
     assertEquals(true, mainFeature.isPresent());
     assertEquals("HelloWorld", mainFeature.get().featureName().baseName());
     assertEquals(uri1, FuzionParser.getUri(mainFeature.get().pos()));
@@ -128,7 +128,7 @@ public class FuzionParserTest extends BaseTest
 
                   """);
     var mainFeature = FuzionParser.getMainFeature(uri1);
-    assertEquals(true, Errors.count() > 0);
+    assertEquals(true, FuzionParser.Errors(uri1).count() > 0);
     assertEquals(true, mainFeature.isPresent());
   }
 

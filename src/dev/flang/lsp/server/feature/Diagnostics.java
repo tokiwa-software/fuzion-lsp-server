@@ -40,7 +40,6 @@ import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.Log;
-import dev.flang.util.Errors;
 
 /**
  * provide diagnostics for a given uri
@@ -58,20 +57,14 @@ public class Diagnostics
 
   private static Stream<Diagnostic> getDiagnostics(URI uri)
   {
-    // ensure that parsing has happenend for uri
-    FuzionParser.getMainFeature(uri);
-    // NYI this always returns the current global errors
-    // this may not be the errors for the uri?
-    var errorDiagnostics =
-      Errors.errors().stream().filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
+    var errorDiagnostics = FuzionParser.Errors(uri).filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
         var start = Bridge.ToPosition(error.pos);
         var end = FuzionLexer.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;
         return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Error, "fuzion language server");
       });
 
-    var warningDiagnostics =
-      Errors.warnings().stream().filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
+    var warningDiagnostics = FuzionParser.Warnings(uri).filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
         var start = Bridge.ToPosition(error.pos);
         var end = FuzionLexer.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;

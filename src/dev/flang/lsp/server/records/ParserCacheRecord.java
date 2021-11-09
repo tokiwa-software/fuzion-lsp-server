@@ -25,10 +25,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 package dev.flang.lsp.server.records;
-import dev.flang.fe.FrontEndOptions;
-import dev.flang.fe.FrontEnd;
-import dev.flang.mir.MIR;
 
-public record ParserCacheRecord(MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd) {
+import java.util.TreeSet;
+
+import dev.flang.fe.FrontEnd;
+import dev.flang.fe.FrontEndOptions;
+import dev.flang.mir.MIR;
+import dev.flang.util.Errors;
+
+public record ParserCacheRecord(MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
+  TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings)
+{
 
 }
