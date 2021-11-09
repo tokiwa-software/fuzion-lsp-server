@@ -55,8 +55,8 @@ public class QueryASTTest extends BaseTest
   public void allOf()
   {
     SourceText.setText(uri1, HelloWorld);
-    assertEquals("HelloWorld", QueryAST
-      .BaseFeature(uri1)
+    assertEquals("HelloWorld", FuzionParser
+      .main(uri1)
       .get()
       .featureName()
       .baseName());

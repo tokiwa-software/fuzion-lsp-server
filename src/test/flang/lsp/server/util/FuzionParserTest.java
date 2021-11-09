@@ -55,7 +55,7 @@ public class FuzionParserTest extends BaseTest
         (1..10).forAll()
               """;
     SourceText.setText(uri1, sourceText);
-    var endOfFeature = FuzionParser.endOfFeature(FuzionParser.getMainFeature(uri1).get());
+    var endOfFeature = FuzionParser.endOfFeature(FuzionParser.main(uri1).get());
     assertEquals(2, endOfFeature._line);
     assertEquals(19, endOfFeature._column);
   }
@@ -67,7 +67,7 @@ public class FuzionParserTest extends BaseTest
     var sourceText = """
       """;
     SourceText.setText(uri1, sourceText);
-    var f = FuzionParser.getMainFeature(uri1);
+    var f = FuzionParser.main(uri1);
     assertEquals("#universe", f.get().qualifiedName());
   }
 
@@ -83,7 +83,7 @@ public class FuzionParserTest extends BaseTest
             grandChild3 is
       """;
     SourceText.setText(uri1, sourceText);
-    var f = FuzionParser.getMainFeature(uri1);
+    var f = FuzionParser.main(uri1);
     var df = FuzionParser.DeclaredFeatures(f.get()).collect(Collectors.toList());
     assertEquals(2, df.size());
     assertTrue(df.stream().anyMatch(x -> x.featureName().baseName().equals("childFeat1")));
@@ -104,7 +104,7 @@ public class FuzionParserTest extends BaseTest
       HelloWorld is
         say "Hello World!"
                   """);
-    var mainFeature = FuzionParser.getMainFeature(uri1);
+    var mainFeature = FuzionParser.main(uri1);
     assertEquals(0, FuzionParser.Errors(uri1).count());
     assertEquals(true, mainFeature.isPresent());
     assertEquals("HelloWorld", mainFeature.get().featureName().baseName());
@@ -127,7 +127,7 @@ public class FuzionParserTest extends BaseTest
 
 
                   """);
-    var mainFeature = FuzionParser.getMainFeature(uri1);
+    var mainFeature = FuzionParser.main(uri1);
     assertEquals(true, FuzionParser.Errors(uri1).count() > 0);
     assertEquals(true, mainFeature.isPresent());
   }

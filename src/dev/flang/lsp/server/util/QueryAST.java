@@ -58,39 +58,9 @@ public class QueryAST
     return LSP4jUtils.ComparePosition(LSP4jUtils.getPosition(params), Bridge.ToPosition(sourcePosition)) > 0;
   }
 
-  /**
-   * returns the outermost feature found in uri
-   * @param params
-   * @return
-   */
-  private static Optional<AbstractFeature> BaseFeature(TextDocumentIdentifier params)
-  {
-    return BaseFeature(LSP4jUtils.getUri(params));
-  }
-
-  /**
-  * returns the outermost feature found in uri
-  * @param uri
-  * @return
-  */
-  public static Optional<AbstractFeature> BaseFeature(URI uri)
-  {
-    var baseFeature = AllOf(uri, AbstractFeature.class)
-      .filter(IsFeatureInFile(uri))
-      .findFirst();
-    return baseFeature;
-  }
-
-  private static Predicate<? super AbstractFeature> IsFeatureInFile(URI uri)
-  {
-    return feature -> {
-      return uri.equals(FuzionParser.getUri(feature.pos()));
-    };
-  }
-
   public static Stream<AbstractFeature> CalledFeaturesSortedDesc(TextDocumentPositionParams params)
   {
-    var baseFeature = BaseFeature(params.getTextDocument());
+    var baseFeature = FuzionParser.main(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
@@ -188,7 +158,7 @@ public class QueryAST
   // NYI test this
   public static Stream<AbstractFeature> FeaturesIncludingInheritedFeatures(TextDocumentPositionParams params)
   {
-    var mainFeature = FuzionParser.getMainFeature(LSP4jUtils.getUri(params));
+    var mainFeature = FuzionParser.main(LSP4jUtils.getUri(params));
     if (mainFeature.isEmpty())
       {
         return Stream.empty();
@@ -216,7 +186,7 @@ public class QueryAST
    */
   private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
-    var baseFeature = BaseFeature(params.getTextDocument());
+    var baseFeature = FuzionParser.main(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
@@ -325,7 +295,7 @@ public class QueryAST
    */
   public static Stream<AbstractFeature> DeclaredFeaturesRecursive(URI uri)
   {
-    var baseFeature = BaseFeature(uri);
+    var baseFeature = FuzionParser.main(uri);
     if (baseFeature.isEmpty())
       {
         return Stream.empty();

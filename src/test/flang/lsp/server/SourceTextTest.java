@@ -65,7 +65,7 @@ class SourceTextTest extends BaseTest
       myFeat is
       """;
     SourceText.setText(uri1, CommentExample);
-    var myFeatIs = FuzionParser.getMainFeature(uri1)
+    var myFeatIs = FuzionParser.main(uri1)
       .get();
     var sourceText = SourceText.getText(Bridge.ToTextDocumentPosition(myFeatIs.pos()));
     assertEquals(true, sourceText.get().contains("myFeat is"));

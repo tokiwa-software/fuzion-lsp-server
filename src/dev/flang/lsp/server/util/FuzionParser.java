@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.air.Clazzes;
@@ -82,11 +83,16 @@ public class FuzionParser
    * @param uri
    * @return main feature in source text, may return universe
    */
-  public static Optional<AbstractFeature> getMainFeature(URI uri)
+  public static Optional<AbstractFeature> main(URI uri)
   {
     // NYI get rid of this
     currentResolution = getParserCacheRecord(uri).map(x -> x.frontEnd().res()).get();
     return getParserCacheRecord(uri).map(x -> x.mir().main());
+  }
+
+  public static Optional<AbstractFeature> main(TextDocumentIdentifier params)
+  {
+    return main(LSP4jUtils.getUri(params));
   }
 
   /**
@@ -364,5 +370,6 @@ public class FuzionParser
   {
     return getParserCacheRecord(uri).map(x -> x.errors()).get().stream();
   }
+
 
 }
