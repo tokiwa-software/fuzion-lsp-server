@@ -56,12 +56,12 @@ public class QueryASTTest extends BaseTest
   {
     SourceText.setText(uri1, HelloWorld);
     assertEquals("HelloWorld", QueryAST
-      .baseFeature(uri1)
+      .BaseFeature(uri1)
       .get()
       .featureName()
       .baseName());
     assertEquals("say", QueryAST
-      .allOf(uri1, Call.class)
+      .AllOf(uri1, Call.class)
       .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
       .findFirst()
       .get()
@@ -92,27 +92,27 @@ public class QueryASTTest extends BaseTest
                   """;
     SourceText.setText(uri1, sourceText);
 
-    assertEquals("infix ..", QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 4))
+    assertEquals("infix ..", QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 4))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("forAll", QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 10))
+    assertEquals("forAll", QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 10))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("forAll", QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 16))
+    assertEquals("forAll", QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 16))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("say", QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 24))
+    assertEquals("say", QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 24))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("say", QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 26))
+    assertEquals("say", QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 1, 26))
       .get()
       .featureName()
       .baseName());
@@ -127,7 +127,7 @@ public class QueryASTTest extends BaseTest
           say "$s"
                 """;
     SourceText.setText(uri1, sourceText);
-    var feature = QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 2, 4))
+    var feature = QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 2, 4))
       .get();
     assertEquals("say", feature.featureName().baseName());
   }
@@ -146,13 +146,13 @@ public class QueryASTTest extends BaseTest
       """;
     SourceText.setText(uri1, sourceText);
 
-    var feature = QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 5, 4)).get();
+    var feature = QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 5, 4)).get();
     assertEquals("say", feature.featureName().baseName());
 
-    feature = QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 4, 8)).get();
+    feature = QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 4, 8)).get();
     assertEquals("myi32", feature.featureName().baseName());
 
-    feature = QueryAST.featureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 4, 20)).get();
+    feature = QueryAST.FeatureAt(LSP4jUtils.TextDocumentPositionParams(uri1, 4, 20)).get();
     assertEquals("i32", feature.featureName().baseName());
   }
 

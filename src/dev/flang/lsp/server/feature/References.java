@@ -46,12 +46,12 @@ public class References
 
   public static List<? extends Location> getReferences(ReferenceParams params)
   {
-    var feature = QueryAST.featureAt(params);
+    var feature = QueryAST.FeatureAt(params);
     if (feature.isEmpty())
       {
         return List.of();
       }
-    return QueryAST.callsTo(LSP4jUtils.getUri(params), feature.get())
+    return QueryAST.CallsTo(LSP4jUtils.getUri(params), feature.get())
       .map(call -> Bridge.ToLocation(call.pos()))
       .collect(Collectors.toList());
   }

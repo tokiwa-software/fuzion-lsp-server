@@ -87,7 +87,7 @@ public class Command
 
   private static void showSyntaxTree(URI uri)
   {
-    var feature = QueryAST.baseFeature(uri);
+    var feature = QueryAST.BaseFeature(uri);
     if (feature.isEmpty())
       {
         Concurrency.Compute(() -> null);

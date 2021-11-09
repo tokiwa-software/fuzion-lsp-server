@@ -82,7 +82,7 @@ public class Completion
 
     if (".".equals(triggerCharacter))
       {
-        return completions(QueryAST.featuresIncludingInheritedFeatures(params));
+        return completions(QueryAST.FeaturesIncludingInheritedFeatures(params));
       }
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
       {

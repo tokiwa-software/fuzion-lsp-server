@@ -63,9 +63,9 @@ public class QueryAST
    * @param params
    * @return
    */
-  private static Optional<AbstractFeature> baseFeature(TextDocumentIdentifier params)
+  private static Optional<AbstractFeature> BaseFeature(TextDocumentIdentifier params)
   {
-    return baseFeature(LSP4jUtils.getUri(params));
+    return BaseFeature(LSP4jUtils.getUri(params));
   }
 
   /**
@@ -73,9 +73,9 @@ public class QueryAST
   * @param uri
   * @return
   */
-  public static Optional<AbstractFeature> baseFeature(URI uri)
+  public static Optional<AbstractFeature> BaseFeature(URI uri)
   {
-    var baseFeature = allOf(uri, AbstractFeature.class)
+    var baseFeature = AllOf(uri, AbstractFeature.class)
       .filter(IsFeatureInFile(uri))
       .findFirst();
     return baseFeature;
@@ -88,9 +88,9 @@ public class QueryAST
     };
   }
 
-  public static Stream<AbstractFeature> calledFeaturesSortedDesc(TextDocumentPositionParams params)
+  public static Stream<AbstractFeature> CalledFeaturesSortedDesc(TextDocumentPositionParams params)
   {
-    var baseFeature = baseFeature(params.getTextDocument());
+    var baseFeature = BaseFeature(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
@@ -119,7 +119,7 @@ public class QueryAST
    * @param classOfT
    * @return
    */
-  public static <T extends Object> Stream<T> allOf(URI uri, Class<T> classOfT)
+  public static <T extends Object> Stream<T> AllOf(URI uri, Class<T> classOfT)
   {
     var universe = FuzionParser.universe(uri);
 
@@ -133,13 +133,13 @@ public class QueryAST
    * @param feature
    * @return all calls to this feature
    */
-  public static Stream<Call> callsTo(URI uri, AbstractFeature feature)
+  public static Stream<Call> CallsTo(URI uri, AbstractFeature feature)
   {
-    return allOf(uri, Call.class)
+    return AllOf(uri, Call.class)
       .filter(call -> call.calledFeature().equals(feature));
   }
 
-  private static Stream<Object> callsAndFeaturesAt(TextDocumentPositionParams params)
+  private static Stream<Object> CallsAndFeaturesAt(TextDocumentPositionParams params)
   {
     return ASTItemsBeforeOrAtCursor(params)
       .filter(item -> Util.HashSetOf(AbstractFeature.class, Call.class)
@@ -151,10 +151,10 @@ public class QueryAST
    * @param params
    * @return feature at textdocumentposition or empty
    */
-  public static Optional<AbstractFeature> feature(TextDocumentPositionParams params)
+  public static Optional<AbstractFeature> Feature(TextDocumentPositionParams params)
   {
     var token = FuzionLexer.rawTokenAt(params);
-    return callsAndFeaturesAt(params).map(callOrFeature -> {
+    return CallsAndFeaturesAt(params).map(callOrFeature -> {
       if (callOrFeature instanceof Call)
         {
           return ((Call) callOrFeature).calledFeature();
@@ -173,7 +173,7 @@ public class QueryAST
         return Optional.empty();
       }
     var column = token.start()._column;
-    var isCallOrFeature = callsAndFeaturesAt(params)
+    var isCallOrFeature = CallsAndFeaturesAt(params)
       .map(obj -> ASTItem.sourcePosition(obj).get())
       .filter(pos -> column == pos._column)
       .findFirst()
@@ -185,7 +185,8 @@ public class QueryAST
     return Optional.of(token);
   }
 
-  public static Stream<AbstractFeature> featuresIncludingInheritedFeatures(TextDocumentPositionParams params)
+  // NYI test this
+  public static Stream<AbstractFeature> FeaturesIncludingInheritedFeatures(TextDocumentPositionParams params)
   {
     var mainFeature = FuzionParser.getMainFeature(LSP4jUtils.getUri(params));
     if (mainFeature.isEmpty())
@@ -193,7 +194,7 @@ public class QueryAST
         return Stream.empty();
       }
 
-    var feature = calledFeaturesSortedDesc(params)
+    var feature = CalledFeaturesSortedDesc(params)
       .map(x -> {
         return x.resultType().featureOfType();
       })
@@ -215,7 +216,7 @@ public class QueryAST
    */
   private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
-    var baseFeature = baseFeature(params.getTextDocument());
+    var baseFeature = BaseFeature(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
@@ -324,7 +325,7 @@ public class QueryAST
    */
   public static Stream<AbstractFeature> DeclaredFeaturesRecursive(URI uri)
   {
-    var baseFeature = baseFeature(uri);
+    var baseFeature = BaseFeature(uri);
     if (baseFeature.isEmpty())
       {
         return Stream.empty();
@@ -347,7 +348,7 @@ public class QueryAST
    * position that is declared, called or used by a type
    * @param params
    */
-  public static Optional<AbstractFeature> featureAt(TextDocumentPositionParams params)
+  public static Optional<AbstractFeature> FeatureAt(TextDocumentPositionParams params)
   {
     return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {

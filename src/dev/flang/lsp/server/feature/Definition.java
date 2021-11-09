@@ -47,7 +47,7 @@ public class Definition
   public static Either<List<? extends Location>, List<? extends LocationLink>> getDefinitionLocation(
       DefinitionParams params)
   {
-    var feature = QueryAST.featureAt(params);
+    var feature = QueryAST.FeatureAt(params);
     if(feature.isEmpty()){
       return null;
     }

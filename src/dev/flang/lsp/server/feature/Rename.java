@@ -70,7 +70,7 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
-    var feature = QueryAST.feature(params);
+    var feature = QueryAST.Feature(params);
     if (feature.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
@@ -102,7 +102,7 @@ public class Rename
     TokenInfo featureIdentifier)
   {
     var callsSourcePositions = QueryAST
-      .callsTo(uri, featureToRename)
+      .CallsTo(uri, featureToRename)
       .map(c -> c.pos())
       .map(pos -> {
         if (IsAtFunKeyword(pos))

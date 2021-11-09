@@ -117,7 +117,7 @@ public class FeatureTool {
       {
         return false;
       }
-    return QueryAST.allOf(FuzionParser.getUri(feature.pos()), AbstractFeature.class)
+    return QueryAST.AllOf(FuzionParser.getUri(feature.pos()), AbstractFeature.class)
       .anyMatch(f -> f.arguments().contains(feature));
   }
 

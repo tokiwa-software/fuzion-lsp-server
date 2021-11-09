@@ -45,7 +45,7 @@ public class Hovering
   public static Hover getHover(HoverParams params)
   {
     var range = FuzionLexer.rawTokenAt(params).toRange();
-    var feature = QueryAST.featureAt(params);
+    var feature = QueryAST.FeatureAt(params);
     if (feature.isEmpty())
       {
         return null;

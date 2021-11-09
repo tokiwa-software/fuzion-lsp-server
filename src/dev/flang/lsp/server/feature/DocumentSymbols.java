@@ -45,7 +45,7 @@ public class DocumentSymbols
 {
   public static List<Either<SymbolInformation, DocumentSymbol>> getDocumentSymbols(DocumentSymbolParams params)
   {
-    var baseFeature = QueryAST.baseFeature(LSP4jUtils.getUri(params.getTextDocument()));
+    var baseFeature = QueryAST.BaseFeature(LSP4jUtils.getUri(params.getTextDocument()));
     if (baseFeature.isEmpty())
       {
         return List.of();
