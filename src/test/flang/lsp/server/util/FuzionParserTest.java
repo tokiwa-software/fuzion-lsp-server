@@ -32,15 +32,12 @@ import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.QueryAST;
-import dev.flang.lsp.server.util.concurrent.MaxExecutionTimeExceededException;
-import dev.flang.util.Errors;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import test.flang.lsp.server.BaseTest;

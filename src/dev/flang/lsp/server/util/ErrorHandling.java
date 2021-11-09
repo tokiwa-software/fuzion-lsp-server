@@ -26,8 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.MessageParams;
@@ -35,7 +34,8 @@ import org.eclipse.lsp4j.MessageType;
 
 import dev.flang.lsp.server.Config;
 
-public class ErrorHandling {
+public class ErrorHandling
+{
 
   public static void WriteStackTraceAndExit(int status)
   {
@@ -64,10 +64,16 @@ public class ErrorHandling {
 
   private static String toString(Throwable th)
   {
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    th.printStackTrace(pw);
-    return th.getMessage() + System.lineSeparator() + sw.toString();
+    var stackTraceString = toString(th.getStackTrace());
+    return th.getMessage() + System.lineSeparator() + stackTraceString;
+  }
+
+  private static String toString(StackTraceElement[] stackTrace)
+  {
+    var stackTraceString = Arrays.stream(stackTrace)
+      .map(st -> st.toString())
+      .collect(Collectors.joining(System.lineSeparator()));
+    return stackTraceString;
   }
 
   public static String WriteStackTrace(Throwable e)
@@ -77,20 +83,12 @@ public class ErrorHandling {
       + Thread.getAllStackTraces()
         .entrySet()
         .stream()
-        .map(entry -> "Thread: " + entry.getKey().getName() + System.lineSeparator() + String(entry.getValue()))
+        .map(entry -> "Thread: " + entry.getKey().getName() + System.lineSeparator() + toString(entry.getValue()))
         .collect(Collectors.joining(System.lineSeparator()));
 
     return IO
       .writeToTempFile(stackTrace, "fuzion-lsp-crash", ".log", false)
       .getAbsolutePath();
-  }
-
-  private static String String(StackTraceElement[] stackTrace)
-  {
-    var sb = new StringBuilder();
-    for(int i = 1; i < stackTrace.length; i++)
-      sb.append("\tat " + stackTrace[i] + System.lineSeparator());
-    return sb.toString();
   }
 
 }
