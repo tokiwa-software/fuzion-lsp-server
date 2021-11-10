@@ -307,9 +307,13 @@ public class FuzionParser
    */
   public static SourcePosition endOfFeature(AbstractFeature feature)
   {
-    var uri = getUri(feature.pos());
     if (!EndOfFeature.containsKey(feature))
       {
+        if(FeatureTool.IsArgument(feature)){
+          // NYI make this more idiomatic?
+          return new SourcePosition(feature.pos()._sourceFile, 1, 1);
+        }
+        var uri = getUri(feature.pos());
         SourcePosition endOfFeature = ASTWalker.Traverse(feature)
           .filter(entry -> entry.getValue() != null)
           .filter(ASTItem.IsItemInFile(uri))
