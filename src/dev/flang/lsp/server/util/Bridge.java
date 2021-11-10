@@ -41,7 +41,7 @@ import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 /**
- * provides bridge utility functions between lsp4j <-> fuzion
+ * provides bridge utility functions converting between lsp4j <-> fuzion
  */
 public class Bridge {
 
