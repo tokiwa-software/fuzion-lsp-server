@@ -90,7 +90,7 @@ public class ASTWalker
     TraverseReturnType(feature.returnType(), feature, callback);
     TraverseType(feature.resultType(), feature, callback);
 
-    if (FeatureTool.IsRoutineOrRoutineDef(feature))
+    if (feature.isRoutine())
       {
         TraverseExpression(feature.code(), feature, callback);
       }
