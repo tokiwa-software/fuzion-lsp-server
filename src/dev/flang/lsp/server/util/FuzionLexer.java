@@ -59,7 +59,7 @@ public class FuzionLexer
   public static TokenInfo nextTokenOfType(String str, HashSet<Token> tokens)
   {
     return IO.WithTextInputStream(str, () -> {
-      var lexer = new Lexer(SourceFile.STDIN);
+      var lexer = IO.WithRedirectedStdErr(() -> new Lexer(SourceFile.STDIN));
 
       while (lexer.current() != Token.t_eof && !tokens.contains(lexer.current()))
         {
