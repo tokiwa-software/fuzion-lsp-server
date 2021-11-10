@@ -49,10 +49,12 @@ public class Concurrency
 
   // for now we have to run most things more or less sequentially
   private static ExecutorService executor = Executors.newSingleThreadExecutor();
+  private static ExecutorService cachedThreadPoolExecutor = Executors.newCachedThreadPool();
+
 
   public static void RunInBackground(Runnable runnable)
   {
-    executor.submit(runnable);
+    cachedThreadPoolExecutor.submit(runnable);
   }
 
   /**
@@ -81,9 +83,10 @@ public class Concurrency
         var completed = false;
         while (!completed)
           {
-            if(cancelToken != null){
-              cancelToken.checkCanceled();
-            }
+            if (cancelToken != null)
+              {
+                cancelToken.checkCanceled();
+              }
             try
               {
                 future.get(intervallCancelledCheckInMs, TimeUnit.MILLISECONDS);
