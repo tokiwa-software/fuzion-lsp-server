@@ -62,6 +62,7 @@ classes: $(JAVA_FILES) $(JARS) build_fuzion
 stdio: classes
 	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main
 
+debug: $(shell lsof -i:8000 | tail -n 1 | awk -F ' ' '{print $$2}' | xargs kill)
 debug: classes
 	mkdir -p runDir
 	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
