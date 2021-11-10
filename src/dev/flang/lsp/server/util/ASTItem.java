@@ -64,9 +64,10 @@ public class ASTItem
           }
         if (item instanceof Call c)
           {
-            if(c.calledFeature_ != null){
-              return c.calledFeature().qualifiedName();
-            }
+            if (c.calledFeature_ != null)
+              {
+                return c.calledFeature().qualifiedName();
+              }
             return "called feature not know.";
           }
         if (item instanceof Assign a)
@@ -161,7 +162,7 @@ public class ASTItem
   }
 
   private static final SourcePosition None =
-    new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
+    IO.WithRedirectedStdErr(() -> new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0));
 
   public static SourcePosition sourcePositionOrNone(Object obj)
   {
