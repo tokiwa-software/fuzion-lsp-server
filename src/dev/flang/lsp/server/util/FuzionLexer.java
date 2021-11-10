@@ -46,7 +46,7 @@ public class FuzionLexer
   public static Boolean IsValidIdentifier(String str)
   {
     var isIdentifier = IO.WithTextInputStream(str, () -> {
-      var lexer = new Lexer(SourceFile.STDIN);
+      var lexer = NewLexerStdIn();
       return lexer.current() == Token.t_ident;
     });
     return isIdentifier;
@@ -59,7 +59,7 @@ public class FuzionLexer
   public static TokenInfo nextTokenOfType(String str, HashSet<Token> tokens)
   {
     return IO.WithTextInputStream(str, () -> {
-      var lexer = IO.WithRedirectedStdErr(() -> new Lexer(SourceFile.STDIN));
+      var lexer = NewLexerStdIn();
 
       while (lexer.current() != Token.t_eof && !tokens.contains(lexer.current()))
         {
@@ -69,12 +69,17 @@ public class FuzionLexer
     });
   }
 
+  private static Lexer NewLexerStdIn()
+  {
+    return IO.WithRedirectedStdErr(() -> new Lexer(SourceFile.STDIN));
+  }
+
   public static TokenInfo rawTokenAt(TextDocumentPositionParams params)
   {
     var sourceText = SourceText.getText(params).get();
     return IO.WithTextInputStream(sourceText, () -> {
 
-      var lexer = new Lexer(SourceFile.STDIN);
+      var lexer = NewLexerStdIn();
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
 
       while (lexer.current() != Token.t_eof
@@ -110,7 +115,7 @@ public class FuzionLexer
     var sourceText = SourceText.getText(params).get();
     return IO.WithTextInputStream(sourceText, () -> {
 
-      var lexer = new Lexer(SourceFile.STDIN);
+      var lexer = NewLexerStdIn();
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
 
       while (lexer.current() != Token.t_eof
@@ -126,7 +131,7 @@ public class FuzionLexer
   {
     var sourceText = SourceText.getText(params).get();
     return IO.WithTextInputStream(sourceText, () -> {
-      var lexer = new Lexer(SourceFile.STDIN);
+      var lexer = NewLexerStdIn();
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
       lexer.nextRaw();
       while (lexer.current() == Token.t_ws)
