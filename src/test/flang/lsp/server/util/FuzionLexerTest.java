@@ -65,7 +65,7 @@ public class FuzionLexerTest extends BaseTest {
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(LSP4jUtils.TextDocumentPositionParams(uri1, 2, 2));
+      FuzionLexer.rawTokenAt(Cursor(uri1, 2, 2));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -77,7 +77,7 @@ public class FuzionLexerTest extends BaseTest {
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(LSP4jUtils.TextDocumentPositionParams(uri1, 6, 7));
+      FuzionLexer.rawTokenAt(Cursor(uri1, 6, 7));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }

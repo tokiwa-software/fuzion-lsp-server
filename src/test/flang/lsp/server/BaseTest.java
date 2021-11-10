@@ -29,9 +29,11 @@ package test.flang.lsp.server;
 import java.net.URI;
 import java.nio.file.Path;
 
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.junit.Assert;
 
 import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.util.LSP4jUtils;
 
 public abstract class BaseTest extends Assert
 {
@@ -92,5 +94,9 @@ public abstract class BaseTest extends Assert
     ex is
       (1..10).
           """;
+
+  protected static TextDocumentPositionParams Cursor(URI uri, int line, int character){
+    return LSP4jUtils.TextDocumentPositionParams(uri1, line, character);
+  }
 
 }

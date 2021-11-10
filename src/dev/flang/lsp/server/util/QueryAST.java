@@ -350,5 +350,23 @@ public class QueryAST
       .findFirst();
   }
 
+  /**
+   * @param params
+   * @return the most inner feature at the cursor position
+   */
+  public static Optional<AbstractFeature> InFeature(TextDocumentPositionParams params)
+  {
+    return DeclaredFeaturesRecursive(LSP4jUtils.getUri(params))
+      .filter(f -> {
+        var cursorPosition = LSP4jUtils.getPosition(params);
+        var startOfFeature = Bridge.ToPosition(f.pos());
+        var endOfFeature = Bridge.ToPosition(FuzionParser.endOfFeature(f));
+        return LSP4jUtils.ComparePosition(cursorPosition, endOfFeature) <= 0 &&
+          LSP4jUtils.ComparePosition(cursorPosition, startOfFeature) > 0;
+      })
+      .sorted(CompareBySourcePosition.reversed())
+      .findFirst();
+  }
+
 
 }
