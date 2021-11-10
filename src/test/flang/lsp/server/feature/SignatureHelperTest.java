@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
+import java.net.URI;
+
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.junit.jupiter.api.Test;
@@ -42,14 +44,50 @@ public class SignatureHelperTest extends BaseTest
         say "
     """;
 
+  private static final String Mandelbrot = """
+  mandelbrotexample is
+    isInMandelbrotSet(c complex<f64>, maxEscapeIterations i32, z complex<f64>) bool is
+      maxEscapeIterations = 0 || z.abs² <= 4 && isInMandelbrotSet c maxEscapeIterations-1 z*z+c
+
+    # NYI how to convert i32 to f64?
+    to_f64(i i32) f64 is
+      if i > 0 1.0 + to_f64(i - 1) else 1.0
+
+    steps(start, step f64, numPixels i32) =>
+      array<f64> numPixels (i -> start + to_f64(i) * step)
+
+    mandelbrotImage(yStart, yStep, xStart, xStep f64, height, width i32) =>
+      for y in steps yStart yStep height do
+        for x in steps xStart xStep width do
+          if isInMandelbrotSet (complex x y) 50 (complex 0.0 0.0)
+            yak "⬤"
+          else
+            yak
+        say ""
+
+    mandelbrotImage 1 -0.05 -2 0.0315 40 80
+  """;
+
   @Test
-  public void getSignatureHelp()
+  public void getSignatureHelpMultipleSignatures()
   {
     SourceText.setText(uri1, HelloWorld);
-    var signatureHelp =
-      SignatureHelper.getSignatureHelp(new SignatureHelpParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 5)));
-    assertEquals("say() => unit", signatureHelp.getSignatures().get(0).getLabel());
-    assertEquals("say(s Object) => unit", signatureHelp.getSignatures().get(1).getLabel());
+    assertEquals("say() => unit", LabelAt(uri1, new Position(1, 5), 0));
+    assertEquals("say(s Object) => unit", LabelAt(uri1, new Position(1, 5), 1));
+  }
+
+  @Test
+  public void getSignatureHelpMandelbrot()
+  {
+    SourceText.setText(uri1, Mandelbrot);
+    assertEquals("yak(s Object) => unit", LabelAt(uri1, new Position(17, 13), 0));
+    assertEquals("mandelbrotImage(yStart f64, yStep f64, xStart f64, xStep f64, height i32, width i32) => unit", LabelAt(uri1, new Position(20, 17), 0));
+  }
+
+  private String LabelAt(URI uri, final Position position, int index)
+  {
+    return SignatureHelper.getSignatureHelp(new SignatureHelpParams(LSP4jUtils.TextDocumentIdentifier(uri), position))
+    .getSignatures().get(index).getLabel();
   }
 
 }

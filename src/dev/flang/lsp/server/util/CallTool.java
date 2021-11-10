@@ -28,6 +28,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
@@ -39,19 +40,15 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.lsp.server.Util;
 import dev.flang.util.SourcePosition;
 
-public class CallTool {
-
+public class CallTool
+{
   /**
    * @param call
    * @return
    */
-  public static AbstractFeature featureOf(Call call)
+  public static Optional<AbstractFeature> featureOf(Call call)
   {
-    var uri = FuzionParser.getUri(call.pos);
-    return QueryAST.DeclaredFeaturesRecursive(uri)
-      .filter(CallTool.contains(call))
-      .findFirst()
-      .orElseThrow();
+    return QueryAST.InFeature(Bridge.ToTextDocumentPosition(call.pos()));
   }
 
   /**

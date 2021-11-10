@@ -57,17 +57,29 @@ public class SignatureHelper
       }
 
     var featureOfCall =
-      call.get().target instanceof Call callTarget ? callTarget.calledFeature(): CallTool.featureOf(call.get());
+      call.get().target instanceof Call callTarget
+                                                   ? Optional.of(callTarget.calledFeature())
+                                                   : CallTool.featureOf(call.get());
 
-      var consideredCallTargets_declaredOrInherited = FuzionParser.DeclaredOrInheritedFeatures(featureOfCall);
-      var consideredCallTargets_outerFeatures =
-        FeatureTool.outerFeatures(featureOfCall).flatMap(f -> FuzionParser.DeclaredFeatures(f));
+    if (featureOfCall.isEmpty())
+      {
+        return new SignatureHelp();
+      }
 
-      var consideredFeatures =
-        Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
+    return getSignatureHelp(call.get(), featureOfCall.get());
+  }
+
+  private static SignatureHelp getSignatureHelp(Call call, AbstractFeature featureOfCall)
+  {
+    var consideredCallTargets_declaredOrInherited = FuzionParser.DeclaredOrInheritedFeatures(featureOfCall);
+    var consideredCallTargets_outerFeatures =
+      FeatureTool.outerFeatures(featureOfCall).flatMap(f -> FuzionParser.DeclaredFeatures(f));
+
+    var consideredFeatures =
+      Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
 
     var calledFeatures = consideredFeatures
-      .filter(f -> featureNameMatchesCallName(f, call.get()));
+      .filter(f -> featureNameMatchesCallName(f, call));
 
     // NYI how to "intelligently" sort the signatureinfos?
     return new SignatureHelp(calledFeatures.map(f -> SignatureInformation(f)).collect(Collectors.toList()), 0, 0);
@@ -87,7 +99,8 @@ public class SignatureHelper
 
   private static List<ParameterInformation> ParameterInfo(AbstractFeature calledFeature)
   {
-    return calledFeature.arguments().stream()
+    return calledFeature.arguments()
+      .stream()
       .map(
         arg -> new ParameterInformation("NYI" + arg.featureName().baseName() + " " + arg.thisType().toString()))
       .collect(Collectors.toList());
