@@ -64,8 +64,14 @@ public class ErrorHandling
 
   private static String toString(Throwable th)
   {
+    if (th == null)
+      {
+        return "";
+      }
     var stackTraceString = toString(th.getStackTrace());
-    return th.getMessage() + System.lineSeparator() + stackTraceString;
+    return th.getMessage() + System.lineSeparator()
+      + stackTraceString + System.lineSeparator()
+      + toString(th.getCause());
   }
 
   private static String toString(StackTraceElement[] stackTrace)
