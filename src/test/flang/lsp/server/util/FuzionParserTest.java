@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.util.SourceFile;
@@ -57,6 +58,16 @@ public class FuzionParserTest extends BaseTest
     assertEquals(19, endOfFeature._column);
   }
 
+  @Test
+  public void EndOfFeatureLambdaDefinition(){
+    SourceText.setText(uri1, ManOrBoy);
+    var feature_b = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.main(uri1).get())
+      .filter(x -> x.featureName().baseName().equals("b")).findFirst().get();
+    var endOfFeature = FuzionParser.endOfFeature(feature_b);
+    assertEquals(4, endOfFeature._line);
+    assertEquals(52, endOfFeature._column);
+
+  }
 
   @Test
   public void noSourceText()
@@ -143,5 +154,6 @@ public class FuzionParserTest extends BaseTest
     assertThrows(ExecutionException.class, () -> FuzionParser.Run(uri1, 10000));
     assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri1).count());
   }
+
 
 }
