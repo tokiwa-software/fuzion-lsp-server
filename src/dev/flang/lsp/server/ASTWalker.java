@@ -239,7 +239,7 @@ public class ASTWalker
     c.generics.forEach(g -> TraverseType(g, outer, callback));
     c._actuals.forEach(a -> TraverseExpression(a, outer, callback));
     // this should be enough to not run into an infinite recursion...
-    if (!IsSameSourceFile(c.target, outer))
+    if (c.target == null || !IsSameSourceFile(c.target, outer))
       {
         return;
       }
