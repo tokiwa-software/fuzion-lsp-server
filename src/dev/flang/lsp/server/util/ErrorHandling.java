@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.MessageParams;
@@ -95,6 +96,24 @@ public class ErrorHandling
     return IO
       .writeToTempFile(stackTrace, "fuzion-lsp-crash", ".log", false)
       .getAbsolutePath();
+  }
+
+  /**
+   * @param <T>
+   * @param callable
+   * @param defaultValue
+   * @return result of callable or in the case of an exception a default value
+   */
+  public static <T> T ResultOrDefault(Callable<T> callable, T defaultValue)
+  {
+    try
+      {
+        return callable.call();
+      }
+    catch (Exception e)
+      {
+        return defaultValue;
+      }
   }
 
 }

@@ -55,7 +55,7 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
 import dev.flang.lsp.server.util.ASTItem;
-import dev.flang.lsp.server.util.FeatureTool;
+import dev.flang.lsp.server.util.ErrorHandling;
 import dev.flang.lsp.server.util.FuzionParser;
 
 public class ASTWalker
@@ -90,7 +90,10 @@ public class ASTWalker
     TraverseReturnType(feature.returnType(), feature, callback);
     TraverseType(feature.resultType(), feature, callback);
 
-    if (feature.isRoutine())
+    // feature.isRoutine() sometimes throws because it depends on
+    // statically held Types.resolved.f_choice which may have been cleared already.
+    // We may remove wrapper ResultOrDefault in the future if this changes.
+    if (ErrorHandling.ResultOrDefault(() -> feature.isRoutine(), false))
       {
         TraverseExpression(feature.code(), feature, callback);
       }
