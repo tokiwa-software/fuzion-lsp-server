@@ -145,4 +145,12 @@ public class FeatureTool
     return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.implKind());
   }
 
+  static AbstractFeature universe(AbstractFeature f)
+  {
+    if(f.isUniverse()){
+      return f;
+    }
+    return universe(f.outer());
+  }
+
 }

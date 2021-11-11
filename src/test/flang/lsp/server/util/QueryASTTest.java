@@ -52,7 +52,7 @@ public class QueryASTTest extends BaseTest
   }
 
   @Test
-  public void allOf()
+  public void AllOf()
   {
     SourceText.setText(uri1, HelloWorld);
     assertEquals("HelloWorld", FuzionParser
@@ -61,7 +61,9 @@ public class QueryASTTest extends BaseTest
       .featureName()
       .baseName());
     assertEquals("say", QueryAST
-      .AllOf(uri1, Call.class)
+      .AllOf(FuzionParser
+        .main(uri1)
+        .get(), Call.class)
       .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
       .findFirst()
       .get()
@@ -157,7 +159,8 @@ public class QueryASTTest extends BaseTest
   }
 
   @Test
-  public void InFeature(){
+  public void InFeature()
+  {
     SourceText.setText(uri1, ManOrBoy);
     assertEquals("a", QueryAST.InFeature(Cursor(uri1, 4, 1)).get().featureName().baseName());
   }

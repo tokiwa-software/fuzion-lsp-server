@@ -85,16 +85,14 @@ public class QueryAST
 
 
   /**
-   * example: allOf(uri, Call.class) returns all Calls
+   * example: AllOf(uri, Call.class) returns all Calls
    * @param <T>
    * @param classOfT
    * @return
    */
-  public static <T extends Object> Stream<T> AllOf(URI uri, Class<T> classOfT)
+  public static <T extends Object> Stream<T> AllOf(AbstractFeature feature, Class<T> classOfT)
   {
-    var universe = FuzionParser.universe(uri);
-
-    return ASTWalker.Traverse(universe)
+    return ASTWalker.Traverse(feature)
       .map(e -> e.getKey())
       .filter(obj -> classOfT.isAssignableFrom(obj.getClass()))
       .map(obj -> (T) obj);
@@ -104,9 +102,9 @@ public class QueryAST
    * @param feature
    * @return all calls to this feature
    */
-  public static Stream<Call> CallsTo(URI uri, AbstractFeature feature)
+  public static Stream<Call> CallsTo(AbstractFeature feature)
   {
-    return AllOf(uri, Call.class)
+    return AllOf(FeatureTool.universe(feature), Call.class)
       .filter(call -> call.calledFeature().equals(feature));
   }
 

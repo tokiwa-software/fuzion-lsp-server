@@ -60,6 +60,7 @@ import dev.flang.lsp.server.records.ParserCacheRecord;
 import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
@@ -68,7 +69,7 @@ import dev.flang.util.SourcePosition;
  * - caches parsing results.
  * - provides a function to get the original URI of a SourcePosition
  */
-public class FuzionParser
+public class FuzionParser extends ANY
 {
 
   private static final String PARSER_LOCK = "";
@@ -267,7 +268,7 @@ public class FuzionParser
 
   public static Stream<AbstractFeature> AllDeclaredFeatures(AbstractFeature f)
   {
-    return universe2ResolutionMap.get(universe(f))._module
+    return universe2ResolutionMap.get(FeatureTool.universe(f))._module
       .declaredFeatures(f)
       .values()
       .stream();
@@ -275,17 +276,9 @@ public class FuzionParser
 
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
-    return universe2ResolutionMap.get(universe(f))._module.declaredOrInheritedFeatures(f)
+    return universe2ResolutionMap.get(FeatureTool.universe(f))._module.declaredOrInheritedFeatures(f)
       .values()
       .stream();
-  }
-
-  private static AbstractFeature universe(AbstractFeature f)
-  {
-    if(f.isUniverse()){
-      return f;
-    }
-    return universe(f.outer());
   }
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)

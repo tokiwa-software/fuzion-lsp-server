@@ -51,7 +51,7 @@ public class References
       {
         return List.of();
       }
-    return QueryAST.CallsTo(LSP4jUtils.getUri(params), feature.get())
+    return QueryAST.CallsTo(feature.get())
       .map(call -> Bridge.ToLocation(call.pos()))
       .collect(Collectors.toList());
   }
