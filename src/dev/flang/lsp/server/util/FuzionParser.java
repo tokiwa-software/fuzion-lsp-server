@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Stream;
@@ -76,8 +77,7 @@ public class FuzionParser
    */
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
   private static TreeMap<String, ParserCacheRecord> sourceText2ParserCache = new TreeMap<>();
-  // NYI get rid of this
-  private static Resolution currentResolution;
+  private static HashMap<AbstractFeature, Resolution> universe2ResolutionMap = new HashMap<>();
 
   /**
    * @param uri
@@ -85,8 +85,6 @@ public class FuzionParser
    */
   public static Optional<AbstractFeature> main(URI uri)
   {
-    // NYI get rid of this
-    currentResolution = getParserCacheRecord(uri).map(x -> x.frontEnd().res()).get();
     return getParserCacheRecord(uri).map(x -> x.mir().main());
   }
 
@@ -137,8 +135,9 @@ public class FuzionParser
         var sourceText = SourceText.getText(uri).orElseThrow();
         var result = parserCacheRecord(uri);
         sourceText2ParserCache.put(sourceText, result);
-        // NYI get rid of this
-        currentResolution = getParserCacheRecord(uri).map(x -> x.frontEnd().res()).get();
+
+        universe2ResolutionMap.put(result.mir().universe(), result.frontEnd().res());
+
         return result;
       }
   }
@@ -258,8 +257,6 @@ public class FuzionParser
 
   public static AbstractFeature universe(URI uri)
   {
-    // NYI get rid of this
-    currentResolution = getParserCacheRecord(uri).map(x -> x.frontEnd().res()).get();
     return getParserCacheRecord(uri).map(x -> x.mir().universe()).orElseThrow();
   }
 
@@ -270,18 +267,25 @@ public class FuzionParser
 
   public static Stream<AbstractFeature> AllDeclaredFeatures(AbstractFeature f)
   {
-    // NYI get rid of this
-    return currentResolution._module.declaredFeatures(f)
+    return universe2ResolutionMap.get(universe(f))._module
+      .declaredFeatures(f)
       .values()
       .stream();
   }
 
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
-    // NYI get rid of this
-    return currentResolution._module.declaredOrInheritedFeatures(f)
+    return universe2ResolutionMap.get(universe(f))._module.declaredOrInheritedFeatures(f)
       .values()
       .stream();
+  }
+
+  private static AbstractFeature universe(AbstractFeature f)
+  {
+    if(f.isUniverse()){
+      return f;
+    }
+    return universe(f.outer());
   }
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
@@ -300,6 +304,7 @@ public class FuzionParser
 
   /**
    * NYI replace by real end of feature once we have this information in the AST
+   * NOTE: since this is a very expensive calculation and frequently used we cache this
    * @param feature
    * @return
    */
