@@ -46,16 +46,15 @@ import dev.flang.util.Errors;
  */
 public class Main
 {
+  private static String[] arguments;
 
   public static void main(String[] args) throws Exception
   {
-
+    arguments = args;
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
 
-    Config.setTransport(Arrays.stream(args).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals)
-                                                                                                          ? Transport.tcp
-                                                                                                          : Transport.stdio);
+    Config.setTransport(HasArg("-tcp") ? Transport.tcp: Transport.stdio);
 
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
       @Override
@@ -68,6 +67,11 @@ public class Main
     var launcher = getLauncher();
     launcher.startListening();
     Config.setLanguageClient(launcher.getRemoteProxy());
+  }
+
+  private static boolean HasArg(String string)
+  {
+    return Arrays.stream(arguments).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals);
   }
 
   private static Launcher<LanguageClient> getLauncher() throws InterruptedException, ExecutionException, IOException
