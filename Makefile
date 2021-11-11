@@ -62,7 +62,8 @@ classes: $(JAVA_FILES) $(JARS) build_fuzion
 stdio: classes
 	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main
 
-debug: $(shell lsof -i:8000 | tail -n 1 | awk -F ' ' '{print $$2}' | xargs kill)
+.PHONY: debug
+debug: NOOP = $(shell lsof -i:8000 | tail -n 1 | awk -F ' ' '{print $$2}' | xargs kill)
 debug: classes
 	mkdir -p runDir
 	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
@@ -132,6 +133,7 @@ run_tests_parallel: classes
 run_tests_suspended: classes
 	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
 
+.PHONY: profile
 profile: PID = $(shell ps aux | grep agentlib:jdwp | grep lsp4j |grep -v grep  |tail -n 1 | awk -F ' ' '{print $$2}')
 profile:
 	sudo sysctl kernel.perf_event_paranoid=1
