@@ -38,7 +38,8 @@ import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 
-public class FeatureTool {
+public class FeatureTool
+{
 
   public static Stream<AbstractFeature> InheritedFeatures(AbstractFeature feature)
   {
@@ -117,8 +118,10 @@ public class FeatureTool {
       {
         return false;
       }
-    return QueryAST.AllOf(FuzionParser.getUri(feature.pos()), AbstractFeature.class)
-      .anyMatch(f -> f.arguments().contains(feature));
+    return feature.outer()
+      .arguments()
+      .stream()
+      .anyMatch(f -> f.equals(feature));
   }
 
   public static boolean IsAnonymousInnerFeature(AbstractFeature f)
