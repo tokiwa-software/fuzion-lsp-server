@@ -135,11 +135,12 @@ run_tests_suspended: classes
 
 .PHONY: profile
 profile: PID = $(shell ps aux | grep agentlib:jdwp | grep lsp4j |grep -v grep  |tail -n 1 | awk -F ' ' '{print $$2}')
+profile: DATE = $(shell date +%y%m%d-%H%M%S)
 profile:
 	sudo sysctl kernel.perf_event_paranoid=1
 # https://github.com/jvm-profiling-tools/async-profiler
-	profiler.sh -d 30 -f /tmp/flamegraph.html $(PID)
-	x-www-browser /tmp/flamegraph.html
+	profiler.sh -d 30 -f /tmp/$(DATE)_flamegraph.html $(PID)
+	x-www-browser /tmp/$(DATE)_flamegraph.html
 
 release: jar
 	rm -f fuzion_language_server_$(VERSION).zip
