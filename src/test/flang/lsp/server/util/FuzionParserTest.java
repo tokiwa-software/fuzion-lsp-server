@@ -47,7 +47,7 @@ import test.flang.lsp.server.BaseTest;
 public class FuzionParserTest extends BaseTest
 {
   @Test
-  public void endOfFeature()
+  public void EndOfFeature()
   {
     var sourceText = """
       ex7 is
@@ -55,8 +55,8 @@ public class FuzionParserTest extends BaseTest
               """;
     SourceText.setText(uri1, sourceText);
     var endOfFeature = FuzionParser.endOfFeature(FuzionParser.main(uri1).get());
-    assertEquals(2, endOfFeature._line);
-    assertEquals(19, endOfFeature._column);
+    assertEquals(3, endOfFeature._line);
+    assertEquals(1, endOfFeature._column);
   }
 
   @Test
