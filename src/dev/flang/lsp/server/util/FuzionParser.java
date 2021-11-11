@@ -145,17 +145,14 @@ public class FuzionParser
 
   private static ParserCacheRecord parserCacheRecord(URI uri)
   {
-    //NYI I'm unsure why this does not seem to dead lock?
-    return IO.WithRedirectedStdOut(() -> {
-      return IO.WithRedirectedStdErr(() -> {
-        ClearStaticallyHeldStuffInFuzionCompiler();
-        var frontEndOptions = FrontEndOptions(uri);
-        var frontEnd = new FrontEnd(frontEndOptions);
-        var mir = frontEnd.createMIR();
-        var errors = Errors.errors();
-        var warnings = Errors.warnings();
-        return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings);
-      });
+    return IO.WithSurpressedOutput(() -> {
+      ClearStaticallyHeldStuffInFuzionCompiler();
+      var frontEndOptions = FrontEndOptions(uri);
+      var frontEnd = new FrontEnd(frontEndOptions);
+      var mir = frontEnd.createMIR();
+      var errors = Errors.errors();
+      var warnings = Errors.warnings();
+      return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings);
     });
   }
 
@@ -310,15 +307,17 @@ public class FuzionParser
   {
     if (!EndOfFeature.containsKey(feature))
       {
-        if(FeatureTool.IsArgument(feature)){
-          // NYI make this more idiomatic?
-          return new SourcePosition(feature.pos()._sourceFile, 1, 1);
-        }
-        if(!feature.isUniverse() && feature.outer().isUniverse()){
-          var sourceText = SourceText.getText(FuzionParser.getUri(feature.pos())).get();
-          var lines = sourceText.split("\n").length;
-          return new SourcePosition(feature.pos()._sourceFile, lines + 1 , 1);
-        }
+        if (FeatureTool.IsArgument(feature))
+          {
+            // NYI make this more idiomatic?
+            return new SourcePosition(feature.pos()._sourceFile, 1, 1);
+          }
+        if (!feature.isUniverse() && feature.outer().isUniverse())
+          {
+            var sourceText = SourceText.getText(FuzionParser.getUri(feature.pos())).get();
+            var lines = sourceText.split("\n").length;
+            return new SourcePosition(feature.pos()._sourceFile, lines + 1, 1);
+          }
         var uri = getUri(feature.pos());
         SourcePosition endOfFeature = ASTWalker.Traverse(feature)
           .filter(entry -> entry.getValue() != null)

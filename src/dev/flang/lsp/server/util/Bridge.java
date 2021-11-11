@@ -68,7 +68,7 @@ public class Bridge {
 
   public static SourceFile ToSourceFile(URI uri)
   {
-    return IO.WithRedirectedStdErr(() -> {
+    return IO.WithSurpressedOutput(() -> {
       var filePath = Path.of(uri);
       if (filePath.equals(SourceFile.STDIN))
         {

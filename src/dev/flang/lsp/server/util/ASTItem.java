@@ -162,7 +162,7 @@ public class ASTItem
   }
 
   private static final SourcePosition None =
-    IO.WithRedirectedStdErr(() -> new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0));
+    IO.WithSurpressedOutput(() -> new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0));
 
   public static SourcePosition sourcePositionOrNone(Object obj)
   {

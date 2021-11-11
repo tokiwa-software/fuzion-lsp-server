@@ -47,6 +47,8 @@ import dev.flang.lsp.server.enums.Transport;
 public class IO
 {
   static final PrintStream DEV_NULL = new PrintStream(OutputStream.nullOutputStream());
+  static final String LOCK_REPLACED_SYSTEM_OUTPUT = "";
+  static final String LOCK_REPLACED_SYSTEM_INPUT = "";
 
   static byte[] getBytes(String text)
   {
@@ -94,42 +96,19 @@ public class IO
       }
   }
 
-  public static <T> T WithRedirectedStdOut(Callable<T> callable)
+  public static <T> T WithSurpressedOutput(Callable<T> callable)
   {
     if (Config.transport() == Transport.tcp)
       {
         return callOrPanic(callable);
       }
-    synchronized (DEV_NULL)
+    synchronized (LOCK_REPLACED_SYSTEM_OUTPUT)
       {
         var out = System.out;
-        try
-          {
-            System.setOut(DEV_NULL);
-            return callable.call();
-          }
-        catch (Exception e)
-          {
-            ErrorHandling.WriteStackTraceAndExit(1, e);
-            return null;
-          } finally
-          {
-            System.setOut(out);
-          }
-      }
-  }
-
-  public static <T> T WithRedirectedStdErr(Callable<T> callable)
-  {
-    if (Config.transport() == Transport.tcp)
-      {
-        return callOrPanic(callable);
-      }
-    synchronized (DEV_NULL)
-      {
         var err = System.err;
         try
           {
+            System.setOut(DEV_NULL);
             System.setErr(DEV_NULL);
             return callable.call();
           }
@@ -139,6 +118,7 @@ public class IO
             return null;
           } finally
           {
+            System.setOut(out);
             System.setErr(err);
           }
       }
@@ -149,7 +129,7 @@ public class IO
     byte[] byteArray = getBytes(text);
 
     InputStream testInput = new ByteArrayInputStream(byteArray);
-    synchronized (DEV_NULL)
+    synchronized (LOCK_REPLACED_SYSTEM_INPUT)
       {
         InputStream old = System.in;
         try
@@ -194,7 +174,7 @@ public class IO
   public static Callable<String> WithCapturedStdOutErr(Runnable runnable)
   {
     return () -> {
-      synchronized (DEV_NULL)
+      synchronized (LOCK_REPLACED_SYSTEM_OUTPUT)
         {
           var out = System.out;
           var err = System.err;
