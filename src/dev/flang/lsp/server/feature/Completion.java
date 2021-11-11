@@ -82,12 +82,11 @@ public class Completion
 
     if (".".equals(triggerCharacter))
       {
-        return completions(QueryAST.FeaturesIncludingInheritedFeatures(params));
+        return completions(QueryAST.CallCompletionsAt(params));
       }
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
       {
-        // NYI can we do better here?
-        return completions(Stream.of(FuzionParser.universe(params)));
+        return completions(QueryAST.CompletionsAt(params));
       }
 
     // NYI FIXME we need to move the cursor one step back

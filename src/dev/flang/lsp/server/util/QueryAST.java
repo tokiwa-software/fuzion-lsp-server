@@ -57,12 +57,12 @@ public class QueryAST
     return LSP4jUtils.ComparePosition(LSP4jUtils.getPosition(params), Bridge.ToPosition(sourcePosition)) > 0;
   }
 
-  public static Stream<AbstractFeature> CalledFeaturesSortedDesc(TextDocumentPositionParams params)
+  public static Optional<AbstractFeature> CalledFeature(TextDocumentPositionParams params)
   {
     var baseFeature = FuzionParser.main(params.getTextDocument());
     if (baseFeature.isEmpty())
       {
-        return Stream.empty();
+        return Optional.empty();
       }
 
     return ASTWalker.Traverse(baseFeature.get())
@@ -73,12 +73,14 @@ public class QueryAST
       .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
       .map(entry -> entry.getKey())
       .filter(c -> !FeatureTool.IsAnonymousInnerFeature(c.calledFeature()))
+      // NYI in this case we could try to find possibly called features?
       .filter(c -> c.calledFeature().resultType() != Types.t_ERROR)
       .sorted(CompareByEndOfCall.reversed())
       .map(c -> {
         Log.message("call: " + c.pos().toString());
         return c.calledFeature();
-      });
+      })
+      .findFirst();
   }
 
 
@@ -155,25 +157,25 @@ public class QueryAST
   }
 
   // NYI test this
-  public static Stream<AbstractFeature> FeaturesIncludingInheritedFeatures(TextDocumentPositionParams params)
+  public static Stream<AbstractFeature> CallCompletionsAt(TextDocumentPositionParams params)
   {
-    var mainFeature = FuzionParser.main(LSP4jUtils.getUri(params));
-    if (mainFeature.isEmpty())
-      {
-        return Stream.empty();
-      }
-
-    var feature = CalledFeaturesSortedDesc(params)
+    return CalledFeature(params)
       .map(x -> {
         return x.resultType().featureOfType();
       })
-      .findFirst();
+      .map(feature -> {
+        return Stream.concat(Stream.of(feature), FuzionParser.DeclaredOrInheritedFeatures(feature));
+      })
+      .orElse(Stream.empty());
+  }
 
-    if (feature.isEmpty())
-      {
-        return Stream.empty();
-      }
-    return Stream.concat(Stream.of(feature.get()), FeatureTool.InheritedFeatures(feature.get()));
+  public static Stream<AbstractFeature> CompletionsAt(TextDocumentPositionParams params)
+  {
+    return InFeature(params)
+      .map(feature -> {
+        return Stream.concat(Stream.of(feature), FuzionParser.DeclaredOrInheritedFeatures(feature));
+      })
+      .orElse(Stream.empty());
   }
 
   /**
