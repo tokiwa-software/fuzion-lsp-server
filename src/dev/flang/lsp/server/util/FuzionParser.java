@@ -145,6 +145,7 @@ public class FuzionParser
 
   private static ParserCacheRecord parserCacheRecord(URI uri)
   {
+    //NYI I'm unsure why this does not seem to dead lock?
     return IO.WithRedirectedStdOut(() -> {
       return IO.WithRedirectedStdErr(() -> {
         ClearStaticallyHeldStuffInFuzionCompiler();
@@ -312,6 +313,11 @@ public class FuzionParser
         if(FeatureTool.IsArgument(feature)){
           // NYI make this more idiomatic?
           return new SourcePosition(feature.pos()._sourceFile, 1, 1);
+        }
+        if(!feature.isUniverse() && feature.outer().isUniverse()){
+          var sourceText = SourceText.getText(FuzionParser.getUri(feature.pos())).get();
+          var lines = sourceText.split("\n").length;
+          return new SourcePosition(feature.pos()._sourceFile, lines + 1 , 1);
         }
         var uri = getUri(feature.pos());
         SourcePosition endOfFeature = ASTWalker.Traverse(feature)
