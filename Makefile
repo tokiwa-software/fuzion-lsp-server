@@ -134,6 +134,7 @@ run_tests_suspended: classes
 	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
 
 .PHONY: profile
+# NYI this should not depend on running in debug mode
 profile: PID = $(shell ps aux | grep agentlib:jdwp | grep lsp4j |grep -v grep  |tail -n 1 | awk -F ' ' '{print $$2}')
 profile: DATE = $(shell date +%y%m%d-%H%M%S)
 profile:
