@@ -42,7 +42,6 @@ import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
@@ -115,7 +114,7 @@ public class Completion
         index -> {
           var feature = sortedFeatures.get(index);
           return buildCompletionItem(
-            ASTItem.ToLabel(feature),
+            FeatureTool.ToLabel(feature),
             getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
         });
 

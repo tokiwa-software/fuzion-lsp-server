@@ -90,7 +90,13 @@ public class FeatureTool
           }
       }
     Collections.reverse(commentLines);
-    return commentLines.stream().map(line -> line.trim()).collect(Collectors.joining(System.lineSeparator()));
+    return commentLines
+      .stream()
+      .map(line -> line.trim())
+      .map(line -> line
+        .replaceAll("^#", "")
+        .trim())
+      .collect(Collectors.joining(System.lineSeparator()));
   }
 
   public static String AST(AbstractFeature start)
@@ -147,10 +153,34 @@ public class FeatureTool
 
   static AbstractFeature universe(AbstractFeature f)
   {
-    if(f.isUniverse()){
-      return f;
-    }
+    if (f.isUniverse())
+      {
+        return f;
+      }
     return universe(f.outer());
   }
+
+  /**
+   * @param feature
+   * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
+   */
+  public static String ToLabel(AbstractFeature feature)
+  {
+    if (!IsRoutineOrRoutineDef(feature))
+      {
+        return feature.featureName().baseName();
+      }
+    var arguments = "(" + feature.arguments()
+      .stream()
+      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
+      .collect(Collectors.joining(", ")) + ")";
+    return feature.featureName().baseName() + feature.generics() + arguments + " => " + feature.resultType();
+  }
+
+  public static String CommentOfInMarkdown(AbstractFeature f)
+  {
+    return MarkdownTool.Italic(MarkdownTool.Escape(CommentOf(f)));
+  }
+
 
 }

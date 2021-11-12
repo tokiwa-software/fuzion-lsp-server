@@ -31,8 +31,9 @@ import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 
-import dev.flang.lsp.server.util.ASTItem;
+import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.util.MarkdownTool;
 import dev.flang.lsp.server.util.QueryAST;
 
 /**
@@ -46,13 +47,14 @@ public class Hovering
   {
     var range = FuzionLexer.rawTokenAt(params).toRange();
     var feature = QueryAST.FeatureAt(params);
-    if (feature.isEmpty())
-      {
-        return null;
-      }
-
-    var markupContent = new MarkupContent(MarkupKind.MARKDOWN, ASTItem.ToLabel(feature.get()));
-    return new Hover(markupContent, range);
+    return feature.map(f -> {
+      var hoverInfo = FeatureTool.CommentOfInMarkdown(f) + System.lineSeparator()
+        + System.lineSeparator()
+        + MarkdownTool.Bold(MarkdownTool.Escape(FeatureTool.ToLabel(f)));
+      var markupContent = new MarkupContent(MarkupKind.MARKDOWN, hoverInfo);
+      return new Hover(markupContent, range);
+    })
+      .orElse(null);
   }
 
 }

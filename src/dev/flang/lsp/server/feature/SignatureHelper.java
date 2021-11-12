@@ -31,6 +31,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.ParameterInformation;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
@@ -38,7 +40,6 @@ import org.eclipse.lsp4j.SignatureInformation;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.lsp.server.util.ASTItem;
 import dev.flang.lsp.server.util.CallTool;
 import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionParser;
@@ -87,8 +88,8 @@ public class SignatureHelper
 
   private static SignatureInformation SignatureInformation(AbstractFeature feature)
   {
-    String description = FeatureTool.CommentOf(feature);
-    return new SignatureInformation(ASTItem.ToLabel(feature), description,
+    var description = new MarkupContent(MarkupKind.MARKDOWN, FeatureTool.CommentOfInMarkdown(feature));
+    return new SignatureInformation(FeatureTool.ToLabel(feature), description,
       ParameterInfo(feature));
   }
 

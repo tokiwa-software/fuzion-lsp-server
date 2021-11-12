@@ -30,7 +30,6 @@ import java.net.URI;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Assign;
@@ -76,7 +75,7 @@ public class ASTItem
           }
         if (item instanceof AbstractFeature af)
           {
-            return ASTItem.ToLabel(af);
+            return FeatureTool.ToLabel(af);
           }
         return item.toString();
       }
@@ -84,23 +83,6 @@ public class ASTItem
       {
         return "";
       }
-  }
-
-  /**
-   * @param feature
-   * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
-   */
-  public static String ToLabel(AbstractFeature feature)
-  {
-    if (!FeatureTool.IsRoutineOrRoutineDef(feature))
-      {
-        return feature.featureName().baseName();
-      }
-    var arguments = "(" + feature.arguments()
-      .stream()
-      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
-      .collect(Collectors.joining(", ")) + ")";
-    return feature.featureName().baseName() + feature.generics() + arguments + " => " + feature.resultType();
   }
 
   // NYI remove once we have ISourcePosition interface

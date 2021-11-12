@@ -46,7 +46,6 @@ public class FeatureToolTest extends BaseTest
     assertTrue(ast.contains("Call:called feature not know"));
   }
 
-
   @Test
   public void CommentOf()
   {
@@ -64,9 +63,8 @@ public class FeatureToolTest extends BaseTest
       .DeclaredFeatures(FuzionParser.main(uri1).get())
       .findFirst()
       .orElseThrow();
-    assertEquals("# first comment line" + System.lineSeparator() + "# second comment line",
+    assertEquals("first comment line" + System.lineSeparator() + "second comment line",
       FeatureTool.CommentOf(innerFeature));
-
   }
 
   @Test
@@ -82,8 +80,8 @@ public class FeatureToolTest extends BaseTest
       .findFirst()
       .get();
     assertEquals(
-      "# A handy shortcut for stdout.print, output string representation of" + System.lineSeparator()
-        + "# an object, do not add a line break at the end." + System.lineSeparator() + "#",
+      "A handy shortcut for stdout.print, output string representation of" + System.lineSeparator()
+        + "an object, do not add a line break at the end." + System.lineSeparator(),
       FeatureTool.CommentOf(yak));
   }
 

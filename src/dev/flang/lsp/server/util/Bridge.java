@@ -63,7 +63,7 @@ public class Bridge {
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
   {
-    return new DocumentSymbol(ASTItem.ToLabel(feature), SymbolKind.Key, ToRange(feature), ToRange(feature));
+    return new DocumentSymbol(FeatureTool.ToLabel(feature), SymbolKind.Key, ToRange(feature), ToRange(feature));
   }
 
   public static SourceFile ToSourceFile(URI uri)

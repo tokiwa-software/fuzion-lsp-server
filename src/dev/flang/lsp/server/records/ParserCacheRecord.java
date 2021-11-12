@@ -33,6 +33,9 @@ import dev.flang.fe.FrontEndOptions;
 import dev.flang.mir.MIR;
 import dev.flang.util.Errors;
 
+/**
+ * holds all artifacts of parsing that we later need
+ */
 public record ParserCacheRecord(MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
   TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings)
 {
