@@ -47,8 +47,6 @@ import dev.flang.lsp.server.enums.Transport;
 public class IO
 {
   static final PrintStream DEV_NULL = new PrintStream(OutputStream.nullOutputStream());
-  static final String LOCK_REPLACED_SYSTEM_OUTPUT = "";
-  static final String LOCK_REPLACED_SYSTEM_INPUT = "";
 
   static byte[] getBytes(String text)
   {
@@ -96,55 +94,49 @@ public class IO
       }
   }
 
-  public static <T> T WithSurpressedOutput(Callable<T> callable)
+  public synchronized static <T> T WithSurpressedOutput(Callable<T> callable)
   {
     if (Config.transport() == Transport.tcp)
       {
         return callOrPanic(callable);
       }
-    synchronized (LOCK_REPLACED_SYSTEM_OUTPUT)
+    var out = System.out;
+    var err = System.err;
+    try
       {
-        var out = System.out;
-        var err = System.err;
-        try
-          {
-            System.setOut(DEV_NULL);
-            System.setErr(DEV_NULL);
-            return callable.call();
-          }
-        catch (Exception e)
-          {
-            ErrorHandling.WriteStackTraceAndExit(1, e);
-            return null;
-          } finally
-          {
-            System.setOut(out);
-            System.setErr(err);
-          }
+        System.setOut(DEV_NULL);
+        System.setErr(DEV_NULL);
+        return callable.call();
+      }
+    catch (Exception e)
+      {
+        ErrorHandling.WriteStackTraceAndExit(1, e);
+        return null;
+      } finally
+      {
+        System.setOut(out);
+        System.setErr(err);
       }
   }
 
-  public static <T> T WithTextInputStream(String text, Callable<T> callable)
+  public synchronized static <T> T WithTextInputStream(String text, Callable<T> callable)
   {
     byte[] byteArray = getBytes(text);
 
     InputStream testInput = new ByteArrayInputStream(byteArray);
-    synchronized (LOCK_REPLACED_SYSTEM_INPUT)
+    InputStream old = System.in;
+    try
       {
-        InputStream old = System.in;
-        try
-          {
-            System.setIn(testInput);
-            return callable.call();
-          }
-        catch (Exception e)
-          {
-            ErrorHandling.WriteStackTraceAndExit(1, e);
-            return null;
-          } finally
-          {
-            System.setIn(old);
-          }
+        System.setIn(testInput);
+        return callable.call();
+      }
+    catch (Exception e)
+      {
+        ErrorHandling.WriteStackTraceAndExit(1, e);
+        return null;
+      } finally
+      {
+        System.setIn(old);
       }
   }
 
@@ -171,31 +163,28 @@ public class IO
    * @return callable to be run on an executor.
    * The result of the callable is everything that is written to stdout/stderr by the runnable.
    */
-  public static Callable<String> WithCapturedStdOutErr(Runnable runnable)
+  public synchronized static Callable<String> WithCapturedStdOutErr(Runnable runnable)
   {
     return () -> {
-      synchronized (LOCK_REPLACED_SYSTEM_OUTPUT)
+      var out = System.out;
+      var err = System.err;
+      var inputStream = new PipedInputStream();
+      var outputStream = new PrintStream(new PipedOutputStream(inputStream));
+      try
         {
-          var out = System.out;
-          var err = System.err;
-          var inputStream = new PipedInputStream();
-          var outputStream = new PrintStream(new PipedOutputStream(inputStream));
-          try
-            {
-              System.setOut(outputStream);
-              System.setErr(outputStream);
-              runnable.run();
-              // close outputstream so that reading of inputstream does not run
-              // inifinitly.
-              outputStream.close();
-              return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            } finally
-            {
-              outputStream.close();
-              inputStream.close();
-              System.setOut(out);
-              System.setErr(err);
-            }
+          System.setOut(outputStream);
+          System.setErr(outputStream);
+          runnable.run();
+          // close outputstream so that reading of inputstream does not run
+          // inifinitly.
+          outputStream.close();
+          return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        } finally
+        {
+          outputStream.close();
+          inputStream.close();
+          System.setOut(out);
+          System.setErr(err);
         }
     };
   }
