@@ -95,38 +95,33 @@ public class FuzionParser extends ANY
   }
 
   /**
+   * NYI in the case of uri to stdlib  we need context
    * @param uri
+   * @return ParserCacheRecord, empty if user starts in stdlib file and no record present yet.
    */
   private static Optional<ParserCacheRecord> getParserCacheRecord(URI uri)
   {
-    // NYI
-    if (uri.toString().contains("/lib/"))
+    if (IsStdLib(uri))
       {
         if (sourceText2ParserCache.isEmpty())
           {
             return Optional.empty();
           }
+        // NYI for now we just return the first entry of the cache
         return Optional.of(sourceText2ParserCache.firstEntry().getValue());
       }
 
-    var sourceText = SourceText.getText(uri);
-    if (sourceText.isEmpty())
-      {
-        return Optional.empty();
-      }
+    return SourceText.getText(uri)
+      .map(text -> {
+        if (sourceText2ParserCache.containsKey(text))
+          {
+            return sourceText2ParserCache.get(text);
+          }
 
-    if (sourceText2ParserCache.containsKey(sourceText.get()))
-      {
-        return Optional.of(sourceText2ParserCache.get(sourceText.get()));
-      }
+        createMIRandCache(uri);
 
-    createMIRandCache(uri);
-
-    var result = getParserCacheRecord(uri).get();
-
-    afterParsing(uri, result.mir().main());
-
-    return Optional.of(result);
+        return getParserCacheRecord(uri).get();
+      });
   }
 
   private static ParserCacheRecord createMIRandCache(URI uri)
@@ -143,9 +138,19 @@ public class FuzionParser extends ANY
       }
   }
 
+  /**
+   * NYI need more reliable way than string comparision
+   * @param uri
+   * @return
+   */
+  private static boolean IsStdLib(URI uri)
+  {
+    return uri.toString().contains("/lib/");
+  }
+
   private static ParserCacheRecord parserCacheRecord(URI uri)
   {
-    return IO.WithSurpressedOutput(() -> {
+    var result = IO.WithSurpressedOutput(() -> {
       ClearStaticallyHeldStuffInFuzionCompiler();
       var frontEndOptions = FrontEndOptions(uri);
       var frontEnd = new FrontEnd(frontEndOptions);
@@ -154,6 +159,8 @@ public class FuzionParser extends ANY
       var warnings = Errors.warnings();
       return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings);
     });
+    afterParsing();
+    return result;
   }
 
   /**
@@ -289,7 +296,7 @@ public class FuzionParser extends ANY
 
   private static final TreeMap<AbstractFeature, SourcePosition> EndOfFeature = new TreeMap<>();
 
-  private static void afterParsing(URI uri, AbstractFeature mainFeature)
+  private static void afterParsing()
   {
     // NYI make this less bad
     EndOfFeature.clear();
