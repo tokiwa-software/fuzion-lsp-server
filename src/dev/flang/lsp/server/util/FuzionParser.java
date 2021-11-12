@@ -112,16 +112,7 @@ public class FuzionParser extends ANY
       }
 
     return SourceText.getText(uri)
-      .map(text -> {
-        if (sourceText2ParserCache.containsKey(text))
-          {
-            return sourceText2ParserCache.get(text);
-          }
-
-        createMIRandCache(uri);
-
-        return getParserCacheRecord(uri).get();
-      });
+      .map(text -> createMIRandCache(uri));
   }
 
   private static ParserCacheRecord createMIRandCache(URI uri)
@@ -129,6 +120,10 @@ public class FuzionParser extends ANY
     synchronized (PARSER_LOCK)
       {
         var sourceText = SourceText.getText(uri).orElseThrow();
+        if (sourceText2ParserCache.containsKey(sourceText))
+          {
+            return sourceText2ParserCache.get(sourceText);
+          }
         var result = parserCacheRecord(uri);
         sourceText2ParserCache.put(sourceText, result);
 
@@ -182,7 +177,7 @@ public class FuzionParser extends ANY
     ChoiceIdAsRef.preallocated_.clear();
 
     // NYI remove recreation of MIR
-    var parserCacheRecord = createMIRandCache(uri);
+    var parserCacheRecord = parserCacheRecord(uri);
 
     if (Errors.count() > 0)
       {
