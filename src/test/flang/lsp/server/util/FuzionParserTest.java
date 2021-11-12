@@ -32,7 +32,6 @@ import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
@@ -60,10 +59,13 @@ public class FuzionParserTest extends BaseTest
   }
 
   @Test
-  public void EndOfFeatureLambdaDefinition(){
+  public void EndOfFeatureLambdaDefinition()
+  {
     SourceText.setText(uri1, ManOrBoy);
     var feature_b = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.main(uri1).get())
-      .filter(x -> x.featureName().baseName().equals("b")).findFirst().get();
+      .filter(x -> x.featureName().baseName().equals("b"))
+      .findFirst()
+      .get();
     var endOfFeature = FuzionParser.endOfFeature(feature_b);
     assertEquals(4, endOfFeature._line);
     assertEquals(52, endOfFeature._column);
@@ -71,13 +73,28 @@ public class FuzionParserTest extends BaseTest
   }
 
   @Test
-  public void EndOfFeatureArgument(){
+  public void EndOfFeatureArgument()
+  {
     SourceText.setText(uri1, ManOrBoy);
     var feature_x1 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.main(uri1).get())
-      .filter(x -> x.featureName().baseName().equals("x1")).findFirst().get();
+      .filter(x -> x.featureName().baseName().equals("x1"))
+      .findFirst()
+      .get();
     var endOfFeature = FuzionParser.endOfFeature(feature_x1);
     assertEquals(1, endOfFeature._line);
     assertEquals(1, endOfFeature._column);
+  }
+
+  @Test
+  public void EndOfFeatureStdLib()
+  {
+    SourceText.setText(uri1, HelloWorld);
+    var yak = FuzionParser.DeclaredFeatures(FuzionParser.universe(uri1))
+      .filter(x -> x.featureName().baseName().equals("yak"))
+      .findFirst()
+      .get();
+    assertEquals(30, FuzionParser.endOfFeature(yak)._line);
+    assertEquals(1, FuzionParser.endOfFeature(yak)._column);
   }
 
   @Test
