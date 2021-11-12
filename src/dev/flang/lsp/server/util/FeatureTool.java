@@ -52,10 +52,9 @@ public class FeatureTool
   {
     if (feature.outer() == null)
       {
-        return Stream.of(feature.outer());
+        return Stream.empty();
       }
-    return Stream.concat(Stream.of(feature.outer()), outerFeatures(feature.outer()))
-      .filter(f -> f != null);
+    return Stream.concat(Stream.of(feature.outer()), outerFeatures(feature.outer()));
   }
 
   public static Stream<AbstractFeature> DeclaredFeaturesRecursive(AbstractFeature feature)
@@ -120,7 +119,7 @@ public class FeatureTool
 
   public static boolean IsArgument(AbstractFeature feature)
   {
-    if (feature.pos().isBuiltIn())
+    if (feature.outer() == null)
       {
         return false;
       }
@@ -133,11 +132,6 @@ public class FeatureTool
   public static boolean IsAnonymousInnerFeature(AbstractFeature f)
   {
     return f.featureName().baseName().startsWith("#");
-  }
-
-  public static boolean IsIntrinsic(AbstractFeature feature)
-  {
-    return feature.implKind() == Kind.Intrinsic;
   }
 
   public static boolean IsFieldLike(AbstractFeature feature)
