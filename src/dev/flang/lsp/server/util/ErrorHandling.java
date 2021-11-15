@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 
 import dev.flang.lsp.server.Config;
+import dev.flang.lsp.server.SourceText;
 
 public class ErrorHandling
 {
@@ -94,7 +95,7 @@ public class ErrorHandling
         .collect(Collectors.joining(System.lineSeparator()));
 
     return IO
-      .writeToTempFile(stackTrace, "fuzion-lsp-crash", ".log", false)
+      .writeToTempFile(stackTrace + System.lineSeparator() + SourceText.allTexts(), "fuzion-lsp-crash", ".log", false)
       .getAbsolutePath();
   }
 
