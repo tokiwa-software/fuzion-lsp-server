@@ -107,55 +107,68 @@ public class FuzionParser extends ANY
           {
             return Optional.empty();
           }
+
         // NYI for now we just return the first entry of the cache
-        return Optional.of(sourceText2ParserCache.firstEntry().getValue());
+        return getParserCacheRecord(sourceText2ParserCache.firstEntry().getKey());
       }
 
-    return SourceText.getText(uri)
-      .map(text -> createMIRandCache(uri));
-  }
-
-  private static ParserCacheRecord createMIRandCache(URI uri)
-  {
     synchronized (PARSER_LOCK)
       {
         var sourceText = SourceText.getText(uri).orElseThrow();
-        if (sourceText2ParserCache.containsKey(sourceText))
+        if (!sourceText2ParserCache.containsKey(sourceText))
           {
-            return sourceText2ParserCache.get(sourceText);
+            fillParserCache(uri, true);
           }
-        var result = parserCacheRecord(uri);
-        sourceText2ParserCache.put(sourceText, result);
 
-        universe2ResolutionMap.put(result.mir().universe(), result.frontEnd().res());
-
-        return result;
+        return getParserCacheRecord(sourceText);
       }
   }
 
+  private static Optional<ParserCacheRecord> getParserCacheRecord(String sourceText)
+  {
+    // NYI
+    Types.resolved = sourceText2ParserCache.get(sourceText).resolved();
+    return Optional.of(sourceText2ParserCache.get(sourceText));
+  }
+
+  private static void fillParserCache(URI uri, boolean clearAfterParsing)
+  {
+    var sourceText = SourceText.getText(uri).orElseThrow();
+    var parserCacheRecord = createParserCacheRecord(uri);
+    sourceText2ParserCache.put(sourceText, parserCacheRecord);
+    universe2ResolutionMap.put(parserCacheRecord.mir().universe(), parserCacheRecord.frontEnd().res());
+    // NYI
+    if (clearAfterParsing)
+      {
+        ClearStaticallyHeldStuffInFuzionCompiler();
+      }
+    afterParsing();
+  }
+
   /**
-   * NYI need more reliable way than string comparision
-   * @param uri
-   * @return
-   */
+  * NYI need more reliable way than string comparision
+  * @param uri
+  * @return
+  */
   private static boolean IsStdLib(URI uri)
   {
     return uri.toString().contains("/lib/");
   }
 
-  private static ParserCacheRecord parserCacheRecord(URI uri)
+  private static ParserCacheRecord createParserCacheRecord(URI uri)
   {
-    var result = IO.WithSurpressedOutput(() -> {
+    return IO.WithSurpressedOutput(() -> {
+      // NYI
       ClearStaticallyHeldStuffInFuzionCompiler();
+
       var frontEndOptions = FrontEndOptions(uri);
       var frontEnd = new FrontEnd(frontEndOptions);
       var mir = frontEnd.createMIR();
       var errors = Errors.errors();
       var warnings = Errors.warnings();
-      return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings);
+
+      return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
     });
-    afterParsing();
-    return result;
   }
 
   /**
@@ -177,7 +190,8 @@ public class FuzionParser extends ANY
     ChoiceIdAsRef.preallocated_.clear();
 
     // NYI remove recreation of MIR
-    var parserCacheRecord = parserCacheRecord(uri);
+    fillParserCache(uri, false);
+    var parserCacheRecord = getParserCacheRecord(uri).get();
 
     if (Errors.count() > 0)
       {
