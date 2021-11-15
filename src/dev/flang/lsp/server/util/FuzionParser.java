@@ -71,8 +71,6 @@ import dev.flang.util.SourcePosition;
  */
 public class FuzionParser extends ANY
 {
-
-  private static final String PARSER_LOCK = "";
   /**
    * maps temporary files which are fed to the parser to their original uri.
    */
@@ -117,7 +115,7 @@ public class FuzionParser extends ANY
 
   private static ParserCacheRecord createMIRandCache(URI uri)
   {
-    synchronized (PARSER_LOCK)
+    synchronized (FuzionLexer.class)
       {
         var sourceText = SourceText.getText(uri).orElseThrow();
         if (sourceText2ParserCache.containsKey(sourceText))
@@ -147,12 +145,15 @@ public class FuzionParser extends ANY
   {
     var result = IO.WithSurpressedOutput(() -> {
       ClearStaticallyHeldStuffInFuzionCompiler();
-      var frontEndOptions = FrontEndOptions(uri);
-      var frontEnd = new FrontEnd(frontEndOptions);
-      var mir = frontEnd.createMIR();
-      var errors = Errors.errors();
-      var warnings = Errors.warnings();
-      return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings);
+      synchronized (FuzionLexer.class)
+        {
+          var frontEndOptions = FrontEndOptions(uri);
+          var frontEnd = new FrontEnd(frontEndOptions);
+          var mir = frontEnd.createMIR();
+          var errors = Errors.errors();
+          var warnings = Errors.warnings();
+          return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings);
+        }
     });
     afterParsing();
     return result;
@@ -171,28 +172,32 @@ public class FuzionParser extends ANY
 
   private static Optional<FUIR> FUIR(URI uri)
   {
-    // NYI remove this once unnecessary
-    Interpreter.clear();
-    Instance.universe = null;
-    ChoiceIdAsRef.preallocated_.clear();
-
-    // NYI remove recreation of MIR
-    var parserCacheRecord = parserCacheRecord(uri);
-
-    if (Errors.count() > 0)
+    synchronized (FuzionLexer.class)
       {
-        return Optional.empty();
+        // NYI remove this once unnecessary
+        Interpreter.clear();
+        Instance.universe = null;
+        ChoiceIdAsRef.preallocated_.clear();
+
+        // NYI remove recreation of MIR
+        var parserCacheRecord = parserCacheRecord(uri);
+
+        if (Errors.count() > 0)
+          {
+            return Optional.empty();
+          }
+
+        var air =
+          new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(),
+            parserCacheRecord.frontEnd().res())
+              .air();
+
+        // NYI remove this once unnecessary
+        Instance.universe = new Instance(Clazzes.universe.get());
+
+        var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir();
+        return Optional.of(fuir);
       }
-
-    var air =
-      new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(), parserCacheRecord.frontEnd().res())
-        .air();
-
-    // NYI remove this once unnecessary
-    Instance.universe = new Instance(Clazzes.universe.get());
-
-    var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir();
-    return Optional.of(fuir);
   }
 
   private static FrontEndOptions FrontEndOptions(URI uri)
@@ -289,7 +294,7 @@ public class FuzionParser extends ANY
       .filter(feat -> !FeatureTool.IsAnonymousInnerFeature(feat));
   }
 
-  private static final TreeMap<AbstractFeature, SourcePosition> EndOfFeature = new TreeMap<>();
+  private static final HashMap<AbstractFeature, SourcePosition> EndOfFeature = new HashMap<>();
 
   private static void afterParsing()
   {

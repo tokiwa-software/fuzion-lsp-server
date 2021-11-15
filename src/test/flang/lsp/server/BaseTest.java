@@ -28,6 +28,7 @@ package test.flang.lsp.server;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.junit.Assert;
@@ -37,10 +38,25 @@ import dev.flang.lsp.server.util.LSP4jUtils;
 
 public abstract class BaseTest extends Assert
 {
-  protected static final URI uri1 = Util.toURI(Path.of("/").toUri().toString() + "uri1");
-  protected static final URI uri2 = Util.toURI(Path.of("/").toUri().toString() + "uri2");
-  protected static final URI uri3 = Util.toURI(Path.of("/").toUri().toString() + "uri3");
-  protected static final URI uri4 = Util.toURI(Path.of("/").toUri().toString() + "uri4");
+  protected static ThreadLocal<ArrayList<URI>> threadLocalURIs = new ThreadLocal<>();
+
+  protected static URI uri(int index){
+    if(threadLocalURIs.get() == null){
+      var randomURIs =  new ArrayList<URI>();
+      randomURIs.add(RandomUri());
+      randomURIs.add(RandomUri());
+      randomURIs.add(RandomUri());
+      randomURIs.add(RandomUri());
+      randomURIs.add(RandomUri());
+      threadLocalURIs.set(randomURIs);
+    }
+    return threadLocalURIs.get().get(index);
+  }
+
+  private static URI RandomUri()
+  {
+    return Util.toURI(Path.of("/").toUri().toString() + "uri" + Math.random());
+  }
 
   protected static final String LoremIpsum =
     """
@@ -96,7 +112,7 @@ public abstract class BaseTest extends Assert
           """;
 
   protected static TextDocumentPositionParams Cursor(URI uri, int line, int character){
-    return LSP4jUtils.TextDocumentPositionParams(uri1, line, character);
+    return LSP4jUtils.TextDocumentPositionParams(uri(1), line, character);
   }
 
 }

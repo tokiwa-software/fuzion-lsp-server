@@ -45,12 +45,12 @@ public class CommandTest extends BaseTest{
   @Test
   public void RunMultiple() throws Exception
   {
-    SourceText.setText(uri1, HelloWorld);
-    SourceText.setText(uri2, PythagoreanTriple);
+    SourceText.setText(uri(1), HelloWorld);
+    SourceText.setText(uri(2), PythagoreanTriple);
 
-    FuzionParser.Run(uri1);
-    FuzionParser.Run(uri2);
-    var message = FuzionParser.Run(uri1);
+    FuzionParser.Run(uri(1));
+    FuzionParser.Run(uri(2));
+    var message = FuzionParser.Run(uri(1));
 
     assertEquals("Hello World!" + "\n", message.getMessage());
   }
@@ -58,15 +58,15 @@ public class CommandTest extends BaseTest{
   @Test
   public void RunSuccessfulAfterRunWithTimeoutException() throws Exception
   {
-    SourceText.setText(uri1, ManOrBoy);
-    SourceText.setText(uri2, HelloWorld);
-    SourceText.setText(uri3, PythagoreanTriple);
+    SourceText.setText(uri(1), ManOrBoy);
+    SourceText.setText(uri(2), HelloWorld);
+    SourceText.setText(uri(3), PythagoreanTriple);
 
     // NYI this will not throw once fuzion gets faster, how to test properly?
-    assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri1, 100));
-    assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri3, 50));
+    assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri(1), 100));
+    assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri(3), 50));
 
-    assertEquals("Hello World!" + "\n", FuzionParser.Run(uri2).getMessage());
+    assertEquals("Hello World!" + "\n", FuzionParser.Run(uri(2)).getMessage());
   }
 
 }

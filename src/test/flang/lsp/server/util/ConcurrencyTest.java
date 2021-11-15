@@ -61,7 +61,7 @@ public class ConcurrencyTest extends BaseTest
       ex is
         (1..10).
             """;
-    SourceText.setText(uri1, sourceText);
+    SourceText.setText(uri(1), sourceText);
 
     final ArrayList<Object> results = new ArrayList<>();
 
@@ -87,7 +87,7 @@ public class ConcurrencyTest extends BaseTest
       var one = CompletableFutures.computeAsync(cancelChecker -> {
         try
           {
-            var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
+            var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri(1)), new Position(1, 11),
               new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
             return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
               () -> Completion.getCompletions(completionParams),

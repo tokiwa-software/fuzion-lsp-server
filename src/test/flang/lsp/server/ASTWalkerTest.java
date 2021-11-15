@@ -45,7 +45,7 @@ public class ASTWalkerTest extends BaseTest
     for s in ["one", "two", "three"] do
       say "$s maps to {x[s]}"
   """;
-    SourceText.setText(uri1, sourceText);
-    ASTWalker.Traverse(FuzionParser.main(uri1).get());
+    SourceText.setText(uri(1), sourceText);
+    ASTWalker.Traverse(FuzionParser.main(uri(1)).get());
   }
 }

@@ -41,30 +41,30 @@ public class QueryASTTest extends BaseTest
   @Test
   public void DeclaredFeaturesRecursive()
   {
-    SourceText.setText(uri1, UnknownCall);
-    SourceText.setText(uri2, HelloWorld);
-    SourceText.setText(uri3, ManOrBoy);
-    SourceText.setText(uri4, PythagoreanTriple);
-    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri1).count());
-    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri2).count());
-    assertEquals(13, QueryAST.DeclaredFeaturesRecursive(uri3).count());
-    assertEquals(3, QueryAST.DeclaredFeaturesRecursive(uri4).count());
+    SourceText.setText(uri(1), UnknownCall);
+    SourceText.setText(uri(2), HelloWorld);
+    SourceText.setText(uri(3), ManOrBoy);
+    SourceText.setText(uri(4), PythagoreanTriple);
+    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri(1)).count());
+    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri(2)).count());
+    assertEquals(13, QueryAST.DeclaredFeaturesRecursive(uri(3)).count());
+    assertEquals(3, QueryAST.DeclaredFeaturesRecursive(uri(4)).count());
   }
 
   @Test
   public void AllOf()
   {
-    SourceText.setText(uri1, HelloWorld);
+    SourceText.setText(uri(1), HelloWorld);
     assertEquals("HelloWorld", FuzionParser
-      .main(uri1)
+      .main(uri(1))
       .get()
       .featureName()
       .baseName());
     assertEquals("say", QueryAST
       .AllOf(FuzionParser
-        .main(uri1)
+        .main(uri(1))
         .get(), Call.class)
-      .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
+      .filter(call -> uri(1).equals(FuzionParser.getUri(call.pos())))
       .findFirst()
       .get()
       .calledFeature()
@@ -79,8 +79,8 @@ public class QueryASTTest extends BaseTest
       ex7 is
         (1..10).myCall()
               """;
-    SourceText.setText(uri1, sourceText);
-    var call = QueryAST.callAt(Cursor(uri1, 1, 17))
+    SourceText.setText(uri(1), sourceText);
+    var call = QueryAST.callAt(Cursor(uri(1), 1, 17))
       .get();
     assertEquals("myCall", call.name);
   }
@@ -92,29 +92,29 @@ public class QueryASTTest extends BaseTest
       ex is
         (1..10).forAll(num -> say num)
                   """;
-    SourceText.setText(uri1, sourceText);
+    SourceText.setText(uri(1), sourceText);
 
-    assertEquals("infix ..", QueryAST.FeatureAt(Cursor(uri1, 1, 4))
+    assertEquals("infix ..", QueryAST.FeatureAt(Cursor(uri(1), 1, 4))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("forAll", QueryAST.FeatureAt(Cursor(uri1, 1, 10))
+    assertEquals("forAll", QueryAST.FeatureAt(Cursor(uri(1), 1, 10))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("forAll", QueryAST.FeatureAt(Cursor(uri1, 1, 16))
+    assertEquals("forAll", QueryAST.FeatureAt(Cursor(uri(1), 1, 16))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("say", QueryAST.FeatureAt(Cursor(uri1, 1, 24))
+    assertEquals("say", QueryAST.FeatureAt(Cursor(uri(1), 1, 24))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("say", QueryAST.FeatureAt(Cursor(uri1, 1, 26))
+    assertEquals("say", QueryAST.FeatureAt(Cursor(uri(1), 1, 26))
       .get()
       .featureName()
       .baseName());
@@ -128,8 +128,8 @@ public class QueryASTTest extends BaseTest
         for s in ["one", "two", "three"] do
           say "$s"
                 """;
-    SourceText.setText(uri1, sourceText);
-    var feature = QueryAST.FeatureAt(Cursor(uri1, 2, 4))
+    SourceText.setText(uri(1), sourceText);
+    var feature = QueryAST.FeatureAt(Cursor(uri(1), 2, 4))
       .get();
     assertEquals("say", feature.featureName().baseName());
   }
@@ -146,23 +146,23 @@ public class QueryASTTest extends BaseTest
         print(x, y myi32, z i32) =>
           say "$x"
       """;
-    SourceText.setText(uri1, sourceText);
+    SourceText.setText(uri(1), sourceText);
 
-    var feature = QueryAST.FeatureAt(Cursor(uri1, 5, 4)).get();
+    var feature = QueryAST.FeatureAt(Cursor(uri(1), 5, 4)).get();
     assertEquals("say", feature.featureName().baseName());
 
-    feature = QueryAST.FeatureAt(Cursor(uri1, 4, 8)).get();
+    feature = QueryAST.FeatureAt(Cursor(uri(1), 4, 8)).get();
     assertEquals("myi32", feature.featureName().baseName());
 
-    feature = QueryAST.FeatureAt(Cursor(uri1, 4, 20)).get();
+    feature = QueryAST.FeatureAt(Cursor(uri(1), 4, 20)).get();
     assertEquals("i32", feature.featureName().baseName());
   }
 
   @Test
   public void InFeature()
   {
-    SourceText.setText(uri1, ManOrBoy);
-    assertEquals("a", QueryAST.InFeature(Cursor(uri1, 4, 1)).get().featureName().baseName());
+    SourceText.setText(uri(1), ManOrBoy);
+    assertEquals("a", QueryAST.InFeature(Cursor(uri(1), 4, 1)).get().featureName().baseName());
   }
 
 }

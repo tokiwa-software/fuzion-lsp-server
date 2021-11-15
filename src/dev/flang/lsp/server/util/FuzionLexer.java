@@ -43,7 +43,7 @@ import dev.flang.util.SourcePosition;
 public class FuzionLexer
 {
 
-  public static Boolean IsValidIdentifier(String str)
+  public synchronized static Boolean IsValidIdentifier(String str)
   {
     var isIdentifier = IO.WithTextInputStream(str, () -> {
       var lexer = NewLexerStdIn();
@@ -56,7 +56,7 @@ public class FuzionLexer
    * @param str example: "infix %%"
    * @return example: text: "%%", start: 7
    */
-  public static TokenInfo nextTokenOfType(String str, HashSet<Token> tokens)
+  public synchronized static TokenInfo nextTokenOfType(String str, HashSet<Token> tokens)
   {
     return IO.WithTextInputStream(str, () -> {
       var lexer = NewLexerStdIn();
@@ -74,7 +74,7 @@ public class FuzionLexer
     return IO.WithSurpressedOutput(() -> new Lexer(SourceFile.STDIN));
   }
 
-  public static TokenInfo rawTokenAt(TextDocumentPositionParams params)
+  public synchronized static TokenInfo rawTokenAt(TextDocumentPositionParams params)
   {
     var sourceText = SourceText.getText(params).get();
     return IO.WithTextInputStream(sourceText, () -> {
@@ -110,7 +110,7 @@ public class FuzionLexer
     return (lexer.sourcePos()._column - 1) <= params.getPosition().getCharacter();
   }
 
-  public static TokenInfo tokenAt(TextDocumentPositionParams params)
+  public synchronized static TokenInfo tokenAt(TextDocumentPositionParams params)
   {
     var sourceText = SourceText.getText(params).get();
     return IO.WithTextInputStream(sourceText, () -> {
@@ -127,7 +127,7 @@ public class FuzionLexer
     });
   }
 
-  public static boolean isCommentLine(TextDocumentPositionParams params)
+  public synchronized static boolean isCommentLine(TextDocumentPositionParams params)
   {
     var sourceText = SourceText.getText(params).get();
     return IO.WithTextInputStream(sourceText, () -> {
@@ -146,7 +146,7 @@ public class FuzionLexer
     });
   }
 
-  public static Position endOfToken(URI uri, Position start)
+  public synchronized static Position endOfToken(URI uri, Position start)
   {
     var textDocumentPosition = LSP4jUtils.TextDocumentPositionParams(uri, start);
     var token = rawTokenAt(textDocumentPosition);

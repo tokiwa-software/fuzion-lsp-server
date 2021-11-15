@@ -62,10 +62,10 @@ public class FuzionLexerTest extends BaseTest {
   public void NextToken_a()
   {
 
-    SourceText.setText(uri1, ManOrBoy);
+    SourceText.setText(uri(1), ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(Cursor(uri1, 2, 2));
+      FuzionLexer.rawTokenAt(Cursor(uri(1), 2, 2));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -74,10 +74,10 @@ public class FuzionLexerTest extends BaseTest {
   public void NextToken_i32()
   {
 
-    SourceText.setText(uri1, ManOrBoy);
+    SourceText.setText(uri(1), ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(Cursor(uri1, 6, 7));
+      FuzionLexer.rawTokenAt(Cursor(uri(1), 6, 7));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }
@@ -85,9 +85,9 @@ public class FuzionLexerTest extends BaseTest {
   @Test
   public void EndOfToken_man_or_boy()
   {
-    SourceText.setText(uri1, ManOrBoy);
+    SourceText.setText(uri(1), ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(uri1, new Position(0, 0));
+    var endOfToken = FuzionLexer.endOfToken(uri(1), new Position(0, 0));
     assertEquals(10, endOfToken.getCharacter());
     assertEquals(0, endOfToken.getLine());
 
@@ -96,9 +96,9 @@ public class FuzionLexerTest extends BaseTest {
   @Test
   public void EndOfToken_i32()
   {
-    SourceText.setText(uri1, ManOrBoy);
+    SourceText.setText(uri(1), ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(uri1, new Position(2, 6));
+    var endOfToken = FuzionLexer.endOfToken(uri(1), new Position(2, 6));
     assertEquals(9, endOfToken.getCharacter());
     assertEquals(2, endOfToken.getLine());
   }
@@ -106,9 +106,9 @@ public class FuzionLexerTest extends BaseTest {
   @Test
   public void EndOfToken_opening_brace()
   {
-    SourceText.setText(uri1, ManOrBoy);
+    SourceText.setText(uri(1), ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(uri1, new Position(2, 3));
+    var endOfToken = FuzionLexer.endOfToken(uri(1), new Position(2, 3));
     assertEquals(4, endOfToken.getCharacter());
     assertEquals(2, endOfToken.getLine());
   }

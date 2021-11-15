@@ -71,17 +71,17 @@ public class SignatureHelperTest extends BaseTest
   @Test
   public void getSignatureHelpMultipleSignatures()
   {
-    SourceText.setText(uri1, HelloWorld);
-    assertEquals("say() => unit", LabelAt(uri1, new Position(1, 5), 0));
-    assertEquals("say(s Object) => unit", LabelAt(uri1, new Position(1, 5), 1));
+    SourceText.setText(uri(1), HelloWorld);
+    assertEquals("say() => unit", LabelAt(uri(1), new Position(1, 5), 0));
+    assertEquals("say(s Object) => unit", LabelAt(uri(1), new Position(1, 5), 1));
   }
 
   @Test
   public void getSignatureHelpMandelbrot()
   {
-    SourceText.setText(uri1, Mandelbrot);
-    assertEquals("yak(s Object) => unit", LabelAt(uri1, new Position(17, 13), 0));
-    assertEquals("mandelbrotImage(yStart f64, yStep f64, xStart f64, xStep f64, height i32, width i32) => unit", LabelAt(uri1, new Position(20, 17), 0));
+    SourceText.setText(uri(1), Mandelbrot);
+    assertEquals("yak(s Object) => unit", LabelAt(uri(1), new Position(17, 13), 0));
+    assertEquals("mandelbrotImage(yStart f64, yStep f64, xStart f64, xStep f64, height i32, width i32) => unit", LabelAt(uri(1), new Position(20, 17), 0));
   }
 
   private String LabelAt(URI uri, final Position position, int index)

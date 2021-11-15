@@ -130,6 +130,9 @@ run_tests: classes
 run_tests_parallel: classes
 	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS) $(JUNIT_ARGS_PARALLEL)
 
+run_tests_parallel_suspended: classes
+	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS) $(JUNIT_ARGS_PARALLEL)
+
 run_tests_suspended: classes
 	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.1.jar $(JUNIT_ARGS)
 

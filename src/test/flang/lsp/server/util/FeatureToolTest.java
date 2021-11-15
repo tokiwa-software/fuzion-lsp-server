@@ -39,8 +39,8 @@ public class FeatureToolTest extends BaseTest
   @Test
   public void ASTbrokenSource()
   {
-    SourceText.setText(uri1, UnknownCall);
-    var ex = FuzionParser.main(uri1).get();
+    SourceText.setText(uri(1), UnknownCall);
+    var ex = FuzionParser.main(uri(1)).get();
     var ast = FeatureTool.AST(ex);
     assertTrue(ast.contains("Call:hasInterval"));
     assertTrue(ast.contains("Call:called feature not know"));
@@ -58,9 +58,9 @@ public class FeatureToolTest extends BaseTest
         innerFeat is
           say "nothing"
       """;
-    SourceText.setText(uri1, CommentExample);
+    SourceText.setText(uri(1), CommentExample);
     var innerFeature = FuzionParser
-      .DeclaredFeatures(FuzionParser.main(uri1).get())
+      .DeclaredFeatures(FuzionParser.main(uri(1)).get())
       .findFirst()
       .orElseThrow();
     assertEquals("first comment line" + System.lineSeparator() + "second comment line",
@@ -73,9 +73,9 @@ public class FeatureToolTest extends BaseTest
     var CommentExample = """
       myFeat is
       """;
-    SourceText.setText(uri1, CommentExample);
+    SourceText.setText(uri(1), CommentExample);
     var yak = FuzionParser
-      .DeclaredFeatures(FuzionParser.universe(uri1))
+      .DeclaredFeatures(FuzionParser.universe(uri(1)))
       .filter(f -> f.featureName().baseName().endsWith("yak"))
       .findFirst()
       .get();

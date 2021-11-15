@@ -40,8 +40,8 @@ class SourceTextTest extends BaseTest
   public void StringAt_multi_line()
   {
 
-    SourceText.setText(uri1, LoremIpsum);
-    var text = SourceText.getText(uri1, new Range(new Position(1, 3), new Position(2, 4)));
+    SourceText.setText(uri(1), LoremIpsum);
+    var text = SourceText.getText(uri(1), new Range(new Position(1, 3), new Position(2, 4)));
     assertEquals(
       "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
         + System.lineSeparator() + "Duis",
@@ -52,8 +52,8 @@ class SourceTextTest extends BaseTest
   public void StringAt_single_line()
   {
 
-    SourceText.setText(uri1, LoremIpsum);
-    var text = SourceText.getText(uri1, new Range(new Position(1, 3), new Position(1, 23)));
+    SourceText.setText(uri(1), LoremIpsum);
+    var text = SourceText.getText(uri(1), new Range(new Position(1, 3), new Position(1, 23)));
     assertEquals("enim ad minim veniam", text);
   }
 
@@ -64,8 +64,8 @@ class SourceTextTest extends BaseTest
     var CommentExample = """
       myFeat is
       """;
-    SourceText.setText(uri1, CommentExample);
-    var myFeatIs = FuzionParser.main(uri1)
+    SourceText.setText(uri(1), CommentExample);
+    var myFeatIs = FuzionParser.main(uri(1))
       .get();
     var sourceText = SourceText.getText(Bridge.ToTextDocumentPosition(myFeatIs.pos()));
     assertEquals(true, sourceText.get().contains("myFeat is"));
@@ -77,9 +77,9 @@ class SourceTextTest extends BaseTest
     var CommentExample = """
       myFeat is
       """;
-    SourceText.setText(uri1, CommentExample);
+    SourceText.setText(uri(1), CommentExample);
     var yak = FuzionParser
-      .DeclaredFeatures(FuzionParser.universe(uri1))
+      .DeclaredFeatures(FuzionParser.universe(uri(1)))
       .filter(f -> f.featureName().baseName().endsWith("yak"))
       .findFirst()
       .get();

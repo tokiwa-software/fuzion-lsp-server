@@ -33,7 +33,7 @@ import dev.flang.lsp.server.enums.Transport;
 public class Config
 {
 
-  public static final boolean ComputeAsync = false;
+  public static final boolean ComputeAsync = true;
   private static LanguageClient _languageClient;
   private static Transport _transport = Transport.stdio;
 
