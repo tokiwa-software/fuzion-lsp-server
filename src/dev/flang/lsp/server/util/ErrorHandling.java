@@ -64,7 +64,7 @@ public class ErrorHandling
     System.exit(status);
   }
 
-  private static String toString(Throwable th)
+  public static String toString(Throwable th)
   {
     if (th == null)
       {

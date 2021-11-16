@@ -385,7 +385,7 @@ public class FuzionParser extends ANY
           throw new RuntimeException("Interpreter could not be created.");
         }
     }), timeout, timeout);
-    return new MessageParams(MessageType.Info, result);
+    return new MessageParams(MessageType.Info, result.result());
   }
 
   public static Stream<Errors.Error> Warnings(URI uri)

@@ -35,17 +35,19 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 
 import dev.flang.lsp.server.Config;
+import dev.flang.lsp.server.records.ComputationPerformance;
 import dev.flang.lsp.server.util.concurrent.MaxExecutionTimeExceededException;
 
 public class Concurrency
 {
 
   private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
-  private static final int MAX_EXECUTION_TIME_MS = 500;
+  private static final int MAX_EXECUTION_TIME_MS = 1000;
 
   // for now we have to run most things more or less sequentially
   private static ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -72,11 +74,16 @@ public class Concurrency
    * @throws TimeoutException
    * @throws MaxExecutionTimeExceededException
    */
-  public static <T> T RunWithPeriodicCancelCheck(
+  public static <T> ComputationPerformance<T> RunWithPeriodicCancelCheck(
     CancelChecker cancelToken, Callable<T> callable, int intervallCancelledCheckInMs, int maxExecutionTimeInMs)
     throws InterruptedException, ExecutionException, TimeoutException, MaxExecutionTimeExceededException
   {
-    Future<T> future = executor.submit(callable);
+    Future<ComputationPerformance<T>> future = executor.submit(() -> {
+      long startTime = System.nanoTime();
+      var result = callable.call();
+      long stopTime = System.nanoTime();
+      return new ComputationPerformance<T>(result, stopTime - startTime);
+    });
     try
       {
         var timeElapsedInMs = 0;
@@ -137,8 +144,18 @@ public class Concurrency
     return CompletableFutures.computeAsync(cancelChecker -> {
       try
         {
-          return RunWithPeriodicCancelCheck(cancelChecker, callable, INTERVALL_CHECK_CANCELLED_MS,
+          var result = RunWithPeriodicCancelCheck(cancelChecker, callable, INTERVALL_CHECK_CANCELLED_MS,
             MAX_EXECUTION_TIME_MS);
+
+          if (Config.DEBUG() && result.nanoSeconds() > 100_000_000)
+            {
+              Log.message(
+                "Computation took " + Math.floor(result.nanoSeconds() / 1_000_000) + "ms: " + System.lineSeparator()
+                  + ErrorHandling.toString(context),
+                MessageType.Warning);
+            }
+
+          return result.result();
         }
       catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
         {
@@ -146,6 +163,11 @@ public class Concurrency
             {
               ErrorHandling.WriteStackTrace(context);
               ErrorHandling.WriteStackTrace(e);
+            }
+          if (Config.DEBUG() && e instanceof MaxExecutionTimeExceededException)
+            {
+              Log.message(
+                "Time exceeded" + System.lineSeparator() + ErrorHandling.toString(context), MessageType.Warning);
             }
           return null;
         }
