@@ -112,10 +112,14 @@ public class QueryAST
    */
   public static Stream<Call> CallsTo(AbstractFeature feature)
   {
-    return AllOf(FeatureTool.universe(feature), Call.class)
-      .filter(call -> CalledFeature(call)
-        .map(f -> f.equals(feature))
-        .orElse(false));
+    return FeatureTool.universe(feature)
+      .map(universe -> {
+        return AllOf(universe, Call.class)
+          .filter(call -> CalledFeature(call)
+            .map(f -> f.equals(feature))
+            .orElse(false));
+      })
+      .orElse(Stream.empty());
   }
 
   private static Stream<Object> CallsAndFeaturesAt(TextDocumentPositionParams params)

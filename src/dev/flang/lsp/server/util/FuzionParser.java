@@ -284,17 +284,21 @@ public class FuzionParser extends ANY
 
   public static Stream<AbstractFeature> AllDeclaredFeatures(AbstractFeature f)
   {
-    return universe2ResolutionMap.get(FeatureTool.universe(f))._module
-      .declaredFeatures(f)
-      .values()
-      .stream();
+    return FeatureTool.universe(f).map(universe -> {
+      return universe2ResolutionMap.get(universe)._module
+        .declaredFeatures(f)
+        .values()
+        .stream();
+    }).orElse(Stream.empty());
   }
 
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
-    return universe2ResolutionMap.get(FeatureTool.universe(f))._module.declaredOrInheritedFeatures(f)
-      .values()
-      .stream();
+    return FeatureTool.universe(f).map(universe -> {
+      return universe2ResolutionMap.get(universe)._module.declaredOrInheritedFeatures(f)
+        .values()
+        .stream();
+    }).orElse(Stream.empty());
   }
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)

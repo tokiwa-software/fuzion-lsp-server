@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import dev.flang.ast.Call;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.util.FuzionParser;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 import test.flang.lsp.server.BaseTest;
 
@@ -163,6 +162,19 @@ public class QueryASTTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
     assertEquals("a", QueryAST.InFeature(Cursor(uri1, 4, 1)).get().featureName().baseName());
+  }
+
+  @Test
+  public void CallCompletionsAt()
+  {
+    var sourceText = """
+      HelloWorld is
+        say "Hello, World!"
+        (1..10).size().
+      """;
+    SourceText.setText(uri1, sourceText);
+    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).count() > 10);
+    assertEquals(1, QueryAST.CallCompletionsAt(Cursor(uri1, 2, 17)).count());
   }
 
 }
