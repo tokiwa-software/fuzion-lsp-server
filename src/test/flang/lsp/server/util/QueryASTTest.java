@@ -174,7 +174,7 @@ public class QueryASTTest extends BaseTest
       """;
     SourceText.setText(uri1, sourceText);
     assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).count() > 10);
-    assertEquals(1, QueryAST.CallCompletionsAt(Cursor(uri1, 2, 17)).count());
+    assertEquals(0, QueryAST.CallCompletionsAt(Cursor(uri1, 2, 17)).count());
   }
 
 }

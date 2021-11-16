@@ -172,8 +172,10 @@ public class QueryAST
   public static Stream<AbstractFeature> CallCompletionsAt(TextDocumentPositionParams params)
   {
     return CalledFeature(params)
+      .map(x -> x.resultType())
+      .filter(x -> !x.isGenericArgument())
       .map(x -> {
-        return x.resultType().featureOfType();
+        return x.featureOfType();
       })
       .map(feature -> {
         return Stream.concat(Stream.of(feature), FuzionParser.DeclaredOrInheritedFeatures(feature));
