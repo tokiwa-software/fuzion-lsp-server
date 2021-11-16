@@ -26,12 +26,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionItem;
@@ -41,7 +45,6 @@ import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
@@ -54,18 +57,20 @@ import test.flang.lsp.server.BaseTest;
 public class ConcurrencyTest extends BaseTest
 {
 
+  private static final int TenMilliseconds = 10;
+
   @Test
   public void RunWithPeriodicCancelCheck() throws InterruptedException, ExecutionException
   {
     var sourceText = """
-      ex is
+      ex1 is
         (1..10).
             """;
     SourceText.setText(uri(1), sourceText);
 
     final ArrayList<Object> results = new ArrayList<>();
 
-    var request1 = createRequest(results, 0, 10);
+    var request1 = createRequest(results, 0, TenMilliseconds);
     var request2 = createRequest(results, 1, 5000);
 
     // start
@@ -84,29 +89,70 @@ public class ConcurrencyTest extends BaseTest
   {
     results.add(index, null);
     return new Thread(() -> {
-      var one = CompletableFutures.computeAsync(cancelChecker -> {
-        try
-          {
-            var completionParams = new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri(1)), new Position(1, 11),
-              new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
-            return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
-              () -> Completion.getCompletions(completionParams),
-              5, maxExcecutionTime);
-          }
-        catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
-          {
-            return e;
-          }
-      });
       try
         {
-          results.set(index, one.get());
+          results.set(index, getCompletion(maxExcecutionTime));
         }
       catch (Exception e)
         {
           results.set(index, e);
         }
     });
+  }
+
+  private Object getCompletion(int maxExcecutionTime)
+    throws InterruptedException, ExecutionException
+  {
+    return CompletableFutures.computeAsync(cancelChecker -> {
+      try
+        {
+          var completionParams =
+            new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri(1)), new Position(1, 11),
+              new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
+          return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
+            () -> Completion.getCompletions(completionParams),
+            5, maxExcecutionTime);
+        }
+      catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
+        {
+          return e;
+        }
+    })
+      .get();
+  }
+
+  @Test
+  public void SuccessfulRequestAfterSomeMaxExecutionTimeExceededRequests() throws InterruptedException, ExecutionException
+  {
+    var sourceText = """
+      ex2 is
+        (1..10).
+            """;
+    SourceText.setText(uri(1), sourceText);
+
+    int requestCount = 10;
+
+    var exectuor = Executors.newFixedThreadPool(8);
+
+    var countDownLatch = new CountDownLatch(requestCount);
+
+    IntStream.range(0, requestCount)
+      .mapToObj(index -> {
+        return exectuor.submit(() -> getCompletion(TenMilliseconds));
+      })
+      .collect(Collectors.toList())
+      .stream()
+      .forEach(future -> {
+        assertDoesNotThrow(() -> {
+          assertTrue(future.get() instanceof MaxExecutionTimeExceededException);
+          countDownLatch.countDown();
+        });
+      });
+
+    countDownLatch.await();
+
+    assertDoesNotThrow(
+      () -> ((Either<List<CompletionItem>, CompletionList>) exectuor.submit(() -> getCompletion(5000)).get()));
   }
 
 }

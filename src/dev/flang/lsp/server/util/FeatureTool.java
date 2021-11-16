@@ -29,10 +29,12 @@ package dev.flang.lsp.server.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Feature.State;
 import dev.flang.ast.Impl.Kind;
 import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.SourceText;
@@ -145,11 +147,15 @@ public class FeatureTool
     return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.implKind());
   }
 
-  static AbstractFeature universe(AbstractFeature f)
+  static Optional<AbstractFeature> universe(AbstractFeature f)
   {
+    if (f.state() == State.ERROR)
+      {
+        return Optional.empty();
+      }
     if (f.isUniverse())
       {
-        return f;
+        return Optional.of(f);
       }
     return universe(f.outer());
   }

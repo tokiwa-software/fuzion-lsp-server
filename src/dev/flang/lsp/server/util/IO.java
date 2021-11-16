@@ -94,49 +94,55 @@ public class IO
       }
   }
 
-  public synchronized static <T> T WithSurpressedOutput(Callable<T> callable)
+  public static <T> T WithSurpressedOutput(Callable<T> callable)
   {
-    if (Config.transport() == Transport.tcp)
+    synchronized (FuzionLexer.class)
       {
-        return callOrPanic(callable);
-      }
-    var out = System.out;
-    var err = System.err;
-    try
-      {
-        System.setOut(DEV_NULL);
-        System.setErr(DEV_NULL);
-        return callable.call();
-      }
-    catch (Exception e)
-      {
-        ErrorHandling.WriteStackTraceAndExit(1, e);
-        return null;
-      } finally
-      {
-        System.setOut(out);
-        System.setErr(err);
+        if (Config.transport() == Transport.tcp)
+          {
+            return callOrPanic(callable);
+          }
+        var out = System.out;
+        var err = System.err;
+        try
+          {
+            System.setOut(DEV_NULL);
+            System.setErr(DEV_NULL);
+            return callable.call();
+          }
+        catch (Exception e)
+          {
+            ErrorHandling.WriteStackTraceAndExit(1, e);
+            return null;
+          } finally
+          {
+            System.setOut(out);
+            System.setErr(err);
+          }
       }
   }
 
   public synchronized static <T> T WithTextInputStream(String text, Callable<T> callable)
   {
-    byte[] byteArray = getBytes(text);
+    synchronized (FuzionLexer.class)
+      {
+        byte[] byteArray = getBytes(text);
 
-    InputStream testInput = new ByteArrayInputStream(byteArray);
-    InputStream old = System.in;
-    try
-      {
-        System.setIn(testInput);
-        return callable.call();
-      }
-    catch (Exception e)
-      {
-        ErrorHandling.WriteStackTraceAndExit(1, e);
-        return null;
-      } finally
-      {
-        System.setIn(old);
+        InputStream testInput = new ByteArrayInputStream(byteArray);
+        InputStream old = System.in;
+        try
+          {
+            System.setIn(testInput);
+            return callable.call();
+          }
+        catch (Exception e)
+          {
+            ErrorHandling.WriteStackTraceAndExit(1, e);
+            return null;
+          } finally
+          {
+            System.setIn(old);
+          }
       }
   }
 
@@ -165,26 +171,30 @@ public class IO
    */
   public synchronized static Callable<String> WithCapturedStdOutErr(Runnable runnable)
   {
+
     return () -> {
-      var out = System.out;
-      var err = System.err;
-      var inputStream = new PipedInputStream();
-      var outputStream = new PrintStream(new PipedOutputStream(inputStream));
-      try
+      synchronized (FuzionLexer.class)
         {
-          System.setOut(outputStream);
-          System.setErr(outputStream);
-          runnable.run();
-          // close outputstream so that reading of inputstream does not run
-          // inifinitly.
-          outputStream.close();
-          return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        } finally
-        {
-          outputStream.close();
-          inputStream.close();
-          System.setOut(out);
-          System.setErr(err);
+          var out = System.out;
+          var err = System.err;
+          var inputStream = new PipedInputStream();
+          var outputStream = new PrintStream(new PipedOutputStream(inputStream));
+          try
+            {
+              System.setOut(outputStream);
+              System.setErr(outputStream);
+              runnable.run();
+              // close outputstream so that reading of inputstream does not run
+              // inifinitly.
+              outputStream.close();
+              return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            } finally
+            {
+              outputStream.close();
+              inputStream.close();
+              System.setOut(out);
+              System.setErr(err);
+            }
         }
     };
   }

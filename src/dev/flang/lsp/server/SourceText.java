@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -64,6 +65,15 @@ public class SourceText
         return Optional.of(text);
       }
     return ReadFromDisk(uri);
+  }
+
+  public static String allTexts()
+  {
+    return textDocuments
+      .entrySet()
+      .stream()
+      .map(e -> e.getKey().toString() + System.lineSeparator() + e.getValue())
+      .collect(Collectors.joining(System.lineSeparator()));
   }
 
   public static Optional<String> getText(TextDocumentPositionParams params)

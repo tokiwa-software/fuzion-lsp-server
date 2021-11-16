@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
+import dev.flang.ast.Feature;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.lsp.server.ASTWalker;
@@ -72,15 +73,22 @@ public class QueryAST
       .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
       .map(entry -> entry.getKey())
-      .filter(c -> !FeatureTool.IsAnonymousInnerFeature(c.calledFeature()))
-      // NYI in this case we could try to find possibly called features?
-      .filter(c -> c.calledFeature().resultType() != Types.t_ERROR)
       .sorted(CompareByEndOfCall.reversed())
-      .map(c -> {
-        Log.message("call: " + c.pos().toString());
-        return c.calledFeature();
-      })
+      .filter(c -> CalledFeature(c).isPresent())
+      .map(c -> CalledFeature(c).get())
+      .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
+      // NYI in this case we could try to find possibly called features?
+      .filter(f -> f.resultType() != Types.t_ERROR)
       .findFirst();
+  }
+
+  private static Optional<AbstractFeature> CalledFeature(Call c)
+  {
+    if (c.calledFeature_ == null)
+      {
+        return Optional.empty();
+      }
+    return Optional.of(c.calledFeature());
   }
 
 
@@ -104,8 +112,14 @@ public class QueryAST
    */
   public static Stream<Call> CallsTo(AbstractFeature feature)
   {
-    return AllOf(FeatureTool.universe(feature), Call.class)
-      .filter(call -> call.calledFeature().equals(feature));
+    return FeatureTool.universe(feature)
+      .map(universe -> {
+        return AllOf(universe, Call.class)
+          .filter(call -> CalledFeature(call)
+            .map(f -> f.equals(feature))
+            .orElse(false));
+      })
+      .orElse(Stream.empty());
   }
 
   private static Stream<Object> CallsAndFeaturesAt(TextDocumentPositionParams params)
@@ -124,9 +138,9 @@ public class QueryAST
   {
     var token = FuzionLexer.rawTokenAt(params);
     return CallsAndFeaturesAt(params).map(callOrFeature -> {
-      if (callOrFeature instanceof Call)
+      if (callOrFeature instanceof Call && CalledFeature((Call) callOrFeature).isPresent())
         {
-          return ((Call) callOrFeature).calledFeature();
+          return CalledFeature((Call) callOrFeature).get();
         }
       return (AbstractFeature) callOrFeature;
     })
@@ -158,8 +172,10 @@ public class QueryAST
   public static Stream<AbstractFeature> CallCompletionsAt(TextDocumentPositionParams params)
   {
     return CalledFeature(params)
+      .map(x -> x.resultType())
+      .filter(x -> !x.isGenericArgument())
       .map(x -> {
-        return x.resultType().featureOfType();
+        return x.featureOfType();
       })
       .map(feature -> {
         return Stream.concat(Stream.of(feature), FuzionParser.DeclaredOrInheritedFeatures(feature));
