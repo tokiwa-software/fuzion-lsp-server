@@ -30,6 +30,7 @@ import java.net.URI;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelpParams;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
@@ -39,41 +40,36 @@ import test.flang.lsp.server.BaseTest;
 
 public class SignatureHelperTest extends BaseTest
 {
-  private static final String HelloWorld = """
-      HelloWorld is
-        say "
-    """;
 
-  private static final String Mandelbrot = """
-    mandelbrotexample is
-      isInMandelbrotSet(c complex<f64>, maxEscapeIterations i32, z complex<f64>) bool is
-        maxEscapeIterations = 0 || z.abs² <= 4 && isInMandelbrotSet c maxEscapeIterations-1 z*z+c
-
-      # NYI how to convert i32 to f64?
-      to_f64(i i32) f64 is
-        if i > 0 1.0 + to_f64(i - 1) else 1.0
-
-      steps(start, step f64, numPixels i32) =>
-        array<f64> numPixels (i -> start + to_f64(i) * step)
-
-      mandelbrotImage(yStart, yStep, xStart, xStep f64, height, width i32) =>
-        for y in steps yStart yStep height do
-          for x in steps xStart xStep width do
-            if isInMandelbrotSet (complex x y) 50 (complex 0.0 0.0)
-              yak "⬤"
-            else
-              yak
-          say ""
-
-      mandelbrotImage 1 -0.05 -2 0.0315 40 80
-    """;
 
   @Test
   public void getSignatureHelpMultipleSignatures()
   {
-    SourceText.setText(uri1, HelloWorld);
+    SourceText.setText(uri1, HelloWorld_Incomplete);
     assertEquals("say() => unit", LabelAt(uri1, new Position(1, 5), 0));
     assertEquals("say(s Object) => unit", LabelAt(uri1, new Position(1, 5), 1));
+  }
+
+  @Test
+  @Tag("TAG")
+  public void getSignatureHelpLambda()
+  {
+    var sourceText = """
+      ex is
+        (1..10)
+          .map<i64>(x -> x.as_i64)
+          .drop(1)
+          .take(1)
+          .forAll(x -> say x)
+        say "samo"
+      """;
+
+    SourceText.setText(uri1, sourceText);
+    assertTrue(LabelAt(uri1, new Position(2, 6), 0).startsWith("map"));
+    assertTrue(LabelAt(uri1, new Position(3, 8), 0).startsWith("drop"));
+    assertTrue(LabelAt(uri1, new Position(4, 8), 0).startsWith("take"));
+    assertTrue(LabelAt(uri1, new Position(5, 10), 0).startsWith("forAll"));
+    assertTrue(LabelAt(uri1, new Position(6, 6), 0).startsWith("say"));
   }
 
   @Test

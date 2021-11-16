@@ -68,6 +68,12 @@ public abstract class BaseTest extends Assert
         say "Hello World!"
     """;
 
+
+  protected static final String HelloWorld_Incomplete = """
+      HelloWorld is
+        say "
+    """;
+
   protected static final String PythagoreanTriple = """
       pythagoreanTriple is
         cₘₐₓ := 100    # max length of hypothenuse
@@ -90,12 +96,37 @@ public abstract class BaseTest extends Assert
               say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
     """;
 
+  protected static final String Mandelbrot = """
+    mandelbrotexample is
+      isInMandelbrotSet(c complex<f64>, maxEscapeIterations i32, z complex<f64>) bool is
+        maxEscapeIterations = 0 || z.abs² <= 4 && isInMandelbrotSet c maxEscapeIterations-1 z*z+c
+
+      # NYI how to convert i32 to f64?
+      to_f64(i i32) f64 is
+        if i > 0 1.0 + to_f64(i - 1) else 1.0
+
+      steps(start, step f64, numPixels i32) =>
+        array<f64> numPixels (i -> start + to_f64(i) * step)
+
+      mandelbrotImage(yStart, yStep, xStart, xStep f64, height, width i32) =>
+        for y in steps yStart yStep height do
+          for x in steps xStart xStep width do
+            if isInMandelbrotSet (complex x y) 50 (complex 0.0 0.0)
+              yak "⬤"
+            else
+              yak
+          say ""
+
+      mandelbrotImage 1 -0.05 -2 0.0315 40 80
+    """;
+
   protected static final String UnknownCall = """
     ex is
       (1..10).
           """;
 
-  protected static TextDocumentPositionParams Cursor(URI uri, int line, int character){
+  protected static TextDocumentPositionParams Cursor(URI uri, int line, int character)
+  {
     return LSP4jUtils.TextDocumentPositionParams(uri1, line, character);
   }
 
