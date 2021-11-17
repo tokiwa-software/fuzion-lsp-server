@@ -39,6 +39,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.lsp.server.enums.Transport;
 import dev.flang.lsp.server.util.ErrorHandling;
+import dev.flang.lsp.server.util.IO;
 import dev.flang.util.Errors;
 
 /**
@@ -50,6 +51,7 @@ public class Main
 
   public static void main(String[] args) throws Exception
   {
+    IO.RedirectErrOutToClientLog();
     arguments = args;
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
@@ -80,12 +82,12 @@ public class Main
     switch (Config.transport())
       {
         case stdio :
-          return createLauncher(server, System.in, System.out);
+          return createLauncher(server, IO.SYS_IN, IO.SYS_OUT);
         case tcp :
           try (var serverSocket = new ServerSocket(0))
             {
-              System.out.println("Property os.name: " + System.getProperty("os.name"));
-              System.out.println("socket opened on port: " + serverSocket.getLocalPort());
+              IO.SYS_OUT.println("Property os.name: " + System.getProperty("os.name"));
+              IO.SYS_OUT.println("socket opened on port: " + serverSocket.getLocalPort());
               var socket = serverSocket.accept();
               return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
             }

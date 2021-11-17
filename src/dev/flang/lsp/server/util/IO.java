@@ -26,12 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
@@ -41,12 +42,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
+
 import dev.flang.lsp.server.Config;
-import dev.flang.lsp.server.enums.Transport;
 
 public class IO
 {
-  static final PrintStream DEV_NULL = new PrintStream(OutputStream.nullOutputStream());
+  public static final PrintStream SYS_OUT = System.out;
+  public static final PrintStream SYS_ERR = System.err;
+  public static final InputStream SYS_IN = System.in;
+  private static final PrintStream CLIENT_OUT = createCaptureStream(MessageType.Log);
+  private static final PrintStream CLIENT_ERR = createCaptureStream(MessageType.Error);
 
   static byte[] getBytes(String text)
   {
@@ -94,40 +101,12 @@ public class IO
       }
   }
 
-  public synchronized static <T> T WithSurpressedOutput(Callable<T> callable)
-  {
-    if (Config.transport() == Transport.tcp)
-      {
-        return callOrPanic(callable);
-      }
-    var out = System.out;
-    var err = System.err;
-    try
-      {
-        System.setOut(DEV_NULL);
-        System.setErr(DEV_NULL);
-        return callable.call();
-      }
-    catch (Exception e)
-      {
-        ErrorHandling.WriteStackTraceAndExit(1, e);
-        return null;
-      } finally
-      {
-        System.setOut(out);
-        System.setErr(err);
-      }
-  }
-
   public synchronized static <T> T WithTextInputStream(String text, Callable<T> callable)
   {
     byte[] byteArray = getBytes(text);
-
-    InputStream testInput = new ByteArrayInputStream(byteArray);
-    InputStream old = System.in;
     try
       {
-        System.setIn(testInput);
+        System.setIn(new ByteArrayInputStream(byteArray));
         return callable.call();
       }
     catch (Exception e)
@@ -136,20 +115,7 @@ public class IO
         return null;
       } finally
       {
-        System.setIn(old);
-      }
-  }
-
-  private static <T> T callOrPanic(Callable<T> callable)
-  {
-    try
-      {
-        return callable.call();
-      }
-    catch (Exception e)
-      {
-        ErrorHandling.WriteStackTrace(e);
-        return null;
+        IO.RedirectErrOutToClientLog();
       }
   }
 
@@ -166,8 +132,6 @@ public class IO
   public synchronized static Callable<String> WithCapturedStdOutErr(Runnable runnable)
   {
     return () -> {
-      var out = System.out;
-      var err = System.err;
       var inputStream = new PipedInputStream();
       var outputStream = new PrintStream(new PipedOutputStream(inputStream));
       try
@@ -183,10 +147,49 @@ public class IO
         {
           outputStream.close();
           inputStream.close();
-          System.setOut(out);
-          System.setErr(err);
+          IO.RedirectErrOutToClientLog();
         }
     };
+  }
+
+  public static void RedirectErrOutToClientLog()
+  {
+    System.setOut(CLIENT_OUT);
+    System.setErr(CLIENT_ERR);
+    System.setIn(new PipedInputStream());
+  }
+
+  private static PrintStream createCaptureStream(MessageType messageType)
+  {
+    try
+      {
+
+        var inputStream = new PipedInputStream();
+        var reader = new BufferedReader(new InputStreamReader(inputStream));
+        var result = new PrintStream(new PipedOutputStream(inputStream));
+        Concurrency.RunInBackground(
+          () -> {
+            try
+              {
+                while (true)
+                  {
+                    var line = "io: " + reader.readLine();
+                    if (Config.languageClient() != null)
+                      Config.languageClient().logMessage(new MessageParams(messageType, line));
+                  }
+              }
+            catch (IOException e)
+              {
+                System.exit(1);
+              }
+          });
+        return result;
+      }
+    catch (IOException e)
+      {
+        System.exit(1);
+        return null;
+      }
   }
 
 }

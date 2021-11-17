@@ -43,7 +43,8 @@ import dev.flang.util.SourcePosition;
 /**
  * provides bridge utility functions converting between lsp4j <-> fuzion
  */
-public class Bridge {
+public class Bridge
+{
 
   public static Position ToPosition(SourcePosition sourcePosition)
   {
@@ -68,18 +69,16 @@ public class Bridge {
 
   public static SourceFile ToSourceFile(URI uri)
   {
-    return IO.WithSurpressedOutput(() -> {
-      var filePath = Path.of(uri);
-      if (filePath.equals(SourceFile.STDIN))
-        {
-          return new SourceFile(SourceFile.STDIN);
-        }
-      if (filePath.equals(SourceFile.BUILT_IN))
-        {
-          return new SourceFile(SourceFile.BUILT_IN);
-        }
-      return new SourceFile(filePath);
-    });
+    var filePath = Path.of(uri);
+    if (filePath.equals(SourceFile.STDIN))
+      {
+        return new SourceFile(SourceFile.STDIN);
+      }
+    if (filePath.equals(SourceFile.BUILT_IN))
+      {
+        return new SourceFile(SourceFile.BUILT_IN);
+      }
+    return new SourceFile(filePath);
   }
 
   public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)

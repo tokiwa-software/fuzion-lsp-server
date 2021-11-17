@@ -157,18 +157,16 @@ public class FuzionParser extends ANY
 
   private static ParserCacheRecord createParserCacheRecord(URI uri)
   {
-    return IO.WithSurpressedOutput(() -> {
-      // NYI
-      ClearStaticallyHeldStuffInFuzionCompiler();
+    // NYI
+    ClearStaticallyHeldStuffInFuzionCompiler();
 
-      var frontEndOptions = FrontEndOptions(uri);
-      var frontEnd = new FrontEnd(frontEndOptions);
-      var mir = frontEnd.createMIR();
-      var errors = Errors.errors();
-      var warnings = Errors.warnings();
+    var frontEndOptions = FrontEndOptions(uri);
+    var frontEnd = new FrontEnd(frontEndOptions);
+    var mir = frontEnd.createMIR();
+    var errors = Errors.errors();
+    var warnings = Errors.warnings();
 
-      return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
-    });
+    return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
   }
 
   /**

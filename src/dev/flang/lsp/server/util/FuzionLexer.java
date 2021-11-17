@@ -71,7 +71,7 @@ public class FuzionLexer
 
   private static Lexer NewLexerStdIn()
   {
-    return IO.WithSurpressedOutput(() -> new Lexer(SourceFile.STDIN));
+    return new Lexer(SourceFile.STDIN);
   }
 
   public static TokenInfo rawTokenAt(TextDocumentPositionParams params)

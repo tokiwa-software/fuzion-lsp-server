@@ -138,13 +138,12 @@ public class ASTItem
         return Optional.empty();
       }
 
-    System.err.println(entry.getClass());
+    IO.SYS_ERR.println(entry.getClass());
     ErrorHandling.WriteStackTraceAndExit(1);
     return Optional.empty();
   }
 
-  private static final SourcePosition None =
-    IO.WithSurpressedOutput(() -> new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0));
+  private static final SourcePosition None = new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
 
   public static SourcePosition sourcePositionOrNone(Object obj)
   {
