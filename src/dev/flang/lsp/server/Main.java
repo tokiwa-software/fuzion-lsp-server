@@ -51,8 +51,10 @@ public class Main
 
   public static void main(String[] args) throws Exception
   {
-    IO.RedirectErrOutToClientLog();
     arguments = args;
+
+    IO.RedirectErrOutToClientLog();
+
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
 
