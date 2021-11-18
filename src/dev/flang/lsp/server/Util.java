@@ -29,7 +29,6 @@ package dev.flang.lsp.server;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,11 +40,6 @@ import dev.flang.lsp.server.util.ErrorHandling;
  */
 public class Util
 {
-  public static Comparator<? super Object> CompareByHashCode =
-    Comparator.comparing(obj -> obj, (obj1, obj2) -> {
-      return obj1.hashCode() - obj2.hashCode();
-    });
-
   public static URI toURI(String uri)
   {
     try

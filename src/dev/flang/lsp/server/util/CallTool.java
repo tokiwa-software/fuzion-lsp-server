@@ -28,8 +28,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Optional;
-import java.util.TreeSet;
 import java.util.function.Predicate;
 
 import dev.flang.ast.AbstractFeature;
@@ -37,7 +37,6 @@ import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.lsp.server.Util;
 import dev.flang.util.SourcePosition;
 
 public class CallTool
@@ -49,27 +48,6 @@ public class CallTool
   public static Optional<AbstractFeature> featureOf(Call call)
   {
     return QueryAST.InFeature(Bridge.ToTextDocumentPosition(call.pos()));
-  }
-
-  /**
-   * check if a feature contains a given call
-   * @param call
-   * @return
-   */
-  public static Predicate<? super AbstractFeature> contains(Call call)
-  {
-    return f -> {
-      var calls = new TreeSet<Call>(Util.CompareByHashCode);
-      // NYI replace visitor
-      f.visit(new FeatureVisitor() {
-        public Expr action(Call c, Feature outer)
-        {
-          calls.add(c);
-          return super.action(c, outer);
-        }
-      });
-      return calls.contains(call);
-    };
   }
 
   /**
