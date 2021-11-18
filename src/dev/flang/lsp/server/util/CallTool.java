@@ -28,15 +28,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.ast.Expr;
-import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.util.SourcePosition;
 
 public class CallTool

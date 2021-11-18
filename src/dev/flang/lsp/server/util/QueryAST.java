@@ -38,7 +38,6 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.ast.Feature;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.lsp.server.ASTWalker;
