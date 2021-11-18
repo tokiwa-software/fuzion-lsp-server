@@ -42,14 +42,6 @@ import dev.flang.lsp.server.Util;
 
 public class FeatureTool
 {
-
-  public static Stream<AbstractFeature> InheritedFeatures(AbstractFeature feature)
-  {
-    return feature.inherits().stream().flatMap(c -> {
-      return Stream.concat(Stream.of(c.calledFeature()), InheritedFeatures(c.calledFeature()));
-    });
-  }
-
   public static Stream<AbstractFeature> outerFeatures(AbstractFeature feature)
   {
     if (feature.outer() == null)
