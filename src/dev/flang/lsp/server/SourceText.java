@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -38,7 +39,6 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.lsp.server.util.ErrorHandling;
-import dev.flang.lsp.server.util.IO;
 import dev.flang.lsp.server.util.LSP4jUtils;
 
 public class SourceText
@@ -83,7 +83,7 @@ public class SourceText
 
   private static Optional<String> ReadFromDisk(URI uri)
   {
-    var path = IO.PathOf(uri);
+    var path = Path.of(uri);
     try
       {
         var lines = Files.readAllLines(path, StandardCharsets.UTF_8);

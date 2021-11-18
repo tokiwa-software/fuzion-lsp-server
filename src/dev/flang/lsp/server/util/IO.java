@@ -37,9 +37,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 import org.eclipse.lsp4j.MessageParams;
@@ -52,8 +50,8 @@ public class IO
   public static final PrintStream SYS_OUT = System.out;
   public static final PrintStream SYS_ERR = System.err;
   public static final InputStream SYS_IN = System.in;
-  private static final PrintStream CLIENT_OUT = createCaptureStream(MessageType.Log);
-  private static final PrintStream CLIENT_ERR = createCaptureStream(MessageType.Error);
+  private static final PrintStream CLIENT_OUT = createCapturedStream(MessageType.Log);
+  private static final PrintStream CLIENT_ERR = createCapturedStream(MessageType.Error);
 
   static byte[] getBytes(String text)
   {
@@ -119,11 +117,6 @@ public class IO
       }
   }
 
-  public static Path PathOf(URI uri)
-  {
-    return Path.of(uri);
-  }
-
   /**
    * @param runnable
    * @return callable to be run on an executor.
@@ -159,7 +152,7 @@ public class IO
     System.setIn(new PipedInputStream());
   }
 
-  private static PrintStream createCaptureStream(MessageType messageType)
+  private static PrintStream createCapturedStream(MessageType messageType)
   {
     try
       {
