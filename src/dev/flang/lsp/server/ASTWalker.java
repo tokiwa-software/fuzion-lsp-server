@@ -98,7 +98,7 @@ public class ASTWalker
         TraverseExpression(feature.code(), feature, callback);
       }
 
-    FuzionParser.AllDeclaredFeatures(feature)
+    FuzionParser.DeclaredFeatures(feature, true)
       .forEach(f -> TraverseFeature(f, callback));
   }
 

@@ -280,7 +280,7 @@ public class FuzionParser extends ANY
     return universe(LSP4jUtils.getUri(params));
   }
 
-  public static Stream<AbstractFeature> AllDeclaredFeatures(AbstractFeature f)
+  public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
   {
     return FeatureTool.universe(f).map(universe -> {
       return universe2ResolutionMap.get(universe)._module
@@ -299,10 +299,10 @@ public class FuzionParser extends ANY
     }).orElse(Stream.empty());
   }
 
-  public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
+  public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean IncludeAnonymousInnerFeatures)
   {
-    return AllDeclaredFeatures(f)
-      .filter(feat -> !FeatureTool.IsAnonymousInnerFeature(feat));
+    return DeclaredFeatures(f)
+      .filter(feat -> IncludeAnonymousInnerFeatures || !FeatureTool.IsAnonymousInnerFeature(feat));
   }
 
   private static final TreeMap<AbstractFeature, SourcePosition> EndOfFeature = new TreeMap<>();
