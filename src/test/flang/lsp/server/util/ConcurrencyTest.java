@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.feature.Completion;
+import dev.flang.lsp.server.records.ComputationPerformance;
 import dev.flang.lsp.server.util.Concurrency;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.concurrent.MaxExecutionTimeExceededException;
@@ -81,7 +82,7 @@ public class ConcurrencyTest extends BaseTest
     request2.join();
 
     assertTrue(results.get(0) instanceof MaxExecutionTimeExceededException);
-    assertTrue(((Either<List<CompletionItem>, CompletionList>) results.get(1)).getLeft().size() > 10);
+    assertTrue(((ComputationPerformance<Either<List<CompletionItem>, CompletionList>>) results.get(1)).result().getLeft().size() > 10);
 
   }
 
@@ -152,7 +153,7 @@ public class ConcurrencyTest extends BaseTest
     countDownLatch.await();
 
     assertDoesNotThrow(
-      () -> ((Either<List<CompletionItem>, CompletionList>) exectuor.submit(() -> getCompletion(5000)).get()));
+      () -> ((ComputationPerformance<Either<List<CompletionItem>, CompletionList>>) exectuor.submit(() -> getCompletion(5000)).get()));
   }
 
 }
