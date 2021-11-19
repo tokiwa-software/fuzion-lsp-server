@@ -187,9 +187,7 @@ public class QueryAST
   public static Stream<AbstractFeature> CompletionsAt(TextDocumentPositionParams params)
   {
     return InFeature(params)
-      .map(feature -> {
-        return Stream.concat(Stream.of(feature), FuzionParser.DeclaredOrInheritedFeatures(feature));
-      })
+      .map(feature -> FeatureTool.FeaturesInScope(feature))
       .orElse(Stream.empty());
   }
 
@@ -380,6 +378,9 @@ public class QueryAST
         var endOfFeature = Bridge.ToPosition(FuzionParser.endOfFeature(f));
         return LSP4jUtils.ComparePosition(cursorPosition, endOfFeature) <= 0 &&
           LSP4jUtils.ComparePosition(cursorPosition, startOfFeature) > 0;
+      })
+      .filter(f -> {
+        return f.pos()._column < params.getPosition().getCharacter() + 1;
       })
       .sorted(CompareBySourcePosition.reversed())
       .findFirst();

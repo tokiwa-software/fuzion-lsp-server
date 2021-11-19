@@ -160,10 +160,10 @@ public class QueryASTTest extends BaseTest
   }
 
   @Test
-  public void InFeature()
+  public void InFeatureManOrBoyExample()
   {
     SourceText.setText(uri1, ManOrBoy);
-    assertEquals("a", QueryAST.InFeature(Cursor(uri1, 4, 1)).get().featureName().baseName());
+    assertEquals("a", QueryAST.InFeature(Cursor(uri1, 4, 3)).get().featureName().baseName());
   }
 
   @Test
@@ -219,6 +219,185 @@ public class QueryASTTest extends BaseTest
       .get()
       .featureName()
       .baseName());
+
+  }
+
+  @Test
+  public void InFeature()
+  {
+    var sourceText = """
+      HelloWorld is
+        level1 is
+          level2 is
+            level3 is""";
+    sourceText += System.lineSeparator() + "    ";
+    SourceText.setText(uri1, sourceText);
+
+    assertEquals("level1", QueryAST
+      .InFeature(Cursor(uri1, 4, 4))
+      .get()
+      .featureName()
+      .baseName());
+  }
+
+  @Test
+  public void CompletionsAt()
+  {
+    var sourceText = """
+      HelloWorld is
+        innnerFeat is
+        level1 is
+          level2 is
+            level3 is""";
+    sourceText += System.lineSeparator() + "    ";
+    SourceText.setText(uri1, sourceText);
+
+    var expectedCompletions = """
+      HelloWorld.level1.level2
+      HelloWorld.innnerFeat
+      HelloWorld.level1
+      Cons
+      FALSE
+      Function
+      HelloWorld
+      InitArray
+      List
+      Lists
+      Monoid
+      Object
+      Set
+      TRUE
+      analysis
+      array
+      array
+      array2
+      array3
+      bitset
+      bitsets
+      bool
+      choice
+      codepoint
+      codepoints
+      complex
+      complex
+      complexes
+      cons
+      conststring
+      debug
+      debug
+      debugLevel
+      error
+      f128
+      f16
+      f32
+      f32s
+      f64
+      f64s
+      false
+      float
+      floats
+      fraction
+      fraction
+      fuzion
+      hasEquals
+      hasHash
+      hasInterval
+      hashMap
+      hashMap
+      i128
+      i16
+      i16
+      i16s
+      i32
+      i32
+      i32s
+      i64
+      i64
+      i64s
+      i8
+      i8
+      i8s
+      int
+      integer
+      java
+      list
+      lists
+      map
+      mapOf
+      marray
+      marray
+      matrices
+      matrix
+      monad
+      nil
+      numOption
+      numOption
+      numeric
+      numerics
+      option
+      option
+      ordered
+      orderedMap
+      orderedMap
+      outcome
+      outcome
+      partiallyOrdered
+      pedantic
+      psMap
+      psMap
+      psMap
+      psSet
+      psSet
+      psSet
+      quantors
+      safety
+      say
+      say
+      searchableList
+      searchablelist
+      setOf
+      setOf
+      some
+      sortedArray
+      sortedArray
+      spit
+      stdout
+      stream
+      string
+      strings
+      sum
+      sys
+      true
+      tuple
+      u128
+      u128
+      u128s
+      u16
+      u16
+      u16s
+      u32
+      u32
+      u32s
+      u64
+      u64
+      u64s
+      u8
+      u8
+      u8s
+      uint
+      unit
+      void
+      wrappingInteger
+      wrappingIntegers
+      yak
+      Object.asString
+      Object.hashCode
+      Object.prefix $""";
+
+    assertEquals(expectedCompletions, QueryAST
+      .CompletionsAt(Cursor(uri1, 5, 4))
+      .map(f -> f.qualifiedName())
+      .collect(Collectors.joining("\n")));
 
   }
 

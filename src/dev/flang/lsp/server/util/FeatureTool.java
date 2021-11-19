@@ -152,6 +152,19 @@ public class FeatureTool
     return universe(f.outer());
   }
 
+  static Optional<AbstractFeature> Main(AbstractFeature f)
+  {
+    if (f.outer().state() == State.ERROR)
+      {
+        return Optional.empty();
+      }
+    if (f.outer().isUniverse())
+      {
+        return Optional.of(f);
+      }
+    return Main(f.outer());
+  }
+
   /**
    * @param feature
    * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
@@ -172,6 +185,33 @@ public class FeatureTool
   public static String CommentOfInMarkdown(AbstractFeature f)
   {
     return MarkdownTool.Italic(MarkdownTool.Escape(CommentOf(f)));
+  }
+
+  /**
+   * @param feature
+   * @return all features which are accessible (callable) when inside of feature
+   */
+  static Stream<AbstractFeature> FeaturesInScope(AbstractFeature feature)
+  {
+    return Stream
+      .of(Stream.of(feature), outerFeatures(feature), feature.inherits().stream().map(c -> c.calledFeature()))
+      .reduce(Stream::concat)
+      .orElseGet(Stream::empty)
+      .flatMap(f -> {
+        return FuzionParser.DeclaredFeatures(f);
+      });
+  }
+
+  /**
+   *
+   * @param feature
+   * @return true iff there are no other features at same or lesser level after given feature
+   */
+  static boolean IsOfLastFeature(AbstractFeature feature)
+  {
+    return DeclaredFeaturesRecursive(Main(feature).get())
+      .noneMatch(f -> f.pos()._line > feature.pos()._line
+        && f.pos()._column <= feature.pos()._column);
   }
 
 

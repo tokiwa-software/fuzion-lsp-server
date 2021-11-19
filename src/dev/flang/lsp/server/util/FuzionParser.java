@@ -329,7 +329,7 @@ public class FuzionParser extends ANY
             // NYI make this more idiomatic?
             return new SourcePosition(feature.pos()._sourceFile, 1, 1);
           }
-        if (!feature.isUniverse() && feature.outer().isUniverse())
+        if (!feature.isUniverse() && FeatureTool.IsOfLastFeature(feature))
           {
             var sourceText = SourceText.getText(FuzionParser.getUri(feature.pos())).get();
             var lines = sourceText.split("\n").length;

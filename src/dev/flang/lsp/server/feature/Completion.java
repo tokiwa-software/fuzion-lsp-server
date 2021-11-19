@@ -102,17 +102,14 @@ public class Completion
 
   private static Either<List<CompletionItem>, CompletionList> completions(Stream<AbstractFeature> features)
   {
-    var sortedFeatures = features
-      .flatMap(f -> FuzionParser.DeclaredFeatures(f))
-      .distinct()
-      .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
+    var collectedFeatures = features
       .collect(Collectors.toList());
 
     var completionItems = IntStream
-      .range(0, sortedFeatures.size())
+      .range(0, collectedFeatures.size())
       .mapToObj(
         index -> {
-          var feature = sortedFeatures.get(index);
+          var feature = collectedFeatures.get(index);
           return buildCompletionItem(
             FeatureTool.ToLabel(feature),
             getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));

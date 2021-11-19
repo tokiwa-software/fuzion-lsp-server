@@ -97,6 +97,28 @@ public class FuzionParserTest extends BaseTest
     assertEquals(1, FuzionParser.endOfFeature(yak)._column);
   }
 
+
+  @Test
+  public void EndOfFeatureNested()
+  {
+    var sourceText = """
+      HelloWorld is
+        level1 is
+          level2 is
+            level3 is""";
+    sourceText += System.lineSeparator() + "    ";
+    SourceText.setText(uri1, sourceText);
+
+    var level2 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.main(uri1).get())
+      .filter(f -> f.qualifiedName().equals("HelloWorld.level1.level2"))
+      .findFirst()
+      .get();
+
+    assertEquals(6, FuzionParser.endOfFeature(level2)._line);
+    assertEquals(1, FuzionParser.endOfFeature(level2)._column);
+  }
+
+
   @Test
   public void noSourceText()
   {
