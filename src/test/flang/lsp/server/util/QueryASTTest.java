@@ -189,11 +189,12 @@ public class QueryASTTest extends BaseTest
       HelloWorld is
         level1 is
           level2 is
+            level3 is
         level1.
       """;
     SourceText.setText(uri1, sourceText);
     var completions = QueryAST
-      .CallCompletionsAt(Cursor(uri1, 3, 9))
+      .CallCompletionsAt(Cursor(uri1, 4, 9))
       .collect(Collectors.toList());
 
     assertEquals("level2", completions.get(0).featureName().baseName());
@@ -209,11 +210,12 @@ public class QueryASTTest extends BaseTest
       HelloWorld is
         level1 is
           level2 is
+            level3 is
         level1.
       """;
     SourceText.setText(uri1, sourceText);
     assertEquals("level1", QueryAST
-      .CalledFeature(Cursor(uri1, 3, 9))
+      .CalledFeature(Cursor(uri1, 4, 9))
       .get()
       .featureName()
       .baseName());
