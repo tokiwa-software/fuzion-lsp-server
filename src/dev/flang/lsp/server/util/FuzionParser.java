@@ -282,12 +282,7 @@ public class FuzionParser extends ANY
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
   {
-    return FeatureTool.universe(f).map(universe -> {
-      return universe2ResolutionMap.get(universe)._module
-        .declaredFeatures(f)
-        .values()
-        .stream();
-    }).orElse(Stream.empty());
+    return DeclaredFeatures(f, false);
   }
 
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
@@ -301,7 +296,13 @@ public class FuzionParser extends ANY
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean IncludeAnonymousInnerFeatures)
   {
-    return DeclaredFeatures(f)
+    return FeatureTool.universe(f).map(universe -> {
+      return universe2ResolutionMap.get(universe)._module
+        .declaredFeatures(f)
+        .values()
+        .stream();
+    })
+      .orElse(Stream.empty())
       .filter(feat -> IncludeAnonymousInnerFeatures || !FeatureTool.IsAnonymousInnerFeature(feat));
   }
 
