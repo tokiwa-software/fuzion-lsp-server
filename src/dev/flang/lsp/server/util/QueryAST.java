@@ -167,7 +167,6 @@ public class QueryAST
     return Optional.of(token);
   }
 
-  // NYI test this
   public static Stream<AbstractFeature> CallCompletionsAt(TextDocumentPositionParams params)
   {
     return CalledFeature(params)
@@ -177,7 +176,10 @@ public class QueryAST
         return x.featureOfType();
       })
       .map(feature -> {
-        return Stream.concat(Stream.of(feature), FuzionParser.DeclaredOrInheritedFeatures(feature));
+        var featuresViaInheritance =
+          feature.inherits().stream().flatMap(c -> FuzionParser.DeclaredFeatures(c.calledFeature()));
+        return Stream.concat(FuzionParser
+          .DeclaredFeatures(feature), featuresViaInheritance);
       })
       .orElse(Stream.empty());
   }

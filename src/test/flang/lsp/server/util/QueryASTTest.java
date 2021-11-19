@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.util;
 
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Test;
 
 import dev.flang.ast.Call;
@@ -165,7 +167,7 @@ public class QueryASTTest extends BaseTest
   }
 
   @Test
-  public void CallCompletionsAt()
+  public void CallCompletionsAtStdLib()
   {
     var sourceText = """
       HelloWorld is
@@ -173,8 +175,49 @@ public class QueryASTTest extends BaseTest
         (1..10).size().
       """;
     SourceText.setText(uri1, sourceText);
-    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).count() > 10);
+    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).count() > 0);
+    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).noneMatch(f -> f.featureName().baseName().length() < 3));
+    assertTrue(
+      QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("sizeOption")));
     assertEquals(0, QueryAST.CallCompletionsAt(Cursor(uri1, 2, 17)).count());
+  }
+
+  @Test
+  public void CallCompletionsAt()
+  {
+    var sourceText = """
+      HelloWorld is
+        level1 is
+          level2 is
+        level1.
+      """;
+    SourceText.setText(uri1, sourceText);
+    var completions = QueryAST
+      .CallCompletionsAt(Cursor(uri1, 3, 9))
+      .collect(Collectors.toList());
+
+    assertEquals("level2", completions.get(0).featureName().baseName());
+    assertTrue(completions.stream()
+      .allMatch(f -> f.outer().featureName().baseName().equals("level1")
+        || f.outer().featureName().baseName().equals("Object")));
+  }
+
+  @Test
+  public void CalledFeature()
+  {
+    var sourceText = """
+      HelloWorld is
+        level1 is
+          level2 is
+        level1.
+      """;
+    SourceText.setText(uri1, sourceText);
+    assertEquals("level1", QueryAST
+      .CalledFeature(Cursor(uri1, 3, 9))
+      .get()
+      .featureName()
+      .baseName());
+
   }
 
 }
