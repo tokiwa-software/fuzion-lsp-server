@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.Bridge;
+import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.QueryAST;
 
 /**
@@ -56,8 +57,7 @@ public class Definition
 
   private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(AbstractFeature obj)
 	{
-    // NYI find better way
-    if(obj.toString().startsWith("INVISIBLE")){
+    if(FeatureTool.IsAnonymousInnerFeature(obj)){
       return getDefinition(obj.outer());
     }
     Location location = Bridge.ToLocation(obj.pos());

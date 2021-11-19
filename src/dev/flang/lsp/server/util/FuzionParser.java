@@ -86,6 +86,10 @@ public class FuzionParser extends ANY
    */
   public static Optional<AbstractFeature> main(URI uri)
   {
+    if (IsStdLib(uri))
+      {
+        return getParserCacheRecord(uri).map(x -> x.mir().universe());
+      }
     return getParserCacheRecord(uri).map(x -> x.mir().main());
   }
 
