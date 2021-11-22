@@ -33,6 +33,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
@@ -47,11 +48,9 @@ import dev.flang.ast.If;
 import dev.flang.ast.Match;
 import dev.flang.ast.Nop;
 import dev.flang.ast.NumLiteral;
-import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Tag;
-import dev.flang.ast.Type;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
 import dev.flang.lsp.server.util.ASTItem;
@@ -87,7 +86,6 @@ public class ASTWalker
       .stream()
       .forEach(f -> TraverseFeature(f, callback));
 
-    TraverseReturnType(feature.returnType(), feature, callback);
     TraverseType(feature.resultType(), feature, callback);
 
     // feature.isRoutine() sometimes throws because it depends on
@@ -100,15 +98,6 @@ public class ASTWalker
 
     FuzionParser.DeclaredFeatures(feature, true)
       .forEach(f -> TraverseFeature(f, callback));
-  }
-
-  private static void TraverseReturnType(ReturnType returnType, AbstractFeature outer,
-    BiFunction<Object, AbstractFeature, Boolean> callback)
-  {
-    if (!callback.apply(returnType, outer))
-      {
-        return;
-      }
   }
 
   private static void TraverseCase(Case c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
@@ -164,7 +153,7 @@ public class ASTWalker
     b.statements_.forEach(s -> TraverseStatement(s, outer, callback));
   }
 
-  private static void TraverseType(Type t, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
+  private static void TraverseType(AbstractType t, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
   {
     if (!callback.apply(t, outer))
       {

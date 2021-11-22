@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Types;
 import dev.flang.ast.Feature.State;
 import dev.flang.ast.Impl.Kind;
 import dev.flang.lsp.server.ASTWalker;
@@ -141,7 +142,7 @@ public class FeatureTool
 
   static Optional<AbstractFeature> universe(AbstractFeature f)
   {
-    if (f.state() == State.ERROR)
+    if (f == Types.f_ERROR)
       {
         return Optional.empty();
       }
@@ -154,7 +155,7 @@ public class FeatureTool
 
   static Optional<AbstractFeature> Main(AbstractFeature f)
   {
-    if (f.outer().state() == State.ERROR)
+    if (f.outer() == Types.f_ERROR)
       {
         return Optional.empty();
       }
