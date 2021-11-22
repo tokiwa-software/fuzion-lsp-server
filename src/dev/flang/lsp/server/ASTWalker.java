@@ -26,9 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -62,12 +61,7 @@ public class ASTWalker
 
   public static Stream<Entry<Object, AbstractFeature>> Traverse(AbstractFeature start)
   {
-    var result = new TreeMap<Object, AbstractFeature>(new Comparator<Object>() {
-      public int compare(Object o1, Object o2)
-      {
-        return o1.equals(o2) ? 0: 1;
-      }
-    });
+    var result = new HashMap<Object, AbstractFeature>();
     TraverseFeature(start, (item, outer) -> {
       var isAlreadyPresent = result.containsKey(item);
       result.put(item, outer);
