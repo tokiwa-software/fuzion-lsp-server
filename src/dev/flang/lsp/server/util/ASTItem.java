@@ -47,6 +47,7 @@ import dev.flang.ast.InlineArray;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
+import dev.flang.fe.LibraryFeature;
 import dev.flang.lsp.server.Util;
 import dev.flang.util.SourcePosition;
 
@@ -93,6 +94,10 @@ public class ASTItem
    */
   public static Optional<SourcePosition> sourcePosition(Object entry)
   {
+    if (entry instanceof LibraryFeature e)
+      {
+        return Optional.of(e.pos());
+      }
     if (entry instanceof Stmnt)
       {
         return Optional.ofNullable(((Stmnt) entry).pos());
@@ -143,7 +148,8 @@ public class ASTItem
     return Optional.empty();
   }
 
-  private static final SourcePosition None = new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
+  private static final SourcePosition None =
+    new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
 
   public static SourcePosition sourcePositionOrNone(Object obj)
   {

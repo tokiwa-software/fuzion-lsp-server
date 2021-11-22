@@ -45,7 +45,6 @@ import dev.flang.lsp.server.util.ErrorHandling;
 import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.IO;
-import dev.flang.lsp.server.util.QueryAST;
 
 public class Command
 {
