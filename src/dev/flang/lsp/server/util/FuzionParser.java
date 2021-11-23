@@ -31,8 +31,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Stream;
@@ -72,28 +75,41 @@ import dev.flang.util.SourcePosition;
 public class FuzionParser extends ANY
 {
 
-  private static final String PARSER_LOCK = "";
   /**
    * maps temporary files which are fed to the parser to their original uri.
    */
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
-  private static TreeMap<String, ParserCacheRecord> sourceText2ParserCache = new TreeMap<>();
+
+  static final int MAX_ENTRIES = 20;
+  // LRU-Cache holding the most recent results of parser
+  private static Map<String, ParserCacheRecord> sourceText2ParserCache = Collections.synchronizedMap(
+    new LinkedHashMap<String, ParserCacheRecord>(MAX_ENTRIES + 1, .75F, true) {
+      public boolean removeEldestEntry(Map.Entry<String, ParserCacheRecord> eldest)
+      {
+        var removeEldestEntry = size() > MAX_ENTRIES;
+        if (removeEldestEntry)
+          {
+            universe2ResolutionMap.remove(eldest.getValue().mir().universe());
+          }
+        return removeEldestEntry;
+      }
+    });
   private static HashMap<AbstractFeature, Resolution> universe2ResolutionMap = new HashMap<>();
 
   /**
    * @param uri
    * @return main feature in source text, may return universe
    */
-  public static Optional<AbstractFeature> main(URI uri)
+  public static AbstractFeature main(URI uri)
   {
     if (IsStdLib(uri))
       {
-        return getParserCacheRecord(uri).map(x -> x.mir().universe());
+        return getParserCacheRecord(uri).mir().universe();
       }
-    return getParserCacheRecord(uri).map(x -> x.mir().main());
+    return getParserCacheRecord(uri).mir().main();
   }
 
-  public static Optional<AbstractFeature> main(TextDocumentIdentifier params)
+  public static AbstractFeature main(TextDocumentIdentifier params)
   {
     return main(LSP4jUtils.getUri(params));
   }
@@ -103,43 +119,19 @@ public class FuzionParser extends ANY
    * @param uri
    * @return ParserCacheRecord, empty if user starts in stdlib file and no record present yet.
    */
-  private static Optional<ParserCacheRecord> getParserCacheRecord(URI uri)
+  private synchronized static ParserCacheRecord getParserCacheRecord(URI uri)
   {
-    if (IsStdLib(uri))
-      {
-        if (sourceText2ParserCache.isEmpty())
-          {
-            return Optional.empty();
-          }
+    var sourceText = IsStdLib(uri) ? "dummyFeat is": SourceText.getText(uri).orElseThrow();
 
-        // NYI for now we just return the first entry of the cache
-        return getParserCacheRecord(sourceText2ParserCache.firstEntry().getKey());
-      }
-
-    synchronized (PARSER_LOCK)
-      {
-        var sourceText = SourceText.getText(uri).orElseThrow();
-        if (!sourceText2ParserCache.containsKey(sourceText))
-          {
-            fillParserCache(uri, true);
-          }
-
-        return getParserCacheRecord(sourceText);
-      }
+    var result = sourceText2ParserCache.computeIfAbsent(sourceText, st -> computeParserCache(uri, true));
+    // NYI remove this. restores Types.resolved
+    Types.resolved = result.resolved();
+    return result;
   }
 
-  private static Optional<ParserCacheRecord> getParserCacheRecord(String sourceText)
+  private static ParserCacheRecord computeParserCache(URI uri, boolean clearAfterParsing)
   {
-    // NYI
-    Types.resolved = sourceText2ParserCache.get(sourceText).resolved();
-    return Optional.of(sourceText2ParserCache.get(sourceText));
-  }
-
-  private static void fillParserCache(URI uri, boolean clearAfterParsing)
-  {
-    var sourceText = SourceText.getText(uri).orElseThrow();
     var parserCacheRecord = createParserCacheRecord(uri);
-    sourceText2ParserCache.put(sourceText, parserCacheRecord);
     universe2ResolutionMap.put(parserCacheRecord.mir().universe(), parserCacheRecord.frontEnd().res());
     // NYI
     if (clearAfterParsing)
@@ -147,6 +139,7 @@ public class FuzionParser extends ANY
         ClearStaticallyHeldStuffInFuzionCompiler();
       }
     afterParsing();
+    return parserCacheRecord;
   }
 
   /**
@@ -192,8 +185,7 @@ public class FuzionParser extends ANY
     ChoiceIdAsRef.preallocated_.clear();
 
     // NYI remove recreation of MIR
-    fillParserCache(uri, false);
-    var parserCacheRecord = getParserCacheRecord(uri).get();
+    var parserCacheRecord = computeParserCache(uri, false);
 
     if (Errors.count() > 0)
       {
@@ -276,7 +268,7 @@ public class FuzionParser extends ANY
 
   public static AbstractFeature universe(URI uri)
   {
-    return getParserCacheRecord(uri).map(x -> x.mir().universe()).orElseThrow();
+    return getParserCacheRecord(uri).mir().universe();
   }
 
   public static AbstractFeature universe(TextDocumentPositionParams params)
@@ -393,12 +385,12 @@ public class FuzionParser extends ANY
 
   public static Stream<Errors.Error> Warnings(URI uri)
   {
-    return getParserCacheRecord(uri).map(x -> x.warnings()).get().stream();
+    return getParserCacheRecord(uri).warnings().stream();
   }
 
   public static Stream<Errors.Error> Errors(URI uri)
   {
-    return getParserCacheRecord(uri).map(x -> x.errors()).get().stream();
+    return getParserCacheRecord(uri).errors().stream();
   }
 
 

@@ -44,15 +44,9 @@ public class DocumentSymbols
 {
   public static List<Either<SymbolInformation, DocumentSymbol>> getDocumentSymbols(DocumentSymbolParams params)
   {
-    var baseFeature = FuzionParser.main(LSP4jUtils.getUri(params.getTextDocument()));
-    if (baseFeature.isEmpty())
-      {
-        return List.of();
-      }
+    var mainFeature = FuzionParser.main(LSP4jUtils.getUri(params.getTextDocument()));
 
-    var feature = baseFeature.get();
-
-    var rootSymbol = DocumentSymbols.DocumentSymbolTree(feature);
+    var rootSymbol = DocumentSymbols.DocumentSymbolTree(mainFeature);
 
     return List.of(Either.forRight(rootSymbol));
   }

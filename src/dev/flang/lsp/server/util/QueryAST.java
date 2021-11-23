@@ -60,12 +60,7 @@ public class QueryAST
   public static Optional<AbstractFeature> CalledFeature(TextDocumentPositionParams params)
   {
     var baseFeature = FuzionParser.main(params.getTextDocument());
-    if (baseFeature.isEmpty())
-      {
-        return Optional.empty();
-      }
-
-    return ASTWalker.Traverse(baseFeature.get())
+    return ASTWalker.Traverse(baseFeature)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof Call)
       .map(entry -> new SimpleEntry<Call, AbstractFeature>((Call) entry.getKey(), entry.getValue()))
@@ -201,12 +196,7 @@ public class QueryAST
   private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
     var baseFeature = FuzionParser.main(params.getTextDocument());
-    if (baseFeature.isEmpty())
-      {
-        return Stream.empty();
-      }
-
-    var astItems = ASTWalker.Traverse(baseFeature.get())
+    var astItems = ASTWalker.Traverse(baseFeature)
       .filter(IsItemNotBuiltIn(params))
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(IsItemOnSameLineAsCursor(params))
@@ -310,11 +300,7 @@ public class QueryAST
   public static Stream<AbstractFeature> DeclaredFeaturesRecursive(URI uri)
   {
     var baseFeature = FuzionParser.main(uri);
-    if (baseFeature.isEmpty())
-      {
-        return Stream.empty();
-      }
-    return FeatureTool.DeclaredFeaturesRecursive(baseFeature.get());
+    return FeatureTool.DeclaredFeaturesRecursive(baseFeature);
   }
 
   public static Optional<Call> callAt(TextDocumentPositionParams params)

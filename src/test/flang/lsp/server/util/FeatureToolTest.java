@@ -40,7 +40,7 @@ public class FeatureToolTest extends BaseTest
   public void ASTbrokenSource()
   {
     SourceText.setText(uri1, UnknownCall);
-    var ex = FuzionParser.main(uri1).get();
+    var ex = FuzionParser.main(uri1);
     var ast = FeatureTool.AST(ex);
     assertTrue(ast.contains("Call:hasInterval"));
     assertTrue(ast.contains("Call:called feature not know"));
@@ -60,7 +60,7 @@ public class FeatureToolTest extends BaseTest
       """;
     SourceText.setText(uri1, CommentExample);
     var innerFeature = FuzionParser
-      .DeclaredFeatures(FuzionParser.main(uri1).get())
+      .DeclaredFeatures(FuzionParser.main(uri1))
       .findFirst()
       .orElseThrow();
     assertEquals("first comment line" + System.lineSeparator() + "second comment line",

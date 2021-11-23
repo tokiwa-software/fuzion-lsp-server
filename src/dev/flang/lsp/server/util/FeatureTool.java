@@ -34,9 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
-import dev.flang.ast.Feature.State;
 import dev.flang.ast.Impl.Kind;
+import dev.flang.ast.Types;
 import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
