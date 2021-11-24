@@ -171,6 +171,10 @@ public class FeatureTool
    */
   public static String ToLabel(AbstractFeature feature)
   {
+    if (IsFieldLike(feature))
+      {
+        return feature.featureName().baseName() + ": " + feature.resultType().astType().name;
+      }
     if (!IsRoutineOrRoutineDef(feature))
       {
         return feature.featureName().baseName();
