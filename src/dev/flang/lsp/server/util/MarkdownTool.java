@@ -45,6 +45,9 @@ public class MarkdownTool
 
   public static String Italic(String str)
   {
+    if(str.isBlank()){
+      return "";
+    }
     return Arrays.stream(str.split(System.lineSeparator()))
       .map(l -> "*" + l + "*")
       .collect(Collectors.joining(System.lineSeparator()));
@@ -52,6 +55,9 @@ public class MarkdownTool
 
   public static String Blockquote(String str)
   {
+    if(str.isBlank()){
+      return "";
+    }
     return Arrays.stream(str.split(System.lineSeparator()))
       .map(l -> "> " + l)
       .collect(Collectors.joining(System.lineSeparator()));
@@ -59,6 +65,9 @@ public class MarkdownTool
 
   public static String Bold(String str)
   {
+    if(str.isBlank()){
+      return "";
+    }
     return Arrays.stream(str.split(System.lineSeparator()))
       .map(l -> "**" + l + "**")
       .collect(Collectors.joining(System.lineSeparator()));
