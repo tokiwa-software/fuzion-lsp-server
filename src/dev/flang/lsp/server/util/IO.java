@@ -38,6 +38,7 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.concurrent.Callable;
 
 import org.eclipse.lsp4j.MessageParams;
@@ -52,6 +53,8 @@ public class IO
   public static final InputStream SYS_IN = System.in;
   private static final PrintStream CLIENT_OUT = createCapturedStream(MessageType.Log);
   private static final PrintStream CLIENT_ERR = createCapturedStream(MessageType.Error);
+  private static File tempDir =
+    ErrorHandling.ResultOrDefault(() -> Files.createTempDirectory("fuzion-lsp-server").toFile(), null);
 
   static byte[] getBytes(String text)
   {
@@ -81,7 +84,7 @@ public class IO
   {
     try
       {
-        File tempFile = File.createTempFile(prefix + String.valueOf(System.currentTimeMillis()), extension);
+        File tempFile = File.createTempFile(prefix + String.valueOf(System.currentTimeMillis()), extension, tempDir);
         if (deleteOnExit)
           {
             tempFile.deleteOnExit();
