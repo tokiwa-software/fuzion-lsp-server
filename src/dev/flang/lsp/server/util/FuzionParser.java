@@ -193,8 +193,9 @@ public class FuzionParser extends ANY
       }
 
     var air =
-      new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(), parserCacheRecord.frontEnd().res())
-        .air();
+      new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(),
+        parserCacheRecord.frontEnd().res()._module)
+          .air();
 
     // NYI remove this once unnecessary
     Instance.universe = new Instance(Clazzes.universe.get());
