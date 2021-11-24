@@ -328,7 +328,8 @@ public class QueryAST
           }
         if (astItem instanceof Call)
           {
-            return ((Call) astItem).calledFeature();
+            var calledFeature = ((Call) astItem).calledFeature();
+            return calledFeature.qualifiedName().startsWith("sys.array.index") ? null: calledFeature;
           }
         if (astItem instanceof Type)
           {
@@ -345,7 +346,6 @@ public class QueryAST
           }
         return f;
       })
-      .filter(f -> !FeatureTool.IsFieldLike(f))
       // NYI maybe there is a better way?
       .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()))
       .findFirst();
