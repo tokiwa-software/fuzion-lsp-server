@@ -249,24 +249,6 @@ public class FuzionParser extends ANY
     return sourceFile;
   }
 
-  private static File getDummyFile()
-  {
-    try
-      {
-        var file = File.createTempFile("000000", ".fz");
-        FileWriter writer = new FileWriter(file);
-        writer.write("nothing is");
-        writer.close();
-        return file;
-      }
-    catch (IOException e)
-      {
-        Log.message("parsing failed", MessageType.Error);
-        Log.message(e.getStackTrace().toString(), MessageType.Error);
-        return null;
-      }
-  }
-
   public static AbstractFeature universe(URI uri)
   {
     return getParserCacheRecord(uri).mir().universe();
