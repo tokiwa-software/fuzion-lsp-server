@@ -5,18 +5,15 @@
 - GNU-Make
 - wget
 
-## Run
-- `make`
-
-## Debug
-- `make debug`
-
 ## Usage
 ### Transport socket
 - run `make`
 - connect the client to the (random) port the server prints to stdout.
 ### Transport stdio
 - run `make stdio`
+
+## Debug
+- `make debug`
 
 ## Tests
 - `make run_tests`
