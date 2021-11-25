@@ -34,11 +34,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Impl.Kind;
 import dev.flang.ast.Types;
 import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.Util;
 
 public class FeatureTool
 {
@@ -128,17 +126,6 @@ public class FeatureTool
     return f.featureName().baseName().startsWith("#");
   }
 
-  public static boolean IsFieldLike(AbstractFeature feature)
-  {
-    return Util.HashSetOf(Kind.Field, Kind.FieldActual, Kind.FieldDef, Kind.FieldInit, Kind.FieldIter)
-      .contains(feature.implKind());
-  }
-
-  public static boolean IsRoutineOrRoutineDef(AbstractFeature feature)
-  {
-    return Util.HashSetOf(Kind.Routine, Kind.RoutineDef).contains(feature.implKind());
-  }
-
   static Optional<AbstractFeature> universe(AbstractFeature f)
   {
     if (f == Types.f_ERROR)
@@ -171,11 +158,11 @@ public class FeatureTool
    */
   public static String ToLabel(AbstractFeature feature)
   {
-    if (IsFieldLike(feature))
+    if (feature.isField())
       {
         return feature.featureName().baseName() + ": " + feature.resultType().astType().name;
       }
-    if (!IsRoutineOrRoutineDef(feature))
+    if (!feature.isRoutine())
       {
         return feature.featureName().baseName();
       }

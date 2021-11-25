@@ -44,7 +44,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionLexer;
-import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.QueryAST;
 
 /**
@@ -124,7 +123,7 @@ public class Completion
    */
   private static String getInsertText(AbstractFeature feature)
   {
-    if (!FeatureTool.IsRoutineOrRoutineDef(feature))
+    if (!feature.isRoutine())
       {
         return feature.featureName().baseName();
       }

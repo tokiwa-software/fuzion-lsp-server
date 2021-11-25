@@ -36,7 +36,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.LSP4jUtils;
 
@@ -55,7 +54,7 @@ public class DocumentSymbols
   {
     var documentSymbol = Bridge.ToDocumentSymbol(feature);
     var children = FuzionParser.DeclaredFeatures(feature)
-      .filter(f -> !FeatureTool.IsFieldLike(f))
+      .filter(f -> !f.isField())
       .map(f -> {
         return DocumentSymbolTree(f);
       })
