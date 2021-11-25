@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
@@ -344,11 +345,23 @@ public class QueryAST
           {
             return f.resultType().featureOfType();
           }
+        if (f.isField() && IsAtDefinitionOfField(params, f))
+          {
+            return f.resultType().featureOfType();
+          }
         return f;
       })
       // NYI maybe there is a better way?
       .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()))
       .findFirst();
+  }
+
+  private static boolean IsAtDefinitionOfField(TextDocumentPositionParams params, AbstractFeature f)
+  {
+    var start = Bridge.ToPosition(f.pos());
+    var end = new Position(start.getLine(), start.getCharacter() + f.featureName().baseName().length());
+    return LSP4jUtils.ComparePosition(start, params.getPosition()) <= 0
+      && LSP4jUtils.ComparePosition(end, params.getPosition()) >= 0;
   }
 
   /**
