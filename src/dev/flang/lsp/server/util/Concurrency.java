@@ -59,6 +59,11 @@ public class Concurrency
     cachedThreadPoolExecutor.submit(runnable);
   }
 
+  public static <T> Future<T> RunInBackground(Callable<T> callable)
+  {
+    return cachedThreadPoolExecutor.submit(callable);
+  }
+
   /**
    * run callable on single thread executor.
    * periodically check if callable meanwhile has been cancelled

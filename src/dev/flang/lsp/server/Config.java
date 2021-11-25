@@ -26,6 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server;
 
+import java.util.List;
+import java.util.concurrent.Future;
+
+import com.google.gson.JsonObject;
+
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.lsp.server.enums.Transport;
@@ -34,6 +39,7 @@ public class Config
 {
 
   public static final boolean ComputeAsync = true;
+  private static Future<List<Object>> _configuration;
   private static LanguageClient _languageClient;
   private static Transport _transport = Transport.stdio;
 
@@ -65,6 +71,31 @@ public class Config
         return false;
       }
     return debug.toLowerCase().equals("true");
+  }
+
+  public static void setConfiguration(Future<List<Object>> configuration)
+  {
+    _configuration = configuration;
+  }
+
+  public static dev.flang.util.List<String> JavaModules()
+  {
+    try
+      {
+        var modules = ((JsonObject) _configuration.get().get(0))
+          .getAsJsonObject()
+          .getAsJsonObject("java")
+          .getAsJsonArray("modules");
+        var result = new dev.flang.util.List<String>();
+        modules.forEach(jsonElement -> {
+          result.add(jsonElement.getAsString());
+        });
+        return result;
+      }
+    catch (Exception e)
+      {
+        return new dev.flang.util.List();
+      }
   }
 
 

@@ -27,8 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -57,6 +55,7 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
 import dev.flang.lsp.server.ASTWalker;
+import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.ParserCacheRecord;
@@ -215,7 +214,7 @@ public class FuzionParser extends ANY
   {
     var fuzionHome = Path.of(System.getProperty("fuzion.home"));
     var frontEndOptions =
-      new FrontEndOptions(0, fuzionHome, new dev.flang.util.List<>(), 0, false, false, tempFile.getAbsolutePath());
+      new FrontEndOptions(0, fuzionHome, Config.JavaModules(), 0, false, false, tempFile.getAbsolutePath());
     return frontEndOptions;
   }
 
