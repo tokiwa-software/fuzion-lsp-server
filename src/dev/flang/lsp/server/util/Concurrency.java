@@ -162,20 +162,23 @@ public class Concurrency
 
           return result.result();
         }
-      catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
+      catch (ExecutionException e)
         {
           if (Config.DEBUG())
             {
               ErrorHandling.WriteStackTrace(context);
               ErrorHandling.WriteStackTrace(e);
             }
+        }
+      catch (InterruptedException | TimeoutException | MaxExecutionTimeExceededException e)
+        {
           if (Config.DEBUG() && e instanceof MaxExecutionTimeExceededException)
             {
               Log.message(
                 "Time exceeded" + System.lineSeparator() + ErrorHandling.toString(context), MessageType.Warning);
             }
-          return null;
         }
+      return null;
     });
   }
 

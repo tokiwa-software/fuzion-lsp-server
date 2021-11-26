@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.SourceText;
@@ -160,7 +161,7 @@ public class FeatureTool
   {
     if (feature.isField())
       {
-        return feature.featureName().baseName() + ": " + feature.resultType().astType().name;
+        return feature.featureName().baseName() + ": " + Label(feature.resultType());
       }
     if (!feature.isRoutine())
       {
@@ -168,9 +169,15 @@ public class FeatureTool
       }
     var arguments = "(" + feature.arguments()
       .stream()
-      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + a.thisType().featureOfType().resultType())
+      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + Label(a.resultType()))
       .collect(Collectors.joining(", ")) + ")";
-    return feature.featureName().baseName() + feature.generics() + arguments + " => " + feature.resultType();
+    return feature.featureName().baseName() + feature.generics() + arguments + " => " + Label(feature.resultType());
+  }
+
+  private static String Label(AbstractType type)
+  {
+    // NYI don't rely on astType
+    return type.astType().toString();
   }
 
   public static String CommentOfInMarkdown(AbstractFeature f)
