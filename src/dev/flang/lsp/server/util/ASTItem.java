@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
@@ -46,8 +47,6 @@ import dev.flang.ast.Impl;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
-import dev.flang.ast.Type;
-import dev.flang.fe.LibraryFeature;
 import dev.flang.lsp.server.Util;
 import dev.flang.util.SourcePosition;
 
@@ -94,17 +93,17 @@ public class ASTItem
    */
   public static Optional<SourcePosition> sourcePosition(Object entry)
   {
-    if (entry instanceof LibraryFeature e)
+    if (entry instanceof AbstractFeature e)
       {
         return Optional.of(e.pos());
+      }
+    if (entry instanceof AbstractType t)
+      {
+        return Optional.ofNullable(t.pos());
       }
     if (entry instanceof Stmnt)
       {
         return Optional.ofNullable(((Stmnt) entry).pos());
-      }
-    if (entry instanceof Type)
-      {
-        return Optional.ofNullable(((Type) entry).pos);
       }
     if (entry instanceof Impl)
       {
@@ -143,8 +142,9 @@ public class ASTItem
         return Optional.empty();
       }
 
-    IO.SYS_ERR.println(entry.getClass());
-    ErrorHandling.WriteStackTraceAndExit(1);
+    var errorMessage= "sourcePosition(), missing implementation for: " + entry.getClass();
+    IO.SYS_ERR.println(errorMessage);
+    ErrorHandling.WriteStackTrace(new Exception(errorMessage));
     return Optional.empty();
   }
 
