@@ -351,7 +351,7 @@ public class FuzionParser extends ANY
     return Run(uri, 10000);
   }
 
-  public static MessageParams Run(URI uri, int timeout)
+  public synchronized static MessageParams Run(URI uri, int timeout)
     throws Exception
   {
     var result = Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(() -> {

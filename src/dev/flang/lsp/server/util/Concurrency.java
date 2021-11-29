@@ -49,7 +49,7 @@ public class Concurrency
   private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
   private static final int MAX_EXECUTION_TIME_MS = 1000;
 
-  // for now we have to run most things more or less sequentially
+  // NYI for now we have to run most things more or less sequentially
   private static ExecutorService executor = Executors.newSingleThreadExecutor();
   private static ExecutorService cachedThreadPoolExecutor = Executors.newCachedThreadPool();
 
