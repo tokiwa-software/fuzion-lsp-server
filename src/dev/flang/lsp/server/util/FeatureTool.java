@@ -38,6 +38,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.SourceText;
+import dev.flang.lsp.server.Util;
 
 public class FeatureTool
 {
@@ -207,9 +208,16 @@ public class FeatureTool
    */
   static boolean IsOfLastFeature(AbstractFeature feature)
   {
-    return DeclaredFeaturesRecursive(Main(feature).get())
+
+    return !IsInternal(feature) && DeclaredFeaturesRecursive(Main(feature).get())
       .noneMatch(f -> f.pos()._line > feature.pos()._line
         && f.pos()._column <= feature.pos()._column);
+  }
+
+  static boolean IsInternal(AbstractFeature f)
+  {
+    // NYI maybe there is a better way?
+    return Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName());
   }
 
 

@@ -300,44 +300,39 @@ public class FuzionParser extends ANY
    */
   public static SourcePosition endOfFeature(AbstractFeature feature)
   {
-    if (!EndOfFeature.containsKey(feature))
+    return EndOfFeature.computeIfAbsent(feature, f -> {
+      if (FeatureTool.IsArgument(f))
       {
-        if (FeatureTool.IsArgument(feature))
-          {
-            // NYI make this more idiomatic?
-            return new SourcePosition(feature.pos()._sourceFile, 1, 1);
-          }
-        if (!feature.isUniverse() && FeatureTool.IsOfLastFeature(feature))
-          {
-            var sourceText = SourceText.getText(FuzionParser.getUri(feature.pos())).get();
-            var lines = sourceText.split("\n").length;
-            return new SourcePosition(feature.pos()._sourceFile, lines + 1, 1);
-          }
-        var uri = getUri(feature.pos());
-        SourcePosition endOfFeature = ASTWalker.Traverse(feature)
-          .filter(entry -> entry.getValue() != null)
-          .filter(ASTItem.IsItemInFile(uri))
-          .filter(entry -> entry.getValue().compareTo(feature) == 0)
-          .map(entry -> ASTItem.sourcePosition(entry.getKey()))
-          .filter(sourcePositionOption -> sourcePositionOption.isPresent())
-          .map(sourcePosition -> sourcePosition.get())
-          .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
-          .map(position -> {
-            var start = FuzionLexer.endOfToken(uri, Bridge.ToPosition(position));
-            var line = SourceText.RestOfLine(LSP4jUtils.TextDocumentPositionParams(uri, start));
-            // NYI maybe use inverse hashset here? i.e. state which tokens can
-            // be skipped
-            var token = FuzionLexer.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
-              Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
-            return new SourcePosition(position._sourceFile, position._line, start.getCharacter() + token.end()._column);
-          })
-          .findFirst()
-          .orElse(feature.pos());
-
-        EndOfFeature.put(feature, endOfFeature);
-      }
-
-    return EndOfFeature.get(feature);
+          // NYI make this more idiomatic?
+          return new SourcePosition(f.pos()._sourceFile, 1, 1);
+        }
+        if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
+        {
+          var sourceText = SourceText.getText(FuzionParser.getUri(f.pos())).get();
+          var lines = sourceText.split("\n").length;
+          return new SourcePosition(f.pos()._sourceFile, lines + 1, 1);
+        }
+      var uri = getUri(f.pos());
+      return ASTWalker.Traverse(f)
+        .filter(entry -> entry.getValue() != null)
+        .filter(ASTItem.IsItemInFile(uri))
+        .filter(entry -> entry.getValue().compareTo(f) == 0)
+        .map(entry -> ASTItem.sourcePosition(entry.getKey()))
+        .filter(sourcePositionOption -> sourcePositionOption.isPresent())
+        .map(sourcePosition -> sourcePosition.get())
+        .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
+        .map(position -> {
+          var start = FuzionLexer.endOfToken(uri, Bridge.ToPosition(position));
+          var line = SourceText.RestOfLine(LSP4jUtils.TextDocumentPositionParams(uri, start));
+          // NYI maybe use inverse hashset here? i.e. state which tokens can
+          // be skipped
+          var token = FuzionLexer.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
+            Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
+          return new SourcePosition(position._sourceFile, position._line, start.getCharacter() + token.end()._column);
+        })
+        .findFirst()
+        .orElse(f.pos());
+    });
   }
 
   private static Optional<Interpreter> Interpreter(URI uri)

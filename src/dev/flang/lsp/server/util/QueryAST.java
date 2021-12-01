@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Position;
@@ -351,8 +352,7 @@ public class QueryAST
           }
         return f;
       })
-      // NYI maybe there is a better way?
-      .filter(f -> !Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName()))
+      .filter(f -> !FeatureTool.IsInternal(f))
       .findFirst();
   }
 
