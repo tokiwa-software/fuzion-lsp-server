@@ -92,9 +92,9 @@ public class Completion
     var tokenText = FuzionLexer.rawTokenAt(params).text();
     switch (tokenText)
       {
-        case "for" :
-          return Either.forLeft(Arrays.asList(buildCompletionItem("for i in start..end do",
-            "for ${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Snippet)));
+      case "for" :
+        return Either.forLeft(Arrays.asList(buildCompletionItem("for i in start..end do",
+          "for ${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Snippet)));
       }
     return Either.forLeft(List.of());
   }
@@ -128,7 +128,9 @@ public class Completion
         return feature.featureName().baseName();
       }
 
-    var arguments = "(" + getArguments(feature.arguments()) + ")";
+    var arguments = feature.arguments().isEmpty()
+                                                  ? ""
+                                                  : "(" + getArguments(feature.arguments()) + ")";
 
     var _generics = getGenerics(feature);
 

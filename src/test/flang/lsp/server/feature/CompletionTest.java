@@ -80,7 +80,7 @@ public class CompletionTest extends BaseTest
   {
     SourceText.setText(uri1, FeatureCallCompletion);
     var completions = Completion.getCompletions(params(uri1, 7, 20));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("concat")));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("concat")));
   }
 
   private CompletionParams params(URI uri, int line, int character)
