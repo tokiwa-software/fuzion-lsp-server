@@ -59,6 +59,12 @@ import dev.flang.lsp.server.util.FuzionParser;
 public class ASTWalker
 {
 
+  /**
+   * depth first traversal, starting at feature
+   * collects calls and features (=key) as well as their outer features (=value).
+   * @param start
+   * @return
+   */
   public static Stream<Entry<Object, AbstractFeature>> Traverse(AbstractFeature start)
   {
     var result = new HashMap<Object, AbstractFeature>();
@@ -80,10 +86,9 @@ public class ASTWalker
       .stream()
       .forEach(f -> TraverseFeature(f, callback));
 
-    TraverseType(feature.resultType(), feature, callback);
-
     // feature.isRoutine() sometimes throws because it depends on
-    // statically held Types.resolved.f_choice which may have been cleared already.
+    // statically held Types.resolved.f_choice which may have been cleared
+    // already.
     // We may remove wrapper ResultOrDefault in the future if this changes.
     if (ErrorHandling.ResultOrDefault(() -> feature.isRoutine(), false))
       {
@@ -96,10 +101,6 @@ public class ASTWalker
 
   private static void TraverseCase(Case c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    if (!callback.apply(c, outer))
-      {
-        return;
-      }
     TraverseBlock(c.code, outer, callback);
   }
 
@@ -140,19 +141,7 @@ public class ASTWalker
   private static void TraverseBlock(Block b, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    if (!callback.apply(b, outer))
-      {
-        return;
-      }
     b.statements_.forEach(s -> TraverseStatement(s, outer, callback));
-  }
-
-  private static void TraverseType(AbstractType t, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
-  {
-    if (!callback.apply(t, outer))
-      {
-        return;
-      }
   }
 
   private static void TraverseExpression(Expr expr, AbstractFeature outer,
@@ -202,14 +191,8 @@ public class ASTWalker
           }
         return;
       }
-    if (expr instanceof Function f)
-      {
-        TraverseType(f.type(), outer, callback);
-        return;
-      }
-
     if (expr instanceof Current || expr instanceof NumLiteral || expr instanceof Unbox || expr instanceof BoolConst
-      || expr instanceof StrConst || expr instanceof Universe)
+      || expr instanceof StrConst || expr instanceof Universe || expr instanceof Function)
       {
         return;
       }
@@ -222,7 +205,6 @@ public class ASTWalker
       {
         return;
       }
-    c.generics.forEach(g -> TraverseType(g, outer, callback));
     c._actuals.forEach(a -> TraverseExpression(a, outer, callback));
     // this should be enough to not run into an infinite recursion...
     if (c.target == null || !IsSameSourceFile(c.target, outer))
