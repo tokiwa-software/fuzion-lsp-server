@@ -21,7 +21,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  * Tokiwa Software GmbH, Germany
  *
  * Source of class CompletionTest
- * Source of class CompletionTest
  *
  *---------------------------------------------------------------------*/
 
