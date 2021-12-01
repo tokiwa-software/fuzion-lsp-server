@@ -33,6 +33,7 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
@@ -53,13 +54,33 @@ public class CompletionTest extends BaseTest
           .
         """;
 
+  private static final String FeatureCallCompletion = """
+    fasta =>
+      selectRandom() =>
+        "a"
+
+      randomFasta() =>
+        (1..10)
+          .map<string>(_ -> selectRandom())
+          .fold(strings.)
+        """;
+
 
   @Test
-  public void getCompletions()
+  public void getListCompletions()
   {
     SourceText.setText(uri1, ListCompletion);
     var completions = Completion.getCompletions(params(uri1, 7, 7));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("fold")));
+  }
+
+  @Test
+  @Tag("TAG")
+  public void getFeatureCallCompletions()
+  {
+    SourceText.setText(uri1, FeatureCallCompletion);
+    var completions = Completion.getCompletions(params(uri1, 7, 20));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("concat")));
   }
 
   private CompletionParams params(URI uri, int line, int character)
