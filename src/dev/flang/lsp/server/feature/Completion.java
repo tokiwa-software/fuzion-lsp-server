@@ -162,7 +162,7 @@ public class Completion
       .range(0, arguments.size())
       .<String>mapToObj(index -> {
         var argument = arguments.get(index).thisType().featureOfType();
-        if (argument.thisType().featureOfType().resultType().astType().name != "Function")
+        if (argument.isField())
           {
             return "${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
           }
