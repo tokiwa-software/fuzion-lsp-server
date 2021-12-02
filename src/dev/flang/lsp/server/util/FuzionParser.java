@@ -97,9 +97,9 @@ public class FuzionParser extends ANY
 
   /**
    * @param uri
-   * @return main feature in source text, may return universe
+   * @return main feature in source text
    */
-  public static AbstractFeature main(URI uri)
+  public static AbstractFeature MainOrUniverse(URI uri)
   {
     if (IsStdLib(uri))
       {
@@ -108,9 +108,9 @@ public class FuzionParser extends ANY
     return getParserCacheRecord(uri).mir().main();
   }
 
-  public static AbstractFeature main(TextDocumentIdentifier params)
+  public static AbstractFeature MainOrUniverse(TextDocumentIdentifier params)
   {
-    return main(LSP4jUtils.getUri(params));
+    return MainOrUniverse(LSP4jUtils.getUri(params));
   }
 
   /**
@@ -120,7 +120,7 @@ public class FuzionParser extends ANY
    */
   private synchronized static ParserCacheRecord getParserCacheRecord(URI uri)
   {
-    var sourceText = IsStdLib(uri) ? "dummyFeat is": SourceText.getText(uri).orElseThrow();
+    var sourceText = SourceText.getText(uri);
 
     var result = sourceText2ParserCache.computeIfAbsent(sourceText, st -> computeParserCache(uri, true));
     // NYI remove this. restores Types.resolved
@@ -236,7 +236,8 @@ public class FuzionParser extends ANY
 
   private static File toTempFile(URI uri)
   {
-    File sourceFile = IO.writeToTempFile(SourceText.getText(uri).orElseThrow());
+    var sourceText = IsStdLib(uri) ? "dummyFeature is": SourceText.getText(uri);
+    File sourceFile = IO.writeToTempFile(sourceText);
     try
       {
         tempFile2Uri.put(sourceFile.toPath().toString(), uri);
@@ -308,7 +309,7 @@ public class FuzionParser extends ANY
         }
       if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
         {
-          var sourceText = SourceText.getText(FuzionParser.getUri(f.pos())).get();
+          var sourceText = SourceText.getText(FuzionParser.getUri(f.pos()));
           var lines = sourceText.split("\n").length;
           return new SourcePosition(f.pos()._sourceFile, lines + 1, 1);
         }

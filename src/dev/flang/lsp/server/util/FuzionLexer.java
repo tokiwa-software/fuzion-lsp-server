@@ -76,7 +76,7 @@ public class FuzionLexer
 
   public static TokenInfo rawTokenAt(TextDocumentPositionParams params)
   {
-    var sourceText = SourceText.getText(params).get();
+    var sourceText = SourceText.getText(params);
     return IO.WithTextInputStream(sourceText, () -> {
 
       var lexer = NewLexerStdIn();
@@ -112,7 +112,7 @@ public class FuzionLexer
 
   public static TokenInfo tokenAt(TextDocumentPositionParams params)
   {
-    var sourceText = SourceText.getText(params).get();
+    var sourceText = SourceText.getText(params);
     return IO.WithTextInputStream(sourceText, () -> {
 
       var lexer = NewLexerStdIn();
@@ -129,7 +129,7 @@ public class FuzionLexer
 
   public static boolean isCommentLine(TextDocumentPositionParams params)
   {
-    var sourceText = SourceText.getText(params).get();
+    var sourceText = SourceText.getText(params);
     return IO.WithTextInputStream(sourceText, () -> {
       var lexer = NewLexerStdIn();
       lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));

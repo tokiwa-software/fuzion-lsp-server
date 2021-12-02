@@ -41,7 +41,7 @@ public class SyncIncremental
   public String SyncKindIncremental(DidChangeTextDocumentParams params)
   {
     var uri = LSP4jUtils.getUri(params.getTextDocument());
-    var text = SourceText.getText(uri).orElseThrow();
+    var text = SourceText.getText(uri);
     var contentChanges = params.getContentChanges();
     return applyContentChanges(text, contentChanges);
   }

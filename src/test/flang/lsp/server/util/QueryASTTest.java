@@ -57,12 +57,12 @@ public class QueryASTTest extends BaseTest
   {
     SourceText.setText(uri1, HelloWorld);
     assertEquals("HelloWorld", FuzionParser
-      .main(uri1)
+      .MainOrUniverse(uri1)
       .featureName()
       .baseName());
     assertEquals("say", QueryAST
       .AllOf(FuzionParser
-        .main(uri1), Call.class)
+        .MainOrUniverse(uri1), Call.class)
       .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
       .findFirst()
       .get()

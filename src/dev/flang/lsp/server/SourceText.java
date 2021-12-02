@@ -31,8 +31,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Range;
@@ -46,7 +45,7 @@ public class SourceText
   /**
    * currently open text documents and their contents
    */
-  private static final ConcurrentHashMap<URI, String> textDocuments = new ConcurrentHashMap<URI, String>();
+  private static final TreeMap<URI, String> textDocuments = new TreeMap<URI, String>();
 
   public static void setText(URI uri, String text)
   {
@@ -57,14 +56,9 @@ public class SourceText
     textDocuments.put(uri, text);
   }
 
-  public static Optional<String> getText(URI uri)
+  public static String getText(URI uri)
   {
-    var text = textDocuments.get(uri);
-    if (text != null)
-      {
-        return Optional.of(text);
-      }
-    return ReadFromDisk(uri);
+    return textDocuments.computeIfAbsent(uri, u -> ReadFromDisk(u));
   }
 
   public static String allTexts()
@@ -76,29 +70,29 @@ public class SourceText
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
-  public static Optional<String> getText(TextDocumentPositionParams params)
+  public static String getText(TextDocumentPositionParams params)
   {
     return getText(LSP4jUtils.getUri(params));
   }
 
-  private static Optional<String> ReadFromDisk(URI uri)
+  private static String ReadFromDisk(URI uri)
   {
     var path = Path.of(uri);
     try
       {
         var lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-        return Optional.ofNullable(String.join(System.lineSeparator(), lines));
+        return String.join(System.lineSeparator(), lines);
       }
     catch (IOException e)
       {
-        return Optional.empty();
+        ErrorHandling.WriteStackTraceAndExit(1, e);
+        return null;
       }
   }
 
   public static String LineAt(TextDocumentPositionParams param)
   {
     return SourceText.getText(param)
-      .get()
       .split("\n")[param.getPosition().getLine()];
   }
 
@@ -118,7 +112,6 @@ public class SourceText
   public static String getText(URI uri, Range range)
   {
     var lines = getText(uri)
-      .get()
       .lines()
       .skip(range.getStart().getLine())
       .limit(range.getEnd().getLine() - range.getStart().getLine() + 1)

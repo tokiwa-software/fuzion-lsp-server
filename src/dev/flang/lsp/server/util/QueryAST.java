@@ -32,7 +32,6 @@ import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Position;
@@ -61,7 +60,7 @@ public class QueryAST
 
   public static Optional<AbstractFeature> CalledFeature(TextDocumentPositionParams params)
   {
-    var baseFeature = FuzionParser.main(params.getTextDocument());
+    var baseFeature = FuzionParser.MainOrUniverse(params.getTextDocument());
     return ASTWalker.Traverse(baseFeature)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof Call)
@@ -198,9 +197,8 @@ public class QueryAST
    */
   private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
-    var baseFeature = FuzionParser.main(params.getTextDocument());
+    var baseFeature = FuzionParser.MainOrUniverse(params.getTextDocument());
     var astItems = ASTWalker.Traverse(baseFeature)
-      .filter(IsItemNotBuiltIn(params))
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(IsItemOnSameLineAsCursor(params))
       .filter(IsItemInScope(params))
@@ -222,19 +220,6 @@ public class QueryAST
           return false;
         }
       return cursorPosition.getLine() == Bridge.ToPosition(sourcePositionOption.get()).getLine();
-    };
-  }
-
-  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemNotBuiltIn(TextDocumentPositionParams params)
-  {
-    return (entry) -> {
-      var astItem = entry.getKey();
-      var sourcePositionOption = ASTItem.sourcePosition(astItem);
-      if (sourcePositionOption.isEmpty())
-        {
-          return false;
-        }
-      return !sourcePositionOption.get().isBuiltIn();
     };
   }
 
@@ -302,7 +287,7 @@ public class QueryAST
    */
   public static Stream<AbstractFeature> DeclaredFeaturesRecursive(URI uri)
   {
-    var baseFeature = FuzionParser.main(uri);
+    var baseFeature = FuzionParser.MainOrUniverse(uri);
     return FeatureTool.DeclaredFeaturesRecursive(baseFeature);
   }
 

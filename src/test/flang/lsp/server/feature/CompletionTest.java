@@ -32,7 +32,6 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
@@ -74,7 +73,6 @@ public class CompletionTest extends BaseTest
   }
 
   @Test
-  @Tag("TAG")
   public void getFeatureCallCompletions()
   {
     SourceText.setText(uri1, FeatureCallCompletion);

@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
@@ -55,7 +56,7 @@ public class FuzionParserTest extends BaseTest
         (1..10).forAll()
               """;
     SourceText.setText(uri1, sourceText);
-    var endOfFeature = FuzionParser.endOfFeature(FuzionParser.main(uri1));
+    var endOfFeature = FuzionParser.endOfFeature(FuzionParser.MainOrUniverse(uri1));
     assertEquals(3, endOfFeature._line);
     assertEquals(1, endOfFeature._column);
   }
@@ -64,7 +65,7 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureLambdaDefinition()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_b = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.main(uri1))
+    var feature_b = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.MainOrUniverse(uri1))
       .filter(x -> x.featureName().baseName().equals("b"))
       .findFirst()
       .get();
@@ -78,7 +79,7 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureArgument()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_x1 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.main(uri1))
+    var feature_x1 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.MainOrUniverse(uri1))
       .filter(x -> x.featureName().baseName().equals("x1"))
       .findFirst()
       .get();
@@ -111,7 +112,7 @@ public class FuzionParserTest extends BaseTest
     sourceText += System.lineSeparator() + "    ";
     SourceText.setText(uri1, sourceText);
 
-    var level2 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.main(uri1))
+    var level2 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.MainOrUniverse(uri1))
       .filter(f -> f.qualifiedName().equals("HelloWorld.level1.level2"))
       .findFirst()
       .get();
@@ -127,7 +128,7 @@ public class FuzionParserTest extends BaseTest
     var sourceText = """
       """;
     SourceText.setText(uri1, sourceText);
-    var f = FuzionParser.main(uri1);
+    var f = FuzionParser.MainOrUniverse(uri1);
     assertEquals("#universe", f.qualifiedName());
   }
 
@@ -143,7 +144,7 @@ public class FuzionParserTest extends BaseTest
             grandChild3 is
       """;
     SourceText.setText(uri1, sourceText);
-    var f = FuzionParser.main(uri1);
+    var f = FuzionParser.MainOrUniverse(uri1);
     var df = FuzionParser.DeclaredFeatures(f).collect(Collectors.toList());
     assertEquals(2, df.size());
     assertTrue(df.stream().anyMatch(x -> x.featureName().baseName().equals("childFeat1")));
@@ -164,7 +165,7 @@ public class FuzionParserTest extends BaseTest
       HelloWorld is
         say "Hello World!"
                   """);
-    var mainFeature = FuzionParser.main(uri1);
+    var mainFeature = FuzionParser.MainOrUniverse(uri1);
     assertEquals(0, FuzionParser.Errors(uri1).count());
     assertEquals("HelloWorld", mainFeature.featureName().baseName());
     assertEquals(uri1, FuzionParser.getUri(mainFeature.pos()));
@@ -186,7 +187,7 @@ public class FuzionParserTest extends BaseTest
 
 
                   """);
-    assertDoesNotThrow(() -> FuzionParser.main(uri1));
+    assertDoesNotThrow(() -> FuzionParser.MainOrUniverse(uri1));
     assertEquals(true, FuzionParser.Errors(uri1).count() > 0);
   }
 
@@ -203,6 +204,19 @@ public class FuzionParserTest extends BaseTest
     SourceText.setText(uri1, UnknownCall);
     assertThrows(ExecutionException.class, () -> FuzionParser.Run(uri1, 10000));
     assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri1).count());
+  }
+
+  @Test
+  public void MainOrUniverseOfStdLibFile(){
+    var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
+    assertTrue(FuzionParser.MainOrUniverse(uri).isUniverse());
+  }
+
+  @Test
+  public void WarningsErrorsOfStdLibFile(){
+    var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
+    assertTrue(FuzionParser.Warnings(uri).findAny().isEmpty());
+    assertTrue(FuzionParser.Errors(uri).findAny().isEmpty());
   }
 
 

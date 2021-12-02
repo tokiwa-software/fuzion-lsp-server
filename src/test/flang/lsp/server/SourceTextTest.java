@@ -65,9 +65,9 @@ class SourceTextTest extends BaseTest
       myFeat is
       """;
     SourceText.setText(uri1, CommentExample);
-    var myFeatIs = FuzionParser.main(uri1);
+    var myFeatIs = FuzionParser.MainOrUniverse(uri1);
     var sourceText = SourceText.getText(Bridge.ToTextDocumentPosition(myFeatIs.pos()));
-    assertEquals(true, sourceText.get().contains("myFeat is"));
+    assertEquals(true, sourceText.contains("myFeat is"));
   }
 
   @Test
@@ -83,7 +83,7 @@ class SourceTextTest extends BaseTest
       .findFirst()
       .get();
     var sourceText = SourceText.getText(Bridge.ToTextDocumentPosition(yak.pos()));
-    assertEquals(true, sourceText.get().contains("yak(s ref Object) => stdout.print(s)"));
+    assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
   }
 
 

@@ -86,7 +86,7 @@ public class Command
 
   private static void showSyntaxTree(URI uri)
   {
-    var feature = FuzionParser.main(uri);
+    var feature = FuzionParser.MainOrUniverse(uri);
     var ast = FeatureTool.AST(feature);
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
