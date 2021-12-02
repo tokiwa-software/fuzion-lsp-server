@@ -302,11 +302,11 @@ public class FuzionParser extends ANY
   {
     return EndOfFeature.computeIfAbsent(feature, f -> {
       if (FeatureTool.IsArgument(f))
-      {
+        {
           // NYI make this more idiomatic?
           return new SourcePosition(f.pos()._sourceFile, 1, 1);
         }
-        if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
+      if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
         {
           var sourceText = SourceText.getText(FuzionParser.getUri(f.pos())).get();
           var lines = sourceText.split("\n").length;
