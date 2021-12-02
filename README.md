@@ -5,23 +5,24 @@
 - GNU-Make
 - wget
 
-## Usage
+## Build
+- run `make jar` which should produce an `out.jar` file
 ### Transport socket
-- run `make`
+- run `./bin/fuzion_language_server -tcp`
 - connect the client to the (random) port the server prints to stdout.
 ### Transport stdio
-- run `make stdio`
+- run `./bin/fuzion_language_server`
 
 ## Debug
 - `make debug`
 
-## Tests
+## Test
 - `make run_tests`
 
 ## Profile
 - clone https://github.com/jvm-profiling-tools/async-profiler
 - add the profiler.sh script to PATH
-- `make profile`
+- while the language server is running: `make profile`
 
 ## Clients
 |Client|Repository|
