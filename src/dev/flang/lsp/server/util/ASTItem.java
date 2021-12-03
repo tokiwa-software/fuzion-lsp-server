@@ -142,14 +142,19 @@ public class ASTItem
         return Optional.empty();
       }
 
-    var errorMessage= "sourcePosition(), missing implementation for: " + entry.getClass();
+    var errorMessage = "sourcePosition(), missing implementation for: " + entry.getClass();
     IO.SYS_ERR.println(errorMessage);
     ErrorHandling.WriteStackTrace(new Exception(errorMessage));
     return Optional.empty();
   }
 
   private static final SourcePosition None =
-    new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0);
+    new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0) {
+      public boolean isBuiltIn()
+      {
+        return true;
+      }
+    };
 
   public static SourcePosition sourcePositionOrNone(Object obj)
   {
