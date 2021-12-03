@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 public class UriTest extends BaseTest
 {
   @Test
-  public void UriTest() throws URISyntaxException, UnsupportedEncodingException
+  public void DecodeEncodeTest() throws URISyntaxException, UnsupportedEncodingException
   {
     assertTrue(new URI("file:/c:/temp.fz").equals(new URI(URLDecoder.decode("file:///c%3A/temp.fz", StandardCharsets.UTF_8.toString()))));
     assertTrue(Path.of(new URI("file:/c:/temp.fz")).toUri().equals(new URI(URLDecoder.decode("file:///c%3A/temp.fz", StandardCharsets.UTF_8.toString()))));
