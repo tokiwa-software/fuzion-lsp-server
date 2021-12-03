@@ -39,8 +39,9 @@ import dev.flang.ast.Types;
 import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
+import dev.flang.util.ANY;
 
-public class FeatureTool
+public class FeatureTool extends ANY
 {
   public static Stream<AbstractFeature> outerFeatures(AbstractFeature feature)
   {
@@ -183,6 +184,7 @@ public class FeatureTool
 
   public static String CommentOfInMarkdown(AbstractFeature f)
   {
+    if(PRECONDITIONS) require(!f.pos().isBuiltIn());
     return MarkdownTool.Italic(MarkdownTool.Escape(CommentOf(f)));
   }
 

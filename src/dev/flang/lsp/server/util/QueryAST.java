@@ -199,6 +199,7 @@ public class QueryAST
   {
     var baseFeature = FuzionParser.MainOrUniverse(params.getTextDocument());
     var astItems = ASTWalker.Traverse(baseFeature)
+      .filter(IsItemNotBuiltIn(params))
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(IsItemOnSameLineAsCursor(params))
       .filter(IsItemInScope(params))
@@ -206,6 +207,19 @@ public class QueryAST
       .sorted(CompareBySourcePosition.reversed());
 
     return astItems;
+  }
+
+  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemNotBuiltIn(TextDocumentPositionParams params)
+  {
+    return (entry) -> {
+      var astItem = entry.getKey();
+      var sourcePositionOption = ASTItem.sourcePosition(astItem);
+      if (sourcePositionOption.isEmpty())
+        {
+          return false;
+        }
+      return !sourcePositionOption.get().isBuiltIn();
+    };
   }
 
   private static Predicate<? super Entry<Object, AbstractFeature>> IsItemOnSameLineAsCursor(

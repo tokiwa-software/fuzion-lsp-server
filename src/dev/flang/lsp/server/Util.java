@@ -48,7 +48,7 @@ public class Util
       }
     catch (Exception e)
       {
-        ErrorHandling.WriteStackTraceAndExit(1);
+        ErrorHandling.WriteStackTraceAndExit(1, e);
         return null;
       }
   }
