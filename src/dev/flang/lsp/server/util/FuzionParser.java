@@ -171,7 +171,7 @@ public class FuzionParser extends ANY
   private static void ClearStaticallyHeldStuffInFuzionCompiler()
   {
     Errors.clear();
-    Types.clear();
+    Types.reset();
     FeatureName.clear();
     Clazzes.clear();
   }
