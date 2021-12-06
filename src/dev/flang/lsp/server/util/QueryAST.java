@@ -328,10 +328,9 @@ public class QueryAST
           {
             return (AbstractFeature) astItem;
           }
-        if (astItem instanceof Call)
+        if (astItem instanceof Call c)
           {
-            var calledFeature = ((Call) astItem).calledFeature();
-            return calledFeature.qualifiedName().startsWith("sys.array.index") ? null: calledFeature;
+            return c.calledFeature().qualifiedName().startsWith("sys.array.index") ? null: c.calledFeature();
           }
         if (astItem instanceof Type)
           {

@@ -29,6 +29,7 @@ package test.flang.lsp.server.util;
 
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.ast.Call;
@@ -158,16 +159,35 @@ public class QueryASTTest extends BaseTest
   }
 
   @Test
-  // NYI fails for now
-  public void FeatureAtResult(){
+  // NYI failing...
+  public void FeatureAtResult()
+  {
     var sourceText = """
-    isGreaterThan(x, y i32) bool is
-      x > y
-    """;
+      isGreaterThan(x, y i32) bool is
+        x > y
+      """;
     SourceText.setText(uri1, sourceText);
 
     var feature = QueryAST.FeatureAt(Cursor(uri1, 0, 24)).get();
     assertEquals("bool", feature.featureName().baseName());
+  }
+
+  @Test
+  public void FeatureAtChoiceType()
+  {
+    var sourceText = """
+      choice_example2 is
+        apple is
+        pear is
+        color(f apple | pear) =>
+          match f
+            apple  => "red"
+            pear   => "green"
+      """;
+    SourceText.setText(uri1, sourceText);
+
+    var feature = QueryAST.FeatureAt(Cursor(uri1, 4, 10)).get();
+    assertEquals("choice", feature.featureName().baseName());
   }
 
   @Test
