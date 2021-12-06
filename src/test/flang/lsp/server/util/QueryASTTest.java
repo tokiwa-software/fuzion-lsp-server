@@ -135,7 +135,7 @@ public class QueryASTTest extends BaseTest
 
 
   @Test
-  public void featureAt()
+  public void FeatureAt()
   {
     var sourceText = """
       myfeat is
@@ -155,6 +155,19 @@ public class QueryASTTest extends BaseTest
 
     feature = QueryAST.FeatureAt(Cursor(uri1, 4, 20)).get();
     assertEquals("i32", feature.featureName().baseName());
+  }
+
+  @Test
+  // NYI fails for now
+  public void FeatureAtResult(){
+    var sourceText = """
+    isGreaterThan(x, y i32) bool is
+      x > y
+    """;
+    SourceText.setText(uri1, sourceText);
+
+    var feature = QueryAST.FeatureAt(Cursor(uri1, 0, 24)).get();
+    assertEquals("bool", feature.featureName().baseName());
   }
 
   @Test
