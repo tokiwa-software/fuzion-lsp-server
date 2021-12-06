@@ -324,17 +324,17 @@ public class QueryAST
   {
     return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {
-        if (astItem instanceof AbstractFeature)
+        if (astItem instanceof AbstractFeature f)
           {
-            return (AbstractFeature) astItem;
+            return f;
           }
         if (astItem instanceof Call c)
           {
             return c.calledFeature().qualifiedName().startsWith("sys.array.index") ? null: c.calledFeature();
           }
-        if (astItem instanceof Type)
+        if (astItem instanceof Type t)
           {
-            return ((Type) astItem).featureOfType();
+            return t.featureOfType();
           }
         return null;
       })
