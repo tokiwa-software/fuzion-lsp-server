@@ -173,7 +173,7 @@ public class QueryASTTest extends BaseTest
   }
 
   @Test
-  public void FeatureAtChoiceType()
+  public void FeatureAtChoiceTypeMatch()
   {
     var sourceText = """
       choice_example2 is
@@ -188,6 +188,27 @@ public class QueryASTTest extends BaseTest
 
     var feature = QueryAST.FeatureAt(Cursor(uri1, 4, 10)).get();
     assertEquals("choice", feature.featureName().baseName());
+  }
+
+  @Test
+  // NYI failing...
+  public void FeatureAtChoiceTypeArgument()
+  {
+    var sourceText = """
+      choice_example2 is
+        apple is
+        pear is
+        color(f apple | pear) =>
+          match f
+            apple  => "red"
+            pear   => "green"
+            """;
+    SourceText.setText(uri1, sourceText);
+
+    var apple = QueryAST.FeatureAt(Cursor(uri1, 3, 10)).get();
+    assertEquals("apple", apple.featureName().baseName());
+    var pear = QueryAST.FeatureAt(Cursor(uri1, 3, 18)).get();
+    assertEquals("pear", pear.featureName().baseName());
   }
 
   @Test
