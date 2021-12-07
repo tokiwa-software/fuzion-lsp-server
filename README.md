@@ -33,6 +33,9 @@
 |eclipse (theia)|https://github.com/tokiwa-software/vscode-fuzion|
 
 ### Vim
+
+![Vim](assets/vim.png)
+
 0) Note: fuzion_language_server (from ./bin/) needs to be in $PATH
 
 1) Example .vimrc:
@@ -69,6 +72,9 @@
     ```
 
 ### Emacs
+
+![Emacs](assets/emacs.png)
+
 - Note: fuzion_language_server (from ./bin/) needs to be in $PATH
 - install lsp-mode, flycheck and company for emacs using
     - M-x package-install RET lsp-mode
