@@ -54,13 +54,6 @@
             "languageserver": {
               "fuzion": {
                 "command": "fuzion_language_server",
-                "args": [
-                  ""
-                ],
-                "rootPatterns": [
-                  "*.fz",
-                  "*.fuzion"
-                ],
                 "filetypes": [
                   "fz",
                   "fuzion"
