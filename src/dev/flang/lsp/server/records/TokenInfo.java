@@ -29,12 +29,13 @@ package dev.flang.lsp.server.records;
 import org.eclipse.lsp4j.Range;
 
 import dev.flang.lsp.server.util.Bridge;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.util.SourcePosition;
 
 /**
  * holds text of lexer token and the start position of the token
  */
-public record TokenInfo(SourcePosition start, String text)
+public record TokenInfo(SourcePosition start, String text, Token token)
 {
   public SourcePosition end()
   {

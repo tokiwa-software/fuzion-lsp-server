@@ -102,7 +102,7 @@ public class FuzionLexer
     var start =
       new SourcePosition(Bridge.ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
-    return new TokenInfo(start, tokenString);
+    return new TokenInfo(start, tokenString, lexer.current());
   }
 
   private static boolean lexerEndPosIsBeforeOrAtTextDocumentPosition(TextDocumentPositionParams params, Lexer lexer)

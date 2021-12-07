@@ -96,7 +96,6 @@ public class FuzionTextDocumentService implements TextDocumentService
       @Override
       public void run()
       {
-        // NYI make thread safe or okay to fail
         Diagnostics.publishDiagnostics(uri);
       }
     }, 1000, TimeUnit.MILLISECONDS);

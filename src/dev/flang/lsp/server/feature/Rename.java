@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
-import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,7 +47,6 @@ import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
@@ -62,6 +60,7 @@ import dev.flang.util.SourcePosition;
 public class Rename
 {
 
+  // NYI check for name collisions?
   public static WorkspaceEdit getWorkspaceEdit(RenameParams params)
   {
     if (!FuzionLexer.IsValidIdentifier(params.getNewName()))
@@ -105,7 +104,7 @@ public class Rename
       .CallsTo(featureToRename)
       .map(c -> c.pos())
       .map(pos -> {
-        if (IsAtFunKeyword(pos))
+        if (IsAtFunKeyword(Bridge.ToTextDocumentPosition(pos)))
           {
             var nextPosition = Bridge.ToTextDocumentPosition(
               new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length()));
@@ -127,11 +126,6 @@ public class Rename
     return renamePositions;
   }
 
-  private static boolean IsAtFunKeyword(SourcePosition pos)
-  {
-    return FuzionLexer.tokenAt(Bridge.ToTextDocumentPosition(pos)).text().equals(Lexer.Token.t_fun.toString());
-  }
-
   private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)
   {
     var startPos = location.getRange().getStart();
@@ -141,17 +135,26 @@ public class Rename
   }
 
   // NYI disallow renaming of stdlib
-  // NYI check for name collisions?
-  // NYI should we disallow renaming if source code errors are present?
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
-    var token = QueryAST.CallOrFeatureToken(params);
-    if (token.isEmpty())
-      {
-        var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "no valid identifier.", null);
-        throw new ResponseErrorException(responseError);
-      }
-    return new PrepareRenameResult(token.get().toRange(), token.get().text());
+    if(!IsAtIdentifier(params)){
+      return new PrepareRenameResult();
+    }
+    var token = FuzionLexer.rawTokenAt(params);
+    if(token.text().trim().isEmpty()){
+      return new PrepareRenameResult();
+    }
+    return new PrepareRenameResult(token.toRange(), token.text());
+  }
+
+  private static boolean IsAtIdentifier(TextDocumentPositionParams params)
+  {
+    return FuzionLexer.tokenAt(params).token() == Lexer.Token.t_ident;
+  }
+
+  private static boolean IsAtFunKeyword(TextDocumentPositionParams params)
+  {
+    return FuzionLexer.tokenAt(params).token() == Lexer.Token.t_fun;
   }
 
 }

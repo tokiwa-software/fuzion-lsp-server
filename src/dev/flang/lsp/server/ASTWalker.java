@@ -135,7 +135,7 @@ public class ASTWalker
         return;
       }
 
-    throw new RuntimeException("TraverseStatement NYI: " + s.getClass());
+    throw new RuntimeException("TraverseStatement not implemented for: " + s.getClass());
   }
 
   private static void TraverseBlock(Block b, AbstractFeature outer,
@@ -196,7 +196,7 @@ public class ASTWalker
       {
         return;
       }
-    throw new RuntimeException("TraverseExpression NYI: " + expr.getClass());
+    throw new RuntimeException("TraverseExpression not implemented for: " + expr.getClass());
   }
 
   private static void TraverseCall(Call c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)

@@ -144,26 +144,6 @@ public class QueryAST
       .findFirst();
   }
 
-  public static Optional<TokenInfo> CallOrFeatureToken(TextDocumentPositionParams params)
-  {
-    var token = FuzionLexer.rawTokenAt(params);
-    if (token == null)
-      {
-        return Optional.empty();
-      }
-    var column = token.start()._column;
-    var isCallOrFeature = CallsAndFeaturesAt(params)
-      .map(obj -> ASTItem.sourcePosition(obj).get())
-      .filter(pos -> column == pos._column)
-      .findFirst()
-      .isPresent();
-    if (!isCallOrFeature)
-      {
-        return Optional.empty();
-      }
-    return Optional.of(token);
-  }
-
   public static Stream<AbstractFeature> CallCompletionsAt(TextDocumentPositionParams params)
   {
     return CalledFeature(params)
