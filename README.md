@@ -6,7 +6,7 @@
 - wget
 
 ## Build
-- run `make jar` which should produce an `out.jar` file
+- run `make jar` which should produce an **out.jar** file
 ### Transport socket
 - run `./bin/fuzion_language_server -tcp`
 - connect the client to the (random) port the server prints to stdout.
@@ -28,9 +28,52 @@
 |Client|Repository|
 |---|---|
 |vscode|https://github.com/tokiwa-software/vscode-fuzion|
-|vim||
+|vim|see instructions below|
 |emacs|see instructions below|
 |eclipse (theia)|https://github.com/tokiwa-software/vscode-fuzion|
+
+### Vim
+0) Note: fuzion_language_server (from ./bin/) needs to be in $PATH
+
+1) Example .vimrc:
+    ```vim
+    :filetype on
+
+    call plug#begin('~/.vim/plugged')
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    call plug#end()
+    ```
+2) in vim
+
+    1) `:PlugInstall`
+
+    2) `:CocConfig`
+
+          ```json
+          {
+            "languageserver": {
+              "fuzion": {
+                "command": "fuzion_language_server",
+                "args": [
+                  ""
+                ],
+                "rootPatterns": [
+                  "*.fz",
+                  "*.fuzion"
+                ],
+                "filetypes": [
+                  "fz",
+                  "fuzion"
+                ]
+              }
+            }
+          }
+          ```
+
+3) add filetype-detection file ~/.vim/ftdetect/fz.vim
+    ```vim
+    au BufRead,BufNewFile *.fz            set filetype=fz
+    ```
 
 ### Emacs
 - Note: fuzion_language_server (from ./bin/) needs to be in $PATH
