@@ -58,7 +58,7 @@ public class CodeLenses
 
   private static CodeLens codeLensEvaluateFile(URI uri)
   {
-    Command command = new Command(Commands.evaluate.toString(), Commands.evaluate.name(),
+    Command command = new Command(Commands.run.toString(), Commands.run.name(),
       List.of(uri.toString()));
     return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)),
       command,

@@ -79,7 +79,6 @@ public class Rename
     var featureIdentifier =
       FuzionLexer.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
-    // NYI rename feature used like this "fun myBaseName"
     Stream<SourcePosition> renamePositions = getRenamePositions(feature.get(), featureIdentifier);
 
     var changes = renamePositions

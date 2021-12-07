@@ -27,4 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.records;
 
+/**
+ * wraps the result of a computation and the time it took to compute the result.
+ */
 public record ComputationPerformance<T> (T result, long nanoSeconds){}

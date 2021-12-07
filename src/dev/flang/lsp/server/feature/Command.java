@@ -57,7 +57,7 @@ public class Command
         case showSyntaxTree :
           Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
           return Concurrency.Compute(() -> null);
-        case evaluate :
+        case run :
           Concurrency.RunInBackground(() -> evaluate(Util.toURI(uri)));
           return Concurrency.Compute(() -> null);
         default:

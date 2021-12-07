@@ -29,7 +29,7 @@ package dev.flang.lsp.server.enums;
 public enum Commands
 {
   showSyntaxTree,
-  evaluate;
+  run;
 
   public String toString()
   {
@@ -37,8 +37,8 @@ public enum Commands
       {
         case showSyntaxTree :
           return "Show Syntax Tree";
-        case evaluate :
-          return "evaluate file";
+        case run :
+          return "Run";
         default:
           return "not implemented";
       }
