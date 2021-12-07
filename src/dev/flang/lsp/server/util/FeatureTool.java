@@ -96,8 +96,9 @@ public class FeatureTool extends ANY
   public static String AST(AbstractFeature start)
   {
     var ast = ASTWalker.Traverse(start)
-      .reduce("", (a, b) -> {
-        var item = b.getKey();
+      .map(x -> x.getKey())
+      .sorted(ASTItem.CompareByLineThenByColumn())
+      .reduce("", (a, item) -> {
         var position = ASTItem.sourcePosition(item);
         // NYI
         var indent = 0;
@@ -184,7 +185,8 @@ public class FeatureTool extends ANY
 
   public static String CommentOfInMarkdown(AbstractFeature f)
   {
-    if(PRECONDITIONS) require(!f.pos().isBuiltIn());
+    if (PRECONDITIONS)
+      require(!f.pos().isBuiltIn());
     return MarkdownTool.Italic(MarkdownTool.Escape(CommentOf(f)));
   }
 

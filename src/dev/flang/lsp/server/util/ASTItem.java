@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.net.URI;
+import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -175,6 +176,27 @@ public class ASTItem
           return false;
         }
       return uri.equals(FuzionParser.getUri(sourcePositionOption.get()));
+    };
+  }
+
+  static Comparator<? super Object> CompareByLineThenByColumn()
+  {
+    return (a, b) -> {
+      var position1 = sourcePosition(a);
+      var position2 = sourcePosition(b);
+      if (position1.isEmpty())
+        {
+          return -1;
+        }
+      if (position2.isEmpty())
+        {
+          return +1;
+        }
+      if (position1.get()._line == position2.get()._line)
+        {
+          return position1.get()._column - position2.get()._column;
+        }
+      return position1.get()._line - position2.get()._line;
     };
   }
 }
