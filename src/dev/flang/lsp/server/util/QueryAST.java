@@ -332,6 +332,7 @@ public class QueryAST
         return f;
       })
       .filter(f -> !FeatureTool.IsInternal(f))
+      .filter(f -> !f.pos().isBuiltIn())
       .findFirst();
   }
 
