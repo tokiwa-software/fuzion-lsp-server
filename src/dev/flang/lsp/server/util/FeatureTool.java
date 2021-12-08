@@ -108,7 +108,7 @@ public class FeatureTool extends ANY
           }
         return a + System.lineSeparator()
           + " ".repeat(indent * 2) + position.get()._line + ":" + position.get()._column + ":"
-          + item.getClass().getSimpleName() + ":" + ASTItem.ToLabel(item);
+          + Util.ShortName(item.getClass()) + ":" + ASTItem.ToLabel(item);
       }, String::concat);
     return ast;
   }

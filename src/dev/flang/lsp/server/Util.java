@@ -59,4 +59,13 @@ public class Util
   {
     return Stream.of(values).collect(Collectors.toCollection(HashSet::new));
   }
+
+  public static String ShortName(Class<?> clazz)
+  {
+    if (clazz.isAnonymousClass())
+      {
+        return ShortName(clazz.getSuperclass());
+      }
+    return clazz.getSimpleName();
+  }
 }
