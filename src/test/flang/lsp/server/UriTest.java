@@ -29,19 +29,22 @@ package test.flang.lsp.server;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+
+import dev.flang.lsp.server.Util;
 
 public class UriTest extends BaseTest
 {
   @Test
+  @Tag("TAG")
   public void DecodeEncodeTest() throws URISyntaxException, UnsupportedEncodingException
   {
-    assertTrue(new URI("file:/c:/temp.fz").equals(new URI(URLDecoder.decode("file:///c%3A/temp.fz", StandardCharsets.UTF_8.toString()))));
-    assertTrue(Path.of(new URI("file:/c:/temp.fz")).toUri().equals(new URI(URLDecoder.decode("file:///c%3A/temp.fz", StandardCharsets.UTF_8.toString()))));
+    assertTrue(new URI("file:/c:/temp.fz").equals(Util.toURI("file:///c%3A/temp.fz")));
+    assertTrue(Util.toURI("file:/c:/temp file.fz").equals(Util.toURI("file:///c%3A/temp file.fz")));
+    assertTrue(Path.of(new URI("file:/c:/temp.fz")).toUri().equals(Util.toURI("file:///c%3A/temp.fz")));
   }
 
 }

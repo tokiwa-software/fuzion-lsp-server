@@ -44,7 +44,9 @@ public class Util
   {
     try
       {
-        return new URI(URLDecoder.decode(uri, StandardCharsets.UTF_8.toString()));
+        // https://docs.oracle.com/javase/7/docs/api/java/net/URI.html
+        // RFC 2396 allows most characters except spaces
+        return new URI(URLDecoder.decode(uri, StandardCharsets.UTF_8.toString()).replace(" ", "%20"));
       }
     catch (Exception e)
       {
