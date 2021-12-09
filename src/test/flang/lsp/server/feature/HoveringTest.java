@@ -20,29 +20,38 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class UriTest
+ * Source of class HoveringTest
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server;
+package test.flang.lsp.server.feature;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-
+import org.eclipse.lsp4j.HoverParams;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.SourceText;
+import dev.flang.lsp.server.feature.Hovering;
+import test.flang.lsp.server.BaseTest;
 
-public class UriTest extends BaseTest
+public class HoveringTest extends BaseTest
 {
+  private static final String ChoiceType = """
+    binary_trees is
+      node(left node|unit) ref is
+        """;
+
   @Test
-  public void DecodeEncodeTest() throws URISyntaxException, UnsupportedEncodingException
+  public void hoverChoiceType()
   {
-    assertTrue(new URI("file:/c:/temp.fz").equals(Util.toURI("file:///c%3A/temp.fz")));
-    assertTrue(Util.toURI("file:/c:/temp file.fz").equals(Util.toURI("file:///c%3A/temp file.fz")));
-    assertTrue(Path.of(new URI("file:/c:/temp.fz")).toUri().equals(Util.toURI("file:///c%3A/temp.fz")));
+    SourceText.setText(uri1, ChoiceType);
+    var cursor = Cursor(uri1, 1, 8);
+    assertEquals("**choice<node, unit>**",
+      Hovering.getHover(new HoverParams(cursor.getTextDocument(), cursor.getPosition()))
+        .getContents()
+        .getRight()
+        .getValue());
   }
+
 
 }

@@ -187,7 +187,7 @@ public class QueryASTTest extends BaseTest
     SourceText.setText(uri1, sourceText);
 
     var feature = QueryAST.FeatureAt(Cursor(uri1, 4, 10)).get();
-    assertEquals("choice", feature.featureName().baseName());
+    assertEquals("f", feature.featureName().baseName());
   }
 
   @Test

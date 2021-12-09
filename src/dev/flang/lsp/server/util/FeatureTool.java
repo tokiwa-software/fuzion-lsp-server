@@ -162,19 +162,29 @@ public class FeatureTool extends ANY
    */
   public static String ToLabel(AbstractFeature feature)
   {
+    if (feature.resultType().isChoice())
+      {
+        return "choice" + "<"
+          + feature.resultType()
+            .choiceGenerics()
+            .stream()
+            .map(t -> t.featureOfType().featureName().baseName())
+            .collect(Collectors.joining(", "))
+          + ">";
+      }
     if (feature.isField())
       {
-        return feature.featureName().baseName() + ": " + Label(feature.resultType());
+        return Label(feature.resultType()) + feature.featureName().baseName();
       }
-    if (!feature.isRoutine())
+    if (feature.isRoutine())
       {
-        return feature.featureName().baseName();
+        var arguments = "(" + feature.arguments()
+          .stream()
+          .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + Label(a.resultType()))
+          .collect(Collectors.joining(", ")) + ")";
+        return feature.featureName().baseName() + feature.generics() + arguments + " => " + Label(feature.resultType());
       }
-    var arguments = "(" + feature.arguments()
-      .stream()
-      .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + Label(a.resultType()))
-      .collect(Collectors.joining(", ")) + ")";
-    return feature.featureName().baseName() + feature.generics() + arguments + " => " + Label(feature.resultType());
+    return feature.featureName().baseName();
   }
 
   private static String Label(AbstractType type)

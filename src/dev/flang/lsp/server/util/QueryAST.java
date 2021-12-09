@@ -321,6 +321,10 @@ public class QueryAST
       .filter(f -> f != null)
       .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
       .map(f -> {
+        if (f.resultType().isChoice())
+          {
+            return f;
+          }
         if (FeatureTool.IsArgument(f))
           {
             return f.resultType().featureOfType();
