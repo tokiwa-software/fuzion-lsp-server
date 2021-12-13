@@ -33,6 +33,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.Position;
+
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
@@ -61,33 +63,23 @@ public class FeatureTool extends ANY
   public static String CommentOf(AbstractFeature feature)
   {
     var textDocumentPosition = Bridge.ToTextDocumentPosition(feature.pos());
+    var line = textDocumentPosition.getPosition().getLine() - 1;
     var commentLines = new ArrayList<String>();
     while (true)
       {
-        if (textDocumentPosition.getPosition().getLine() != 0)
-          {
-            var position = textDocumentPosition.getPosition();
-            position.setLine(textDocumentPosition.getPosition().getLine() - 1);
-            textDocumentPosition.setPosition(position);
-          }
-        else
+        textDocumentPosition.setPosition(new Position(line, 0));
+        if (line < 0 || !FuzionLexer.isCommentLine(textDocumentPosition))
           {
             break;
           }
-        if (FuzionLexer.isCommentLine(textDocumentPosition))
-          {
-            commentLines.add(SourceText.LineAt(textDocumentPosition));
-          }
-        else
-          {
-            break;
-          }
+        commentLines.add(SourceText.LineAt(textDocumentPosition));
+        line = line - 1;
       }
     Collections.reverse(commentLines);
     return commentLines
       .stream()
-      .map(line -> line.trim())
-      .map(line -> line
+      .map(l -> l.trim())
+      .map(l -> l
         .replaceAll("^#", "")
         .trim())
       .collect(Collectors.joining(System.lineSeparator()));
