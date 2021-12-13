@@ -2,7 +2,7 @@ name: Makefile CI
 
 on:
   schedule:
-  - cron: "0 5 * * 0"
+  - cron: "37 * * * *"
 
 jobs:
   build:
@@ -12,13 +12,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: textbook/git-checkout-submodule-action@2.1.1
-    
+
     - name: build release
       run: make release
-    
+
     - uses: actions/upload-artifact@v2
       with:
         # NYI get version from version-file
         path: fuzion_language_server_0.3.0.zip
-      
-    
+
+
