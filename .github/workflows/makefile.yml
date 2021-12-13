@@ -2,7 +2,7 @@ name: Makefile CI
 
 on:
   schedule:
-  - cron: "37 * * * *"
+  - cron: "50 * * * *"
 
 jobs:
   build:
