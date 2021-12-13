@@ -29,7 +29,7 @@ JAVAC = javac -encoding UTF8
 JAVA_FILES = $(shell find $(SOURCEDIR) -name '*.java')
 FUZION_HOME = fuzion/build
 JAVA_STACKSIZE=16
-VERSION=0.3.1
+VERSION=$(shell cat version.txt)
 DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
 CONDITIONS = PRECONDITIONS=true POSTCONDITIONS=true
 JAVA_ARGS =  -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m
@@ -144,5 +144,6 @@ profile:
 	x-www-browser /tmp/$(DATE)_flamegraph.html
 
 release: jar
+	echo "building fuzion_language_server_$(VERSION).zip"
 	rm -f fuzion_language_server_$(VERSION).zip
 	7z a -tzip fuzion_language_server_$(VERSION).zip out.jar README.md LICENSE bin/fuzion_language_server jars/*.jar fuzion/build/bin/ fuzion/build/lib/ fuzion/build/modules/
