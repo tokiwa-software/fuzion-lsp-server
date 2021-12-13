@@ -29,7 +29,7 @@ JAVAC = javac -encoding UTF8
 JAVA_FILES = $(shell find $(SOURCEDIR) -name '*.java')
 FUZION_HOME = fuzion/build
 JAVA_STACKSIZE=16
-VERSION=0.3.0
+VERSION=0.3.1
 DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
 CONDITIONS = PRECONDITIONS=true POSTCONDITIONS=true
 JAVA_ARGS =  -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m
