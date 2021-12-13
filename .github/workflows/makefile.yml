@@ -23,10 +23,12 @@ jobs:
     
     - name: build release
       run: make release
-
-    - uses: actions/upload-artifact@v2
+      
+    - uses: ncipollo/release-action@v1
       with:
         # NYI get version from version-file
-        path: fuzion_language_server_0.3.0.zip
-
-
+        artifacts: "fuzion_language_server_0.3.1.zip"
+        tag: "v0.3.1"
+        prerelease: false
+        generateReleaseNotes: true
+        token: ${{ secrets.GITHUB_TOKEN }}
