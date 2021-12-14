@@ -33,8 +33,6 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.FeatureTool;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 
 /**

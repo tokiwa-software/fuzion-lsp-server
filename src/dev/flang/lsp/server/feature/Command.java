@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ShowDocumentParams;
 
 import dev.flang.lsp.server.Config;
+import dev.flang.lsp.server.FuzionLanguageClient;
 import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.enums.Commands;
 import dev.flang.lsp.server.util.Concurrency;
@@ -54,24 +55,26 @@ public class Command
 
     switch (Commands.valueOf(params.getCommand()))
       {
-        case showSyntaxTree :
-          Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
-          return Concurrency.Compute(() -> null);
-        case run :
-          Concurrency.RunInBackground(() -> evaluate(Util.toURI(uri)));
-          return Concurrency.Compute(() -> null);
-        default:
-          ErrorHandling.WriteStackTrace(new Exception("not implemented"));
-          return Concurrency.Compute(() -> null);
+      case showSyntaxTree :
+        Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
+        return Concurrency.Compute(() -> null);
+      case run :
+        Concurrency.RunInBackground(() -> evaluate(Util.toURI(uri)));
+        return Concurrency.Compute(() -> null);
+      default:
+        ErrorHandling.WriteStackTrace(new Exception("not implemented"));
+        return Concurrency.Compute(() -> null);
       }
   }
 
   private static void evaluate(URI uri)
   {
+    var token = FuzionLanguageClient.StartProgress("running", uri.toString());
     try
       {
         var result = FuzionParser.Run(uri);
-        Config.languageClient().showMessage(result);
+        var file = IO.writeToTempFile(result, String.valueOf(System.currentTimeMillis()), ".result");
+        Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
       }
     catch (Exception e)
       {
@@ -81,6 +84,9 @@ public class Command
             Config.languageClient()
               .showMessage(new MessageParams(MessageType.Error, message));
           }
+      } finally
+      {
+        FuzionLanguageClient.EndProgress(token);
       }
   }
 

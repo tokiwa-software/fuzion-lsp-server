@@ -52,7 +52,7 @@ public class CommandTest extends BaseTest{
     FuzionParser.Run(uri2);
     var message = FuzionParser.Run(uri1);
 
-    assertEquals("Hello World!" + "\n", message.getMessage());
+    assertEquals("Hello World!" + "\n", message);
   }
 
   @Test
@@ -66,7 +66,7 @@ public class CommandTest extends BaseTest{
     assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri1, 100));
     assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri3, 50));
 
-    assertEquals("Hello World!" + "\n", FuzionParser.Run(uri2).getMessage());
+    assertEquals("Hello World!" + "\n", FuzionParser.Run(uri2));
   }
 
 }

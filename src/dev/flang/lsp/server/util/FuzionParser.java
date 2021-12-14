@@ -341,13 +341,13 @@ public class FuzionParser extends ANY
     return FuzionParser.FUIR(uri).map(f -> new Interpreter(f));
   }
 
-  public static MessageParams Run(URI uri)
+  public static String Run(URI uri)
     throws Exception
   {
     return Run(uri, 10000);
   }
 
-  public synchronized static MessageParams Run(URI uri, int timeout)
+  public synchronized static String Run(URI uri, int timeout)
     throws Exception
   {
     var result = Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(() -> {
@@ -358,7 +358,7 @@ public class FuzionParser extends ANY
           throw new RuntimeException("Interpreter could not be created.");
         }
     }), timeout, timeout);
-    return new MessageParams(MessageType.Info, result.result());
+    return result.result();
   }
 
   public static Stream<Errors.Error> Warnings(URI uri)
