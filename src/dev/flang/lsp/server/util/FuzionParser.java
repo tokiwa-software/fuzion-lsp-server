@@ -38,11 +38,6 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.MessageType;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
-
 import dev.flang.air.Clazzes;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
@@ -106,11 +101,6 @@ public class FuzionParser extends ANY
         return getParserCacheRecord(uri).mir().universe();
       }
     return getParserCacheRecord(uri).mir().main();
-  }
-
-  public static AbstractFeature MainOrUniverse(TextDocumentIdentifier params)
-  {
-    return MainOrUniverse(LSP4jUtils.getUri(params));
   }
 
   /**
@@ -231,7 +221,7 @@ public class FuzionParser extends ANY
       {
         return result;
       }
-    return sourcePosition._sourceFile._fileName.toUri();
+    return FuzionLexer.toURI(sourcePosition);
   }
 
   private static File toTempFile(URI uri)
@@ -252,11 +242,6 @@ public class FuzionParser extends ANY
   public static AbstractFeature universe(URI uri)
   {
     return getParserCacheRecord(uri).mir().universe();
-  }
-
-  public static AbstractFeature universe(TextDocumentPositionParams params)
-  {
-    return universe(LSP4jUtils.getUri(params));
   }
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
@@ -323,13 +308,13 @@ public class FuzionParser extends ANY
         .map(sourcePosition -> sourcePosition.get())
         .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
         .map(position -> {
-          var start = FuzionLexer.endOfToken(uri, Bridge.ToPosition(position));
-          var line = SourceText.RestOfLine(LSP4jUtils.TextDocumentPositionParams(uri, start));
+          var start = FuzionLexer.endOfToken(new SourcePosition(FuzionLexer.ToSourceFile(uri), position._line, position._column));
+          var line = SourceText.RestOfLine(start);
           // NYI maybe use inverse hashset here? i.e. state which tokens can
           // be skipped
           var token = FuzionLexer.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
             Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
-          return new SourcePosition(position._sourceFile, position._line, start.getCharacter() + token.end()._column);
+          return new SourcePosition(position._sourceFile, position._line, start._column - 1 + token.end()._column);
         })
         .findFirst()
         .orElse(f.pos());

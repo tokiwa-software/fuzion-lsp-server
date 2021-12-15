@@ -27,17 +27,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.util;
 
-import org.eclipse.lsp4j.Position;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.util.SourceFile;
+import dev.flang.util.SourcePosition;
 import test.flang.lsp.server.BaseTest;
 
-public class FuzionLexerTest extends BaseTest {
+public class FuzionLexerTest extends BaseTest
+{
   @Test
   public void NextTokenOfType_at_start()
   {
@@ -65,7 +69,7 @@ public class FuzionLexerTest extends BaseTest {
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(Cursor(uri1, 2, 2));
+      FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(Cursor(uri1, 2, 2)));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -77,7 +81,7 @@ public class FuzionLexerTest extends BaseTest {
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(Cursor(uri1, 6, 7));
+      FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(Cursor(uri1, 6, 7)));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }
@@ -87,9 +91,9 @@ public class FuzionLexerTest extends BaseTest {
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(uri1, new Position(0, 0));
-    assertEquals(10, endOfToken.getCharacter());
-    assertEquals(0, endOfToken.getLine());
+    var endOfToken = FuzionLexer.endOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 1, 1));
+    assertEquals(11, endOfToken._column);
+    assertEquals(1, endOfToken._line);
 
   }
 
@@ -98,9 +102,9 @@ public class FuzionLexerTest extends BaseTest {
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(uri1, new Position(2, 6));
-    assertEquals(9, endOfToken.getCharacter());
-    assertEquals(2, endOfToken.getLine());
+    var endOfToken = FuzionLexer.endOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 3, 7));
+    assertEquals(10, endOfToken._column);
+    assertEquals(3, endOfToken._line);
   }
 
   @Test
@@ -108,8 +112,8 @@ public class FuzionLexerTest extends BaseTest {
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(uri1, new Position(2, 3));
-    assertEquals(4, endOfToken.getCharacter());
-    assertEquals(2, endOfToken.getLine());
+    var endOfToken = FuzionLexer.endOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 3, 4));
+    assertEquals(5, endOfToken._column);
+    assertEquals(3, endOfToken._line);
   }
 }

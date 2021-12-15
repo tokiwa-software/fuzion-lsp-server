@@ -33,8 +33,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.lsp4j.Position;
-
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
@@ -42,6 +40,7 @@ import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.Util;
 import dev.flang.util.ANY;
+import dev.flang.util.SourcePosition;
 
 public class FeatureTool extends ANY
 {
@@ -62,17 +61,16 @@ public class FeatureTool extends ANY
 
   public static String CommentOf(AbstractFeature feature)
   {
-    var textDocumentPosition = Bridge.ToTextDocumentPosition(feature.pos());
-    var line = textDocumentPosition.getPosition().getLine() - 1;
+    var line = feature.pos()._line - 1;
     var commentLines = new ArrayList<String>();
     while (true)
       {
-        textDocumentPosition.setPosition(new Position(line, 0));
-        if (line < 0 || !FuzionLexer.isCommentLine(textDocumentPosition))
+        var pos = new SourcePosition(feature.pos()._sourceFile, line, 0);
+        if (line < 1 || !FuzionLexer.isCommentLine(pos))
           {
             break;
           }
-        commentLines.add(SourceText.LineAt(textDocumentPosition));
+        commentLines.add(SourceText.LineAt(pos));
         line = line - 1;
       }
     Collections.reverse(commentLines);

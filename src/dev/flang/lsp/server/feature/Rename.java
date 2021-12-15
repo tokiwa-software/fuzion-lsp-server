@@ -103,10 +103,9 @@ public class Rename
       .CallsTo(featureToRename)
       .map(c -> c.pos())
       .map(pos -> {
-        if (IsAtFunKeyword(Bridge.ToTextDocumentPosition(pos)))
+        if (IsAtFunKeyword(pos))
           {
-            var nextPosition = Bridge.ToTextDocumentPosition(
-              new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length()));
+            var nextPosition = new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length());
             pos = FuzionLexer.tokenAt(nextPosition).start();
           }
         return pos;
@@ -136,22 +135,23 @@ public class Rename
   // NYI disallow renaming of stdlib
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
-    if(!IsAtIdentifier(params)){
+    var pos = Bridge.ToSourcePosition(params);
+    if(!IsAtIdentifier(pos)){
       return new PrepareRenameResult();
     }
-    var token = FuzionLexer.rawTokenAt(params);
+    var token = FuzionLexer.rawTokenAt(pos);
     if(token.text().trim().isEmpty()){
       return new PrepareRenameResult();
     }
     return new PrepareRenameResult(token.toRange(), token.text());
   }
 
-  private static boolean IsAtIdentifier(TextDocumentPositionParams params)
+  private static boolean IsAtIdentifier(SourcePosition params)
   {
     return FuzionLexer.tokenAt(params).token() == Lexer.Token.t_ident;
   }
 
-  private static boolean IsAtFunKeyword(TextDocumentPositionParams params)
+  private static boolean IsAtFunKeyword(SourcePosition params)
   {
     return FuzionLexer.tokenAt(params).token() == Lexer.Token.t_fun;
   }

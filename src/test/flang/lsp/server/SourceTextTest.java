@@ -26,38 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server;
 
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionParser;
 
 class SourceTextTest extends BaseTest
 {
-  @Test
-  public void StringAt_multi_line()
-  {
-
-    SourceText.setText(uri1, LoremIpsum);
-    var text = SourceText.getText(uri1, new Range(new Position(1, 3), new Position(2, 4)));
-    assertEquals(
-      "enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-        + System.lineSeparator() + "Duis",
-      text);
-  }
-
-  @Test
-  public void StringAt_single_line()
-  {
-
-    SourceText.setText(uri1, LoremIpsum);
-    var text = SourceText.getText(uri1, new Range(new Position(1, 3), new Position(1, 23)));
-    assertEquals("enim ad minim veniam", text);
-  }
-
-
   @Test
   public void SourceText()
   {
@@ -66,7 +41,7 @@ class SourceTextTest extends BaseTest
       """;
     SourceText.setText(uri1, CommentExample);
     var myFeatIs = FuzionParser.MainOrUniverse(uri1);
-    var sourceText = SourceText.getText(Bridge.ToTextDocumentPosition(myFeatIs.pos()));
+    var sourceText = SourceText.getText(myFeatIs.pos());
     assertEquals(true, sourceText.contains("myFeat is"));
   }
 
@@ -82,7 +57,7 @@ class SourceTextTest extends BaseTest
       .filter(f -> f.featureName().baseName().endsWith("yak"))
       .findFirst()
       .get();
-    var sourceText = SourceText.getText(Bridge.ToTextDocumentPosition(yak.pos()));
+    var sourceText = SourceText.getText(yak.pos());
     assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
   }
 

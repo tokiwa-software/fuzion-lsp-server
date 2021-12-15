@@ -27,13 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.HashSet;
 
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
-
 import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
@@ -74,20 +71,20 @@ public class FuzionLexer
     return new Lexer(SourceFile.STDIN);
   }
 
-  public static TokenInfo rawTokenAt(TextDocumentPositionParams params)
+  public static TokenInfo rawTokenAt(SourcePosition params)
   {
     var sourceText = SourceText.getText(params);
     return IO.WithTextInputStream(sourceText, () -> {
 
       var lexer = NewLexerStdIn();
-      lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
+      lexer.setPos(lexer.lineStartPos(params._line));
 
       while (lexer.current() != Token.t_eof
         && FuzionLexer.lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
         {
           lexer.nextRaw();
         }
-      return FuzionLexer.tokenInfo(Util.toURI(params.getTextDocument().getUri()), lexer);
+      return FuzionLexer.tokenInfo(FuzionLexer.toURI(params), lexer);
     });
   }
 
@@ -100,43 +97,43 @@ public class FuzionLexer
   {
     var lexerSourcePosition = lexer.sourcePos(lexer.pos());
     var start =
-      new SourcePosition(Bridge.ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
+      new SourcePosition(FuzionLexer.ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
     return new TokenInfo(start, tokenString, lexer.current());
   }
 
-  private static boolean lexerEndPosIsBeforeOrAtTextDocumentPosition(TextDocumentPositionParams params, Lexer lexer)
+  private static boolean lexerEndPosIsBeforeOrAtTextDocumentPosition(SourcePosition params, Lexer lexer)
   {
-    return (lexer.sourcePos()._column - 1) <= params.getPosition().getCharacter();
+    return lexer.sourcePos()._column <= params._column;
   }
 
-  public static TokenInfo tokenAt(TextDocumentPositionParams params)
+  public static TokenInfo tokenAt(SourcePosition params)
   {
     var sourceText = SourceText.getText(params);
     return IO.WithTextInputStream(sourceText, () -> {
 
       var lexer = NewLexerStdIn();
-      lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
+      lexer.setPos(lexer.lineStartPos(params._line));
 
       while (lexer.current() != Token.t_eof
         && lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
         {
           lexer.next();
         }
-      return tokenInfo(Util.toURI(params.getTextDocument().getUri()), lexer);
+      return tokenInfo(FuzionLexer.toURI(params), lexer);
     });
   }
 
-  public static boolean isCommentLine(TextDocumentPositionParams params)
+  public static boolean isCommentLine(SourcePosition params)
   {
     var sourceText = SourceText.getText(params);
     return IO.WithTextInputStream(sourceText, () -> {
       var lexer = NewLexerStdIn();
-      lexer.setPos(lexer.lineStartPos(params.getPosition().getLine() + 1));
+      lexer.setPos(lexer.lineStartPos(params._line));
       lexer.nextRaw();
       while (lexer.current() == Token.t_ws)
         {
-          if (lexer.sourcePos()._line != params.getPosition().getLine() + 1)
+          if (lexer.sourcePos()._line != params._line)
             {
               return false;
             }
@@ -146,11 +143,29 @@ public class FuzionLexer
     });
   }
 
-  public static Position endOfToken(URI uri, Position start)
+  public static SourcePosition endOfToken(SourcePosition start)
   {
-    var textDocumentPosition = LSP4jUtils.TextDocumentPositionParams(uri, start);
-    var token = rawTokenAt(textDocumentPosition);
-    return Bridge.ToPosition(token.end());
+    var token = rawTokenAt(start);
+    return token.end();
+  }
+
+  public static URI toURI(SourcePosition sourcePosition)
+  {
+    return sourcePosition._sourceFile._fileName.toUri();
+  }
+
+  public static SourceFile ToSourceFile(URI uri)
+  {
+    var filePath = Path.of(uri);
+    if (filePath.equals(SourceFile.STDIN))
+      {
+        return new SourceFile(SourceFile.STDIN);
+      }
+    if (filePath.equals(SourceFile.BUILT_IN))
+      {
+        return new SourceFile(SourceFile.BUILT_IN);
+      }
+    return new SourceFile(filePath);
   }
 
 }

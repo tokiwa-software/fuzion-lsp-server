@@ -33,10 +33,8 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
-import org.eclipse.lsp4j.Range;
 
 import dev.flang.lsp.server.Config;
-import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.Log;
@@ -58,17 +56,13 @@ public class Diagnostics
   private static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     var errorDiagnostics = FuzionParser.Errors(uri).filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
-        var start = Bridge.ToPosition(error.pos);
-        var end = FuzionLexer.endOfToken(uri, start);
         var message = error.msg + System.lineSeparator() + error.detail;
-        return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Error, "fuzion language server");
+        return new Diagnostic(FuzionLexer.rawTokenAt(error.pos).toRange(), message, DiagnosticSeverity.Error, "fuzion language server");
       });
 
-    var warningDiagnostics = FuzionParser.Warnings(uri).filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
-        var start = Bridge.ToPosition(error.pos);
-        var end = FuzionLexer.endOfToken(uri, start);
-        var message = error.msg + System.lineSeparator() + error.detail;
-        return new Diagnostic(new Range(start, end), message, DiagnosticSeverity.Warning, "fuzion language server");
+    var warningDiagnostics = FuzionParser.Warnings(uri).filter(warning -> FuzionParser.getUri(warning.pos).equals(uri)).map((warning) -> {
+        var message = warning.msg + System.lineSeparator() + warning.detail;
+        return new Diagnostic(FuzionLexer.rawTokenAt(warning.pos).toRange(), message, DiagnosticSeverity.Warning, "fuzion language server");
       });
 
     return Stream.concat(errorDiagnostics, warningDiagnostics);

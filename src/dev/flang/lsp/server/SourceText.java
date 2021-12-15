@@ -34,11 +34,9 @@ import java.nio.file.Path;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
-
 import dev.flang.lsp.server.util.ErrorHandling;
-import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.util.SourcePosition;
 
 public class SourceText
 {
@@ -70,9 +68,9 @@ public class SourceText
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
-  public static String getText(TextDocumentPositionParams params)
+  public static String getText(SourcePosition params)
   {
-    return getText(LSP4jUtils.getUri(params));
+    return getText(FuzionLexer.toURI(params));
   }
 
   private static String ReadFromDisk(URI uri)
@@ -90,57 +88,17 @@ public class SourceText
       }
   }
 
-  public static String LineAt(TextDocumentPositionParams param)
+  public static String LineAt(SourcePosition param)
   {
     return SourceText.getText(param)
-      .split("\n")[param.getPosition().getLine()];
+      .split("\n")[param._line - 1];
   }
 
-  public static String RestOfLine(TextDocumentPositionParams param)
+  public static String RestOfLine(SourcePosition param)
   {
-    var start = param.getPosition();
+    var start = param._column - 1;
     var line = LineAt(param);
-    return line.length() <= start.getCharacter() ? "": line.substring(start.getCharacter());
+    return line.length() <= start ? "": line.substring(start);
   }
-
-  /**
-   * extract range of source
-   * @param uri
-   * @param range
-   * @return
-   */
-  public static String getText(URI uri, Range range)
-  {
-    var lines = getText(uri)
-      .lines()
-      .skip(range.getStart().getLine())
-      .limit(range.getEnd().getLine() - range.getStart().getLine() + 1)
-      .toList();
-    if (lines.size() == 1)
-      {
-        return lines.get(0).substring(range.getStart().getCharacter(), range.getEnd().getCharacter());
-      }
-    var result = "";
-    for(int i = 0; i < lines.size(); i++)
-      {
-        // first line
-        if (i == 0)
-          {
-            result += lines.get(i).substring(range.getStart().getCharacter()) + System.lineSeparator();
-          }
-        // last line
-        else if (i + 1 == lines.size())
-          {
-            result += lines.get(i).substring(0, range.getEnd().getCharacter());
-          }
-        // middle line
-        else
-          {
-            result += lines.get(i) + System.lineSeparator();
-          }
-      }
-    return result;
-  }
-
 
 }

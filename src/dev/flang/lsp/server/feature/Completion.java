@@ -42,6 +42,7 @@ import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.FeatureTool;
 import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.QueryAST;
@@ -89,7 +90,7 @@ public class Completion
 
     // NYI FIXME we need to move the cursor one step back
     // before getting next token
-    var tokenText = FuzionLexer.rawTokenAt(params).text();
+    var tokenText = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params)).text();
     switch (tokenText)
       {
       case "for" :

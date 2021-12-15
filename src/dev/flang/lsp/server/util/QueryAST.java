@@ -43,7 +43,6 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.lsp.server.ASTWalker;
 import dev.flang.lsp.server.Util;
-import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.util.SourcePosition;
 
 public class QueryAST
@@ -60,7 +59,7 @@ public class QueryAST
 
   public static Optional<AbstractFeature> CalledFeature(TextDocumentPositionParams params)
   {
-    var baseFeature = FuzionParser.MainOrUniverse(params.getTextDocument());
+    var baseFeature = FuzionParser.MainOrUniverse(LSP4jUtils.getUri(params));
     return ASTWalker.Traverse(baseFeature)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof Call)
@@ -132,7 +131,7 @@ public class QueryAST
    */
   public static Optional<AbstractFeature> Feature(TextDocumentPositionParams params)
   {
-    var token = FuzionLexer.rawTokenAt(params);
+    var token = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params));
     return CallsAndFeaturesAt(params).map(callOrFeature -> {
       if (callOrFeature instanceof Call && CalledFeature((Call) callOrFeature).isPresent())
         {
@@ -177,7 +176,7 @@ public class QueryAST
    */
   private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
-    var baseFeature = FuzionParser.MainOrUniverse(params.getTextDocument());
+    var baseFeature = FuzionParser.MainOrUniverse(LSP4jUtils.getUri(params));
     var astItems = ASTWalker.Traverse(baseFeature)
       .filter(IsItemNotBuiltIn(params))
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))

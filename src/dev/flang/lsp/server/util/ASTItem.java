@@ -150,7 +150,7 @@ public class ASTItem
   }
 
   private static final SourcePosition None =
-    new SourcePosition(Bridge.ToSourceFile(Util.toURI("file:///--none--")), 0, 0) {
+    new SourcePosition(FuzionLexer.ToSourceFile(Util.toURI("file:///--none--")), 0, 0) {
       public boolean isBuiltIn()
       {
         return true;

@@ -26,9 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
-import java.net.URI;
-import java.nio.file.Path;
-
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -37,7 +34,7 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.util.SourceFile;
+import dev.flang.lsp.server.Util;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -67,23 +64,14 @@ public class Bridge
     return new DocumentSymbol(FeatureTool.ToLabel(feature), SymbolKind.Key, ToRange(feature), ToRange(feature));
   }
 
-  public static SourceFile ToSourceFile(URI uri)
-  {
-    var filePath = Path.of(uri);
-    if (filePath.equals(SourceFile.STDIN))
-      {
-        return new SourceFile(SourceFile.STDIN);
-      }
-    if (filePath.equals(SourceFile.BUILT_IN))
-      {
-        return new SourceFile(SourceFile.BUILT_IN);
-      }
-    return new SourceFile(filePath);
-  }
-
   public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
   {
     return LSP4jUtils.TextDocumentPositionParams(FuzionParser.getUri(sourcePosition), ToPosition(sourcePosition));
+  }
+
+  public static SourcePosition ToSourcePosition(TextDocumentPositionParams params)
+  {
+    return new SourcePosition(FuzionLexer.ToSourceFile(Util.toURI(params.getTextDocument().getUri())), params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
   }
 
 }
