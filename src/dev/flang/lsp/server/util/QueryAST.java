@@ -268,15 +268,6 @@ public class QueryAST
       return sourcePositionOption1.get().compareTo(sourcePositionOption2.get());
     });
 
-  private static Comparator<? super Call> CompareByEndOfCall =
-    Comparator.comparing(obj -> obj, (obj1, obj2) -> {
-      if (obj1.equals(obj2))
-        {
-          return 0;
-        }
-      return CallTool.endOfCall(obj1).compareTo(CallTool.endOfCall(obj2));
-    });
-
   /**
    * returns all features declared in uri
    * @param uri
