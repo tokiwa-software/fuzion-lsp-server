@@ -29,10 +29,10 @@ package test.flang.lsp.server.feature;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.util.FuzionParser;
-import dev.flang.lsp.server.util.concurrent.MaxExecutionTimeExceededException;
-import test.flang.lsp.server.BaseTest;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.SourceText;
+import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
+import test.flang.shared.BaseTest;
 
 public class CommandTest extends BaseTest{
 

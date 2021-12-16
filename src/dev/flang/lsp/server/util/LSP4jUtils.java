@@ -29,10 +29,12 @@ package dev.flang.lsp.server.util;
 import java.net.URI;
 
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.lsp.server.Util;
+import dev.flang.shared.Util;
+import dev.flang.shared.records.TokenInfo;
 
 public final class LSP4jUtils
 {
@@ -75,6 +77,13 @@ public final class LSP4jUtils
                           : position1.getCharacter() > position2.getCharacter() ? +1: 0;
       }
     return result;
+  }
+
+  public static Range Range(TokenInfo tokenInfo)
+  {
+    var start = Bridge.ToPosition(tokenInfo.start());
+    var end = Bridge.ToPosition(tokenInfo.end());
+    return new Range(start, end);
   }
 
 }

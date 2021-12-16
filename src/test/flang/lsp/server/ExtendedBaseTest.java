@@ -20,32 +20,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class TokenInfo
+ * Source of class ExtendedBaseTest
+ *
+ * extends BaseTest with utility functions depending on lsp4j
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.records;
+package test.flang.lsp.server;
 
-import org.eclipse.lsp4j.Range;
+import java.net.URI;
 
-import dev.flang.lsp.server.util.Bridge;
-import dev.flang.parser.Lexer.Token;
-import dev.flang.util.SourcePosition;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-/**
- * holds text of lexer token and the start position of the token
- */
-public record TokenInfo(SourcePosition start, String text, Token token)
-{
-  public SourcePosition end()
+import dev.flang.lsp.server.util.LSP4jUtils;
+import test.flang.shared.BaseTest;
+
+public class ExtendedBaseTest extends BaseTest {
+
+  protected static TextDocumentPositionParams Cursor(URI uri, int line, int character)
   {
-    return new SourcePosition(start._sourceFile, start._line, start._column + text.length());
+    return LSP4jUtils.TextDocumentPositionParams(uri1, line, character);
   }
 
-  public Range toRange()
-  {
-    var start = Bridge.ToPosition(this.start());
-    var end = Bridge.ToPosition(this.end());
-    return new Range(start, end);
-  }
 }

@@ -20,48 +20,32 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class SourceTestText
+ * Source of class ASTWalkerTest
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server;
+package test.flang.shared;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.util.FuzionParser;
+import dev.flang.shared.ASTWalker;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.SourceText;
 
-class SourceTextTest extends BaseTest
+public class ASTWalkerTest extends BaseTest
 {
-  @Test
-  public void SourceText()
-  {
-    var CommentExample = """
-      myFeat is
-      """;
-    SourceText.setText(uri1, CommentExample);
-    var myFeatIs = FuzionParser.MainOrUniverse(uri1);
-    var sourceText = SourceText.getText(myFeatIs.pos());
-    assertEquals(true, sourceText.contains("myFeat is"));
-  }
 
   @Test
-  public void SourceTextStdLibFile()
-  {
-    var CommentExample = """
-      myFeat is
-      """;
-    SourceText.setText(uri1, CommentExample);
-    var yak = FuzionParser
-      .DeclaredFeatures(FuzionParser.universe(uri1))
-      .filter(f -> f.featureName().baseName().endsWith("yak"))
-      .findFirst()
-      .get();
-    var sourceText = SourceText.getText(yak.pos());
-    assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
+  public void NoStackOverflow(){
+    var sourceText = """
+  ex8 is
+
+    x := mapOf ["one", "two"] [1, 2]
+
+    for s in ["one", "two", "three"] do
+      say "$s maps to {x[s]}"
+  """;
+    SourceText.setText(uri1, sourceText);
+    ASTWalker.Traverse(FuzionParser.MainOrUniverse(uri1));
   }
-
-
-
 }
-

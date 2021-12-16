@@ -32,8 +32,8 @@ import java.util.List;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 
-import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.shared.SourceText;
 
 public class SyncIncremental
 {

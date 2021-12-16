@@ -25,20 +25,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 
-package test.flang.lsp.server.util;
+package test.flang.shared;
 
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.Util;
-import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.SourceText;
+import dev.flang.shared.Util;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
-import test.flang.lsp.server.BaseTest;
 
 public class FuzionLexerTest extends BaseTest
 {
@@ -69,7 +67,7 @@ public class FuzionLexerTest extends BaseTest
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(Cursor(uri1, 2, 2)));
+      FuzionLexer.rawTokenAt(CursorPosition(uri1, 3, 3));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -81,7 +79,7 @@ public class FuzionLexerTest extends BaseTest
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(Cursor(uri1, 6, 7)));
+      FuzionLexer.rawTokenAt(CursorPosition(uri1, 7, 8));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }

@@ -20,37 +20,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class HoveringTest
+ * Source of class ComputationPerformance
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server.feature;
 
-import org.eclipse.lsp4j.HoverParams;
-import org.junit.jupiter.api.Test;
+package dev.flang.shared.records;
 
-import dev.flang.lsp.server.feature.Hovering;
-import dev.flang.shared.SourceText;
-import test.flang.lsp.server.ExtendedBaseTest;
-
-public class HoveringTest extends ExtendedBaseTest
-{
-  private static final String ChoiceType = """
-    binary_trees is
-      node(left node|unit) ref is
-        """;
-
-  @Test
-  public void hoverChoiceType()
-  {
-    SourceText.setText(uri1, ChoiceType);
-    var cursor = Cursor(uri1, 1, 8);
-    assertEquals("**choice<node, unit>**",
-      Hovering.getHover(new HoverParams(cursor.getTextDocument(), cursor.getPosition()))
-        .getContents()
-        .getRight()
-        .getValue());
-  }
-
-
-}
+/**
+ * wraps the result of a computation and the time it took to compute the result.
+ */
+public record ComputationPerformance<T> (T result, long nanoSeconds){}

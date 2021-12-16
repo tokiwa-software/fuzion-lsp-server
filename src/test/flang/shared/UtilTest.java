@@ -20,28 +20,29 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ConcurrencyTest
+ * Source of class UriTest
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server.util;
+package test.flang.shared;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.ast.Feature;
-import dev.flang.ast.Type;
-import dev.flang.lsp.server.util.ASTItem;
-import test.flang.lsp.server.BaseTest;
+import dev.flang.shared.Util;
 
-public class ASTItemTest extends BaseTest{
-
+public class UtilTest extends BaseTest
+{
   @Test
-  // NYI This Test can be deleted in the future
-  // as it basically only tests my understanding of
-  // the instanceof operator.
-  public void SourcePosition(){
-    assertTrue(ASTItem.sourcePosition(new Feature()).isPresent());
-    assertTrue(ASTItem.sourcePosition(new Type("none")).isPresent());
+  public void DecodeEncodeTest() throws URISyntaxException, UnsupportedEncodingException
+  {
+    assertTrue(new URI("file:/c:/temp.fz").equals(Util.toURI("file:///c%3A/temp.fz")));
+    assertTrue(Util.toURI("file:/c:/temp file.fz").equals(Util.toURI("file:///c%3A/temp file.fz")));
+    assertTrue(Path.of(new URI("file:/c:/temp.fz")).toUri().equals(Util.toURI("file:///c%3A/temp.fz")));
   }
 
 }

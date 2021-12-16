@@ -26,25 +26,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
-package test.flang.lsp.server.util;
+package test.flang.shared;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.nio.file.Path;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.Util;
-import dev.flang.lsp.server.util.FeatureTool;
-import dev.flang.lsp.server.util.FuzionParser;
-import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.FeatureTool;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.SourceText;
+import dev.flang.shared.Util;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
-import test.flang.lsp.server.BaseTest;
 
 public class FuzionParserTest extends BaseTest
 {
@@ -196,14 +192,6 @@ public class FuzionParserTest extends BaseTest
   {
     var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
     assertEquals(Util.toURI(Path.of("./").normalize().toUri().toString() + "fuzion/build/lib/yak.fz"), uri);
-  }
-
-  @Test
-  public void RunBrokenSource()
-  {
-    SourceText.setText(uri1, UnknownCall);
-    assertThrows(ExecutionException.class, () -> FuzionParser.Run(uri1, 10000));
-    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri1).count());
   }
 
   @Test

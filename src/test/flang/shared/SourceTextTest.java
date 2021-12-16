@@ -20,29 +20,48 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class UriTest
+ * Source of class SourceTestText
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
+package test.flang.shared;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.Util;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.SourceText;
 
-public class UriTest extends BaseTest
+class SourceTextTest extends BaseTest
 {
   @Test
-  public void DecodeEncodeTest() throws URISyntaxException, UnsupportedEncodingException
+  public void SourceText()
   {
-    assertTrue(new URI("file:/c:/temp.fz").equals(Util.toURI("file:///c%3A/temp.fz")));
-    assertTrue(Util.toURI("file:/c:/temp file.fz").equals(Util.toURI("file:///c%3A/temp file.fz")));
-    assertTrue(Path.of(new URI("file:/c:/temp.fz")).toUri().equals(Util.toURI("file:///c%3A/temp.fz")));
+    var CommentExample = """
+      myFeat is
+      """;
+    SourceText.setText(uri1, CommentExample);
+    var myFeatIs = FuzionParser.MainOrUniverse(uri1);
+    var sourceText = SourceText.getText(myFeatIs.pos());
+    assertEquals(true, sourceText.contains("myFeat is"));
   }
 
+  @Test
+  public void SourceTextStdLibFile()
+  {
+    var CommentExample = """
+      myFeat is
+      """;
+    SourceText.setText(uri1, CommentExample);
+    var yak = FuzionParser
+      .DeclaredFeatures(FuzionParser.universe(uri1))
+      .filter(f -> f.featureName().baseName().endsWith("yak"))
+      .findFirst()
+      .get();
+    var sourceText = SourceText.getText(yak.pos());
+    assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
+  }
+
+
+
 }
+

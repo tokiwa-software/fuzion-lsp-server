@@ -41,9 +41,9 @@ import org.eclipse.lsp4j.SignatureInformation;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.lsp.server.util.CallTool;
-import dev.flang.lsp.server.util.FeatureTool;
-import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.FeatureTool;
+import dev.flang.shared.FuzionParser;
 
 public class SignatureHelper
 {

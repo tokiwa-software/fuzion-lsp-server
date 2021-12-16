@@ -34,7 +34,10 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.Util;
+import dev.flang.shared.FeatureTool;
+import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.Util;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -73,5 +76,4 @@ public class Bridge
   {
     return new SourcePosition(FuzionLexer.ToSourceFile(Util.toURI(params.getTextDocument().getUri())), params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
   }
-
 }

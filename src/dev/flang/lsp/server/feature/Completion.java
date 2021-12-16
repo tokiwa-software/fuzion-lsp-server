@@ -43,9 +43,9 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.FeatureTool;
-import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.FeatureTool;
+import dev.flang.shared.FuzionLexer;
 
 /**
  * tries offering completions

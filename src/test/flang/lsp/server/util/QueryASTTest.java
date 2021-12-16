@@ -27,18 +27,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.util;
 
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.ast.Call;
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.util.FuzionParser;
 import dev.flang.lsp.server.util.QueryAST;
-import test.flang.lsp.server.BaseTest;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.SourceText;
+import test.flang.lsp.server.ExtendedBaseTest;
 
-public class QueryASTTest extends BaseTest
+public class QueryASTTest extends ExtendedBaseTest
 {
   @Test
   public void DeclaredFeaturesRecursive()
@@ -451,6 +451,14 @@ public class QueryASTTest extends BaseTest
       .map(f -> f.qualifiedName())
       .collect(Collectors.joining("\n")));
 
+  }
+
+  @Test
+  public void RunBrokenSource()
+  {
+    SourceText.setText(uri1, UnknownCall);
+    assertThrows(ExecutionException.class, () -> FuzionParser.Run(uri1, 10000));
+    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri1).count());
   }
 
 }

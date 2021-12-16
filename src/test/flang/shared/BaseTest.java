@@ -24,18 +24,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server;
+package test.flang.shared;
 
 import java.net.URI;
 import java.nio.file.Path;
 
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 
-import dev.flang.lsp.server.Util;
-import dev.flang.lsp.server.util.IO;
-import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.shared.Concurrency;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.IO;
+import dev.flang.shared.Util;
+import dev.flang.util.List;
+import dev.flang.util.SourceFile;
+import dev.flang.util.SourcePosition;
 
 public abstract class BaseTest extends Assert
 {
@@ -97,13 +100,21 @@ public abstract class BaseTest extends Assert
       (1..10).
           """;
 
-  protected static TextDocumentPositionParams Cursor(URI uri, int line, int character)
+  protected static SourcePosition CursorPosition(URI uri, int line, int column)
   {
-    return LSP4jUtils.TextDocumentPositionParams(uri1, line, character);
+    return new SourcePosition(new SourceFile(Path.of(uri)), line, column);
   }
 
   @BeforeAll
-  public static void setup() {
+  public static void setup()
+  {
+    IO.CLIENT_OUT = IO.createCapturedStream((line) -> {
+    });
+    IO.CLIENT_ERR = IO.createCapturedStream((line) -> {
+    });
     IO.RedirectErrOutToClientLog();
+    FuzionParser.Init(new List<String>(), (r, timeout) -> {
+      return Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(r), timeout, timeout).result();
+    });
   }
 }

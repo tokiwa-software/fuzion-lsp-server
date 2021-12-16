@@ -20,25 +20,27 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ParserCacheRecord
+ * Source of class ConcurrencyTest
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.records;
+package test.flang.shared;
 
-import java.util.TreeSet;
+import org.junit.jupiter.api.Test;
 
-import dev.flang.ast.Types.Resolved;
-import dev.flang.fe.FrontEnd;
-import dev.flang.fe.FrontEndOptions;
-import dev.flang.mir.MIR;
-import dev.flang.util.Errors;
+import dev.flang.ast.Feature;
+import dev.flang.ast.Type;
+import dev.flang.shared.ASTItem;
 
-/**
- * holds all artifacts of parsing that we later need
- */
-public record ParserCacheRecord(MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
-  TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings, Resolved resolved)
-{
+public class ASTItemTest extends BaseTest{
+
+  @Test
+  // NYI This Test can be deleted in the future
+  // as it basically only tests my understanding of
+  // the instanceof operator.
+  public void SourcePosition(){
+    assertTrue(ASTItem.sourcePosition(new Feature()).isPresent());
+    assertTrue(ASTItem.sourcePosition(new Type("none")).isPresent());
+  }
 
 }

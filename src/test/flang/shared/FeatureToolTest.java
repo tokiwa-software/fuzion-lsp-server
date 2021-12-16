@@ -25,14 +25,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 
-package test.flang.lsp.server.util;
+package test.flang.shared;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.util.FeatureTool;
-import dev.flang.lsp.server.util.FuzionParser;
-import test.flang.lsp.server.BaseTest;
+import dev.flang.shared.FeatureTool;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.SourceText;
 
 public class FeatureToolTest extends BaseTest
 {

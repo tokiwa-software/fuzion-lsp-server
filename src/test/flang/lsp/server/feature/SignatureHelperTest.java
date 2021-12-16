@@ -32,10 +32,10 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.feature.SignatureHelper;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import test.flang.lsp.server.BaseTest;
+import dev.flang.shared.SourceText;
+import test.flang.shared.BaseTest;
 
 public class SignatureHelperTest extends BaseTest
 {

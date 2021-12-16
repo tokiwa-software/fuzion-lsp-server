@@ -43,13 +43,14 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.lsp.server.Util;
-import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.FuzionLexer;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.Util;
+import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -143,7 +144,7 @@ public class Rename
     if(token.text().trim().isEmpty()){
       return new PrepareRenameResult();
     }
-    return new PrepareRenameResult(token.toRange(), token.text());
+    return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
   }
 
   private static boolean IsAtIdentifier(SourcePosition params)

@@ -24,17 +24,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
-
-import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.MessageType;
-
-import dev.flang.lsp.server.Config;
-import dev.flang.lsp.server.SourceText;
 
 public class ErrorHandling
 {
@@ -54,13 +48,7 @@ public class ErrorHandling
 
   public static void WriteStackTraceAndExit(int status, Throwable e)
   {
-    var filePath = WriteStackTrace(e);
-    if (Config.DEBUG())
-      {
-        Config.languageClient()
-          .showMessage(new MessageParams(MessageType.Error,
-            "fuzion language server crashed." + System.lineSeparator() + " Log: " + filePath));
-      }
+    WriteStackTrace(e);
     System.exit(status);
   }
 

@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -40,19 +40,16 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.concurrent.Callable;
-
-import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.MessageType;
-
-import dev.flang.lsp.server.Config;
+import java.util.function.Consumer;
 
 public class IO
 {
   public static final PrintStream SYS_OUT = System.out;
   public static final PrintStream SYS_ERR = System.err;
   public static final InputStream SYS_IN = System.in;
-  private static final PrintStream CLIENT_OUT = createCapturedStream(MessageType.Log);
-  private static final PrintStream CLIENT_ERR = createCapturedStream(MessageType.Error);
+  // initialized on language server startup in Main.java
+  public static PrintStream CLIENT_OUT;
+  public static PrintStream CLIENT_ERR;
   private static File tempDir =
     ErrorHandling.ResultOrDefault(() -> Files.createTempDirectory("fuzion-lsp-server").toFile(), null);
 
@@ -155,7 +152,7 @@ public class IO
     System.setIn(new PipedInputStream());
   }
 
-  private static PrintStream createCapturedStream(MessageType messageType)
+  public static PrintStream createCapturedStream(Consumer<String> callback)
   {
     try
       {
@@ -163,22 +160,20 @@ public class IO
         var inputStream = new PipedInputStream();
         var reader = new BufferedReader(new InputStreamReader(inputStream));
         var result = new PrintStream(new PipedOutputStream(inputStream));
-        Concurrency.RunInBackground(
+        new Thread(
           () -> {
             try
               {
                 while (true)
                   {
-                    var line = "io: " + reader.readLine();
-                    if (Config.languageClient() != null)
-                      Config.languageClient().logMessage(new MessageParams(messageType, line));
+                    callback.accept(reader.readLine());
                   }
               }
             catch (IOException e)
               {
                 System.exit(1);
               }
-          });
+          }).start();
         return result;
       }
     catch (IOException e)

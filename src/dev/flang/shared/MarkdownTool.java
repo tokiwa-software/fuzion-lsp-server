@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

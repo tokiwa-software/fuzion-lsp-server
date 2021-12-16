@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
 import java.net.URI;
 import java.util.Comparator;
@@ -48,7 +48,6 @@ import dev.flang.ast.Impl;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
-import dev.flang.lsp.server.Util;
 import dev.flang.util.SourcePosition;
 
 public class ASTItem
@@ -167,7 +166,7 @@ public class ASTItem
     return AbstractFeature.class.isAssignableFrom(o.getClass());
   }
 
-  static Predicate<? super Entry<Object, AbstractFeature>> IsItemInFile(URI uri)
+  public static Predicate<? super Entry<Object, AbstractFeature>> IsItemInFile(URI uri)
   {
     return (entry) -> {
       var sourcePositionOption = sourcePosition(entry.getKey());
@@ -179,7 +178,7 @@ public class ASTItem
     };
   }
 
-  static Comparator<? super Object> CompareByLineThenByColumn()
+  public static Comparator<? super Object> CompareByLineThenByColumn()
   {
     return (a, b) -> {
       var position1 = sourcePosition(a);

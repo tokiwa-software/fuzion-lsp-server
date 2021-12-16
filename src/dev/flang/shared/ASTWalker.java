@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server;
+package dev.flang.shared;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -32,7 +32,6 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
@@ -52,9 +51,6 @@ import dev.flang.ast.StrConst;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
-import dev.flang.lsp.server.util.ASTItem;
-import dev.flang.lsp.server.util.ErrorHandling;
-import dev.flang.lsp.server.util.FuzionParser;
 
 public class ASTWalker
 {

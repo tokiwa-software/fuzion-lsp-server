@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.util.concurrent;
+package dev.flang.shared.concurrent;
 
 public class MaxExecutionTimeExceededException extends Exception
 {

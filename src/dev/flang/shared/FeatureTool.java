@@ -25,7 +25,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,9 +36,6 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
-import dev.flang.lsp.server.ASTWalker;
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
@@ -120,7 +117,7 @@ public class FeatureTool extends ANY
     return f.featureName().baseName().startsWith("#");
   }
 
-  static Optional<AbstractFeature> universe(AbstractFeature f)
+  public static Optional<AbstractFeature> universe(AbstractFeature f)
   {
     if (f == Types.f_ERROR)
       {
@@ -194,7 +191,7 @@ public class FeatureTool extends ANY
    * @param feature
    * @return all features which are accessible (callable) when inside of feature
    */
-  static Stream<AbstractFeature> FeaturesInScope(AbstractFeature feature)
+  public static Stream<AbstractFeature> FeaturesInScope(AbstractFeature feature)
   {
     return Stream
       .of(Stream.of(feature), outerFeatures(feature), feature.inherits().stream().map(c -> c.calledFeature()))
@@ -218,7 +215,7 @@ public class FeatureTool extends ANY
         && f.pos()._column <= feature.pos()._column);
   }
 
-  static boolean IsInternal(AbstractFeature f)
+  public static boolean IsInternal(AbstractFeature f)
   {
     // NYI maybe there is a better way?
     return Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName());

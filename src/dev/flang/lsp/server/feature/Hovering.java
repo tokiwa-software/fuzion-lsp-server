@@ -32,10 +32,11 @@ import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.FeatureTool;
-import dev.flang.lsp.server.util.FuzionLexer;
-import dev.flang.lsp.server.util.MarkdownTool;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.FeatureTool;
+import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.MarkdownTool;
 
 /**
  * on hover returns signature of call
@@ -46,7 +47,7 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var range = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params)).toRange();
+    var range = LSP4jUtils.Range(FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params)));
     var feature = QueryAST.FeatureAt(params);
     return feature.map(f -> {
       var hoverInfo = FeatureTool.CommentOfInMarkdown(f) + System.lineSeparator()

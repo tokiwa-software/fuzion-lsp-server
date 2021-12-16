@@ -71,9 +71,11 @@ import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Rename;
 import dev.flang.lsp.server.feature.SignatureHelper;
-import dev.flang.lsp.server.util.Concurrency;
-import dev.flang.lsp.server.util.Debouncer;
+import dev.flang.lsp.server.util.Computation;
 import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.shared.Debouncer;
+import dev.flang.shared.SourceText;
+import dev.flang.shared.Util;
 
 public class FuzionTextDocumentService implements TextDocumentService
 {
@@ -133,20 +135,20 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position)
   {
-    return Concurrency.Compute(() -> Completion.getCompletions(position));
+    return Computation.Compute(() -> Completion.getCompletions(position));
 
   }
 
   @Override
   public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
   {
-    return Concurrency.Compute(() -> unresolved);
+    return Computation.Compute(() -> unresolved);
   }
 
   @Override
   public CompletableFuture<Hover> hover(HoverParams params)
   {
-    return Concurrency.Compute(() -> Hovering.getHover(params));
+    return Computation.Compute(() -> Hovering.getHover(params));
   }
 
   @Override
@@ -154,50 +156,50 @@ public class FuzionTextDocumentService implements TextDocumentService
     DefinitionParams params)
   {
 
-    return Concurrency.Compute(() -> Definition.getDefinitionLocation(params));
+    return Computation.Compute(() -> Definition.getDefinitionLocation(params));
   }
 
   @Override
   public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
   {
-    return Concurrency.Compute(() -> References.getReferences(params));
+    return Computation.Compute(() -> References.getReferences(params));
   }
 
   @Override
   public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
   {
-    return Concurrency.Compute(() -> Rename.getWorkspaceEdit(params));
+    return Computation.Compute(() -> Rename.getWorkspaceEdit(params));
   }
 
   @Override
   public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
   {
-    return Concurrency.Compute(() -> Either.forRight(Rename.getPrepareRenameResult(params)));
+    return Computation.Compute(() -> Either.forRight(Rename.getPrepareRenameResult(params)));
   }
 
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
   {
-    return Concurrency.Compute(() -> null);
+    return Computation.Compute(() -> null);
   }
 
 
   @Override
   public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
   {
-    return Concurrency.Compute(() -> DocumentSymbols.getDocumentSymbols(params));
+    return Computation.Compute(() -> DocumentSymbols.getDocumentSymbols(params));
   }
 
   @Override
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
   {
-    return Concurrency.Compute(() -> CodeLenses.getCodeLenses(params));
+    return Computation.Compute(() -> CodeLenses.getCodeLenses(params));
   }
 
   @Override
   public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
   {
-    return Concurrency.Compute(() -> SignatureHelper.getSignatureHelp(params));
+    return Computation.Compute(() -> SignatureHelper.getSignatureHelp(params));
   }
 
 }

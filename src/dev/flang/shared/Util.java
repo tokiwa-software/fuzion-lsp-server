@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server;
+package dev.flang.shared;
 
 import java.net.URI;
 import java.net.URLDecoder;
@@ -32,8 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import dev.flang.lsp.server.util.ErrorHandling;
 
 /**
  * utils which are independent of fuzion

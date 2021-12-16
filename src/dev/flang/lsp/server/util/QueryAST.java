@@ -41,8 +41,12 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
-import dev.flang.lsp.server.ASTWalker;
-import dev.flang.lsp.server.Util;
+import dev.flang.shared.ASTItem;
+import dev.flang.shared.ASTWalker;
+import dev.flang.shared.FeatureTool;
+import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.Util;
 import dev.flang.util.SourcePosition;
 
 public class QueryAST

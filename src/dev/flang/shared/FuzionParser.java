@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
 import java.io.File;
 import java.net.URI;
@@ -49,16 +49,13 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
-import dev.flang.lsp.server.ASTWalker;
-import dev.flang.lsp.server.Config;
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.Util;
-import dev.flang.lsp.server.records.ParserCacheRecord;
 import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -75,9 +72,19 @@ public class FuzionParser extends ANY
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
 
   static final int MAX_ENTRIES = 20;
+
+  private static List<String> JavaModules;
+  private static BiFunctionWithException<Runnable, Integer, String, Exception> CapturedResult;
+
+  public static void Init(List<String> javaModules, BiFunctionWithException<Runnable, Integer, String, Exception> capturedResult)
+  {
+    JavaModules = javaModules;
+    CapturedResult = capturedResult;
+  }
+
   // LRU-Cache holding the most recent results of parser
-  private static Map<String, ParserCacheRecord> sourceText2ParserCache = Collections.synchronizedMap(
-    new LinkedHashMap<String, ParserCacheRecord>(MAX_ENTRIES + 1, .75F, true) {
+  private static Map<String, ParserCacheRecord> sourceText2ParserCache =
+    Collections.synchronizedMap(new LinkedHashMap<String, ParserCacheRecord>(MAX_ENTRIES + 1, .75F, true) {
       public boolean removeEldestEntry(Map.Entry<String, ParserCacheRecord> eldest)
       {
         var removeEldestEntry = size() > MAX_ENTRIES;
@@ -204,7 +211,7 @@ public class FuzionParser extends ANY
   {
     var fuzionHome = Path.of(System.getProperty("fuzion.home"));
     var frontEndOptions =
-      new FrontEndOptions(0, fuzionHome, Config.JavaModules(), 0, false, false, tempFile.getAbsolutePath());
+      new FrontEndOptions(0, fuzionHome, JavaModules, 0, false, false, tempFile.getAbsolutePath());
     return frontEndOptions;
   }
 
@@ -308,7 +315,8 @@ public class FuzionParser extends ANY
         .map(sourcePosition -> sourcePosition.get())
         .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
         .map(position -> {
-          var start = FuzionLexer.endOfToken(new SourcePosition(FuzionLexer.ToSourceFile(uri), position._line, position._column));
+          var start =
+            FuzionLexer.endOfToken(new SourcePosition(FuzionLexer.ToSourceFile(uri), position._line, position._column));
           var line = SourceText.RestOfLine(start);
           // NYI maybe use inverse hashset here? i.e. state which tokens can
           // be skipped
@@ -335,15 +343,14 @@ public class FuzionParser extends ANY
   public synchronized static String Run(URI uri, int timeout)
     throws Exception
   {
-    var result = Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(() -> {
-      var interpreter = FuzionParser.Interpreter(uri);
+    return CapturedResult.apply(() -> {
+      var interpreter = Interpreter(uri);
       interpreter.ifPresent(i -> i.run());
       if (interpreter.isEmpty())
         {
           throw new RuntimeException("Interpreter could not be created.");
         }
-    }), timeout, timeout);
-    return result.result();
+    }, timeout);
   }
 
   public static Stream<Errors.Error> Warnings(URI uri)

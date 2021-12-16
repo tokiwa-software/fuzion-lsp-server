@@ -43,19 +43,21 @@ import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.SourceText;
+// NYI remove dependency of dev.flang.lsp and move to dev.flang.shared
 import dev.flang.lsp.server.feature.Completion;
-import dev.flang.lsp.server.records.ComputationPerformance;
-import dev.flang.lsp.server.util.Concurrency;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.lsp.server.util.concurrent.MaxExecutionTimeExceededException;
-import test.flang.lsp.server.BaseTest;
+import dev.flang.shared.CompletableFutures;
+import dev.flang.shared.Concurrency;
+import dev.flang.shared.SourceText;
+import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
+import dev.flang.shared.records.ComputationPerformance;
+import test.flang.lsp.server.ExtendedBaseTest;
 
-public class ConcurrencyTest extends BaseTest
+
+public class ConcurrencyTest extends ExtendedBaseTest
 {
 
   private static final int TenMilliseconds = 10;

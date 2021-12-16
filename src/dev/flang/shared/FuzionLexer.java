@@ -24,16 +24,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashSet;
 
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.records.TokenInfo;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 

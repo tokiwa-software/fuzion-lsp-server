@@ -39,13 +39,14 @@ import org.eclipse.lsp4j.ShowDocumentParams;
 
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.FuzionLanguageClient;
-import dev.flang.lsp.server.Util;
 import dev.flang.lsp.server.enums.Commands;
-import dev.flang.lsp.server.util.Concurrency;
-import dev.flang.lsp.server.util.ErrorHandling;
-import dev.flang.lsp.server.util.FeatureTool;
-import dev.flang.lsp.server.util.FuzionParser;
-import dev.flang.lsp.server.util.IO;
+import dev.flang.lsp.server.util.Computation;
+import dev.flang.shared.Concurrency;
+import dev.flang.shared.ErrorHandling;
+import dev.flang.shared.FeatureTool;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.IO;
+import dev.flang.shared.Util;
 
 public class Command
 {
@@ -57,13 +58,13 @@ public class Command
       {
       case showSyntaxTree :
         Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
-        return Concurrency.Compute(() -> null);
+        return Computation.Compute(() -> null);
       case run :
         Concurrency.RunInBackground(() -> evaluate(Util.toURI(uri)));
-        return Concurrency.Compute(() -> null);
+        return Computation.Compute(() -> null);
       default:
         ErrorHandling.WriteStackTrace(new Exception("not implemented"));
-        return Concurrency.Compute(() -> null);
+        return Computation.Compute(() -> null);
       }
   }
 

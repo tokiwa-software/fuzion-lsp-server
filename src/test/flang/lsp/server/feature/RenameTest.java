@@ -30,11 +30,11 @@ package test.flang.lsp.server.feature;
 import org.eclipse.lsp4j.RenameParams;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.SourceText;
 import dev.flang.lsp.server.feature.Rename;
-import test.flang.lsp.server.BaseTest;
+import dev.flang.shared.SourceText;
+import test.flang.lsp.server.ExtendedBaseTest;
 
-public class RenameTest extends BaseTest
+public class RenameTest extends ExtendedBaseTest
 {
 
 

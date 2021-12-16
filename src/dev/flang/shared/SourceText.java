@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.lsp.server;
+package dev.flang.shared;
 
 import java.io.IOException;
 import java.net.URI;
@@ -34,8 +34,6 @@ import java.nio.file.Path;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import dev.flang.lsp.server.util.ErrorHandling;
-import dev.flang.lsp.server.util.FuzionLexer;
 import dev.flang.util.SourcePosition;
 
 public class SourceText

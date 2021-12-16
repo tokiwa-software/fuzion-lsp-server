@@ -20,32 +20,22 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ASTWalkerTest
+ * Source of class TokenInfo
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.lsp.server;
+package dev.flang.shared.records;
 
-import org.junit.jupiter.api.Test;
+import dev.flang.parser.Lexer.Token;
+import dev.flang.util.SourcePosition;
 
-import dev.flang.lsp.server.ASTWalker;
-import dev.flang.lsp.server.SourceText;
-import dev.flang.lsp.server.util.FuzionParser;
-
-public class ASTWalkerTest extends BaseTest
+/**
+ * holds text of lexer token and the start position of the token
+ */
+public record TokenInfo(SourcePosition start, String text, Token token)
 {
-
-  @Test
-  public void NoStackOverflow(){
-    var sourceText = """
-  ex8 is
-
-    x := mapOf ["one", "two"] [1, 2]
-
-    for s in ["one", "two", "three"] do
-      say "$s maps to {x[s]}"
-  """;
-    SourceText.setText(uri1, sourceText);
-    ASTWalker.Traverse(FuzionParser.MainOrUniverse(uri1));
+  public SourcePosition end()
+  {
+    return new SourcePosition(start._sourceFile, start._line, start._column + text.length());
   }
 }

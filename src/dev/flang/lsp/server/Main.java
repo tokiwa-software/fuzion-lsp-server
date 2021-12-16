@@ -38,15 +38,17 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.ConfigurationItem;
 import org.eclipse.lsp4j.ConfigurationParams;
+import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.lsp.server.enums.Transport;
-import dev.flang.lsp.server.util.Concurrency;
-import dev.flang.lsp.server.util.ErrorHandling;
-import dev.flang.lsp.server.util.IO;
 import dev.flang.lsp.server.util.Log;
+import dev.flang.shared.Concurrency;
+import dev.flang.shared.ErrorHandling;
+import dev.flang.shared.FuzionParser;
+import dev.flang.shared.IO;
 import dev.flang.util.Errors;
 
 /**
@@ -60,7 +62,7 @@ public class Main
   {
     arguments = args;
 
-    IO.RedirectErrOutToClientLog();
+    SetupIO();
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
@@ -73,6 +75,10 @@ public class Main
       {
         ErrorHandling.WriteStackTrace(arg1);
       }
+    });
+
+    FuzionParser.Init(Config.JavaModules(), (r, timeout) -> {
+      return Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(r), timeout, timeout).result();
     });
 
     var launcher = getLauncher();
@@ -98,6 +104,19 @@ public class Main
 
   }
 
+  private static void SetupIO()
+  {
+    IO.CLIENT_OUT = IO.createCapturedStream(line -> {
+      if (Config.languageClient() != null)
+        Config.languageClient().logMessage(new MessageParams(MessageType.Log, "out: " + line));
+    });
+    IO.CLIENT_ERR = IO.createCapturedStream(line -> {
+      if (Config.languageClient() != null)
+        Config.languageClient().logMessage(new MessageParams(MessageType.Error, "err: " + line));
+    });
+    IO.RedirectErrOutToClientLog();
+  }
+
   private static ConfigurationParams configurationRequestParams()
   {
     var configItem = new ConfigurationItem();
@@ -116,19 +135,19 @@ public class Main
     var server = new FuzionLanguageServer();
     switch (Config.transport())
       {
-        case stdio :
-          return createLauncher(server, IO.SYS_IN, IO.SYS_OUT);
-        case tcp :
-          try (var serverSocket = new ServerSocket(0))
-            {
-              IO.SYS_OUT.println("Property os.name: " + System.getProperty("os.name"));
-              IO.SYS_OUT.println("socket opened on port: " + serverSocket.getLocalPort());
-              var socket = serverSocket.accept();
-              return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
-            }
-        default:
-          ErrorHandling.WriteStackTraceAndExit(1);
-          return null;
+      case stdio :
+        return createLauncher(server, IO.SYS_IN, IO.SYS_OUT);
+      case tcp :
+        try (var serverSocket = new ServerSocket(0))
+          {
+            IO.SYS_OUT.println("Property os.name: " + System.getProperty("os.name"));
+            IO.SYS_OUT.println("socket opened on port: " + serverSocket.getLocalPort());
+            var socket = serverSocket.accept();
+            return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
+          }
+      default:
+        ErrorHandling.WriteStackTraceAndExit(1);
+        return null;
       }
   }
 
