@@ -47,9 +47,9 @@ public class IO
   public static final PrintStream SYS_OUT = System.out;
   public static final PrintStream SYS_ERR = System.err;
   public static final InputStream SYS_IN = System.in;
-  // initialized on language server startup in Main.java
-  public static PrintStream CLIENT_OUT;
-  public static PrintStream CLIENT_ERR;
+  private static PrintStream CLIENT_OUT = System.out;
+  private static PrintStream CLIENT_ERR = System.err;
+  // NYI "fuzion-lsp-server" should depend on usage
   private static File tempDir =
     ErrorHandling.ResultOrDefault(() -> Files.createTempDirectory("fuzion-lsp-server").toFile(), null);
 
@@ -181,6 +181,13 @@ public class IO
         System.exit(1);
         return null;
       }
+  }
+
+  public static void Init(Consumer<String> out, Consumer<String> err)
+  {
+    CLIENT_OUT = IO.createCapturedStream(out);
+    CLIENT_ERR = IO.createCapturedStream(err);
+    RedirectErrOutToClientLog();
   }
 
 }

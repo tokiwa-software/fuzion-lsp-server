@@ -34,6 +34,7 @@ import com.google.gson.JsonObject;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.lsp.server.enums.Transport;
+import dev.flang.shared.FuzionParser;
 
 public class Config
 {
@@ -76,9 +77,10 @@ public class Config
   public static void setConfiguration(Future<List<Object>> configuration)
   {
     _configuration = configuration;
+    FuzionParser.SetJavaModules(Config.JavaModules());
   }
 
-  public static dev.flang.util.List<String> JavaModules()
+  private static dev.flang.util.List<String> JavaModules()
   {
     try
       {

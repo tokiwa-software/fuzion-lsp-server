@@ -47,7 +47,6 @@ import dev.flang.lsp.server.enums.Transport;
 import dev.flang.lsp.server.util.Log;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
-import dev.flang.shared.FuzionParser;
 import dev.flang.shared.IO;
 import dev.flang.util.Errors;
 
@@ -62,7 +61,13 @@ public class Main
   {
     arguments = args;
 
-    SetupIO();
+    IO.Init(line -> {
+      if (Config.languageClient() != null)
+        Config.languageClient().logMessage(new MessageParams(MessageType.Log, "out: " + line));
+    }, line -> {
+      if (Config.languageClient() != null)
+        Config.languageClient().logMessage(new MessageParams(MessageType.Error, "err: " + line));
+    });
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
@@ -75,10 +80,6 @@ public class Main
       {
         ErrorHandling.WriteStackTrace(arg1);
       }
-    });
-
-    FuzionParser.Init(Config.JavaModules(), (r, timeout) -> {
-      return Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(r), timeout, timeout).result();
     });
 
     var launcher = getLauncher();
@@ -102,19 +103,6 @@ public class Main
           }
       }));
 
-  }
-
-  private static void SetupIO()
-  {
-    IO.CLIENT_OUT = IO.createCapturedStream(line -> {
-      if (Config.languageClient() != null)
-        Config.languageClient().logMessage(new MessageParams(MessageType.Log, "out: " + line));
-    });
-    IO.CLIENT_ERR = IO.createCapturedStream(line -> {
-      if (Config.languageClient() != null)
-        Config.languageClient().logMessage(new MessageParams(MessageType.Error, "err: " + line));
-    });
-    IO.RedirectErrOutToClientLog();
   }
 
   private static ConfigurationParams configurationRequestParams()

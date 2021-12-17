@@ -82,6 +82,7 @@ public class ErrorHandling
         .map(entry -> "Thread: " + entry.getKey().getName() + System.lineSeparator() + toString(entry.getValue()))
         .collect(Collectors.joining(System.lineSeparator()));
 
+    // NYI "fuzion-lsp-crash" should depend on usage
     return IO
       .writeToTempFile(stackTrace + System.lineSeparator() + SourceText.allTexts(), "fuzion-lsp-crash", ".log", false)
       .getAbsolutePath();

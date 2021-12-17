@@ -73,13 +73,11 @@ public class FuzionParser extends ANY
 
   static final int MAX_ENTRIES = 20;
 
-  private static List<String> JavaModules;
-  private static BiFunctionWithException<Runnable, Integer, String, Exception> CapturedResult;
+  private static List<String> JavaModules = new List<String>();
 
-  public static void Init(List<String> javaModules, BiFunctionWithException<Runnable, Integer, String, Exception> capturedResult)
+  public static void SetJavaModules(List<String> javaModules)
   {
     JavaModules = javaModules;
-    CapturedResult = capturedResult;
   }
 
   // LRU-Cache holding the most recent results of parser
@@ -343,14 +341,15 @@ public class FuzionParser extends ANY
   public synchronized static String Run(URI uri, int timeout)
     throws Exception
   {
-    return CapturedResult.apply(() -> {
-      var interpreter = Interpreter(uri);
+    var result = Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(() -> {
+      var interpreter = FuzionParser.Interpreter(uri);
       interpreter.ifPresent(i -> i.run());
       if (interpreter.isEmpty())
         {
           throw new RuntimeException("Interpreter could not be created.");
         }
-    }, timeout);
+    }), timeout, timeout);
+    return result.result();
   }
 
   public static Stream<Errors.Error> Warnings(URI uri)
