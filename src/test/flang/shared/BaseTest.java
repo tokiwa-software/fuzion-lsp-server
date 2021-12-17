@@ -108,13 +108,8 @@ public abstract class BaseTest extends Assert
   @BeforeAll
   public static void setup()
   {
-    IO.CLIENT_OUT = IO.createCapturedStream((line) -> {
-    });
-    IO.CLIENT_ERR = IO.createCapturedStream((line) -> {
-    });
-    IO.RedirectErrOutToClientLog();
-    FuzionParser.Init(new List<String>(), (r, timeout) -> {
-      return Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(r), timeout, timeout).result();
+    IO.Init((line) -> {
+    }, (line) -> {
     });
   }
 }
