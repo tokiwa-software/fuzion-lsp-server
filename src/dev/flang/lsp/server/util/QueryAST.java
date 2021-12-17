@@ -250,22 +250,20 @@ public class QueryAST
 
 
   private static Comparator<? super Object> CompareBySourcePosition =
-    Comparator.comparing(obj -> obj, (obj1, obj2) -> {
-      var sourcePositionOption1 = ASTItem.sourcePosition(obj1);
-      var sourcePositionOption2 = ASTItem.sourcePosition(obj2);
-      if (sourcePositionOption1.isEmpty() || sourcePositionOption2.isEmpty())
+    Comparator.comparing(obj -> ASTItem.sourcePosition(obj), (sourcePosition1, sourcePosition2) -> {
+      if (sourcePosition1.isEmpty() || sourcePosition2.isEmpty())
         {
-          if (sourcePositionOption1.isEmpty() && sourcePositionOption2.isEmpty())
+          if (sourcePosition1.isEmpty() && sourcePosition2.isEmpty())
             {
               return 0;
             }
-          if (sourcePositionOption1.isEmpty())
+          if (sourcePosition1.isEmpty())
             {
               return -1;
             }
           return 1;
         }
-      return sourcePositionOption1.get().compareTo(sourcePositionOption2.get());
+      return sourcePosition1.get().compareTo(sourcePosition2.get());
     });
 
   /**
