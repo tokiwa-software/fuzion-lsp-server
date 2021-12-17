@@ -151,11 +151,16 @@ public class FeatureTool extends ANY
   {
     if (feature.resultType().isChoice())
       {
+        if (feature.resultType()
+          .choiceGenerics() == null)
+          {
+            return "choice<NYI>";
+          }
         return "choice" + "<"
           + feature.resultType()
             .choiceGenerics()
             .stream()
-            .map(t -> t.featureOfType().featureName().baseName())
+            .map(t -> t.name())
             .collect(Collectors.joining(", "))
           + ">";
       }
@@ -165,16 +170,32 @@ public class FeatureTool extends ANY
       }
     if (feature.isRoutine())
       {
+        //NYI if no arguments no parens
         var arguments = "(" + feature.arguments()
           .stream()
           .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + Label(a.resultType()))
           .collect(Collectors.joining(", ")) + ")";
-        return feature.featureName().baseName() + feature.generics() + arguments + " => " + Label(feature.resultType());
+        return feature.featureName().baseName() + feature.generics() + arguments + " => " + Label(feature.resultType())
+          + LabelInherited(feature);
       }
-    return feature.featureName().baseName();
+    return feature.featureName().baseName() + LabelInherited(feature);
   }
 
-  private static String Label(AbstractType type)
+  public static String LabelInherited(AbstractFeature feature)
+  {
+    if (feature.inherits().isEmpty())
+      {
+        return "";
+      }
+    return " : " + feature.inherits()
+      .stream()
+      .map(c -> c.calledFeature())
+      .map(f -> f.featureName().baseName() + f.generics())
+      .collect(Collectors.joining(", "));
+  }
+
+  // NYI move to TypeTool?
+  public static String Label(AbstractType type)
   {
     // NYI don't rely on astType
     return type.astType().toString();
