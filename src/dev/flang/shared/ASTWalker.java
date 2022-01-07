@@ -31,19 +31,20 @@ import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
-import dev.flang.ast.Call;
-import dev.flang.ast.Case;
 import dev.flang.ast.Check;
+import dev.flang.ast.Constant;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
-import dev.flang.ast.Match;
 import dev.flang.ast.Nop;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Stmnt;
@@ -95,9 +96,9 @@ public class ASTWalker
       .forEach(f -> TraverseFeature(f, callback));
   }
 
-  private static void TraverseCase(Case c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
+  private static void TraverseCase(AbstractCase c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    TraverseBlock(c.code, outer, callback);
+    TraverseBlock(c.code(), outer, callback);
   }
 
   private static void TraverseStatement(Stmnt s, AbstractFeature outer,
@@ -152,13 +153,13 @@ public class ASTWalker
         TraverseBlock(b, outer, callback);
         return;
       }
-    if (expr instanceof Match m)
+    if (expr instanceof AbstractMatch m)
       {
-        TraverseExpression(m.subject, outer, callback);
-        m.cases.forEach(c -> TraverseCase(c, outer, callback));
+        TraverseExpression(m.subject(), outer, callback);
+        m.cases().forEach(c -> TraverseCase(c, outer, callback));
         return;
       }
-    if (expr instanceof Call c)
+    if (expr instanceof AbstractCall c)
       {
         TraverseCall(c, outer, callback);
         return;
@@ -188,26 +189,26 @@ public class ASTWalker
         return;
       }
     if (expr instanceof Current || expr instanceof NumLiteral || expr instanceof Unbox || expr instanceof BoolConst
-      || expr instanceof StrConst || expr instanceof Universe || expr instanceof Function)
+      || expr instanceof StrConst || expr instanceof Universe || expr instanceof Function || expr instanceof Constant)
       {
         return;
       }
     throw new RuntimeException("TraverseExpression not implemented for: " + expr.getClass());
   }
 
-  private static void TraverseCall(Call c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
+  private static void TraverseCall(AbstractCall c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
   {
     if (!callback.apply(c, outer))
       {
         return;
       }
-    c._actuals.forEach(a -> TraverseExpression(a, outer, callback));
+    c.actuals().forEach(a -> TraverseExpression(a, outer, callback));
     // this should be enough to not run into an infinite recursion...
-    if (c.target == null || !IsSameSourceFile(c.target, outer))
+    if (c.target() == null || !IsSameSourceFile(c.target(), outer))
       {
         return;
       }
-    TraverseExpression(c.target, outer, callback);
+    TraverseExpression(c.target(), outer, callback);
   }
 
   private static boolean IsSameSourceFile(Expr e, AbstractFeature outer)

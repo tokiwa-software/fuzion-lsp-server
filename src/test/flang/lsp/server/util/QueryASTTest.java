@@ -311,7 +311,6 @@ public class QueryASTTest extends ExtendedBaseTest
       Cons
       FALSE
       Function
-      HelloWorld
       InitArray
       List
       Lists
@@ -442,14 +441,19 @@ public class QueryASTTest extends ExtendedBaseTest
       wrappingInteger
       wrappingIntegers
       yak
+      HelloWorld
       Object.asString
       Object.hashCode
       Object.prefix $""";
 
-    assertEquals(expectedCompletions, QueryAST
-      .CompletionsAt(Cursor(uri1, 5, 4))
-      .map(f -> f.qualifiedName())
-      .collect(Collectors.joining("\n")));
+    var completions = QueryAST
+    .CompletionsAt(Cursor(uri1, 5, 4))
+    .map(f -> f.qualifiedName())
+    .collect(Collectors.joining("\n"));
+
+
+
+    assertEquals(expectedCompletions, completions);
 
   }
 

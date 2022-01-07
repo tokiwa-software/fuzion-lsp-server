@@ -150,19 +150,20 @@ public class FuzionLexer
 
   public static URI toURI(SourcePosition sourcePosition)
   {
-    return sourcePosition._sourceFile._fileName.toUri();
+    return Path.of(sourcePosition._sourceFile._fileName.toString()
+      .replace("$FUZION", System.getProperty("fuzion.home"))).toUri();
   }
 
   public static SourceFile ToSourceFile(URI uri)
   {
     var filePath = Path.of(uri);
-    if (filePath.equals(SourceFile.STDIN))
+    if (uri.equals(SourceFile.STDIN.toUri()))
       {
         return new SourceFile(SourceFile.STDIN);
       }
-    if (filePath.equals(SourceFile.BUILT_IN))
+    if (filePath.equals(SourcePosition.builtIn._sourceFile._fileName))
       {
-        return new SourceFile(SourceFile.BUILT_IN);
+        return SourcePosition.builtIn._sourceFile;
       }
     return new SourceFile(filePath);
   }

@@ -170,7 +170,7 @@ public class FeatureTool extends ANY
       }
     if (feature.isRoutine())
       {
-        //NYI if no arguments no parens
+        // NYI if no arguments no parens
         var arguments = "(" + feature.arguments()
           .stream()
           .map(a -> a.thisType().featureOfType().featureName().baseName() + " " + Label(a.resultType()))
@@ -203,8 +203,6 @@ public class FeatureTool extends ANY
 
   public static String CommentOfInMarkdown(AbstractFeature f)
   {
-    if (PRECONDITIONS)
-      require(!f.pos().isBuiltIn());
     return MarkdownTool.Italic(MarkdownTool.Escape(CommentOf(f)));
   }
 

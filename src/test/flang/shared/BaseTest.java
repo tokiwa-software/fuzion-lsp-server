@@ -32,20 +32,16 @@ import java.nio.file.Path;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 
-import dev.flang.shared.Concurrency;
-import dev.flang.shared.FuzionParser;
 import dev.flang.shared.IO;
-import dev.flang.shared.Util;
-import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 public abstract class BaseTest extends Assert
 {
-  protected static final URI uri1 = Util.toURI(Path.of("/").toUri().toString() + "uri1");
-  protected static final URI uri2 = Util.toURI(Path.of("/").toUri().toString() + "uri2");
-  protected static final URI uri3 = Util.toURI(Path.of("/").toUri().toString() + "uri3");
-  protected static final URI uri4 = Util.toURI(Path.of("/").toUri().toString() + "uri4");
+  protected static final URI uri1 = IO.writeToTempFile("").toURI();
+  protected static final URI uri2 = IO.writeToTempFile("").toURI();
+  protected static final URI uri3 = IO.writeToTempFile("").toURI();
+  protected static final URI uri4 = IO.writeToTempFile("").toURI();
 
   protected static final String LoremIpsum =
     """

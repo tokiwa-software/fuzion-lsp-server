@@ -115,7 +115,7 @@ public class ASTItem
       }
     if (entry instanceof Case)
       {
-        return Optional.ofNullable(((Case) entry).pos);
+        return Optional.ofNullable(((Case) entry).pos());
       }
     if (entry instanceof InlineArray)
       {
@@ -148,17 +148,9 @@ public class ASTItem
     return Optional.empty();
   }
 
-  private static final SourcePosition None =
-    new SourcePosition(FuzionLexer.ToSourceFile(Util.toURI("file:///--none--")), 0, 0) {
-      public boolean isBuiltIn()
-      {
-        return true;
-      }
-    };
-
   public static SourcePosition sourcePositionOrNone(Object obj)
   {
-    return ASTItem.sourcePosition(obj).orElse(None);
+    return ASTItem.sourcePosition(obj).orElse(SourcePosition.notAvailable);
   }
 
   public static boolean IsAbstractFeature(Object o)

@@ -41,13 +41,13 @@ import java.util.stream.Stream;
 import dev.flang.air.Clazzes;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.Resolution;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.ChoiceIdAsRef;
 import dev.flang.be.interpreter.Instance;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+import dev.flang.fe.SourceModule;
 import dev.flang.fuir.FUIR;
 import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
@@ -55,6 +55,7 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -88,12 +89,12 @@ public class FuzionParser extends ANY
         var removeEldestEntry = size() > MAX_ENTRIES;
         if (removeEldestEntry)
           {
-            universe2ResolutionMap.remove(eldest.getValue().mir().universe());
+            universe2FrontEndMap.remove(eldest.getValue().mir().universe());
           }
         return removeEldestEntry;
       }
     });
-  private static HashMap<AbstractFeature, Resolution> universe2ResolutionMap = new HashMap<>();
+  private static HashMap<AbstractFeature, FrontEnd> universe2FrontEndMap = new HashMap<>();
 
   /**
    * @param uri
@@ -126,7 +127,7 @@ public class FuzionParser extends ANY
   private static ParserCacheRecord computeParserCache(URI uri, boolean clearAfterParsing)
   {
     var parserCacheRecord = createParserCacheRecord(uri);
-    universe2ResolutionMap.put(parserCacheRecord.mir().universe(), parserCacheRecord.frontEnd().res());
+    universe2FrontEndMap.put(parserCacheRecord.mir().universe(), parserCacheRecord.frontEnd());
     // NYI
     if (clearAfterParsing)
       {
@@ -209,7 +210,7 @@ public class FuzionParser extends ANY
   {
     var fuzionHome = Path.of(System.getProperty("fuzion.home"));
     var frontEndOptions =
-      new FrontEndOptions(0, fuzionHome, JavaModules, 0, false, false, tempFile.getAbsolutePath());
+      new FrontEndOptions(0, fuzionHome, null, JavaModules, 0, false, false, tempFile.getAbsolutePath());
     return frontEndOptions;
   }
 
@@ -257,19 +258,43 @@ public class FuzionParser extends ANY
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
     return FeatureTool.universe(f).map(universe -> {
-      return universe2ResolutionMap.get(universe)._module.declaredOrInheritedFeatures(f)
+
+      var b = ((SourceModule) universe2FrontEndMap.get(universe)._module)
+        .declaredOrInheritedFeatures(f)
         .values()
         .stream();
-    }).orElse(Stream.empty());
+
+      if (f.isUniverse())
+        {
+          var a = universe2FrontEndMap
+            .get(universe)._stdlib
+              .features()
+              .stream();
+          return Stream.concat(a, b);
+        }
+      return b;
+    })
+      .orElse(Stream.empty());
   }
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean IncludeAnonymousInnerFeatures)
   {
     return FeatureTool.universe(f).map(universe -> {
-      return universe2ResolutionMap.get(universe)._module
+
+      var b = ((SourceModule) universe2FrontEndMap.get(universe)._module)
         .declaredFeatures(f)
         .values()
         .stream();
+
+      if (f.isUniverse())
+        {
+          var a = universe2FrontEndMap
+            .get(universe)._stdlib
+              .features()
+              .stream();
+          return Stream.concat(a, b);
+        }
+      return b;
     })
       .orElse(Stream.empty())
       .filter(feat -> IncludeAnonymousInnerFeatures || !FeatureTool.IsAnonymousInnerFeature(feat));
@@ -314,7 +339,7 @@ public class FuzionParser extends ANY
         .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
         .map(position -> {
           var start =
-            FuzionLexer.endOfToken(new SourcePosition(FuzionLexer.ToSourceFile(uri), position._line, position._column));
+            FuzionLexer.endOfToken(position);
           var line = SourceText.RestOfLine(start);
           // NYI maybe use inverse hashset here? i.e. state which tokens can
           // be skipped
@@ -329,7 +354,8 @@ public class FuzionParser extends ANY
 
   private static Optional<Interpreter> Interpreter(URI uri)
   {
-    return FuzionParser.FUIR(uri).map(f -> new Interpreter(f));
+    // NYI get fuzionoptions from client
+    return FuzionParser.FUIR(uri).map(f -> new Interpreter(new FuzionOptions(0, 0, false), f));
   }
 
   public static String Run(URI uri)
