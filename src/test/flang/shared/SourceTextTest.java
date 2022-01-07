@@ -54,7 +54,7 @@ class SourceTextTest extends BaseTest
     SourceText.setText(uri1, CommentExample);
     var yak = FuzionParser
       .DeclaredFeatures(FuzionParser.universe(uri1))
-      .filter(f -> f.featureName().baseName().endsWith("yak"))
+      .filter(f -> f.featureName().baseName().equals("yak"))
       .findFirst()
       .get();
     var sourceText = SourceText.getText(yak.pos());
