@@ -189,7 +189,7 @@ public class FuzionParser extends ANY
 
     var air =
       new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(),
-        parserCacheRecord.frontEnd().res()._module)
+        parserCacheRecord.frontEnd().module())
           .air();
 
     // NYI remove this once unnecessary
@@ -259,20 +259,11 @@ public class FuzionParser extends ANY
   {
     return FeatureTool.universe(f).map(universe -> {
 
-      var b = ((SourceModule) universe2FrontEndMap.get(universe)._module)
+      return universe2FrontEndMap.get(universe)
+        .module()
         .declaredOrInheritedFeatures(f)
         .values()
         .stream();
-
-      if (f.isUniverse())
-        {
-          var a = universe2FrontEndMap
-            .get(universe)._stdlib
-              .features()
-              .stream();
-          return Stream.concat(a, b);
-        }
-      return b;
     })
       .orElse(Stream.empty());
   }
@@ -281,20 +272,11 @@ public class FuzionParser extends ANY
   {
     return FeatureTool.universe(f).map(universe -> {
 
-      var b = ((SourceModule) universe2FrontEndMap.get(universe)._module)
+      return universe2FrontEndMap.get(universe)
+        .module()
         .declaredFeatures(f)
         .values()
         .stream();
-
-      if (f.isUniverse())
-        {
-          var a = universe2FrontEndMap
-            .get(universe)._stdlib
-              .features()
-              .stream();
-          return Stream.concat(a, b);
-        }
-      return b;
     })
       .orElse(Stream.empty())
       .filter(feat -> IncludeAnonymousInnerFeatures || !FeatureTool.IsAnonymousInnerFeature(feat));
