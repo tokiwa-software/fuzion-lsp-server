@@ -47,7 +47,6 @@ import dev.flang.be.interpreter.Instance;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
-import dev.flang.fe.SourceModule;
 import dev.flang.fuir.FUIR;
 import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
@@ -72,7 +71,7 @@ public class FuzionParser extends ANY
    */
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
 
-  static final int MAX_ENTRIES = 20;
+  private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 100;
 
   private static List<String> JavaModules = new List<String>();
 
@@ -81,20 +80,19 @@ public class FuzionParser extends ANY
     JavaModules = javaModules;
   }
 
-  // LRU-Cache holding the most recent results of parser
-  private static Map<String, ParserCacheRecord> sourceText2ParserCache =
-    Collections.synchronizedMap(new LinkedHashMap<String, ParserCacheRecord>(MAX_ENTRIES + 1, .75F, true) {
-      public boolean removeEldestEntry(Map.Entry<String, ParserCacheRecord> eldest)
+  private static ParserCache parserCache = new ParserCache();
+
+  /**
+   * LRU-Cache holding end of feature calculations
+   */
+  private static final Map<AbstractFeature, SourcePosition> EndOfFeatureCache = Collections
+    .synchronizedMap(new LinkedHashMap<AbstractFeature, SourcePosition>(END_OF_FEATURE_CACHE_MAX_SIZE + 1, .75F, true) {
+      public boolean removeEldestEntry(Map.Entry<AbstractFeature, SourcePosition> eldest)
       {
-        var removeEldestEntry = size() > MAX_ENTRIES;
-        if (removeEldestEntry)
-          {
-            universe2FrontEndMap.remove(eldest.getValue().mir().universe());
-          }
-        return removeEldestEntry;
+        return size() > END_OF_FEATURE_CACHE_MAX_SIZE;
       }
     });
-  private static HashMap<AbstractFeature, FrontEnd> universe2FrontEndMap = new HashMap<>();
+
 
   /**
    * @param uri
@@ -118,7 +116,7 @@ public class FuzionParser extends ANY
   {
     var sourceText = SourceText.getText(uri);
 
-    var result = sourceText2ParserCache.computeIfAbsent(sourceText, st -> computeParserCache(uri, true));
+    var result = parserCache.computeIfAbsent(sourceText, st -> computeParserCache(uri, true));
     // NYI remove this. restores Types.resolved
     Types.resolved = result.resolved();
     return result;
@@ -127,13 +125,11 @@ public class FuzionParser extends ANY
   private static ParserCacheRecord computeParserCache(URI uri, boolean clearAfterParsing)
   {
     var parserCacheRecord = createParserCacheRecord(uri);
-    universe2FrontEndMap.put(parserCacheRecord.mir().universe(), parserCacheRecord.frontEnd());
     // NYI
     if (clearAfterParsing)
       {
         ClearStaticallyHeldStuffInFuzionCompiler();
       }
-    afterParsing();
     return parserCacheRecord;
   }
 
@@ -258,9 +254,7 @@ public class FuzionParser extends ANY
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
     return FeatureTool.universe(f).map(universe -> {
-
-      return universe2FrontEndMap.get(universe)
-        .module()
+      return parserCache.SourceModule(universe)
         .declaredOrInheritedFeatures(f)
         .values()
         .stream();
@@ -271,24 +265,16 @@ public class FuzionParser extends ANY
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean IncludeAnonymousInnerFeatures)
   {
     return FeatureTool.universe(f).map(universe -> {
-
-      return universe2FrontEndMap.get(universe)
-        .module()
+      return parserCache.SourceModule(universe)
         .declaredFeatures(f)
         .values()
         .stream();
     })
       .orElse(Stream.empty())
-      .filter(feat -> IncludeAnonymousInnerFeatures || !FeatureTool.IsAnonymousInnerFeature(feat));
+      .filter(feat -> IncludeAnonymousInnerFeatures ||
+        !FeatureTool.IsAnonymousInnerFeature(feat));
   }
 
-  private static final TreeMap<AbstractFeature, SourcePosition> EndOfFeature = new TreeMap<>();
-
-  private static void afterParsing()
-  {
-    // NYI make this less bad
-    EndOfFeature.clear();
-  }
 
   /**
    * NYI replace by real end of feature once we have this information in the AST
@@ -298,7 +284,7 @@ public class FuzionParser extends ANY
    */
   public static SourcePosition endOfFeature(AbstractFeature feature)
   {
-    return EndOfFeature.computeIfAbsent(feature, f -> {
+    return EndOfFeatureCache.computeIfAbsent(feature, f -> {
       if (FeatureTool.IsArgument(f))
         {
           // NYI make this more idiomatic?
