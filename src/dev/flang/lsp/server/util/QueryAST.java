@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.ast.Type;
@@ -157,11 +158,17 @@ public class QueryAST
       })
       .map(feature -> {
         var featuresViaInheritance =
-          feature.inherits().stream().flatMap(c -> FuzionParser.DeclaredFeatures(c.calledFeature()));
+          InheritedRecursive(feature).flatMap(c -> FuzionParser.DeclaredFeatures(c.calledFeature()));
         return Stream.concat(FuzionParser
           .DeclaredFeatures(feature), featuresViaInheritance);
       })
       .orElse(Stream.empty());
+  }
+
+  private static Stream<AbstractCall> InheritedRecursive(AbstractFeature feature)
+  {
+    return Stream.concat(feature.inherits().stream(),
+      feature.inherits().stream().flatMap(c -> InheritedRecursive(c.calledFeature())));
   }
 
   public static Stream<AbstractFeature> CompletionsAt(TextDocumentPositionParams params)

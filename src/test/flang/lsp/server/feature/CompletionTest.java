@@ -27,11 +27,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package test.flang.lsp.server.feature;
 
 import java.net.URI;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
@@ -62,6 +64,72 @@ public class CompletionTest extends BaseTest
           .map<string>(_ -> selectRandom())
           .fold(strings.)
         """;
+
+  private static final String IntervallCompletion = """
+      example =>
+        (1..2).
+    """;
+
+  @Test @Tag("TAG")
+  public void getIntervallCompletions()
+  {
+    SourceText.setText(uri1, IntervallCompletion);
+    var expected = """
+      asList
+      asStream
+      asString
+      contains(${1:e})
+      forAll(${1:f})
+      infix :(${1:step})
+      lower
+      map<${2:B}>(${1:f})
+      size
+      upper
+      asList
+      contains
+      sizeOption
+      asArray
+      asList
+      asStream
+      asString
+      asString(${1:sep})
+      before(${1:f})
+      concatLists(${1:s})
+      count
+      cycle
+      drop(${1:n})
+      dropWhile(${1:p})
+      filter(${1:f})
+      first
+      fold(${1:m})
+      forAll(${1:f})
+      forWhile(${1:f})
+      infix &(${1:f})
+      infix ++(${1:s})
+      infix |(${1:f})
+      infix |&(${1:f})
+      infix ∀(${1:f})
+      infix ∃(${1:f})
+      insert(${1:at}, ${2:v})
+      isEmpty
+      last
+      mapList<${2:B}>(${1:f})
+      postfix |
+      slice(${1:from}, ${2:to})
+      tails
+      take(${1:n})
+      takeWhile(${1:p})
+      zip<${3:U}, ${4:V}>(${1:b}, ${2:f})
+      asString
+      hashCode
+      prefix $""";
+    var actual = Completion.getCompletions(params(uri1, 1, 9))
+      .getLeft()
+      .stream()
+      .map(x -> x.getInsertText())
+      .collect(Collectors.joining(System.lineSeparator()));
+    assertEquals(expected, actual);
+  }
 
 
   @Test

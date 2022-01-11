@@ -451,8 +451,6 @@ public class QueryASTTest extends ExtendedBaseTest
       .map(f -> f.qualifiedName())
       .collect(Collectors.joining("\n"));
 
-
-
     assertEquals(expectedCompletions, completions);
 
   }
