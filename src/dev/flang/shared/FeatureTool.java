@@ -156,13 +156,6 @@ public class FeatureTool extends ANY
           {
             return "choice<NYI>";
           }
-        return "choice" + "<"
-          + feature.resultType()
-            .choiceGenerics()
-            .stream()
-            .map(t -> t.name())
-            .collect(Collectors.joining(", "))
-          + ">";
       }
     if (feature.isField())
       {
