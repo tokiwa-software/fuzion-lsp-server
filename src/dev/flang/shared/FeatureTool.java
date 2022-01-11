@@ -159,7 +159,7 @@ public class FeatureTool extends ANY
       }
     if (feature.isField())
       {
-        return Label(feature.resultType()) + feature.featureName().baseName();
+        return Label(feature.resultType()) + " " + feature.featureName().baseName();
       }
     if (feature.isRoutine())
       {
