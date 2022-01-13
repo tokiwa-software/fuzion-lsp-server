@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.ast.Call;
+import dev.flang.ast.AbstractCall;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FuzionParser;
 import dev.flang.shared.SourceText;
@@ -63,7 +63,7 @@ public class QueryASTTest extends ExtendedBaseTest
       .baseName());
     assertEquals("say", QueryAST
       .AllOf(FuzionParser
-        .MainOrUniverse(uri1), Call.class)
+        .MainOrUniverse(uri1), AbstractCall.class)
       .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
       .findFirst()
       .get()
@@ -82,7 +82,7 @@ public class QueryASTTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     var call = QueryAST.callAt(Cursor(uri1, 1, 17))
       .get();
-    assertEquals("myCall", call.name);
+    assertEquals("1.infix ..(10).myCall", call.toString());
   }
 
   @Test

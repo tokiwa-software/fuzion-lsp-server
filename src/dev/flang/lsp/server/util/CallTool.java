@@ -30,8 +30,8 @@ package dev.flang.lsp.server.util;
 import java.util.Comparator;
 import java.util.Optional;
 
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Call;
 import dev.flang.util.SourcePosition;
 
 public class CallTool
@@ -40,7 +40,7 @@ public class CallTool
    * @param call
    * @return
    */
-  public static Optional<AbstractFeature> featureOf(Call call)
+  public static Optional<AbstractFeature> featureOf(AbstractCall call)
   {
     return QueryAST.InFeature(Bridge.ToTextDocumentPosition(call.pos()));
   }
@@ -51,9 +51,9 @@ public class CallTool
    * @return
   */
   // NYI test this
-  public static SourcePosition endOfCall(Call call)
+  public static SourcePosition endOfCall(AbstractCall call)
   {
-    var result = call._actuals
+    var result = call.actuals()
       .stream()
       .map(expression -> expression.pos())
       .sorted(Comparator.reverseOrder())

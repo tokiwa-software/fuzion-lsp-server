@@ -35,7 +35,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import test.flang.shared.BaseTest;
 
-public class ExtendedBaseTest extends BaseTest {
+public abstract class ExtendedBaseTest extends BaseTest {
 
   protected static TextDocumentPositionParams Cursor(URI uri, int line, int character)
   {

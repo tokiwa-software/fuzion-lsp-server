@@ -40,9 +40,9 @@ import test.flang.shared.BaseTest;
 public class SignatureHelperTest extends BaseTest
 {
   private static final String HelloWorld = """
-      HelloWorld is
-        say "
-    """;
+    HelloWorld is
+      say "
+        """;
 
   private static final String Mandelbrot = """
     mandelbrotexample is
@@ -72,8 +72,8 @@ public class SignatureHelperTest extends BaseTest
   public void getSignatureHelpMultipleSignatures()
   {
     SourceText.setText(uri1, HelloWorld);
-    assertEquals("say() => unit : Object", LabelAt(uri1, new Position(1, 5), 0));
-    assertEquals("say(s Object) => unit : Object", LabelAt(uri1, new Position(1, 5), 1));
+    assertEquals("say() => unit : Object", LabelAt(uri1, new Position(1, 3), 0));
+    assertEquals("say(s Object) => unit : Object", LabelAt(uri1, new Position(1, 3), 1));
   }
 
   @Test
@@ -81,7 +81,8 @@ public class SignatureHelperTest extends BaseTest
   {
     SourceText.setText(uri1, Mandelbrot);
     assertEquals("yak(s Object) => unit : Object", LabelAt(uri1, new Position(17, 13), 0));
-    assertEquals("mandelbrotImage(yStart f64, yStep f64, xStart f64, xStep f64, height i32, width i32) => unit : Object",
+    assertEquals(
+      "mandelbrotImage(yStart f64, yStep f64, xStart f64, xStep f64, height i32, width i32) => unit : Object",
       LabelAt(uri1, new Position(20, 17), 0));
   }
 

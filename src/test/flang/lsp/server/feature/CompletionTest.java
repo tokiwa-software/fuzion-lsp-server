@@ -33,7 +33,6 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
@@ -70,7 +69,7 @@ public class CompletionTest extends BaseTest
         (1..2).
     """;
 
-  @Test @Tag("TAG")
+  @Test
   public void getIntervallCompletions()
   {
     SourceText.setText(uri1, IntervallCompletion);

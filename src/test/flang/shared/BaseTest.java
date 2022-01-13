@@ -65,9 +65,9 @@ public abstract class BaseTest extends Assert
                 """;
 
   protected static final String HelloWorld = """
-      HelloWorld is
-        say "Hello World!"
-    """;
+    HelloWorld is
+      say "Hello World!"
+      """;
 
   protected static final String PythagoreanTriple = """
       pythagoreanTriple is

@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SignatureInformation;
 
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.lsp.server.util.CallTool;
@@ -50,7 +51,7 @@ public class SignatureHelper
 
   public static SignatureHelp getSignatureHelp(SignatureHelpParams params)
   {
-    Optional<Call> call = QueryAST.callAt(params);
+    Optional<AbstractCall> call = QueryAST.callAt(params);
 
     if (call.isEmpty())
       {
@@ -58,9 +59,9 @@ public class SignatureHelper
       }
 
     var featureOfCall =
-      call.get().target instanceof Call callTarget
-                                                   ? Optional.of(callTarget.calledFeature())
-                                                   : CallTool.featureOf(call.get());
+      call.get().target() instanceof AbstractCall callTarget
+                                                             ? Optional.of(callTarget.calledFeature())
+                                                             : CallTool.featureOf(call.get());
 
     if (featureOfCall.isEmpty())
       {
@@ -70,7 +71,7 @@ public class SignatureHelper
     return getSignatureHelp(call.get(), featureOfCall.get());
   }
 
-  private static SignatureHelp getSignatureHelp(Call call, AbstractFeature featureOfCall)
+  private static SignatureHelp getSignatureHelp(AbstractCall call, AbstractFeature featureOfCall)
   {
     var consideredCallTargets_declaredOrInherited = FuzionParser.DeclaredOrInheritedFeatures(featureOfCall);
     var consideredCallTargets_outerFeatures =
@@ -93,9 +94,17 @@ public class SignatureHelper
       ParameterInfo(feature));
   }
 
-  private static boolean featureNameMatchesCallName(AbstractFeature f, Call call)
+  private static boolean featureNameMatchesCallName(AbstractFeature f, AbstractCall ac)
   {
-    return f.featureName().baseName().equals(call.name);
+    if (!ac.type().containsError())
+      {
+        return f.featureName().baseName().equals(ac.calledFeature().featureName().baseName());
+      }
+    if (ac instanceof Call c)
+      {
+        return f.featureName().baseName().equals(c.name);
+      }
+    throw new RuntimeException("not implemented");
   }
 
   private static List<ParameterInformation> ParameterInfo(AbstractFeature calledFeature)

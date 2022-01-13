@@ -42,7 +42,7 @@ public class FeatureToolTest extends BaseTest
     var ex = FuzionParser.MainOrUniverse(uri1);
     var ast = FeatureTool.AST(ex);
     assertTrue(ast.contains("Call:hasInterval"));
-    assertTrue(ast.contains("Call:called feature not know"));
+    assertTrue(ast.contains("Call:called feature unknown"));
   }
 
   @Test

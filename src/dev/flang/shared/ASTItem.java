@@ -32,12 +32,12 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
-import dev.flang.ast.Call;
-import dev.flang.ast.Case;
 import dev.flang.ast.Cond;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
@@ -48,6 +48,7 @@ import dev.flang.ast.Impl;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
+import dev.flang.ast.Types;
 import dev.flang.util.SourcePosition;
 
 public class ASTItem
@@ -61,13 +62,13 @@ public class ASTItem
           {
             return "";
           }
-        if (item instanceof Call c)
+        if (item instanceof AbstractCall c)
           {
-            if (c.calledFeature_ != null)
+            if (Types.t_ERROR.compareTo(c.type()) == 0)
               {
-                return c.calledFeature().qualifiedName();
+                return "called feature unknown";
               }
-            return "called feature not know.";
+            return c.calledFeature().qualifiedName();
           }
         if (item instanceof Assign a)
           {
@@ -113,9 +114,9 @@ public class ASTItem
       {
         return Optional.ofNullable(((Generic) entry)._pos);
       }
-    if (entry instanceof Case)
+    if (entry instanceof AbstractCase)
       {
-        return Optional.ofNullable(((Case) entry).pos());
+        return Optional.ofNullable(((AbstractCase) entry).pos());
       }
     if (entry instanceof InlineArray)
       {

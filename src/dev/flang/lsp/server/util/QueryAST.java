@@ -39,8 +39,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Call;
-import dev.flang.ast.Type;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.shared.ASTItem;
 import dev.flang.shared.ASTWalker;
@@ -67,8 +66,8 @@ public class QueryAST
     var baseFeature = FuzionParser.MainOrUniverse(LSP4jUtils.getUri(params));
     return ASTWalker.Traverse(baseFeature)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
-      .filter(entry -> entry.getKey() instanceof Call)
-      .map(entry -> new SimpleEntry<Call, AbstractFeature>((Call) entry.getKey(), entry.getValue()))
+      .filter(entry -> entry.getKey() instanceof AbstractCall)
+      .map(entry -> new SimpleEntry<AbstractCall, AbstractFeature>((AbstractCall) entry.getKey(), entry.getValue()))
       .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
       .map(entry -> entry.getKey())
@@ -82,9 +81,9 @@ public class QueryAST
       .findFirst();
   }
 
-  private static Optional<AbstractFeature> CalledFeature(Call c)
+  private static Optional<AbstractFeature> CalledFeature(AbstractCall c)
   {
-    if (c.calledFeature_ == null)
+    if (c.calledFeature() == null)
       {
         return Optional.empty();
       }
@@ -110,11 +109,11 @@ public class QueryAST
    * @param feature
    * @return all calls to this feature
    */
-  public static Stream<Call> CallsTo(AbstractFeature feature)
+  public static Stream<AbstractCall> CallsTo(AbstractFeature feature)
   {
     return FeatureTool.universe(feature)
       .map(universe -> {
-        return AllOf(universe, Call.class)
+        return AllOf(universe, AbstractCall.class)
           .filter(call -> CalledFeature(call)
             .map(f -> f.equals(feature))
             .orElse(false));
@@ -125,7 +124,7 @@ public class QueryAST
   private static Stream<Object> CallsAndFeaturesAt(TextDocumentPositionParams params)
   {
     return ASTItemsBeforeOrAtCursor(params)
-      .filter(item -> Util.HashSetOf(AbstractFeature.class, Call.class)
+      .filter(item -> Util.HashSetOf(AbstractFeature.class, AbstractCall.class)
         .stream()
         .anyMatch(cl -> cl.isAssignableFrom(item.getClass())));
   }
@@ -138,9 +137,9 @@ public class QueryAST
   {
     var token = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params));
     return CallsAndFeaturesAt(params).map(callOrFeature -> {
-      if (callOrFeature instanceof Call && CalledFeature((Call) callOrFeature).isPresent())
+      if (callOrFeature instanceof AbstractCall && CalledFeature((AbstractCall) callOrFeature).isPresent())
         {
-          return CalledFeature((Call) callOrFeature).get();
+          return CalledFeature((AbstractCall) callOrFeature).get();
         }
       return (AbstractFeature) callOrFeature;
     })
@@ -284,11 +283,11 @@ public class QueryAST
     return FeatureTool.DeclaredFeaturesRecursive(baseFeature);
   }
 
-  public static Optional<Call> callAt(TextDocumentPositionParams params)
+  public static Optional<AbstractCall> callAt(TextDocumentPositionParams params)
   {
-    Optional<Call> call = ASTItemsBeforeOrAtCursor(params)
-      .filter(item -> Util.HashSetOf(Call.class).stream().anyMatch(cl -> cl.isAssignableFrom(item.getClass())))
-      .map(c -> (Call) c)
+    Optional<AbstractCall> call = ASTItemsBeforeOrAtCursor(params)
+      .filter(item -> Util.HashSetOf(AbstractCall.class).stream().anyMatch(cl -> cl.isAssignableFrom(item.getClass())))
+      .map(c -> (AbstractCall) c)
       .findFirst();
     return call;
   }
@@ -307,11 +306,11 @@ public class QueryAST
           {
             return f;
           }
-        if (astItem instanceof Call c)
+        if (astItem instanceof AbstractCall c)
           {
             return c.calledFeature().qualifiedName().startsWith("sys.array.index") ? null: c.calledFeature();
           }
-        if (astItem instanceof Type t)
+        if (astItem instanceof AbstractType t)
           {
             return t.featureOfType();
           }

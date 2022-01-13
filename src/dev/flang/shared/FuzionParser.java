@@ -115,22 +115,7 @@ public class FuzionParser extends ANY
   private synchronized static ParserCacheRecord getParserCacheRecord(URI uri)
   {
     var sourceText = SourceText.getText(uri);
-
-    var result = parserCache.computeIfAbsent(sourceText, st -> computeParserCache(uri, true));
-    // NYI remove this. restores Types.resolved
-    Types.resolved = result.resolved();
-    return result;
-  }
-
-  private static ParserCacheRecord computeParserCache(URI uri, boolean clearAfterParsing)
-  {
-    var parserCacheRecord = createParserCacheRecord(uri);
-    // NYI
-    if (clearAfterParsing)
-      {
-        ClearStaticallyHeldStuffInFuzionCompiler();
-      }
-    return parserCacheRecord;
+    return parserCache.computeIfAbsent(sourceText, st -> createParserCacheRecord(uri));
   }
 
   /**
@@ -163,20 +148,14 @@ public class FuzionParser extends ANY
   private static void ClearStaticallyHeldStuffInFuzionCompiler()
   {
     Errors.clear();
-    Types.reset();
     FeatureName.clear();
     Clazzes.clear();
   }
 
   private static Optional<FUIR> FUIR(URI uri)
   {
-    // NYI remove this once unnecessary
-    Interpreter.clear();
-    Instance.universe = null;
-    ChoiceIdAsRef.preallocated_.clear();
-
     // NYI remove recreation of MIR
-    var parserCacheRecord = computeParserCache(uri, false);
+    var parserCacheRecord = createParserCacheRecord(uri);
 
     if (Errors.count() > 0)
       {
@@ -187,9 +166,6 @@ public class FuzionParser extends ANY
       new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(),
         parserCacheRecord.frontEnd().module())
           .air();
-
-    // NYI remove this once unnecessary
-    Instance.universe = new Instance(Clazzes.universe.get());
 
     var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir();
     return Optional.of(fuir);
