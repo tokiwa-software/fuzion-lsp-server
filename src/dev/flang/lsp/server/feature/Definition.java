@@ -55,12 +55,12 @@ public class Definition
     return getDefinition(feature.get());
   }
 
-  private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(AbstractFeature obj)
+  private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(AbstractFeature af)
 	{
-    if(FeatureTool.IsAnonymousInnerFeature(obj)){
-      return getDefinition(obj.outer());
+    if(FeatureTool.IsAnonymousInnerFeature(af)){
+      return getDefinition(af.outer());
     }
-    Location location = Bridge.ToLocation(obj.pos());
+    Location location = Bridge.ToLocation(af.pos());
     return Either.forLeft(Arrays.asList(location));
 	}
 
