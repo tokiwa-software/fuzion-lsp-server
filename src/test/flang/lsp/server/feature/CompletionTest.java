@@ -94,7 +94,7 @@ public class CompletionTest extends BaseTest
       asString
       asString(${1:sep})
       before(${1:f})
-      concatLists(${1:s})
+      concatSequences(${1:s})
       count
       cycle
       drop(${1:n})
@@ -113,7 +113,7 @@ public class CompletionTest extends BaseTest
       insert(${1:at}, ${2:v})
       isEmpty
       last
-      mapList<${2:B}>(${1:f})
+      mapSequence<${2:B}>(${1:f})
       postfix |
       slice(${1:from}, ${2:to})
       tails

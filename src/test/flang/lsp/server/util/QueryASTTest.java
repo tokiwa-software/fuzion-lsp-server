@@ -313,10 +313,10 @@ public class QueryASTTest extends ExtendedBaseTest
       Function
       HelloWorld
       InitArray
-      List
-      Lists
       Monoid
       Object
+      Sequence
+      Sequences
       Set
       TRUE
       analysis
@@ -357,6 +357,8 @@ public class QueryASTTest extends ExtendedBaseTest
       hashMap
       hashMap
       i128
+      i128
+      i128s
       i16
       i16
       i16s
