@@ -48,15 +48,7 @@ class SourceTextTest extends BaseTest
   @Test
   public void SourceTextStdLibFile()
   {
-    var CommentExample = """
-      myFeat is
-      """;
-    SourceText.setText(uri1, CommentExample);
-    var yak = FuzionParser
-      .DeclaredFeatures(FuzionParser.universe(uri1))
-      .filter(f -> f.featureName().baseName().equals("yak"))
-      .findFirst()
-      .get();
+    var yak = DeclaredInUniverse("yak", 1);
     var sourceText = SourceText.getText(yak.pos());
     assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
   }

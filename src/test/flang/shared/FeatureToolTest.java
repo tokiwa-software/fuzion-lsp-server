@@ -69,15 +69,8 @@ public class FeatureToolTest extends BaseTest
   @Test
   public void CommentOfStdLibFeature()
   {
-    var CommentExample = """
-      myFeat is
-      """;
-    SourceText.setText(uri1, CommentExample);
-    var yak = FuzionParser
-      .DeclaredFeatures(FuzionParser.universe(uri1))
-      .filter(f -> f.featureName().baseName().endsWith("yak"))
-      .findFirst()
-      .get();
+    var yak = DeclaredInUniverse("yak", 1);
+
     assertEquals(
       "A handy shortcut for stdout.print, output string representation of" + System.lineSeparator()
         + "an object, do not add a line break at the end." + System.lineSeparator(),

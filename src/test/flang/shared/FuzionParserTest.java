@@ -87,11 +87,7 @@ public class FuzionParserTest extends BaseTest
   @Test
   public void EndOfFeatureStdLib()
   {
-    SourceText.setText(uri1, HelloWorld);
-    var yak = FuzionParser.DeclaredFeatures(FuzionParser.universe(uri1))
-      .filter(x -> x.featureName().baseName().equals("yak"))
-      .findFirst()
-      .get();
+    var yak = DeclaredInUniverse("yak", 1);
     assertEquals(30, FuzionParser.endOfFeature(yak)._line);
     assertEquals(1, FuzionParser.endOfFeature(yak)._column);
   }

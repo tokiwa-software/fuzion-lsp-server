@@ -32,6 +32,8 @@ import java.nio.file.Path;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.shared.FuzionParser;
 import dev.flang.shared.IO;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -99,6 +101,21 @@ public abstract class BaseTest extends Assert
   protected static SourcePosition CursorPosition(URI uri, int line, int column)
   {
     return new SourcePosition(new SourceFile(Path.of(uri)), line, column);
+  }
+
+  protected static AbstractFeature Universe()
+  {
+    return FuzionParser.universe(Path.of("./fuzion/build/lib/unit.fz").toUri());
+  }
+
+  protected static AbstractFeature DeclaredInUniverse(String name, int argCount)
+  {
+    return FuzionParser
+      .DeclaredFeatures(Universe())
+      .filter(f -> f.featureName().baseName().endsWith(name))
+      .filter(f -> f.arguments().size() == argCount)
+      .findFirst()
+      .get();
   }
 
   @BeforeAll
