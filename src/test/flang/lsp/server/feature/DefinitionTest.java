@@ -52,8 +52,7 @@ public class DefinitionTest extends ExtendedBaseTest
 
         assertTrue(sayUri.endsWith("lib/say.fz"));
         assertEquals(28, sayStartPosition.getLine());
-        // NYI pending fix in fuzion
-        // assertEquals(0, sayStartPosition.getCharacter());
+        assertEquals(0, sayStartPosition.getCharacter());
 
         /**
          * `say(s ref Object) => stdout.┋println s`
@@ -66,7 +65,6 @@ public class DefinitionTest extends ExtendedBaseTest
 
         assertTrue(printlnLocation.getUri().endsWith("lib/fuzion/std/out.fz"));
         assertEquals(32, printlnLocation.getRange().getStart().getLine());
-        // NYI pending fix in fuzion
-        // assertEquals(0, printlnLocation.getRange().getStart().getCharacter());
+        assertEquals(2, printlnLocation.getRange().getStart().getCharacter());
     }
 }

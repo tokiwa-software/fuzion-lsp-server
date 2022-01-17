@@ -83,6 +83,7 @@ public class Completion
       {
         return completions(QueryAST.CallCompletionsAt(params));
       }
+    // NYI broken
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
       {
         return completions(QueryAST.CompletionsAt(params));
