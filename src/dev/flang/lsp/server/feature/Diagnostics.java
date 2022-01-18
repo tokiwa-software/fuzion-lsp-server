@@ -54,7 +54,7 @@ public class Diagnostics
     Config.languageClient().publishDiagnostics(diagnostics);
   }
 
-  private static Stream<Diagnostic> getDiagnostics(URI uri)
+  public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     var errorDiagnostics = FuzionParser.Errors(uri).filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
         var message = error.msg + System.lineSeparator() + error.detail;
