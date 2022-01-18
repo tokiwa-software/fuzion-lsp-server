@@ -30,10 +30,16 @@ package test.flang.lsp.server.util;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import javax.xml.transform.Source;
+
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.ast.AbstractCall;
+import dev.flang.lsp.server.util.Bridge;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
@@ -160,7 +166,7 @@ public class QueryASTTest extends ExtendedBaseTest
 
   @Test
   // NYI failing...
-  public void FeatureAtResult()
+  public void FeatureAtResultType()
   {
     var sourceText = """
       isGreaterThan(x, y i32) bool is
@@ -209,6 +215,16 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals("apple", apple.featureName().baseName());
     var pear = QueryAST.FeatureAt(Cursor(uri1, 3, 18)).get();
     assertEquals("pear", pear.featureName().baseName());
+  }
+
+  @Test
+  // NYI failing
+  public void FeatureAtInheritanceDeclaration()
+  {
+    var sourceText = "i33 : wrappingInteger<i33> is";
+    SourceText.setText(uri1, sourceText);
+    var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 6)).get();
+    assertEquals("wrappingInteger", wrappingInteger.featureName().baseName());
   }
 
   @Test
