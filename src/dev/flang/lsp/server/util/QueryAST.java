@@ -133,7 +133,7 @@ public class QueryAST
    * @param params
    * @return feature at textdocumentposition or empty
    */
-  public static Optional<AbstractFeature> Feature(TextDocumentPositionParams params)
+  public static Optional<AbstractFeature> DeclaredOrCalledFeature(TextDocumentPositionParams params)
   {
     var token = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params));
     return CallsAndFeaturesAt(params).map(callOrFeature -> {

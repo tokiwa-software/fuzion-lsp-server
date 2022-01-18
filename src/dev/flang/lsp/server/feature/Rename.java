@@ -70,7 +70,7 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
-    var feature = QueryAST.Feature(params);
+    var feature = QueryAST.DeclaredOrCalledFeature(params);
     if (feature.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
