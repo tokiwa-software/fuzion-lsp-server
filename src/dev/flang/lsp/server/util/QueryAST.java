@@ -44,6 +44,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.shared.ASTItem;
 import dev.flang.shared.ASTWalker;
+import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
@@ -169,6 +170,7 @@ public class QueryAST
 
         // subtract redefined features from result
         // NYI what to do with infix, prefix, postfix?
+        // NYI do we need to filter abstract features?
         return declaredFeatures
           .stream()
           .filter(x -> !redefinedFeatures.contains(x));
@@ -320,7 +322,7 @@ public class QueryAST
           }
         if (astItem instanceof AbstractCall c)
           {
-            return c.calledFeature().qualifiedName().startsWith("sys.array.index") ? null: c.calledFeature();
+            return ErrorHandling.ResultOrDefault(() -> c.calledFeature(), null);
           }
         if (astItem instanceof AbstractType t)
           {

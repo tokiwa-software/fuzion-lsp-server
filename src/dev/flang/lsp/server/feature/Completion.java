@@ -131,15 +131,11 @@ public class Completion
         return feature.featureName().baseName();
       }
 
-    var arguments = feature.arguments().isEmpty()
-                                                  ? ""
-                                                  : "(" + getArguments(feature.arguments()) + ")";
-
     var _generics = getGenerics(feature);
 
     var generics = genericsSnippet(feature, _generics);
 
-    return feature.featureName().baseName() + generics + arguments;
+    return feature.featureName().baseName() + generics + getArguments(feature.arguments());
   }
 
   /**
@@ -167,13 +163,21 @@ public class Completion
       .range(0, arguments.size())
       .<String>mapToObj(index -> {
         var argument = arguments.get(index).thisType().featureOfType();
-        if (argument.isField())
+        if (!argument.resultType().isFunType())
           {
-            return "${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
+            return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
           }
-        return "${" + (index + 1) + ":} ->";
+
+        // NYI ${i:□}
+        return " (" +
+          IntStream.range(1, argument.resultType().generics().size())
+            .<String>mapToObj(
+              x -> "□")
+            .collect(Collectors.joining(", "))
+          + " -> " + "□" + ")";
+
       })
-      .collect(Collectors.joining(", "));
+      .collect(Collectors.joining());
   }
 
   /**

@@ -78,42 +78,42 @@ public class CompletionTest extends ExtendedBaseTest
       asList
       asStream
       asString
-      contains(${1:e})
-      forAll(${1:f})
-      infix :(${1:step})
+      contains ${1:e}
+      forAll (□ -> □)
+      infix : ${1:step}
       lower
-      map<${2:B}>(${1:f})
+      map<${2:B}> (□ -> □)
       size
       upper
       sizeOption
       asArray
-      asString(${1:sep})
-      before(${1:f})
-      concatSequences(${1:s})
+      asString ${1:sep}
+      before (□ -> □)
+      concatSequences ${1:s}
       count
       cycle
-      drop(${1:n})
-      dropWhile(${1:p})
-      filter(${1:f})
+      drop ${1:n}
+      dropWhile (□ -> □)
+      filter (□ -> □)
       first
-      fold(${1:m})
-      forWhile(${1:f})
-      infix &(${1:f})
-      infix ++(${1:s})
-      infix |(${1:f})
-      infix |&(${1:f})
-      infix ∀(${1:f})
-      infix ∃(${1:f})
-      insert(${1:at}, ${2:v})
+      fold ${1:m}
+      forWhile (□ -> □)
+      infix & (□ -> □)
+      infix ++ ${1:s}
+      infix | (□ -> □)
+      infix |& (□ -> □)
+      infix ∀ (□ -> □)
+      infix ∃ (□ -> □)
+      insert ${1:at} ${2:v}
       isEmpty
       last
-      mapSequence<${2:B}>(${1:f})
+      mapSequence<${2:B}> (□ -> □)
       postfix |
-      slice(${1:from}, ${2:to})
+      slice ${1:from} ${2:to}
       tails
-      take(${1:n})
-      takeWhile(${1:p})
-      zip<${3:U}, ${4:V}>(${1:b}, ${2:f})
+      take ${1:n}
+      takeWhile (□ -> □)
+      zip<${3:U}, ${4:V}> ${1:b} (□, □ -> □)
       hashCode
       prefix $""";
     var actual = Completion.getCompletions(params(uri1, 1, 9))
