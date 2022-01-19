@@ -83,10 +83,11 @@ public class Completion
       {
         return completions(QueryAST.CallCompletionsAt(params));
       }
-    // NYI broken
     if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
       {
-        return completions(QueryAST.CompletionsAt(params));
+        // NYI broken
+        // return completions(QueryAST.CompletionsAt(params));
+        return completions(Stream.empty());
       }
 
     // NYI FIXME we need to move the cursor one step back

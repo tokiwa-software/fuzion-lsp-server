@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Position;
@@ -156,10 +157,21 @@ public class QueryAST
         return x.featureOfType();
       })
       .map(feature -> {
-        var featuresViaInheritance =
+        var declaredFeaturesOfInheritedFeatures =
           InheritedRecursive(feature).flatMap(c -> FuzionParser.DeclaredFeatures(c.calledFeature()));
-        return Stream.concat(FuzionParser
-          .DeclaredFeatures(feature), featuresViaInheritance);
+
+        var declaredFeatures = Stream.concat(FuzionParser
+          .DeclaredFeatures(feature), declaredFeaturesOfInheritedFeatures)
+          .collect(Collectors.toList());
+
+        var redefinedFeatures =
+          declaredFeatures.stream().flatMap(x -> x.redefines().stream()).collect(Collectors.toSet());
+
+        // subtract redefined features from result
+        // NYI what to do with infix, prefix, postfix?
+        return declaredFeatures
+          .stream()
+          .filter(x -> !redefinedFeatures.contains(x));
       })
       .orElse(Stream.empty());
   }

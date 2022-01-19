@@ -87,16 +87,23 @@ public class ASTWalker
     // statically held Types.resolved.f_choice which may have been cleared
     // already.
     // We may remove wrapper ResultOrDefault in the future if this changes.
-    if (ErrorHandling.ResultOrDefault(() -> feature.isRoutine(), false))
+    if (ErrorHandling.ResultOrDefault(() -> feature.isRoutine(), true))
       {
         TraverseExpression(feature.code(), feature, callback);
       }
+
+    feature.contract().req.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
+    feature.contract().ens.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
+    feature.contract().inv.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
+
+    //NYI do we need to traverse choicetag?    
 
     FuzionParser.DeclaredFeatures(feature, true)
       .forEach(f -> TraverseFeature(f, callback));
   }
 
-  private static void TraverseCase(AbstractCase c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
+  private static void TraverseCase(AbstractCase c, AbstractFeature outer,
+    BiFunction<Object, AbstractFeature, Boolean> callback)
   {
     TraverseBlock(c.code(), outer, callback);
   }
@@ -196,7 +203,8 @@ public class ASTWalker
     throw new RuntimeException("TraverseExpression not implemented for: " + expr.getClass());
   }
 
-  private static void TraverseCall(AbstractCall c, AbstractFeature outer, BiFunction<Object, AbstractFeature, Boolean> callback)
+  private static void TraverseCall(AbstractCall c, AbstractFeature outer,
+    BiFunction<Object, AbstractFeature, Boolean> callback)
   {
     if (!callback.apply(c, outer))
       {

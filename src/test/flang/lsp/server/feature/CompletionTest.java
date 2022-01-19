@@ -37,10 +37,11 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.SourceText;
-import test.flang.shared.BaseTest;
+import test.flang.lsp.server.ExtendedBaseTest;
 
-public class CompletionTest extends BaseTest
+public class CompletionTest extends ExtendedBaseTest
 {
   private static final String ListCompletion = """
     fasta =>
@@ -84,13 +85,8 @@ public class CompletionTest extends BaseTest
       map<${2:B}>(${1:f})
       size
       upper
-      asList
-      contains
       sizeOption
       asArray
-      asList
-      asStream
-      asString
       asString(${1:sep})
       before(${1:f})
       concatSequences(${1:s})
@@ -101,7 +97,6 @@ public class CompletionTest extends BaseTest
       filter(${1:f})
       first
       fold(${1:m})
-      forAll(${1:f})
       forWhile(${1:f})
       infix &(${1:f})
       infix ++(${1:s})
@@ -119,7 +114,6 @@ public class CompletionTest extends BaseTest
       take(${1:n})
       takeWhile(${1:p})
       zip<${3:U}, ${4:V}>(${1:b}, ${2:f})
-      asString
       hashCode
       prefix $""";
     var actual = Completion.getCompletions(params(uri1, 1, 9))
@@ -151,6 +145,26 @@ public class CompletionTest extends BaseTest
   {
     return new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri), new Position(line, character),
       new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
+  }
+
+  @Test
+  void CompletionInMatchOfPrecondition()
+  {
+    var sourceText = """
+      towers is
+
+        numOrNil i32|nil := nil
+        s
+          pre
+            match numOrNil
+              nil => true
+              num i32 => num.
+          is""";
+    SourceText.setText(uri1, sourceText);
+    assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 23)).get().featureName().baseName());
+    var completions = Completion.getCompletions(params(uri1, 7, 23));
+    // NYI replace with future proof assertion
+    assertEquals(192, completions.getLeft().size());
   }
 
 }
