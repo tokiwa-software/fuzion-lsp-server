@@ -117,19 +117,6 @@ public class FeatureTool extends ANY
     return f.featureName().baseName().startsWith("#");
   }
 
-  public static Optional<AbstractFeature> universe(AbstractFeature f)
-  {
-    if (f == Types.f_ERROR)
-      {
-        return Optional.empty();
-      }
-    if (f.isUniverse())
-      {
-        return Optional.of(f);
-      }
-    return universe(f.outer());
-  }
-
   static Optional<AbstractFeature> Main(AbstractFeature f)
   {
     if (f.outer() == Types.f_ERROR)

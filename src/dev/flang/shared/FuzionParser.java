@@ -226,28 +226,21 @@ public class FuzionParser extends ANY
 
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
-    return FeatureTool.universe(f).map(universe -> {
-      return parserCache.SourceModule(universe)
-        .declaredOrInheritedFeatures(f)
-        .values()
-        .stream();
-    })
-      .orElse(Stream.empty());
+    return parserCache.SourceModule(f.universe())
+      .declaredOrInheritedFeatures(f)
+      .values()
+      .stream();
   }
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean IncludeAnonymousInnerFeatures)
   {
-    return FeatureTool.universe(f).map(universe -> {
-      return parserCache.SourceModule(universe)
-        .declaredFeatures(f)
-        .values()
-        .stream();
-    })
-      .orElse(Stream.empty())
-      .filter(feat -> IncludeAnonymousInnerFeatures ||
-        !FeatureTool.IsAnonymousInnerFeature(feat));
+    return parserCache.SourceModule(f.universe())
+      .declaredFeatures(f)
+      .values()
+      .stream()
+      .filter(feat -> IncludeAnonymousInnerFeatures
+        || !FeatureTool.IsAnonymousInnerFeature(feat));
   }
-
 
   /**
    * NYI replace by real end of feature once we have this information in the AST
