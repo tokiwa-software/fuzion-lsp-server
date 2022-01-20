@@ -122,7 +122,7 @@ public class Completion
 
   /**
    * @param feature
-   * @return example: psMap<${4:K -> ordered<psMap.K>}, ${5:V}>(${1:data}, ${2:size}, ${3:fill})
+   * @return example: psMap<${4:K -> ordered<psMap.K>}, ${5:V}> ${1:data} ${2:size} ${3:fill})
    */
   private static String getInsertText(AbstractFeature feature)
   {
@@ -155,7 +155,7 @@ public class Completion
 
   /**
    * @param arguments
-   * @return ${1:data}, ${2:size}, ${3:fill}
+   * @return ${1:data} ${2:size} ${3:fill}
    */
   private static String getArguments(List<AbstractFeature> arguments)
   {
