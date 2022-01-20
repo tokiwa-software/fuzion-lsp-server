@@ -33,6 +33,7 @@ import java.util.HashSet;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.TokenInfo;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -151,7 +152,7 @@ public class FuzionLexer
   public static URI toURI(SourcePosition sourcePosition)
   {
     return Path.of(sourcePosition._sourceFile._fileName.toString()
-      .replace("$FUZION", System.getProperty("fuzion.home"))).toUri();
+      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), System.getProperty("fuzion.home"))).toUri();
   }
 
   public static SourceFile ToSourceFile(URI uri)

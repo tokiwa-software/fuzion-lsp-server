@@ -77,4 +77,11 @@ public class FeatureToolTest extends BaseTest
       FeatureTool.CommentOf(yak));
   }
 
+  @Test
+  public void ToLabel()
+  {
+    var array = DeclaredInUniverse("array", 2);
+    assertEquals("array<T>(length i32, init Function<array.T, i32>) => array<array.T> : Object", FeatureTool.ToLabel(array));
+  }
+
 }

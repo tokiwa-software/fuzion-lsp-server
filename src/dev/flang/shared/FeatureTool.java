@@ -114,20 +114,26 @@ public class FeatureTool extends ANY
 
   public static boolean IsAnonymousInnerFeature(AbstractFeature f)
   {
+    // NYI use f.visibility()
     return f.featureName().baseName().startsWith("#");
   }
 
-  static Optional<AbstractFeature> Main(AbstractFeature f)
+  static Optional<AbstractFeature> TopLevelFeature(AbstractFeature f)
   {
-    if (f.outer() == Types.f_ERROR)
+    if (f.isUniverse() || f.outer() == Types.f_ERROR)
       {
         return Optional.empty();
       }
-    if (f.outer().isUniverse())
+    if (f.outer().isUniverse() || !InSameSourceFile(f, f.outer()))
       {
         return Optional.of(f);
       }
-    return Main(f.outer());
+    return TopLevelFeature(f.outer());
+  }
+
+  private static boolean InSameSourceFile(AbstractFeature a, AbstractFeature b)
+  {
+    return a.pos()._sourceFile.toString().equals(b.pos()._sourceFile.toString());
   }
 
   /**
@@ -208,8 +214,7 @@ public class FeatureTool extends ANY
    */
   static boolean IsOfLastFeature(AbstractFeature feature)
   {
-
-    return !IsInternal(feature) && DeclaredFeaturesRecursive(Main(feature).get())
+    return !IsInternal(feature) && DeclaredFeaturesRecursive(TopLevelFeature(feature).get())
       .noneMatch(f -> f.pos()._line > feature.pos()._line
         && f.pos()._column <= feature.pos()._column);
   }
