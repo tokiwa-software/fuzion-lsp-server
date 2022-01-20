@@ -38,21 +38,37 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
 import dev.flang.lsp.server.enums.Commands;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.FeatureTool;
 
 public class CodeLenses
 {
   public static List<CodeLens> getCodeLenses(CodeLensParams params)
   {
     var uri = LSP4jUtils.getUri(params.getTextDocument());
-    return Stream.of(codeLensEvaluateFile(uri), codeLensShowSyntaxTree(params))
+    return Stream.concat(Stream.of(codeLensEvaluateFile(uri), codeLensShowSyntaxTree(uri)), codeLensesCallGraph(uri))
       .collect(Collectors.toList());
   }
 
-  private static CodeLens codeLensShowSyntaxTree(CodeLensParams params)
+  private static Stream<CodeLens> codeLensesCallGraph(URI uri)
+  {
+    return QueryAST.DeclaredFeaturesRecursive(uri)
+      .filter(f -> !(f.isField() || FeatureTool.IsArgument(f) || FeatureTool.IsAnonymousInnerFeature(f)
+        || FeatureTool.IsInternal(f)))
+      .map(f -> {
+        var command =
+          new Command(Commands.callGraph.toString(), Commands.callGraph.name(),
+            List.of(uri.toString(), FeatureTool.UniqueIdentifier(f)));
+        return new CodeLens(Bridge.ToRange(f), command, null);
+      });
+  }
+
+  private static CodeLens codeLensShowSyntaxTree(URI uri)
   {
     var command = new Command(Commands.showSyntaxTree.toString(), Commands.showSyntaxTree.name(),
-      List.of(params.getTextDocument().getUri()));
+      List.of(uri.toString()));
     return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)), command, null);
   }
 

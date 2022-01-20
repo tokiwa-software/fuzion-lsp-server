@@ -102,7 +102,7 @@ public class Rename
   {
     var callsSourcePositions = QueryAST
       .CallsTo(featureToRename)
-      .map(c -> c.pos())
+      .map(entry -> entry.getKey().pos())
       .map(pos -> {
         if (IsAtFunKeyword(pos))
           {

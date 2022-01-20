@@ -37,10 +37,12 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ShowDocumentParams;
 
+import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.FuzionLanguageClient;
 import dev.flang.lsp.server.enums.Commands;
 import dev.flang.lsp.server.util.Computation;
+import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
@@ -52,19 +54,63 @@ public class Command
 {
   public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
   {
-    var uri = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
+    var arg0 = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
 
     switch (Commands.valueOf(params.getCommand()))
       {
       case showSyntaxTree :
-        Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
+        Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(arg0)));
         return Computation.Compute(() -> null);
       case run :
-        Concurrency.RunInBackground(() -> evaluate(Util.toURI(uri)));
+        Concurrency.RunInBackground(() -> evaluate(Util.toURI(arg0)));
+        return Computation.Compute(() -> null);
+      case callGraph :
+        var arg1 = ((JsonPrimitive) params.getArguments().get(1)).getAsString();
+        Concurrency.RunInBackground(() -> CallGraph(arg0, arg1));
         return Computation.Compute(() -> null);
       default:
         ErrorHandling.WriteStackTrace(new Exception("not implemented"));
         return Computation.Compute(() -> null);
+      }
+  }
+
+  private static void CallGraph(String arg0, String arg1)
+  {
+    var feature = QueryAST.AllOf(FuzionParser.universe(Util.toURI(arg0)), AbstractFeature.class)
+      .map(e -> e.getKey())
+      .filter(f -> FeatureTool.UniqueIdentifier(f).equals(arg1))
+      .findFirst()
+      .get();
+    var callGraph = FeatureTool.CallGraph(feature);
+    var file = IO.writeToTempFile(callGraph, String.valueOf(System.currentTimeMillis()), ".fuzion.dot");
+    try
+      {
+        // generate png
+        (new ProcessBuilder(("dot -Tpng -o output.png " + file.toString()).split(" ")))
+          .directory(file.getParentFile())
+          .start()
+          .waitFor();
+        try
+          {
+            // first try: image magick
+            (new ProcessBuilder("display output.png".split(" ")))
+              .directory(file.getParentFile())
+              .start();
+          }
+        catch (Exception e)
+          {
+            // try again with xdg-open
+            (new ProcessBuilder("xdg-open output.png".split(" ")))
+              .directory(file.getParentFile())
+              .start();
+          }
+      }
+    catch (Exception e)
+      {
+        Config.languageClient()
+          .showMessage(new MessageParams(MessageType.Warning,
+            "Display of call graph failed. Do you have graphviz and imagemagick installed?"));
+        Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
       }
   }
 

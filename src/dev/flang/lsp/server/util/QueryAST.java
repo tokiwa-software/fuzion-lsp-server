@@ -94,27 +94,27 @@ public class QueryAST
 
 
   /**
-   * example: AllOf(uri, Call.class) returns all Calls
+   * example: AllOf(feature, Call.class) returns all Calls
    * @param <T>
    * @param classOfT
    * @return
    */
-  public static <T extends Object> Stream<T> AllOf(AbstractFeature feature, Class<T> classOfT)
+  public static <T extends Object> Stream<SimpleEntry<T, AbstractFeature>> AllOf(AbstractFeature start,
+    Class<T> classOfT)
   {
-    return ASTWalker.Traverse(feature)
-      .map(e -> e.getKey())
-      .filter(obj -> classOfT.isAssignableFrom(obj.getClass()))
-      .map(obj -> (T) obj);
+    return ASTWalker.Traverse(start)
+      .filter(entry -> classOfT.isAssignableFrom(entry.getKey().getClass()))
+      .map(obj -> new SimpleEntry<>((T) obj.getKey(), obj.getValue()));
   }
 
   /**
    * @param feature
-   * @return all calls to this feature
+   * @return all calls to this feature and the feature those calls are happening in
    */
-  public static Stream<AbstractCall> CallsTo(AbstractFeature feature)
+  public static Stream<SimpleEntry<AbstractCall, AbstractFeature>> CallsTo(AbstractFeature feature)
   {
     return AllOf(feature.universe(), AbstractCall.class)
-      .filter(call -> CalledFeature(call)
+      .filter(entry -> CalledFeature(entry.getKey())
         .map(f -> f.equals(feature))
         .orElse(false));
   }

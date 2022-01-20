@@ -50,7 +50,7 @@ public class References
         return List.of();
       }
     return QueryAST.CallsTo(feature.get())
-      .map(call -> Bridge.ToLocation(call.pos()))
+      .map(entry -> Bridge.ToLocation(entry.getKey().pos()))
       .collect(Collectors.toList());
   }
 

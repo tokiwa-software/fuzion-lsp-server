@@ -70,6 +70,7 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals("say", QueryAST
       .AllOf(FuzionParser
         .MainOrUniverse(uri1), AbstractCall.class)
+      .map(x -> x.getKey())
       .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
       .findFirst()
       .get()

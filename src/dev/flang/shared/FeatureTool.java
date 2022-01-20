@@ -30,12 +30,15 @@ package dev.flang.shared;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
+import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
@@ -222,8 +225,50 @@ public class FeatureTool extends ANY
   public static boolean IsInternal(AbstractFeature f)
   {
     // NYI maybe there is a better way?
-    return Util.HashSetOf("Object", "Function", "call").contains(f.featureName().baseName());
+    return Util.HashSetOf("Object", "Function", "call", "result").contains(f.featureName().baseName());
   }
 
+  private static Set<AbstractFeature> Callers(AbstractFeature f)
+  {
+    return QueryAST.CallsTo(f).map(x -> x.getValue()).collect(Collectors.toSet());
+  }
+
+  private static Set<AbstractFeature> Callees(AbstractFeature f)
+  {
+    return ASTWalker.Traverse(f, false)
+      .map(e -> e.getKey())
+      .filter(obj -> AbstractCall.class.isAssignableFrom(obj.getClass()))
+      .<AbstractFeature>map(obj -> ((AbstractCall) obj).calledFeature())
+      .collect(Collectors.toSet());
+  }
+
+  // NYI add heuristic for depth of call graph and optionally go deeper than just one level
+  // NYI better filtering of callers and callees
+  public static String CallGraph(AbstractFeature f)
+  {
+    var sb = new StringBuilder("digraph {" + System.lineSeparator());
+    for(AbstractFeature caller : Callers(f))
+      {
+        sb.append(
+          "  " + Quoute(caller.qualifiedName()) + " -> " + Quoute(f.qualifiedName()) + ";" + System.lineSeparator());
+      }
+    for(AbstractFeature callee : Callees(f))
+      {
+        sb.append(
+          "  " + Quoute(f.qualifiedName()) + " -> " + Quoute(callee.qualifiedName()) + ";" + System.lineSeparator());
+      }
+    sb.append("}");
+    return sb.toString();
+  }
+
+  private static String Quoute(String qualifiedName)
+  {
+    return "\"" + qualifiedName + "\"";
+  }
+
+  public static String UniqueIdentifier(AbstractFeature f)
+  {
+    return f.qualifiedName() + f.arguments().size();
+  }
 
 }

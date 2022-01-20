@@ -64,16 +64,22 @@ public class ASTWalker
    */
   public static Stream<Entry<Object, AbstractFeature>> Traverse(AbstractFeature start)
   {
+    return Traverse(start, true);
+  }
+
+  public static Stream<Entry<Object, AbstractFeature>> Traverse(AbstractFeature start, boolean descend)
+  {
     var result = new HashMap<Object, AbstractFeature>();
     TraverseFeature(start, (item, outer) -> {
       var isAlreadyPresent = result.containsKey(item);
       result.put(item, outer);
       return !isAlreadyPresent;
-    });
+    }, descend);
     return result.entrySet().stream();
   }
 
-  private static void TraverseFeature(AbstractFeature feature, BiFunction<Object, AbstractFeature, Boolean> callback)
+  private static void TraverseFeature(AbstractFeature feature, BiFunction<Object, AbstractFeature, Boolean> callback,
+    boolean descend)
   {
     if (!callback.apply(feature, feature.outer()))
       {
@@ -81,7 +87,7 @@ public class ASTWalker
       }
     feature.arguments()
       .stream()
-      .forEach(f -> TraverseFeature(f, callback));
+      .forEach(f -> TraverseFeature(f, callback, false));
 
     // feature.isRoutine() sometimes throws because it depends on
     // statically held Types.resolved.f_choice which may have been cleared
@@ -96,10 +102,13 @@ public class ASTWalker
     feature.contract().ens.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
     feature.contract().inv.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
 
-    //NYI do we need to traverse choicetag?    
+    // NYI do we need to traverse choicetag?
 
-    FuzionParser.DeclaredFeatures(feature, true)
-      .forEach(f -> TraverseFeature(f, callback));
+    if (descend)
+      {
+        FuzionParser.DeclaredFeatures(feature, true)
+          .forEach(f -> TraverseFeature(f, callback, descend));
+      }
   }
 
   private static void TraverseCase(AbstractCase c, AbstractFeature outer,
@@ -113,7 +122,7 @@ public class ASTWalker
   {
     if (ASTItem.IsAbstractFeature(s))
       {
-        TraverseFeature((AbstractFeature) s, callback);
+        TraverseFeature((AbstractFeature) s, callback, false);
         return;
       }
     if (s instanceof Expr expr)

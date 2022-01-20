@@ -29,18 +29,20 @@ package dev.flang.lsp.server.enums;
 public enum Commands
 {
   showSyntaxTree,
-  run;
+  run, callGraph;
 
   public String toString()
   {
     switch (this)
       {
-        case showSyntaxTree :
-          return "Show Syntax Tree";
-        case run :
-          return "Run";
-        default:
-          return "not implemented";
+      case showSyntaxTree :
+        return "Show Syntax Tree";
+      case run :
+        return "Run";
+      case callGraph :
+        return "Call Graph";
+      default:
+        return "not implemented";
       }
   }
 }

@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.shared;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import dev.flang.shared.FeatureTool;
@@ -81,7 +83,23 @@ public class FeatureToolTest extends BaseTest
   public void ToLabel()
   {
     var array = DeclaredInUniverse("array", 2);
-    assertEquals("array<T>(length i32, init Function<array.T, i32>) => array<array.T> : Object", FeatureTool.ToLabel(array));
+    assertEquals("array<T>(length i32, init Function<array.T, i32>) => array<array.T> : Object",
+      FeatureTool.ToLabel(array));
+  }
+
+  @Test
+  public void CallGraph()
+  {
+    var f = DeclaredInUniverse("yak", 1);
+    var graph = FeatureTool.CallGraph(f);
+
+    var expected = List.of("""
+      "yak" -> "stdout";
+      """, """
+      .call" -> "yak";
+      """);
+
+    assertTrue(expected.stream().allMatch(e -> graph.contains(e)));
   }
 
 }
