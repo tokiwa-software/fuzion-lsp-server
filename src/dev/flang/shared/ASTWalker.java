@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
@@ -231,6 +232,19 @@ public class ASTWalker
   private static boolean IsSameSourceFile(Expr e, AbstractFeature outer)
   {
     return e.pos()._sourceFile.equals(outer.pos()._sourceFile);
+  }
+
+  /**
+   * @param start
+   * @return any calls - and their outer features - happening in feature start or descending features of start
+   */
+  public static Stream<SimpleEntry<AbstractCall, AbstractFeature>> Calls(AbstractFeature start)
+  {
+    return Traverse(start)
+      .filter(entry -> {
+        return AbstractCall.class.isAssignableFrom(entry.getKey().getClass());
+      })
+      .map(obj -> new SimpleEntry<>((AbstractCall) obj.getKey(), obj.getValue()));
   }
 
 }

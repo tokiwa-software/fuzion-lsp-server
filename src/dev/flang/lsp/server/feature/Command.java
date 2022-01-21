@@ -37,12 +37,10 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ShowDocumentParams;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.FuzionLanguageClient;
 import dev.flang.lsp.server.enums.Commands;
 import dev.flang.lsp.server.util.Computation;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
@@ -76,8 +74,8 @@ public class Command
 
   private static void CallGraph(String arg0, String arg1)
   {
-    var feature = QueryAST.AllOf(FuzionParser.universe(Util.toURI(arg0)), AbstractFeature.class)
-      .map(e -> e.getKey())
+    // NYI go to correct feature via more direct way
+    var feature = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.universe(Util.toURI(arg0)))
       .filter(f -> FeatureTool.UniqueIdentifier(f).equals(arg1))
       .findFirst()
       .get();

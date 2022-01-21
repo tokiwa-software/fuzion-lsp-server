@@ -48,4 +48,24 @@ public class ASTWalkerTest extends BaseTest
     SourceText.setText(uri1, sourceText);
     ASTWalker.Traverse(FuzionParser.MainOrUniverse(uri1));
   }
+
+  @Test
+  public void AllOf()
+  {
+    SourceText.setText(uri1, HelloWorld);
+    assertEquals("HelloWorld", FuzionParser
+      .MainOrUniverse(uri1)
+      .featureName()
+      .baseName());
+    assertEquals("say", ASTWalker
+      .Calls(FuzionParser
+        .MainOrUniverse(uri1))
+      .map(x -> x.getKey())
+      .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
+      .findFirst()
+      .get()
+      .calledFeature()
+      .featureName()
+      .baseName());
+  }
 }

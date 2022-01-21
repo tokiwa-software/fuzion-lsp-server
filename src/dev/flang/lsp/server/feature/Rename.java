@@ -48,6 +48,7 @@ import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.Util;
 import dev.flang.shared.records.TokenInfo;
@@ -100,7 +101,7 @@ public class Rename
   private static Stream<SourcePosition> getRenamePositions(AbstractFeature featureToRename,
     TokenInfo featureIdentifier)
   {
-    var callsSourcePositions = QueryAST
+    var callsSourcePositions = FeatureTool
       .CallsTo(featureToRename)
       .map(entry -> entry.getKey().pos())
       .map(pos -> {

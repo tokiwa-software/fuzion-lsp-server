@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
@@ -38,7 +39,6 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
@@ -230,7 +230,7 @@ public class FeatureTool extends ANY
 
   private static Set<AbstractFeature> Callers(AbstractFeature f)
   {
-    return QueryAST.CallsTo(f).map(x -> x.getValue()).collect(Collectors.toSet());
+    return CallsTo(f).map(x -> x.getValue()).collect(Collectors.toSet());
   }
 
   private static Set<AbstractFeature> Callees(AbstractFeature f)
@@ -242,7 +242,8 @@ public class FeatureTool extends ANY
       .collect(Collectors.toSet());
   }
 
-  // NYI add heuristic for depth of call graph and optionally go deeper than just one level
+  // NYI add heuristic for depth of call graph and optionally go deeper than
+  // just one level
   // NYI better filtering of callers and callees
   public static String CallGraph(AbstractFeature f)
   {
@@ -269,6 +270,17 @@ public class FeatureTool extends ANY
   public static String UniqueIdentifier(AbstractFeature f)
   {
     return f.qualifiedName() + f.arguments().size();
+  }
+
+  /**
+   * @param feature
+   * @return all calls to this feature and the feature those calls are happening in
+   */
+  public static Stream<SimpleEntry<AbstractCall, AbstractFeature>> CallsTo(AbstractFeature feature)
+  {
+    return ASTWalker.Calls(feature.universe())
+      .filter(entry -> entry.getKey().calledFeature() != null
+        && entry.getKey().calledFeature().equals(feature));
   }
 
 }

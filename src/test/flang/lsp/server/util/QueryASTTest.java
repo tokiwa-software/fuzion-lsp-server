@@ -30,16 +30,9 @@ package test.flang.lsp.server.util;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import javax.xml.transform.Source;
-
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import dev.flang.ast.AbstractCall;
-import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
-import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
@@ -57,26 +50,6 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri2).count());
     assertEquals(13, QueryAST.DeclaredFeaturesRecursive(uri3).count());
     assertEquals(3, QueryAST.DeclaredFeaturesRecursive(uri4).count());
-  }
-
-  @Test
-  public void AllOf()
-  {
-    SourceText.setText(uri1, HelloWorld);
-    assertEquals("HelloWorld", FuzionParser
-      .MainOrUniverse(uri1)
-      .featureName()
-      .baseName());
-    assertEquals("say", QueryAST
-      .AllOf(FuzionParser
-        .MainOrUniverse(uri1), AbstractCall.class)
-      .map(x -> x.getKey())
-      .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
-      .findFirst()
-      .get()
-      .calledFeature()
-      .featureName()
-      .baseName());
   }
 
   @Test

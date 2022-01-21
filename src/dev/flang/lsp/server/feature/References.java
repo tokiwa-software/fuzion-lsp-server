@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.ReferenceParams;
 
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.FeatureTool;
 
 /**
  * return list of references for feature at cursor position
@@ -49,7 +50,7 @@ public class References
       {
         return List.of();
       }
-    return QueryAST.CallsTo(feature.get())
+    return FeatureTool.CallsTo(feature.get())
       .map(entry -> Bridge.ToLocation(entry.getKey().pos()))
       .collect(Collectors.toList());
   }

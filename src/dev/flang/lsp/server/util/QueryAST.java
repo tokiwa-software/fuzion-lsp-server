@@ -75,48 +75,12 @@ public class QueryAST
       .map(entry -> entry.getKey())
       .filter(c -> LSP4jUtils.ComparePosition(Bridge.ToPosition(CallTool.endOfCall(c)), params.getPosition()) <= 0)
       .sorted(CompareBySourcePosition.reversed())
-      .filter(c -> CalledFeature(c).isPresent())
-      .map(c -> CalledFeature(c).get())
+      .filter(c -> c.calledFeature() != null)
+      .map(c -> c.calledFeature())
       .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
       // NYI in this case we could try to find possibly called features?
       .filter(f -> f.resultType() != Types.t_ERROR)
       .findFirst();
-  }
-
-  private static Optional<AbstractFeature> CalledFeature(AbstractCall c)
-  {
-    if (c.calledFeature() == null)
-      {
-        return Optional.empty();
-      }
-    return Optional.of(c.calledFeature());
-  }
-
-
-  /**
-   * example: AllOf(feature, Call.class) returns all Calls
-   * @param <T>
-   * @param classOfT
-   * @return
-   */
-  public static <T extends Object> Stream<SimpleEntry<T, AbstractFeature>> AllOf(AbstractFeature start,
-    Class<T> classOfT)
-  {
-    return ASTWalker.Traverse(start)
-      .filter(entry -> classOfT.isAssignableFrom(entry.getKey().getClass()))
-      .map(obj -> new SimpleEntry<>((T) obj.getKey(), obj.getValue()));
-  }
-
-  /**
-   * @param feature
-   * @return all calls to this feature and the feature those calls are happening in
-   */
-  public static Stream<SimpleEntry<AbstractCall, AbstractFeature>> CallsTo(AbstractFeature feature)
-  {
-    return AllOf(feature.universe(), AbstractCall.class)
-      .filter(entry -> CalledFeature(entry.getKey())
-        .map(f -> f.equals(feature))
-        .orElse(false));
   }
 
   private static Stream<Object> CallsAndFeaturesAt(TextDocumentPositionParams params)
@@ -135,9 +99,9 @@ public class QueryAST
   {
     var token = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params));
     return CallsAndFeaturesAt(params).map(callOrFeature -> {
-      if (callOrFeature instanceof AbstractCall && CalledFeature((AbstractCall) callOrFeature).isPresent())
+      if (callOrFeature instanceof AbstractCall && ((AbstractCall) callOrFeature).calledFeature() != null)
         {
-          return CalledFeature((AbstractCall) callOrFeature).get();
+          return ((AbstractCall) callOrFeature).calledFeature();
         }
       return (AbstractFeature) callOrFeature;
     })
