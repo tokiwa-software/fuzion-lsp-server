@@ -64,6 +64,7 @@ public class Bridge
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
   {
+    // NYI which symbolkind to use for feature?
     return new DocumentSymbol(FeatureTool.ToLabel(feature), SymbolKind.Key, ToRange(feature), ToRange(feature));
   }
 

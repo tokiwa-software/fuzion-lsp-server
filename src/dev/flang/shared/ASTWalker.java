@@ -32,24 +32,22 @@ import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
+import dev.flang.ast.AbstractAssign;
+import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
+import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
-import dev.flang.ast.Assign;
-import dev.flang.ast.Block;
-import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Check;
-import dev.flang.ast.Constant;
-import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
 import dev.flang.ast.Nop;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Stmnt;
-import dev.flang.ast.StrConst;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
@@ -135,7 +133,7 @@ public class ASTWalker
       {
         return;
       }
-    if (s instanceof Assign a)
+    if (s instanceof AbstractAssign a)
       {
         TraverseExpression(a._value, outer, callback);
         if (a._target != null)
@@ -152,7 +150,7 @@ public class ASTWalker
     throw new RuntimeException("TraverseStatement not implemented for: " + s.getClass());
   }
 
-  private static void TraverseBlock(Block b, AbstractFeature outer,
+  private static void TraverseBlock(AbstractBlock b, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
     b.statements_.forEach(s -> TraverseStatement(s, outer, callback));
@@ -165,7 +163,7 @@ public class ASTWalker
       {
         return;
       }
-    if (expr instanceof Block b)
+    if (expr instanceof AbstractBlock b)
       {
         TraverseBlock(b, outer, callback);
         return;
@@ -205,8 +203,12 @@ public class ASTWalker
           }
         return;
       }
-    if (expr instanceof Current || expr instanceof NumLiteral || expr instanceof Unbox || expr instanceof BoolConst
-      || expr instanceof StrConst || expr instanceof Universe || expr instanceof Function || expr instanceof Constant)
+    if (expr instanceof AbstractCurrent
+      || expr instanceof NumLiteral
+      || expr instanceof Unbox
+      || expr instanceof AbstractConstant
+      || expr instanceof Universe
+      || expr instanceof Function)
       {
         return;
       }
