@@ -204,7 +204,6 @@ public class ASTWalker
         return;
       }
     if (expr instanceof AbstractCurrent
-      || expr instanceof NumLiteral
       || expr instanceof Unbox
       || expr instanceof AbstractConstant
       || expr instanceof Universe
