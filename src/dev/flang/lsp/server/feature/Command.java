@@ -75,7 +75,7 @@ public class Command
   private static void CallGraph(String arg0, String arg1)
   {
     // NYI go to correct feature via more direct way
-    var feature = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.universe(Util.toURI(arg0)))
+    var feature = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.Universe(Util.toURI(arg0)))
       .filter(f -> FeatureTool.UniqueIdentifier(f).equals(arg1))
       .findFirst()
       .get();
@@ -137,7 +137,7 @@ public class Command
 
   private static void showSyntaxTree(URI uri)
   {
-    var feature = FuzionParser.MainOrUniverse(uri);
+    var feature = FuzionParser.Main(uri);
     var ast = FeatureTool.AST(feature);
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));

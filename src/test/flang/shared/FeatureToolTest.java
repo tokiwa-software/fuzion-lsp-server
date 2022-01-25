@@ -41,7 +41,7 @@ public class FeatureToolTest extends BaseTest
   public void ASTbrokenSource()
   {
     SourceText.setText(uri1, UnknownCall);
-    var ex = FuzionParser.MainOrUniverse(uri1);
+    var ex = FuzionParser.Main(uri1);
     var ast = FeatureTool.AST(ex);
     assertTrue(ast.contains("Call:hasInterval"));
     assertTrue(ast.contains("Call:called feature unknown"));
@@ -61,7 +61,7 @@ public class FeatureToolTest extends BaseTest
       """;
     SourceText.setText(uri1, CommentExample);
     var innerFeature = FuzionParser
-      .DeclaredFeatures(FuzionParser.MainOrUniverse(uri1))
+      .DeclaredFeatures(FuzionParser.Main(uri1))
       .findFirst()
       .orElseThrow();
     assertEquals("first comment line" + System.lineSeparator() + "second comment line",

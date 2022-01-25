@@ -90,18 +90,18 @@ public class FuzionParser extends ANY
       }
     });
 
-
   /**
    * @param uri
    * @return main feature in source text
    */
-  public static AbstractFeature MainOrUniverse(URI uri)
+  public static AbstractFeature Main(URI uri)
   {
-    if (IsStdLib(uri))
-      {
-        return getParserCacheRecord(uri).mir().universe();
-      }
-    return getParserCacheRecord(uri).mir().main();
+    return DeclaredFeatures(getParserCacheRecord(uri)
+      .mir()
+      .universe())
+        .filter(f -> getUri(f.pos()).equals(uri))
+        .findAny()
+        .get();
   }
 
   /**
@@ -214,7 +214,7 @@ public class FuzionParser extends ANY
     return sourceFile;
   }
 
-  public static AbstractFeature universe(URI uri)
+  public static AbstractFeature Universe(URI uri)
   {
     return getParserCacheRecord(uri).mir().universe();
   }

@@ -52,7 +52,7 @@ public class FuzionParserTest extends BaseTest
         (1..10).forAll()
               """;
     SourceText.setText(uri1, sourceText);
-    var endOfFeature = FuzionParser.endOfFeature(FuzionParser.MainOrUniverse(uri1));
+    var endOfFeature = FuzionParser.endOfFeature(FuzionParser.Main(uri1));
     assertEquals(3, endOfFeature._line);
     assertEquals(1, endOfFeature._column);
   }
@@ -61,7 +61,7 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureLambdaDefinition()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_b = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.MainOrUniverse(uri1))
+    var feature_b = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.Main(uri1))
       .filter(x -> x.featureName().baseName().equals("b"))
       .findFirst()
       .get();
@@ -75,7 +75,7 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureArgument()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_x1 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.MainOrUniverse(uri1))
+    var feature_x1 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.Main(uri1))
       .filter(x -> x.featureName().baseName().equals("x1"))
       .findFirst()
       .get();
@@ -104,7 +104,7 @@ public class FuzionParserTest extends BaseTest
     sourceText += System.lineSeparator() + "    ";
     SourceText.setText(uri1, sourceText);
 
-    var level2 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.MainOrUniverse(uri1))
+    var level2 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.Main(uri1))
       .filter(f -> f.qualifiedName().equals("HelloWorld.level1.level2"))
       .findFirst()
       .get();
@@ -120,7 +120,7 @@ public class FuzionParserTest extends BaseTest
     var sourceText = """
       """;
     SourceText.setText(uri1, sourceText);
-    var f = FuzionParser.MainOrUniverse(uri1);
+    var f = FuzionParser.Universe(uri1);
     assertEquals("#universe", f.qualifiedName());
   }
 
@@ -136,7 +136,7 @@ public class FuzionParserTest extends BaseTest
             grandChild3 is
       """;
     SourceText.setText(uri1, sourceText);
-    var f = FuzionParser.MainOrUniverse(uri1);
+    var f = FuzionParser.Main(uri1);
     var df = FuzionParser.DeclaredFeatures(f).collect(Collectors.toList());
     assertEquals(2, df.size());
     assertTrue(df.stream().anyMatch(x -> x.featureName().baseName().equals("childFeat1")));
@@ -147,7 +147,7 @@ public class FuzionParserTest extends BaseTest
   public void declaredFeaturesUniverse()
   {
     SourceText.setText(uri1, HelloWorld);
-    assertTrue(FuzionParser.DeclaredFeatures(FuzionParser.universe(uri1)).count() > 10);
+    assertTrue(FuzionParser.DeclaredFeatures(FuzionParser.Universe(uri1)).count() > 10);
   }
 
   @Test
@@ -157,7 +157,7 @@ public class FuzionParserTest extends BaseTest
       HelloWorld is
         say "Hello World!"
                   """);
-    var mainFeature = FuzionParser.MainOrUniverse(uri1);
+    var mainFeature = FuzionParser.Main(uri1);
     assertEquals(0, FuzionParser.Errors(uri1).count());
     assertEquals("HelloWorld", mainFeature.featureName().baseName());
     assertEquals(uri1, FuzionParser.getUri(mainFeature.pos()));
@@ -179,7 +179,7 @@ public class FuzionParserTest extends BaseTest
 
 
                   """);
-    assertDoesNotThrow(() -> FuzionParser.MainOrUniverse(uri1));
+    assertDoesNotThrow(() -> FuzionParser.Main(uri1));
     assertEquals(true, FuzionParser.Errors(uri1).count() > 0);
   }
 
@@ -191,9 +191,9 @@ public class FuzionParserTest extends BaseTest
   }
 
   @Test
-  public void MainOrUniverseOfStdLibFile(){
+  public void UniverseOfStdLibFile(){
     var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
-    assertTrue(FuzionParser.MainOrUniverse(uri).isUniverse());
+    assertTrue(FuzionParser.Universe(uri).isUniverse());
   }
 
   @Test

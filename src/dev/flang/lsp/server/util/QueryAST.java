@@ -65,8 +65,8 @@ public class QueryAST
 
   public static Optional<AbstractFeature> CalledFeature(TextDocumentPositionParams params)
   {
-    var baseFeature = FuzionParser.MainOrUniverse(LSP4jUtils.getUri(params));
-    return ASTWalker.Traverse(baseFeature)
+    var universe = FuzionParser.Universe(LSP4jUtils.getUri(params));
+    return ASTWalker.Traverse(universe)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof AbstractCall)
       .map(entry -> new SimpleEntry<AbstractCall, AbstractFeature>((AbstractCall) entry.getKey(), entry.getValue()))
@@ -160,7 +160,7 @@ public class QueryAST
    */
   private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
-    var baseFeature = FuzionParser.MainOrUniverse(LSP4jUtils.getUri(params));
+    var baseFeature = FuzionParser.Universe(LSP4jUtils.getUri(params));
     var astItems = ASTWalker.Traverse(baseFeature)
       .filter(IsItemNotBuiltIn(params))
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
@@ -253,7 +253,7 @@ public class QueryAST
    */
   public static Stream<AbstractFeature> DeclaredFeaturesRecursive(URI uri)
   {
-    var baseFeature = FuzionParser.MainOrUniverse(uri);
+    var baseFeature = FuzionParser.Main(uri);
     return FeatureTool.DeclaredFeaturesRecursive(baseFeature);
   }
 

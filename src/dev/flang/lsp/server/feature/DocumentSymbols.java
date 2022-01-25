@@ -43,7 +43,7 @@ public class DocumentSymbols
 {
   public static List<Either<SymbolInformation, DocumentSymbol>> getDocumentSymbols(DocumentSymbolParams params)
   {
-    var mainFeature = FuzionParser.MainOrUniverse(LSP4jUtils.getUri(params.getTextDocument()));
+    var mainFeature = FuzionParser.Main(LSP4jUtils.getUri(params.getTextDocument()));
 
     var rootSymbol = DocumentSymbols.DocumentSymbolTree(mainFeature);
 

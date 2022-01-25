@@ -40,7 +40,7 @@ class SourceTextTest extends BaseTest
       myFeat is
       """;
     SourceText.setText(uri1, CommentExample);
-    var myFeatIs = FuzionParser.MainOrUniverse(uri1);
+    var myFeatIs = FuzionParser.Main(uri1);
     var sourceText = SourceText.getText(myFeatIs.pos());
     assertEquals(true, sourceText.contains("myFeat is"));
   }

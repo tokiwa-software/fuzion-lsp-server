@@ -42,8 +42,8 @@ public class QueryASTTest extends ExtendedBaseTest
   @Test
   public void DeclaredFeaturesRecursive()
   {
-    SourceText.setText(uri1, UnknownCall);
-    SourceText.setText(uri2, HelloWorld);
+    SourceText.setText(uri1, HelloWorld);
+    SourceText.setText(uri2, UnknownCall);
     SourceText.setText(uri3, ManOrBoy);
     SourceText.setText(uri4, PythagoreanTriple);
     assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri1).count());
