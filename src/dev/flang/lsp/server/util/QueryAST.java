@@ -251,10 +251,10 @@ public class QueryAST
    * @param uri
    * @return
    */
-  public static Stream<AbstractFeature> DeclaredFeaturesRecursive(URI uri)
+  public static Stream<AbstractFeature> SelfAndDescendants(URI uri)
   {
     var baseFeature = FuzionParser.Main(uri);
-    return FeatureTool.DeclaredFeaturesRecursive(baseFeature);
+    return FeatureTool.SelfAndDescendants(baseFeature);
   }
 
   public static Optional<AbstractCall> callAt(TextDocumentPositionParams params)
@@ -326,7 +326,7 @@ public class QueryAST
    */
   public static Optional<AbstractFeature> InFeature(TextDocumentPositionParams params)
   {
-    return DeclaredFeaturesRecursive(LSP4jUtils.getUri(params))
+    return SelfAndDescendants(LSP4jUtils.getUri(params))
       .filter(f -> {
         var cursorPosition = LSP4jUtils.getPosition(params);
         var startOfFeature = Bridge.ToPosition(f.pos());

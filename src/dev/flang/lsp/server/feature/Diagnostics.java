@@ -27,16 +27,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.feature;
 
 import java.net.URI;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DiagnosticTag;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 
 import dev.flang.lsp.server.Config;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.Log;
+import dev.flang.shared.ASTWalker;
+import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
 
@@ -56,16 +61,35 @@ public class Diagnostics
 
   public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
-    var errorDiagnostics = FuzionParser.Errors(uri).filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
+    var errorDiagnostics =
+      FuzionParser.Errors(uri).filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
         var message = error.msg + System.lineSeparator() + error.detail;
-        return new Diagnostic(LSP4jUtils.Range(FuzionLexer.rawTokenAt(error.pos)), message, DiagnosticSeverity.Error, "fuzion language server");
+        return new Diagnostic(LSP4jUtils.Range(FuzionLexer.rawTokenAt(error.pos)), message, DiagnosticSeverity.Error,
+          "fuzion language server");
       });
 
-    var warningDiagnostics = FuzionParser.Warnings(uri).filter(warning -> FuzionParser.getUri(warning.pos).equals(uri)).map((warning) -> {
+    var warningDiagnostics =
+      FuzionParser.Warnings(uri).filter(warning -> FuzionParser.getUri(warning.pos).equals(uri)).map((warning) -> {
         var message = warning.msg + System.lineSeparator() + warning.detail;
-        return new Diagnostic(LSP4jUtils.Range(FuzionLexer.rawTokenAt(warning.pos)), message, DiagnosticSeverity.Warning, "fuzion language server");
+        return new Diagnostic(LSP4jUtils.Range(FuzionLexer.rawTokenAt(warning.pos)), message,
+          DiagnosticSeverity.Warning, "fuzion language server");
       });
 
-    return Stream.concat(errorDiagnostics, warningDiagnostics);
+    var calledFeatures = ASTWalker.Calls(FuzionParser.Main(uri))
+      .map(x -> x.getKey().calledFeature())
+      .collect(Collectors.toSet());
+    var unusedFeatures = FeatureTool
+      .SelfAndDescendants(FuzionParser.Main(uri))
+      .filter(f -> !calledFeatures.contains(f)
+        && !f.equals(FuzionParser.Main(uri)));
+
+    var unusedDiagnostics = unusedFeatures.map(f -> {
+      var diagnostic =
+        new Diagnostic(Bridge.ToRange(f), "unused", DiagnosticSeverity.Hint, "fuzion language server");
+      diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
+      return diagnostic;
+    });
+
+    return Stream.concat(Stream.concat(errorDiagnostics, warningDiagnostics), unusedDiagnostics);
   }
 }

@@ -54,7 +54,7 @@ public class CodeLenses
 
   private static Stream<CodeLens> codeLensesCallGraph(URI uri)
   {
-    return QueryAST.DeclaredFeaturesRecursive(uri)
+    return QueryAST.SelfAndDescendants(uri)
       .filter(f -> !(f.isField() || FeatureTool.IsArgument(f) || FeatureTool.IsAnonymousInnerFeature(f)
         || FeatureTool.IsInternal(f)))
       .map(f -> {

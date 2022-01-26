@@ -61,7 +61,7 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureLambdaDefinition()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_b = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.Main(uri1))
+    var feature_b = FeatureTool.SelfAndDescendants(FuzionParser.Main(uri1))
       .filter(x -> x.featureName().baseName().equals("b"))
       .findFirst()
       .get();
@@ -75,7 +75,7 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureArgument()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_x1 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.Main(uri1))
+    var feature_x1 = FeatureTool.SelfAndDescendants(FuzionParser.Main(uri1))
       .filter(x -> x.featureName().baseName().equals("x1"))
       .findFirst()
       .get();
@@ -104,7 +104,7 @@ public class FuzionParserTest extends BaseTest
     sourceText += System.lineSeparator() + "    ";
     SourceText.setText(uri1, sourceText);
 
-    var level2 = FeatureTool.DeclaredFeaturesRecursive(FuzionParser.Main(uri1))
+    var level2 = FeatureTool.SelfAndDescendants(FuzionParser.Main(uri1))
       .filter(f -> f.qualifiedName().equals("HelloWorld.level1.level2"))
       .findFirst()
       .get();

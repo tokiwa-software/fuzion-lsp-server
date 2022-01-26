@@ -46,7 +46,6 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
 import dev.flang.ast.Nop;
-import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Unbox;

@@ -47,10 +47,10 @@ public class QueryASTTest extends ExtendedBaseTest
     SourceText.setText(uri2, UnknownCall);
     SourceText.setText(uri3, ManOrBoy);
     SourceText.setText(uri4, PythagoreanTriple);
-    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri1).count());
-    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri2).count());
-    assertEquals(13, QueryAST.DeclaredFeaturesRecursive(uri3).count());
-    assertEquals(3, QueryAST.DeclaredFeaturesRecursive(uri4).count());
+    assertEquals(1, QueryAST.SelfAndDescendants(uri1).count());
+    assertEquals(1, QueryAST.SelfAndDescendants(uri2).count());
+    assertEquals(13, QueryAST.SelfAndDescendants(uri3).count());
+    assertEquals(3, QueryAST.SelfAndDescendants(uri4).count());
   }
 
   @Test
@@ -453,7 +453,7 @@ public class QueryASTTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, UnknownCall);
     assertThrows(ExecutionException.class, () -> FuzionParser.Run(uri1, 10000));
-    assertEquals(1, QueryAST.DeclaredFeaturesRecursive(uri1).count());
+    assertEquals(1, QueryAST.SelfAndDescendants(uri1).count());
   }
 
 }

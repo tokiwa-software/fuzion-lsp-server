@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
+import org.eclipse.lsp4j.DiagnosticTag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Diagnostics;
@@ -46,4 +47,19 @@ public class DiagnosticsTest extends ExtendedBaseTest
         var diagnostics = Diagnostics.getDiagnostics(uri1);
         assertEquals(1, diagnostics.count());
     }
+
+    @Test
+    public void Unused()
+    {
+        var sourceText = """
+            ex is
+              a := 0
+              b := "asdf"
+              say b
+            """;
+        SourceText.setText(uri1, sourceText);
+        var diagnostics = Diagnostics.getDiagnostics(uri1);
+        assertTrue(diagnostics.findFirst().get().getTags().get(0).equals(DiagnosticTag.Unnecessary));
+    }
+
 }

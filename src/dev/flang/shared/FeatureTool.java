@@ -53,10 +53,10 @@ public class FeatureTool extends ANY
     return Stream.concat(Stream.of(feature.outer()), outerFeatures(feature.outer()));
   }
 
-  public static Stream<AbstractFeature> DeclaredFeaturesRecursive(AbstractFeature feature)
+  public static Stream<AbstractFeature> SelfAndDescendants(AbstractFeature feature)
   {
     return Stream.concat(Stream.of(feature),
-      FuzionParser.DeclaredFeatures(feature).flatMap(f -> DeclaredFeaturesRecursive(f)));
+      FuzionParser.DeclaredFeatures(feature).flatMap(f -> SelfAndDescendants(f)));
   }
 
   public static String CommentOf(AbstractFeature feature)
@@ -217,7 +217,7 @@ public class FeatureTool extends ANY
    */
   static boolean IsOfLastFeature(AbstractFeature feature)
   {
-    return !IsInternal(feature) && DeclaredFeaturesRecursive(TopLevelFeature(feature).get())
+    return !IsInternal(feature) && SelfAndDescendants(TopLevelFeature(feature).get())
       .noneMatch(f -> f.pos()._line > feature.pos()._line
         && f.pos()._column <= feature.pos()._column);
   }
