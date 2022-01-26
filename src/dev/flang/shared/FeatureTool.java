@@ -184,10 +184,9 @@ public class FeatureTool extends ANY
   }
 
   // NYI move to TypeTool?
-  public static String Label(AbstractType type)
+  private static String Label(AbstractType type)
   {
-    // NYI don't rely on astType
-    return type.astType().toString();
+    return type.toString();
   }
 
   public static String CommentOfInMarkdown(AbstractFeature f)
