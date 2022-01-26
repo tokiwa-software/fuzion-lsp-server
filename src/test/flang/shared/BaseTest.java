@@ -112,7 +112,7 @@ public abstract class BaseTest extends Assert
   {
     return FuzionParser
       .DeclaredFeatures(Universe())
-      .filter(f -> f.featureName().baseName().endsWith(name))
+      .filter(f -> f.featureName().baseName().equals(name))
       .filter(f -> f.arguments().size() == argCount)
       .findFirst()
       .get();
