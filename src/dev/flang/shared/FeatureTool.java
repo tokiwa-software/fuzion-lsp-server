@@ -40,6 +40,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 public class FeatureTool extends ANY
@@ -119,7 +120,7 @@ public class FeatureTool extends ANY
   {
     // NYI use f.visibility()
     return f.resultType().equals(Types.t_ADDRESS)
-      || f.featureName().baseName().startsWith("#");
+      || f.featureName().baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
   }
 
   static Optional<AbstractFeature> TopLevelFeature(AbstractFeature f)

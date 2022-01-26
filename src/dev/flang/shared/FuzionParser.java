@@ -179,7 +179,7 @@ public class FuzionParser extends ANY
   {
     var fuzionHome = Path.of(System.getProperty("fuzion.home"));
     var frontEndOptions =
-      new FrontEndOptions(0, fuzionHome, null, JavaModules, 0, false, false, tempFile.getAbsolutePath());
+      new FrontEndOptions(0, fuzionHome, null, true, JavaModules, 0, false, false, tempFile.getAbsolutePath());
     return frontEndOptions;
   }
 
