@@ -118,7 +118,8 @@ public class FeatureTool extends ANY
   public static boolean IsAnonymousInnerFeature(AbstractFeature f)
   {
     // NYI use f.visibility()
-    return f.featureName().baseName().startsWith("#");
+    return f.resultType().equals(Types.t_ADDRESS)
+      || f.featureName().baseName().startsWith("#");
   }
 
   static Optional<AbstractFeature> TopLevelFeature(AbstractFeature f)

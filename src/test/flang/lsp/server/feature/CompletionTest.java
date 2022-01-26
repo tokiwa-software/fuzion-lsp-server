@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
@@ -75,44 +76,44 @@ public class CompletionTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, IntervallCompletion);
     var expected = """
+      map<${2:B}> (□ -> □)
+      asString
+      infix : ${1:step}
       asList
       asStream
-      asString
-      contains ${1:e}
       forAll (□ -> □)
-      infix : ${1:step}
-      lower
-      map<${2:B}> (□ -> □)
+      contains ${1:e}
       size
       upper
+      lower
       sizeOption
-      asArray
       asString ${1:sep}
-      before (□ -> □)
-      concatSequences ${1:s}
-      count
-      cycle
-      drop ${1:n}
-      dropWhile (□ -> □)
-      filter (□ -> □)
-      first
-      fold ${1:m}
-      forWhile (□ -> □)
-      infix & (□ -> □)
-      infix ++ ${1:s}
       infix | (□ -> □)
+      infix & (□ -> □)
+      slice ${1:from} ${2:to}
+      fold ${1:m}
+      first
+      asArray
+      isEmpty
+      count
+      last
+      postfix |
+      forWhile (□ -> □)
+      before (□ -> □)
+      filter (□ -> □)
       infix |& (□ -> □)
       infix ∀ (□ -> □)
       infix ∃ (□ -> □)
-      insert ${1:at} ${2:v}
-      isEmpty
-      last
-      mapSequence<${2:B}> (□ -> □)
-      postfix |
-      slice ${1:from} ${2:to}
-      tails
       take ${1:n}
+      drop ${1:n}
       takeWhile (□ -> □)
+      dropWhile (□ -> □)
+      concatSequences ${1:s}
+      infix ++ ${1:s}
+      cycle
+      tails
+      mapSequence<${2:B}> (□ -> □)
+      insert ${1:at} ${2:v}
       zip<${3:U}, ${4:V}> ${1:b} (□, □ -> □)
       hashCode
       prefix $""";
@@ -121,6 +122,7 @@ public class CompletionTest extends ExtendedBaseTest
       .stream()
       .map(x -> x.getInsertText())
       .collect(Collectors.joining(System.lineSeparator()));
+
     assertEquals(expected, actual);
   }
 

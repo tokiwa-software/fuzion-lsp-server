@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FuzionParser;
+import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
@@ -296,144 +297,144 @@ public class QueryASTTest extends ExtendedBaseTest
 
     var expectedCompletions = """
       HelloWorld.level1.level2
-      HelloWorld.innnerFeat
       HelloWorld.level1
-      Cons
-      FALSE
-      Function
-      HelloWorld
-      InitArray
-      Monoid
-      Object
-      Sequence
-      Sequences
+      HelloWorld.innnerFeat
       Set
-      TRUE
-      analysis
-      array
-      array
+      numOption
+      numOption
       array2
-      array3
-      bitset
-      bitsets
-      bool
-      choice
-      codepoint
-      codepoints
+      Cons
+      cons
+      searchablelist
       complex
       complex
       complexes
-      cons
-      conststring
+      yak
       debug
       debug
       debugLevel
-      error
-      f128
       f16
-      f32
-      f32s
+      Function
+      map
+      option
+      option
+      choice
+      analysis
+      matrix
       f64
-      f64s
-      false
-      float
+      fraction
+      fraction
+      error
+      Object
+      bitsets
+      sortedArray
+      sortedArray
+      java
+      codepoints
       floats
-      fraction
-      fraction
-      fuzion
-      hasEquals
-      hasHash
-      hasInterval
-      hashMap
-      hashMap
-      i128
-      i128
-      i128s
+      orderedMap
+      orderedMap
+      setOf
+      setOf
+      stdout
+      bool
+      FALSE
+      TRUE
+      false
+      true
+      bitset
+      tuple
+      ordered
       i16
       i16
       i16s
-      i32
-      i32
-      i32s
-      i64
-      i64
-      i64s
-      i8
-      i8
-      i8s
-      int
-      integer
-      java
-      list
-      lists
-      map
-      mapOf
-      marray
-      marray
+      psSet
+      psSet
+      psSet
+      Sequence
+      Sequences
+      say
+      say
+      void
       matrices
-      matrix
-      monad
-      nil
-      numOption
-      numOption
       numeric
-      numerics
-      option
-      option
-      ordered
-      orderedMap
-      orderedMap
-      outcome
-      outcome
-      partiallyOrdered
-      pedantic
-      psMap
-      psMap
-      psMap
-      psSet
-      psSet
-      psSet
-      quantors
-      safety
-      say
-      say
-      searchableList
-      searchablelist
-      setOf
-      setOf
-      some
-      sortedArray
-      sortedArray
-      spit
-      stdout
-      stream
-      string
-      strings
-      sum
-      sys
-      true
-      tuple
-      u128
-      u128
-      u128s
-      u16
-      u16
-      u16s
-      u32
-      u32
-      u32s
-      u64
-      u64
-      u64s
       u8
       u8
       u8s
-      uint
-      unit
-      void
+      string
+      strings
+      marray
+      marray
+      integer
+      safety
+      quantors
+      float
+      conststring
+      u64
+      u64
+      u64s
+      mapOf
+      f32
       wrappingInteger
       wrappingIntegers
-      yak
+      monad
+      pedantic
+      partiallyOrdered
+      unit
+      i32
+      i32
+      i32s
+      sum
+      numerics
+      u32
+      u32
+      u32s
+      f128
+      nil
+      fuzion
+      list
+      lists
+      outcome
+      outcome
+      searchableList
+      i128
+      i128
+      i128s
+      int
+      Monoid
+      i8
+      i8
+      i8s
+      InitArray
+      codepoint
+      uint
+      hasEquals
+      u16
+      u16
+      u16s
+      hasInterval
+      psMap
+      psMap
+      psMap
+      array3
+      array
+      array
+      f64s
+      some
+      sys
+      spit
+      hasHash
+      i64
+      i64
+      i64s
+      stream
+      u128
+      u128
+      u128s
+      f32s
+      hashMap
+      hashMap
+      HelloWorld
       Object.asString
       Object.hashCode
       Object.prefix $""";
