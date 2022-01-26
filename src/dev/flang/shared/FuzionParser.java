@@ -112,7 +112,7 @@ public class FuzionParser extends ANY
   private synchronized static ParserCacheRecord getParserCacheRecord(URI uri)
   {
     var sourceText = SourceText.getText(uri);
-    return parserCache.computeIfAbsent(uri + sourceText, st -> createParserCacheRecord(uri));
+    return parserCache.computeIfAbsent(uri + sourceText, key -> createParserCacheRecord(uri));
   }
 
   /**
