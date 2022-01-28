@@ -90,10 +90,11 @@ public class CompletionTest extends ExtendedBaseTest
       asString ${1:sep}
       infix | (□ -> □)
       infix & (□ -> □)
+      asArray
       slice ${1:from} ${2:to}
       fold ${1:m}
+      sort (□, □ -> □)
       first
-      asArray
       isEmpty
       count
       last
@@ -114,6 +115,7 @@ public class CompletionTest extends ExtendedBaseTest
       tails
       mapSequence<${2:B}> (□ -> □)
       insert ${1:at} ${2:v}
+      sortBy<${2:O}> (□ -> □)
       zip<${3:U}, ${4:V}> ${1:b} (□, □ -> □)
       hashCode
       prefix $""";

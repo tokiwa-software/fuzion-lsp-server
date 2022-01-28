@@ -385,6 +385,7 @@ public class QueryASTTest extends ExtendedBaseTest
       i32
       i32s
       sum
+      sum
       numerics
       u32
       u32
