@@ -253,8 +253,7 @@ public class FuzionParser extends ANY
     return EndOfFeatureCache.computeIfAbsent(feature, f -> {
       if (FeatureTool.IsArgument(f))
         {
-          // NYI make this more idiomatic?
-          return new SourcePosition(f.pos()._sourceFile, 1, 1);
+          return FuzionLexer.endOfToken(f.pos());
         }
       if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
         {

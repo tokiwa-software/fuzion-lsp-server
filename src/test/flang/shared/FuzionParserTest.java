@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.shared.FeatureTool;
@@ -80,8 +81,8 @@ public class FuzionParserTest extends BaseTest
       .findFirst()
       .get();
     var endOfFeature = FuzionParser.endOfFeature(feature_x1);
-    assertEquals(1, endOfFeature._line);
-    assertEquals(1, endOfFeature._column);
+    assertEquals(3, endOfFeature._line);
+    assertEquals(14, endOfFeature._column);
   }
 
   @Test
