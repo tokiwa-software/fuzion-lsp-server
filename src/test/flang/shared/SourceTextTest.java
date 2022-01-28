@@ -50,7 +50,7 @@ class SourceTextTest extends BaseTest
   {
     var yak = DeclaredInUniverse("yak", 1);
     var sourceText = SourceText.getText(yak.pos());
-    assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print(s)"));
+    assertEquals(true, sourceText.contains("yak(s ref Object) => stdout.print s"));
   }
 
 

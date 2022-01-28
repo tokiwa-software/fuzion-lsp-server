@@ -72,11 +72,16 @@ public class FeatureToolTest extends BaseTest
   public void CommentOfStdLibFeature()
   {
     var yak = DeclaredInUniverse("yak", 1);
+    var actual = FeatureTool.CommentOf(yak);
 
     assertEquals(
-      "A handy shortcut for stdout.print, output string representation of" + System.lineSeparator()
-        + "an object, do not add a line break at the end." + System.lineSeparator(),
-      FeatureTool.CommentOf(yak));
+      """
+        A handy shortcut for stdout.print, output string representation of
+        an object, do not add a line break at the end.
+
+        The term 'yak' was taken from the expression 'Yakety Yak' as in the
+        song by The Coasters.""" + System.lineSeparator(),
+      actual);
   }
 
   @Test
