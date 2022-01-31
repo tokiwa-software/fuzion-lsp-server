@@ -55,6 +55,17 @@ public class RenameTest extends ExtendedBaseTest
     assertEquals(null, Rename.getPrepareRenameResult(Cursor(uri1, 1, 7)).getPlaceholder());
   }
 
+  // @Test
+  // NYI failing
+  public void RenameRef()
+  {
+    var sourceText = """
+        ex is
+          Towers_Disk(size i32, next Towers_Disk|nil) ref is
+      """;
+    SourceText.setText(uri1, sourceText);
+    assertFalse(true);
+  }
 
   @Test
   public void RenameFun() throws Exception
