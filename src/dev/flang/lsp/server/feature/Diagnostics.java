@@ -141,20 +141,27 @@ public class Diagnostics
    */
   private static Stream<Diagnostic> Unused(URI uri)
   {
-    var calledFeatures = ASTWalker.Calls(FuzionParser.Main(uri))
+    var main = FuzionParser.Main(uri);
+    var calledFeatures = ASTWalker.Calls(main)
       .map(x -> x.getKey().calledFeature())
       .collect(Collectors.toSet());
-    var unusedFeatures = FeatureTool
-      .SelfAndDescendants(FuzionParser.Main(uri))
-      .filter(f -> !calledFeatures.contains(f)
-        && !f.equals(FuzionParser.Main(uri)));
 
-    var unusedDiagnostics = unusedFeatures.map(f -> {
+    var unusedFeatures = FeatureTool
+      .SelfAndDescendants(main)
+      // NYI: workaround for: #result is only used for features using type inference
+      // for features using is the name is result even when unused
+      .filter(f -> !FeatureTool.IsInternal(f))
+      .filter(f -> !calledFeatures.contains(f)
+        && !f.equals(main))
+      .collect(Collectors.toList());
+
+    var unusedDiagnostics = unusedFeatures.stream().map(f -> {
       var diagnostic =
         new Diagnostic(Bridge.ToRange(f, true), "unused", DiagnosticSeverity.Hint, "fuzion language server");
       diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
       return diagnostic;
     });
+
     return unusedDiagnostics;
   }
 }
