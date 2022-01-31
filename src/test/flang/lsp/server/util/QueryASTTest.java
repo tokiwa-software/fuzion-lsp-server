@@ -34,14 +34,13 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FuzionParser;
-import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
 public class QueryASTTest extends ExtendedBaseTest
 {
   @Test
-  public void DeclaredFeaturesRecursive()
+  public void SelfAndDescandants()
   {
     SourceText.setText(uri1, HelloWorld);
     SourceText.setText(uri2, UnknownCall);
