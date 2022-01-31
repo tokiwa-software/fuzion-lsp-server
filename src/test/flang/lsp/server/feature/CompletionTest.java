@@ -87,6 +87,7 @@ public class CompletionTest extends ExtendedBaseTest
       upper
       lower
       sizeOption
+      add
       asString ${1:sep}
       infix | (□ -> □)
       infix & (□ -> □)
