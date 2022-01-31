@@ -65,8 +65,7 @@ public class DiagnosticsTest extends ExtendedBaseTest
         assertTrue(diagnostics.get(0).getTags().get(0).equals(DiagnosticTag.Unnecessary));
     }
 
-    // @Test
-    // NYI failing
+    @Test
     public void UnusedArgument()
     {
         var sourceText = """
@@ -80,7 +79,54 @@ public class DiagnosticsTest extends ExtendedBaseTest
         assertEquals(1, diagnostics.get(0).getRange().getStart().getLine());
         assertEquals(2, diagnostics.get(0).getRange().getStart().getCharacter());
         assertEquals(1, diagnostics.get(0).getRange().getEnd().getLine());
-        assertEquals(37, diagnostics.get(0).getRange().getEnd().getCharacter());
+        assertEquals(7, diagnostics.get(0).getRange().getEnd().getCharacter());
+    }
+
+    @Test
+    public void BadFeatureName()
+    {
+        var sourceText = """
+            storage =>
+              badName =>
+                "hello"
+              say badName
+                        """;
+        SourceText.setText(uri1, sourceText);
+        var diagnostics = Diagnostics.getDiagnostics(uri1).collect(Collectors.toList());
+        assertEquals(1, diagnostics.size());
+        assertEquals(1, diagnostics.get(0).getRange().getStart().getLine());
+        assertEquals(2, diagnostics.get(0).getRange().getStart().getCharacter());
+        assertEquals(1, diagnostics.get(0).getRange().getEnd().getLine());
+        assertEquals(9, diagnostics.get(0).getRange().getEnd().getCharacter());
+    }
+
+    @Test
+    public void BadRefName()
+    {
+        var sourceText = """
+            storage =>
+              bad_name ref is
+                unit
+              Bad_name ref is
+                unit
+              Bad_NaMe ref is
+                unit
+              Good_Name ref is
+                unit
+              say bad_name
+              say Bad_name
+              say Good_Name
+              say Bad_NaMe
+                        """;
+        SourceText.setText(uri1, sourceText);
+        var diagnostics = Diagnostics.getDiagnostics(uri1).collect(Collectors.toList());
+        assertEquals(3, diagnostics.size());
+        assertEquals(1, diagnostics.get(0).getRange().getStart().getLine());
+        assertEquals(2, diagnostics.get(0).getRange().getStart().getCharacter());
+        assertEquals(1, diagnostics.get(0).getRange().getEnd().getLine());
+        assertEquals(10, diagnostics.get(0).getRange().getEnd().getCharacter());
+        assertEquals(3, diagnostics.get(1).getRange().getStart().getLine());
+        assertEquals(5, diagnostics.get(2).getRange().getStart().getLine());
     }
 
 }

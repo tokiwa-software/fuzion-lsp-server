@@ -59,6 +59,15 @@ public class Bridge
 
   public static Range ToRange(AbstractFeature feature)
   {
+    return ToRange(feature, false);
+  }
+
+  public static Range ToRange(AbstractFeature feature, boolean baseNameOnly)
+  {
+    if (baseNameOnly)
+      {
+        return new Range(ToPosition(feature.pos()), ToPosition(FuzionLexer.tokenAt(feature.pos()).end()));
+      }
     return new Range(ToPosition(feature.pos()), ToPosition(FuzionParser.endOfFeature(feature)));
   }
 
@@ -75,6 +84,7 @@ public class Bridge
 
   public static SourcePosition ToSourcePosition(TextDocumentPositionParams params)
   {
-    return new SourcePosition(FuzionLexer.ToSourceFile(Util.toURI(params.getTextDocument().getUri())), params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
+    return new SourcePosition(FuzionLexer.ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
+      params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
   }
 }
