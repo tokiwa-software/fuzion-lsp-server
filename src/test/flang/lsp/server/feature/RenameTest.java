@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
+import java.util.stream.Collectors;
+
 import org.eclipse.lsp4j.RenameParams;
 import org.junit.jupiter.api.Test;
 
@@ -55,16 +57,76 @@ public class RenameTest extends ExtendedBaseTest
     assertEquals(null, Rename.getPrepareRenameResult(Cursor(uri1, 1, 7)).getPlaceholder());
   }
 
+  @Test
+  public void RenameResultTypes()
+  {
+    // Note that the two whitespaces between next and Towers_Disk are intentional
+    var sourceText = """
+      ex is
+        Towers_Disk(size i32, next  Towers_Disk) ref is
+            """;
+    SourceText.setText(uri1, sourceText);
+
+    var cursor = Cursor(uri1, 1, 2);
+    var textEdits =
+      Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "Tower_Disk"))
+        .getChanges()
+        .values()
+        .stream()
+        .flatMap(f -> f.stream())
+        .collect(Collectors.toList());
+
+    assertEquals(2, textEdits.size());
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 1
+        && edit.getRange().getStart().getCharacter() == 2
+        && edit.getRange().getEnd().getLine() == 1
+        && edit.getRange().getEnd().getCharacter() == 13;
+    }));
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 1
+        && edit.getRange().getStart().getCharacter() == 30
+        && edit.getRange().getEnd().getLine() == 1
+        && edit.getRange().getEnd().getCharacter() == 41;
+    }));
+  }
+
   // @Test
   // NYI failing
-  public void RenameRef()
+  public void RenameChoice() throws Exception
   {
     var sourceText = """
-        ex is
-          Towers_Disk(size i32, next Towers_Disk|nil) ref is
-      """;
+      ex is
+        Towers_Disk(size i32, next nil|Towers_Disk) ref is
+            """;
     SourceText.setText(uri1, sourceText);
-    assertFalse(true);
+
+    var cursor = Cursor(uri1, 1, 33);
+    var textEdits =
+      Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "Tower_Disk"))
+        .getChanges()
+        .values()
+        .stream()
+        .flatMap(f -> f.stream())
+        .collect(Collectors.toList());
+
+    assertEquals(2, textEdits.size());
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 1
+        && edit.getRange().getStart().getCharacter() == 2
+        && edit.getRange().getEnd().getLine() == 1
+        && edit.getRange().getEnd().getCharacter() == 13;
+    }));
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 1
+        && edit.getRange().getStart().getCharacter() == 33
+        && edit.getRange().getEnd().getLine() == 1
+        && edit.getRange().getEnd().getCharacter() == 44;
+    }));
   }
 
   @Test

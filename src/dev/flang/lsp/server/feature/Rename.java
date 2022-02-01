@@ -50,6 +50,7 @@ import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.SourcePosition;
@@ -107,12 +108,24 @@ public class Rename
       .map(pos -> {
         if (IsAtFunKeyword(pos))
           {
-            var nextPosition = new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length());
+            var nextPosition =
+              new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length());
             pos = FuzionLexer.tokenAt(nextPosition).start();
           }
         return pos;
       });
     var pos = featureToRename.pos();
+
+    // positions where feature is used as type
+    var typePositions = FeatureTool.SelfAndDescendants(featureToRename.universe())
+      .filter(f -> !f.equals(featureToRename) && !f.resultType().isGenericArgument()
+        && f.resultType().featureOfType().equals(featureToRename))
+      .map(f -> {
+        // NYI we need correct position of type here
+        var whitespace = FuzionLexer.rawTokenAt(FuzionLexer.endOfToken(f.pos()));
+        return new SourcePosition(f.pos()._sourceFile, f.pos()._line,
+          f.pos()._column + f.featureName().baseName().length() + whitespace.text().length());
+      });
 
     // special case for renaming lamdba args
     if (featureToRename.outer() != null &&
@@ -122,8 +135,11 @@ public class Rename
         pos = new SourcePosition(pos._sourceFile, pos._line, pos._column - featureIdentifier.text().length() - 1);
       }
 
-    Stream<SourcePosition> renamePositions = Stream.concat(callsSourcePositions, Stream.of(pos));
-    return renamePositions;
+
+
+    return Stream.of(callsSourcePositions, typePositions, Stream.of(pos))
+      .reduce(Stream::concat)
+      .orElseGet(Stream::empty);
   }
 
   private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)
@@ -138,13 +154,15 @@ public class Rename
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
     var pos = Bridge.ToSourcePosition(params);
-    if(!IsAtIdentifier(pos)){
-      return new PrepareRenameResult();
-    }
+    if (!IsAtIdentifier(pos))
+      {
+        return new PrepareRenameResult();
+      }
     var token = FuzionLexer.rawTokenAt(pos);
-    if(token.text().trim().isEmpty()){
-      return new PrepareRenameResult();
-    }
+    if (token.text().trim().isEmpty())
+      {
+        return new PrepareRenameResult();
+      }
     return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
   }
 
