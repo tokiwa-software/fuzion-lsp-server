@@ -60,7 +60,8 @@ public class RenameTest extends ExtendedBaseTest
   @Test
   public void RenameResultTypes()
   {
-    // Note that the two whitespaces between next and Towers_Disk are intentional
+    // Note that the two whitespaces between next and Towers_Disk are
+    // intentional
     var sourceText = """
       ex is
         Towers_Disk(size i32, next  Towers_Disk) ref is
@@ -126,6 +127,37 @@ public class RenameTest extends ExtendedBaseTest
         && edit.getRange().getStart().getCharacter() == 33
         && edit.getRange().getEnd().getLine() == 1
         && edit.getRange().getEnd().getCharacter() == 44;
+    }));
+  }
+
+  // @Test
+  // NYI failing
+  public void RenameSetted()
+  {
+    var sourceText = """
+      ex =>
+        a := 0
+        set a := 2
+            """;
+
+    SourceText.setText(uri1, sourceText);
+
+    var cursor = Cursor(uri1, 1, 2);
+    var textEdits =
+      Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "b"))
+        .getChanges()
+        .values()
+        .stream()
+        .flatMap(f -> f.stream())
+        .collect(Collectors.toList());
+
+    assertEquals(2, textEdits.size());
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 2
+        && edit.getRange().getStart().getCharacter() == 6
+        && edit.getRange().getEnd().getLine() == 2
+        && edit.getRange().getEnd().getCharacter() == 7;
     }));
   }
 
