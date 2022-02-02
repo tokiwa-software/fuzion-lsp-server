@@ -28,6 +28,7 @@ package dev.flang.lsp.server.feature;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,18 +84,18 @@ public class Diagnostics
 
   private static Stream<Diagnostic> DuplicateName(URI uri)
   {
-    var usedNames = new HashSet<String>();
+    var usedNames = new HashMap<String, String>();
     var featuresReusingNames = new HashSet<AbstractFeature>();
     QueryAST.SelfAndDescendants(uri)
       .forEach(x -> {
         var baseName = x.featureName().baseName();
-        if (usedNames.contains(baseName))
+        if (usedNames.containsKey(baseName) && x.outer().qualifiedName().contains(usedNames.get(baseName)))
           {
             featuresReusingNames.add(x);
           }
         else
           {
-            usedNames.add(baseName);
+            usedNames.put(baseName, x.outer().qualifiedName());
           }
       });
     return featuresReusingNames.stream().map(f -> {
