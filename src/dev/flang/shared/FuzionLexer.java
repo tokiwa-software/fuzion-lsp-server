@@ -77,7 +77,14 @@ public class FuzionLexer
     return IO.WithTextInputStream(sourceText, () -> {
 
       var lexer = NewLexerStdIn();
-      lexer.setPos(lexer.lineStartPos(params._line));
+      try
+        {
+          lexer.setPos(lexer.lineStartPos(params._line));
+        }
+      catch (ArrayIndexOutOfBoundsException e)
+        {
+          return new TokenInfo(params, "", Token.t_eof);
+        }
 
       while (lexer.current() != Token.t_eof
         && FuzionLexer.lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))

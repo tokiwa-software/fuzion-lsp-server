@@ -59,19 +59,9 @@ public class Diagnostics
 
   public static void publishDiagnostics(URI uri)
   {
-    try
-      {
-        var diagnostics =
-          new PublishDiagnosticsParams(uri.toString(), getDiagnostics(uri).collect(Collectors.toList()));
-
-        Config.languageClient().publishDiagnostics(diagnostics);
-      }
-    // one reason for diagnostics failing may be
-    // sourcetext changing while diagnostics is running async
-    catch (ArrayIndexOutOfBoundsException e)
-      {
-        Log.message("diagnostics failed.");
-      }
+    var diagnostics =
+      new PublishDiagnosticsParams(uri.toString(), getDiagnostics(uri).collect(Collectors.toList()));
+    Config.languageClient().publishDiagnostics(diagnostics);
   }
 
   public static Stream<Diagnostic> getDiagnostics(URI uri)

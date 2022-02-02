@@ -129,4 +129,21 @@ public class DiagnosticsTest extends ExtendedBaseTest
         assertEquals(5, diagnostics.get(2).getRange().getStart().getLine());
     }
 
+    @Test
+    public void ErrorAtEOF()
+    {
+        var sourceText = """
+            a is
+
+              reducer<T,U>(t T, f U -> T) is
+              transducer<T,U,V,W,X: reducer<T,U>, Y: reducer<V,W>> (r X) Y is
+              filter<T,U,V,W,X: reducer<T,U>, Y: reducer<V,W>> (r X) Y is
+
+
+                """;
+        SourceText.setText(uri1, sourceText);
+        var diagnostics = Diagnostics.getDiagnostics(uri1);
+        assertTrue(diagnostics.anyMatch(x -> x.getRange().getStart().getLine() == 6));
+    }
+
 }
