@@ -28,6 +28,7 @@ package dev.flang.lsp.server.feature;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,6 +38,7 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DiagnosticTag;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 
+import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
@@ -64,9 +66,32 @@ public class Diagnostics
   public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     // NYI check names of type arguments
-    return Stream.of(Errors(uri), Warnings(uri), Unused(uri), NamingFeatures(uri), NamingRefs(uri))
+    return Stream.of(Errors(uri), Warnings(uri), Unused(uri), NamingFeatures(uri), NamingRefs(uri), DuplicateName(uri))
       .reduce(Stream::concat)
       .orElseGet(Stream::empty);
+  }
+
+  private static Stream<Diagnostic> DuplicateName(URI uri)
+  {
+    var usedNames = new HashSet<String>();
+    var featuresReusingNames = new HashSet<AbstractFeature>();
+    QueryAST.SelfAndDescendants(uri)
+      .forEach(x -> {
+        var baseName = x.featureName().baseName();
+        if (usedNames.contains(baseName))
+          {
+            featuresReusingNames.add(x);
+          }
+        else
+          {
+            usedNames.add(baseName);
+          }
+      });
+    return featuresReusingNames.stream().map(f -> {
+      return new Diagnostic(Bridge.ToRange(f, true),
+        "name reuse detected, you probably want to use `set`?",
+        DiagnosticSeverity.Information, "fuzion language server");
+    });
   }
 
   private static Stream<Diagnostic> Errors(URI uri)
@@ -148,7 +173,8 @@ public class Diagnostics
 
     var unusedFeatures = FeatureTool
       .SelfAndDescendants(main)
-      // NYI: workaround for: #result is only used for features using type inference
+      // NYI: workaround for: #result is only used for features using type
+      // inference
       // for features using is the name is result even when unused
       .filter(f -> !FeatureTool.IsInternal(f))
       .filter(f -> !calledFeatures.contains(f)
