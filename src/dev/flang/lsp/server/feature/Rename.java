@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.feature;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,9 +52,7 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
-import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
-import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -80,16 +79,12 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
-    // NYI what was the idea here??
-    var featureIdentifier =
-      FuzionLexer.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
-
-    Stream<SourcePosition> renamePositions = getRenamePositions(feature.get(), featureIdentifier);
+    Stream<SourcePosition> renamePositions = getRenamePositions(feature.get());
 
     var changes = renamePositions
       .map(sourcePosition -> Bridge.ToLocation(sourcePosition))
       .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
-        getTextEdit(location, featureIdentifier.text().length(), params.getNewName())))
+        getTextEdit(location, LengthOfFeatureIdentifier(feature.get()), params.getNewName())))
       .collect(Collectors.groupingBy(e -> e.getKey(), Collectors.mapping(e -> e.getValue(), Collectors.toList())));
 
     return new WorkspaceEdit(changes);
@@ -101,8 +96,7 @@ public class Rename
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(AbstractFeature featureToRename,
-    TokenInfo featureIdentifier)
+  private static Stream<SourcePosition> getRenamePositions(AbstractFeature featureToRename)
   {
     var callsSourcePositions = FeatureTool
       .CallsTo(featureToRename)
@@ -134,7 +128,8 @@ public class Rename
       featureToRename.outer().outer() != null &&
       featureToRename.outer().outer().featureName().baseName().startsWith("#fun"))
       {
-        pos = new SourcePosition(pos._sourceFile, pos._line, pos._column - featureIdentifier.text().length() - 1);
+        pos =
+          new SourcePosition(pos._sourceFile, pos._line, pos._column - LengthOfFeatureIdentifier(featureToRename) - 1);
       }
 
     var assignmentPositions = ASTWalker
@@ -142,7 +137,8 @@ public class Rename
       .map(x -> x.getKey().pos())
       .filter(x -> !x.pos().equals(featureToRename.pos()))
       .map(x -> {
-        // NYI better we be if we had the needed and more correct info directly in the AST
+        // NYI better we be if we had the needed and more correct info directly
+        // in the AST
         var set =
           FuzionLexer.nextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.HashSetOf(Token.t_set));
         var whitespace =
@@ -153,6 +149,13 @@ public class Rename
     return Stream.of(callsSourcePositions, typePositions, Stream.of(pos), assignmentPositions)
       .reduce(Stream::concat)
       .orElseGet(Stream::empty);
+  }
+
+  private static int LengthOfFeatureIdentifier(AbstractFeature feature)
+  {
+    return Arrays.stream(feature.featureName().baseName().split(" "))
+      .map(str -> str.length())
+      .reduce(0, (acc, item) -> item);
   }
 
   private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)
