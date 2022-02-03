@@ -30,6 +30,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashSet;
 
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.TokenInfo;
@@ -63,6 +64,19 @@ public class FuzionLexer
           lexer.next();
         }
       return FuzionLexer.tokenInfo(lexer);
+    });
+  }
+
+  public static TokenInfo nextTokenOfType(SourcePosition start, HashSet<Token> tokens)
+  {
+    return IO.WithTextInputStream(SourceText.getText(start), () -> {
+      var lexer = NewLexerStdIn();
+      lexer.setPos(start.bytePos());
+      while (lexer.current() != Token.t_eof && !tokens.contains(lexer.current()))
+        {
+          lexer.next();
+        }
+      return FuzionLexer.tokenInfo(toURI(start), lexer);
     });
   }
 

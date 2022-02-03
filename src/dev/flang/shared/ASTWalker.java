@@ -134,11 +134,7 @@ public class ASTWalker
       }
     if (s instanceof AbstractAssign a)
       {
-        TraverseExpression(a._value, outer, callback);
-        if (a._target != null)
-          {
-            TraverseExpression(a._target, outer, callback);
-          }
+        TraverseAssign(a, outer, callback);
         return;
       }
     if (s instanceof Check c)
@@ -147,6 +143,20 @@ public class ASTWalker
       }
 
     throw new RuntimeException("TraverseStatement not implemented for: " + s.getClass());
+  }
+
+  private static void TraverseAssign(AbstractAssign a, AbstractFeature outer,
+    BiFunction<Object, AbstractFeature, Boolean> callback)
+  {
+    if (!callback.apply(a, outer))
+      {
+        return;
+      }
+    TraverseExpression(a._value, outer, callback);
+    if (a._target != null)
+      {
+        TraverseExpression(a._target, outer, callback);
+      }
   }
 
   private static void TraverseBlock(AbstractBlock b, AbstractFeature outer,
@@ -245,6 +255,22 @@ public class ASTWalker
         return AbstractCall.class.isAssignableFrom(entry.getKey().getClass());
       })
       .map(obj -> new SimpleEntry<>((AbstractCall) obj.getKey(), obj.getValue()));
+  }
+
+  /**
+   * @param start
+   * @return any assigns - and their outer features - happening in feature start or descending features of start
+   */
+  public static Stream<SimpleEntry<AbstractAssign, AbstractFeature>> Assignments(AbstractFeature start,
+    AbstractFeature assignedFeature)
+  {
+    return Traverse(start)
+      .filter(entry -> {
+        return AbstractAssign.class.isAssignableFrom(entry.getKey().getClass());
+      })
+      .map(obj -> new SimpleEntry<>((AbstractAssign) obj.getKey(), obj.getValue()))
+      .filter(entry -> entry.getKey()._assignedField != null
+        && entry.getKey()._assignedField.equals(assignedFeature));
   }
 
 }

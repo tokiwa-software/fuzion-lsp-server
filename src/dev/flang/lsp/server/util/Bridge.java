@@ -34,9 +34,11 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
+import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.SourcePosition;
 
@@ -66,7 +68,12 @@ public class Bridge
   {
     if (baseNameOnly)
       {
-        return new Range(ToPosition(feature.pos()), ToPosition(FuzionLexer.tokenAt(feature.pos()).end()));
+        // including possible modifiers
+        var lengthOfFeatureDeclaration =
+          FuzionLexer.nextTokenOfType(SourceText.RestOfLine(feature.pos()), Util.HashSetOf(Token.t_ident))
+            .end()._column - 1;
+        return new Range(ToPosition(feature.pos()), ToPosition(new SourcePosition(feature.pos()._sourceFile,
+          feature.pos()._line, feature.pos()._column + lengthOfFeatureDeclaration)));
       }
     return new Range(ToPosition(feature.pos()), ToPosition(FuzionParser.endOfFeature(feature)));
   }

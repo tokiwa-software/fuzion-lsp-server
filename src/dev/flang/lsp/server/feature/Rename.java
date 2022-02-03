@@ -48,6 +48,7 @@ import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.SourceText;
@@ -79,6 +80,7 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
+    // NYI what was the idea here??
     var featureIdentifier =
       FuzionLexer.nextTokenOfType(feature.get().featureName().baseName(), Util.HashSetOf(Token.t_ident, Token.t_op));
 
@@ -135,9 +137,20 @@ public class Rename
         pos = new SourcePosition(pos._sourceFile, pos._line, pos._column - featureIdentifier.text().length() - 1);
       }
 
+    var assignmentPositions = ASTWalker
+      .Assignments(featureToRename.outer(), featureToRename)
+      .map(x -> x.getKey().pos())
+      .filter(x -> !x.pos().equals(featureToRename.pos()))
+      .map(x -> {
+        // NYI better we be if we had the needed and more correct info directly in the AST
+        var set =
+          FuzionLexer.nextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.HashSetOf(Token.t_set));
+        var whitespace =
+          FuzionLexer.rawTokenAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column));
+        return whitespace.end();
+      });
 
-
-    return Stream.of(callsSourcePositions, typePositions, Stream.of(pos))
+    return Stream.of(callsSourcePositions, typePositions, Stream.of(pos), assignmentPositions)
       .reduce(Stream::concat)
       .orElseGet(Stream::empty);
   }

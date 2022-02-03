@@ -30,6 +30,7 @@ package test.flang.lsp.server.feature;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.RenameParams;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Rename;
@@ -130,8 +131,7 @@ public class RenameTest extends ExtendedBaseTest
     }));
   }
 
-  // @Test
-  // NYI failing
+  @Test
   public void RenameSetted()
   {
     var sourceText = """
