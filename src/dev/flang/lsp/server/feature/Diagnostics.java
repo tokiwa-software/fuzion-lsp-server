@@ -78,14 +78,14 @@ public class Diagnostics
     var featuresReusingNames = new HashSet<AbstractFeature>();
     QueryAST.SelfAndDescendants(uri)
       .forEach(x -> {
-        var baseName = x.featureName().baseName();
-        if (usedNames.containsKey(baseName) && x.outer().qualifiedName().contains(usedNames.get(baseName)))
+        var ident = x.featureName().baseName() + x.featureName().argCount();
+        if (usedNames.containsKey(ident) && x.outer().qualifiedName().contains(usedNames.get(ident)))
           {
             featuresReusingNames.add(x);
           }
         else
           {
-            usedNames.put(baseName, x.outer().qualifiedName());
+            usedNames.put(ident, x.outer().qualifiedName());
           }
       });
     return featuresReusingNames.stream().map(f -> {
