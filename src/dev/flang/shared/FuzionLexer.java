@@ -63,7 +63,7 @@ public class FuzionLexer
         {
           lexer.next();
         }
-      return FuzionLexer.tokenInfo(lexer);
+      return tokenInfo(lexer);
     });
   }
 
@@ -76,7 +76,7 @@ public class FuzionLexer
         {
           lexer.next();
         }
-      return FuzionLexer.tokenInfo(toURI(start), lexer);
+      return tokenInfo(toURI(start), lexer);
     });
   }
 
@@ -101,24 +101,24 @@ public class FuzionLexer
         }
 
       while (lexer.current() != Token.t_eof
-        && FuzionLexer.lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
+        && lexerEndPosIsBeforeOrAtTextDocumentPosition(params, lexer))
         {
           lexer.nextRaw();
         }
-      return FuzionLexer.tokenInfo(FuzionLexer.toURI(params), lexer);
+      return tokenInfo(toURI(params), lexer);
     });
   }
 
   private static TokenInfo tokenInfo(Lexer lexer)
   {
-    return FuzionLexer.tokenInfo(SourceFile.STDIN.toUri(), lexer);
+    return tokenInfo(SourceFile.STDIN.toUri(), lexer);
   }
 
   private static TokenInfo tokenInfo(URI uri, Lexer lexer)
   {
     var lexerSourcePosition = lexer.sourcePos(lexer.pos());
     var start =
-      new SourcePosition(FuzionLexer.ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
+      new SourcePosition(ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
     return new TokenInfo(start, tokenString, lexer.current());
   }
@@ -141,7 +141,7 @@ public class FuzionLexer
         {
           lexer.next();
         }
-      return tokenInfo(FuzionLexer.toURI(params), lexer);
+      return tokenInfo(toURI(params), lexer);
     });
   }
 
