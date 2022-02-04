@@ -407,6 +407,7 @@ public class QueryASTTest extends ExtendedBaseTest
       nil
       fuzion
       list
+      list
       lists
       outcome
       outcome
