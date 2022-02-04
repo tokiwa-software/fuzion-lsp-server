@@ -285,12 +285,11 @@ public class FuzionParser extends ANY
         .map(position -> {
           var start =
             FuzionLexer.endOfToken(position);
-          var line = SourceText.RestOfLine(start);
           // NYI maybe use inverse hashset here? i.e. state which tokens can
           // be skipped
-          var token = FuzionLexer.nextTokenOfType(line, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
+          var token = FuzionLexer.nextTokenOfType(start, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
             Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
-          return new SourcePosition(position._sourceFile, position._line, start._column - 1 + token.end()._column);
+          return new SourcePosition(position._sourceFile, position._line, token.end()._column);
         })
         .findFirst()
         .orElse(f.pos());

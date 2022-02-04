@@ -31,35 +31,13 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.SourceText;
-import dev.flang.shared.Util;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 public class FuzionLexerTest extends BaseTest
 {
-  @Test
-  public void NextTokenOfType_at_start()
-  {
-    var foundToken = FuzionLexer.nextTokenOfType(", aösldkjf", Util.HashSetOf(Token.t_comma));
-
-    assertEquals(1, foundToken.start()._column);
-    assertEquals(2, foundToken.end()._column);
-    assertEquals(",", foundToken.text());
-  }
-
-  @Test
-  public void NextTokenOfType_at_end()
-  {
-    var foundToken = FuzionLexer.nextTokenOfType("1234,", Util.HashSetOf(Token.t_comma));
-
-    assertEquals(5, foundToken.start()._column);
-    assertEquals(6, foundToken.end()._column);
-    assertEquals(",", foundToken.text());
-  }
-
   @Test
   public void NextToken_a()
   {
