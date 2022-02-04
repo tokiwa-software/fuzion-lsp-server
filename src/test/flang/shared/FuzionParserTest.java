@@ -50,12 +50,12 @@ public class FuzionParserTest extends BaseTest
   {
     var sourceText = """
       ex7 is
-        (1..10).forAll()
-              """;
+        (1..10).forAll()"""
+      + System.lineSeparator() + " ";
     SourceText.setText(uri1, sourceText);
     var endOfFeature = FuzionParser.endOfFeature(FuzionParser.Main(uri1));
     assertEquals(3, endOfFeature._line);
-    assertEquals(1, endOfFeature._column);
+    assertEquals(2, endOfFeature._column);
   }
 
   @Test
@@ -67,8 +67,8 @@ public class FuzionParserTest extends BaseTest
       .findFirst()
       .get();
     var endOfFeature = FuzionParser.endOfFeature(feature_b);
-    assertEquals(4, endOfFeature._line);
-    assertEquals(52, endOfFeature._column);
+    assertEquals(5, endOfFeature._line);
+    assertEquals(4, endOfFeature._column);
 
   }
 
@@ -101,8 +101,8 @@ public class FuzionParserTest extends BaseTest
       HelloWorld is
         level1 is
           level2 is
-            level3 is""";
-    sourceText += System.lineSeparator() + "    ";
+            level3 is"""
+      + System.lineSeparator() + "    ";
     SourceText.setText(uri1, sourceText);
 
     var level2 = FeatureTool.SelfAndDescendants(FuzionParser.Main(uri1))
@@ -110,8 +110,8 @@ public class FuzionParserTest extends BaseTest
       .findFirst()
       .get();
 
-    assertEquals(6, FuzionParser.endOfFeature(level2)._line);
-    assertEquals(1, FuzionParser.endOfFeature(level2)._column);
+    assertEquals(5, FuzionParser.endOfFeature(level2)._line);
+    assertEquals(5, FuzionParser.endOfFeature(level2)._column);
   }
 
 
@@ -192,13 +192,15 @@ public class FuzionParserTest extends BaseTest
   }
 
   @Test
-  public void UniverseOfStdLibFile(){
+  public void UniverseOfStdLibFile()
+  {
     var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
     assertTrue(FuzionParser.Universe(uri).isUniverse());
   }
 
   @Test
-  public void WarningsErrorsOfStdLibFile(){
+  public void WarningsErrorsOfStdLibFile()
+  {
     var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
     assertTrue(FuzionParser.Warnings(uri).findAny().isEmpty());
     assertTrue(FuzionParser.Errors(uri).findAny().isEmpty());

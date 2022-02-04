@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 
 import dev.flang.air.Clazzes;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
@@ -242,14 +243,25 @@ public class FuzionParser extends ANY
         || !FeatureTool.IsAnonymousInnerFeature(feat));
   }
 
-  /**
-   * NYI replace by real end of feature once we have this information in the AST
-   * NOTE: since this is a very expensive calculation and frequently used we cache this
+  /*
    * @param feature
    * @return
    */
   public static SourcePosition endOfFeature(AbstractFeature feature)
   {
+    if (feature instanceof Feature f && !f.nextPos().equals(SourcePosition.notAvailable))
+      {
+        if (f.nextPos()._sourceFile.byteLength() <= f.nextPos().bytePos())
+          {
+            return new SourcePosition(f.nextPos()._sourceFile, f.nextPos()._sourceFile.byteLength());
+          }
+        return new SourcePosition(f.nextPos()._sourceFile, f.nextPos().bytePos() - 1);
+      }
+
+    // NYI replace by real end of feature once we have this information in the
+    // AST
+    // NOTE: since this is a very expensive calculation and frequently used we
+    // cache this
     return EndOfFeatureCache.computeIfAbsent(feature, f -> {
       if (FeatureTool.IsArgument(f))
         {

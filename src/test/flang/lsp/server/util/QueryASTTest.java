@@ -30,6 +30,7 @@ package test.flang.lsp.server.util;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.util.QueryAST;
@@ -276,13 +277,26 @@ public class QueryASTTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
 
     assertEquals("level1", QueryAST
-      .InFeature(Cursor(uri1, 4, 4))
+      .InFeature(Cursor(uri1, 3, 4))
+      .get()
+      .featureName()
+      .baseName());
+
+    assertEquals("level2", QueryAST
+      .InFeature(Cursor(uri1, 3, 5))
+      .get()
+      .featureName()
+      .baseName());
+
+    assertEquals("level3", QueryAST
+      .InFeature(Cursor(uri1, 3, 7))
       .get()
       .featureName()
       .baseName());
   }
 
   @Test
+  @Tag("TAG")
   public void CompletionsAt()
   {
     var sourceText = """

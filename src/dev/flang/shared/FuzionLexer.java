@@ -54,6 +54,7 @@ public class FuzionLexer
    * @param str example: "infix %%"
    * @return example: text: "%%", start: 7
    */
+  @Deprecated
   public static TokenInfo nextTokenOfType(String str, HashSet<Token> tokens)
   {
     return IO.WithTextInputStream(str, () -> {
