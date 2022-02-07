@@ -52,6 +52,7 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -257,7 +258,10 @@ public class FuzionParser extends ANY
           }
         return new SourcePosition(f.nextPos()._sourceFile, f.nextPos().bytePos() - 1);
       }
-
+    if (feature.featureName().baseName().equals(FuzionConstants.RESULT_NAME))
+      {
+        return SourcePosition.notAvailable;
+      }
     // NYI replace by real end of feature once we have this information in the
     // AST
     // NOTE: since this is a very expensive calculation and frequently used we
