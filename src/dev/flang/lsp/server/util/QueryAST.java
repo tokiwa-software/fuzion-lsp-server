@@ -274,9 +274,15 @@ public class QueryAST
    */
   public static Optional<AbstractFeature> FeatureAt(TextDocumentPositionParams params)
   {
+    var currentToken = FuzionLexer.tokenAt(Bridge.ToSourcePosition(params));
+    if (currentToken.token().isKeyword())
+      {
+        return Optional.empty();
+      }
     return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {
-        if (astItem instanceof AbstractFeature f)
+        if (astItem instanceof AbstractFeature f
+          && f.featureName().baseName().equals(currentToken.text()))
           {
             return f;
           }
@@ -309,7 +315,21 @@ public class QueryAST
       })
       .filter(f -> !FeatureTool.IsInternal(f))
       .filter(f -> !f.pos().isBuiltIn())
-      .findFirst();
+      .findFirst()
+      // NYI workaround for not having positions of all types in
+      // the AST currently
+      .or(() -> FindFeatureByName(params, currentToken.text()));
+  }
+
+  public static Optional<AbstractFeature> FindFeatureByName(TextDocumentPositionParams params, String text)
+  {
+    return QueryAST.InFeature(params)
+      .map(contextFeature -> {
+        return FeatureTool.FeaturesInScope(contextFeature)
+          .filter(f -> f.qualifiedName().endsWith(text))
+          .findFirst()
+          .orElse(null);
+      });
   }
 
   private static boolean IsAtDefinitionOfField(TextDocumentPositionParams params, AbstractFeature f)

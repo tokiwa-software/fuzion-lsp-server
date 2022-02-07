@@ -139,8 +139,7 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals("i32", feature.featureName().baseName());
   }
 
-  // @Test
-  // NYI failing...
+  @Test
   public void FeatureAtResultType()
   {
     var sourceText = """
@@ -171,8 +170,7 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals("f", feature.featureName().baseName());
   }
 
-  // @Test
-  // NYI failing...
+  @Test
   public void FeatureAtChoiceTypeArgument()
   {
     var sourceText = """
@@ -192,8 +190,7 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals("pear", pear.featureName().baseName());
   }
 
-  // @Test
-  // NYI failing
+  @Test
   public void FeatureAtInheritanceDeclaration()
   {
     var sourceText = "i33 : wrappingInteger<i33> is";
@@ -296,7 +293,6 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
   @Test
-  @Tag("TAG")
   public void CompletionsAt()
   {
     var sourceText = """
