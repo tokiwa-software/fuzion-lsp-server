@@ -75,7 +75,6 @@ public class FuzionLanguageServer implements LanguageServer
 
   private void initializeSignatureHelp(ServerCapabilities capabilities)
   {
-    // NYI which characters should trigger?
     capabilities.setSignatureHelpProvider(new SignatureHelpOptions(List.of(" ", "(", ",")));
   }
 
@@ -125,7 +124,11 @@ public class FuzionLanguageServer implements LanguageServer
   {
     CompletionOptions completionOptions = new CompletionOptions();
     completionOptions.setResolveProvider(Boolean.FALSE);
-    completionOptions.setTriggerCharacters(List.of(".", "<"));
+    completionOptions.setTriggerCharacters(List.of(
+      ".", // calls
+      "<", // types
+      "r" // for
+      ));
     serverCapabilities.setCompletionProvider(completionOptions);
   }
 

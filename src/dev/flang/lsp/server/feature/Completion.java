@@ -39,11 +39,14 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 
@@ -83,21 +86,26 @@ public class Completion
       {
         return completions(QueryAST.CallCompletionsAt(params));
       }
-    if (params.getContext().getTriggerKind() == CompletionTriggerKind.Invoked)
+    var token =
+      FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(new TextDocumentPositionParams(params.getTextDocument(),
+        new Position(params.getPosition().getLine(), params.getPosition().getCharacter() - 1))));
+    // NYI behaviour not satisfying
+    if (token.text().equals("for"))
       {
-        // NYI broken
-        // return completions(QueryAST.CompletionsAt(params));
-        return completions(Stream.empty());
+        return Either.forLeft(Arrays.asList(
+          buildCompletionItem("for in", "for ${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Keyword),
+          buildCompletionItem("for in while", "for ${1:i} in ${2:0}..${3:10} while ${4:} do",
+            CompletionItemKind.Keyword),
+          buildCompletionItem("for while", "for i:=0, i+1 while ${4:} do", CompletionItemKind.Keyword),
+          buildCompletionItem("for until else", "for ${1:i} in ${2:0}..${3:10} do"
+            + System.lineSeparator() + "until ${4:}"
+            + System.lineSeparator() + "else ${4:}",
+            CompletionItemKind.Keyword)));
       }
-
-    // NYI FIXME we need to move the cursor one step back
-    // before getting next token
-    var tokenText = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params)).text();
-    switch (tokenText)
+    // NYI behaviour not satisfying
+    if (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked) && token.token().equals(Token.t_ws))
       {
-      case "for" :
-        return Either.forLeft(Arrays.asList(buildCompletionItem("for i in start..end do",
-          "for ${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Snippet)));
+        return completions(QueryAST.CompletionsAt(params));
       }
     return Either.forLeft(List.of());
   }
