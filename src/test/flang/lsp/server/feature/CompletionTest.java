@@ -94,11 +94,17 @@ public class CompletionTest extends ExtendedBaseTest
       asArray
       slice ${1:from} ${2:to}
       fold ${1:m}
-      sort (□, □ -> □)
       first
+      last
       isEmpty
       count
-      last
+      take ${1:n}
+      drop ${1:n}
+      takeWhile (□ -> □)
+      dropWhile (□ -> □)
+      infix ++ ${1:s}
+      cycle
+      tails
       postfix |
       forWhile (□ -> □)
       before (□ -> □)
@@ -106,16 +112,10 @@ public class CompletionTest extends ExtendedBaseTest
       infix |& (□ -> □)
       infix ∀ (□ -> □)
       infix ∃ (□ -> □)
-      take ${1:n}
-      drop ${1:n}
-      takeWhile (□ -> □)
-      dropWhile (□ -> □)
       concatSequences ${1:s}
-      infix ++ ${1:s}
-      cycle
-      tails
       mapSequence<${2:B}> (□ -> □)
       insert ${1:at} ${2:v}
+      sort (□, □ -> □)
       sortBy<${2:O}> (□ -> □)
       zip<${3:U}, ${4:V}> ${1:b} (□, □ -> □)
       hashCode

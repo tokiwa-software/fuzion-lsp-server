@@ -30,7 +30,6 @@ package test.flang.lsp.server.util;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.util.QueryAST;
@@ -308,143 +307,143 @@ public class QueryASTTest extends ExtendedBaseTest
       HelloWorld.level1.level2
       HelloWorld.level1
       HelloWorld.innnerFeat
-      Set
-      numOption
-      numOption
-      array2
       Cons
       cons
-      searchablelist
-      complex
-      complex
-      complexes
-      yak
-      debug
-      debug
-      debugLevel
-      f16
       Function
-      map
-      option
-      option
-      choice
-      analysis
-      matrix
-      f64
-      fraction
-      fraction
-      error
+      list
+      list
+      InitArray
+      Monoid
       Object
+      Sequence
+      Sequences
+      Set
+      analysis
+      map
+      array
+      array
+      array2
+      array3
+      bitset
       bitsets
-      sortedArray
-      sortedArray
-      java
-      codepoints
-      floats
-      orderedMap
-      orderedMap
-      setOf
-      setOf
-      stdout
       bool
       FALSE
       TRUE
       false
       true
-      bitset
-      tuple
-      ordered
-      i16
-      i16
-      i16s
-      psSet
-      psSet
-      psSet
-      Sequence
-      Sequences
-      say
-      say
-      void
-      matrices
-      numeric
-      u8
-      u8
-      u8s
-      string
-      strings
-      marray
-      marray
-      integer
-      safety
-      quantors
-      float
+      choice
+      codepoint
+      codepoints
+      complex
+      complex
+      complexes
       conststring
-      u64
-      u64
-      u64s
-      mapOf
-      f32
-      wrappingInteger
-      wrappingIntegers
-      monad
-      pedantic
-      partiallyOrdered
-      unit
-      i32
-      i32
-      i32s
-      sum
-      sum
-      numerics
-      u32
-      u32
-      u32s
+      debug
+      debug
+      debugLevel
+      error
       f128
-      nil
+      f16
+      f32
+      f32s
+      f64
+      f64s
+      float
+      floats
+      fraction
+      fraction
       fuzion
-      list
-      list
-      lists
-      outcome
-      outcome
-      searchableList
+      hasEquals
+      hasHash
+      hasInterval
+      hashMap
+      hashMap
       i128
       i128
       i128s
-      int
-      Monoid
-      i8
-      i8
-      i8s
-      InitArray
-      codepoint
-      uint
-      hasEquals
-      u16
-      u16
-      u16s
-      hasInterval
-      psMap
-      psMap
-      psMap
-      array3
-      array
-      array
-      f64s
-      some
-      sys
-      spit
-      hasHash
+      i16
+      i16
+      i16s
+      i32
+      i32
+      i32s
       i64
       i64
       i64s
+      i8
+      i8
+      i8s
+      int
+      integer
+      java
+      lists
+      mapOf
+      marray
+      marray
+      matrices
+      matrix
+      monad
+      nil
+      numOption
+      numOption
+      numeric
+      sum
+      sum
+      numerics
+      option
+      option
+      ordered
+      orderedMap
+      orderedMap
+      outcome
+      outcome
+      partiallyOrdered
+      pedantic
+      psMap
+      psMap
+      psMap
+      psSet
+      psSet
+      psSet
+      quantors
+      safety
+      say
+      say
+      searchableList
+      searchablelist
+      setOf
+      setOf
+      some
+      sortedArray
+      sortedArray
+      spit
+      stdout
       stream
+      string
+      strings
+      sys
+      tuple
       u128
       u128
       u128s
-      f32s
-      hashMap
-      hashMap
+      u16
+      u16
+      u16s
+      u32
+      u32
+      u32s
+      u64
+      u64
+      u64s
+      u8
+      u8
+      u8s
+      uint
+      unit
+      void
+      wrappingInteger
+      wrappingIntegers
+      yak
       HelloWorld
       Object.asString
       Object.hashCode
