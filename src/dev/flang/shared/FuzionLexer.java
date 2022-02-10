@@ -29,7 +29,12 @@ package dev.flang.shared;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Optional;
 
+import org.eclipse.lsp4j.TextDocumentPositionParams;
+
+import dev.flang.lsp.server.util.Bridge;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.TokenInfo;
@@ -173,6 +178,16 @@ public class FuzionLexer
         return SourcePosition.builtIn._sourceFile;
       }
     return new SourceFile(filePath);
+  }
+
+  public static Optional<TokenInfo> IdentifierTokenAt(TextDocumentPositionParams params)
+  {
+    var currentToken = tokenAt(Bridge.ToSourcePosition(params));
+    if (currentToken.token() != Token.t_ident && LSP4jUtils.PreviousCharacter(params).isPresent())
+      {
+        currentToken = tokenAt(Bridge.ToSourcePosition(LSP4jUtils.PreviousCharacter(params).get()));
+      }
+    return currentToken.token() == Token.t_ident ? Optional.of(currentToken): Optional.empty();
   }
 
 }

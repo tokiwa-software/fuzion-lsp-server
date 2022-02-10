@@ -83,32 +83,6 @@ public class QueryAST
       .findFirst();
   }
 
-  private static Stream<Object> CallsAndFeaturesAt(TextDocumentPositionParams params)
-  {
-    return ASTItemsBeforeOrAtCursor(params)
-      .filter(item -> Util.HashSetOf(AbstractFeature.class, AbstractCall.class)
-        .stream()
-        .anyMatch(cl -> cl.isAssignableFrom(item.getClass())));
-  }
-
-  /**
-   * @param params
-   * @return feature at textdocumentposition or empty
-   */
-  public static Optional<AbstractFeature> DeclaredOrCalledFeature(TextDocumentPositionParams params)
-  {
-    var token = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params));
-    return CallsAndFeaturesAt(params).map(callOrFeature -> {
-      if (callOrFeature instanceof AbstractCall && ((AbstractCall) callOrFeature).calledFeature() != null)
-        {
-          return ((AbstractCall) callOrFeature).calledFeature();
-        }
-      return (AbstractFeature) callOrFeature;
-    })
-      .filter(x -> x.featureName().baseName().equals(token.text()))
-      .findFirst();
-  }
-
   public static Stream<AbstractFeature> CallCompletionsAt(TextDocumentPositionParams params)
   {
     return CalledFeature(params)
@@ -274,15 +248,11 @@ public class QueryAST
    */
   public static Optional<AbstractFeature> FeatureAt(TextDocumentPositionParams params)
   {
-    var currentToken = FuzionLexer.tokenAt(Bridge.ToSourcePosition(params));
-    if (currentToken.token().isKeyword())
-      {
-        return Optional.empty();
-      }
+    var token = FuzionLexer.IdentifierTokenAt(params);
     return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {
         if (astItem instanceof AbstractFeature f
-          && f.featureName().baseName().equals(currentToken.text()))
+          && token.<Boolean>map(x -> x.text().equals(f.featureName().baseName())).orElse(false))
           {
             return f;
           }
@@ -307,10 +277,6 @@ public class QueryAST
           {
             return f.resultType().featureOfType();
           }
-        if (f.isField() && IsAtDefinitionOfField(params, f))
-          {
-            return f.resultType().featureOfType();
-          }
         return f;
       })
       .filter(f -> !FeatureTool.IsInternal(f))
@@ -318,7 +284,7 @@ public class QueryAST
       .findFirst()
       // NYI workaround for not having positions of all types in
       // the AST currently
-      .or(() -> FindFeatureByName(params, currentToken.text()));
+      .or(() -> FindFeatureByName(params, token.map(t -> t.text()).orElse("")));
   }
 
   public static Optional<AbstractFeature> FindFeatureByName(TextDocumentPositionParams params, String text)
@@ -330,14 +296,6 @@ public class QueryAST
           .findFirst()
           .orElse(null);
       });
-  }
-
-  private static boolean IsAtDefinitionOfField(TextDocumentPositionParams params, AbstractFeature f)
-  {
-    var start = Bridge.ToPosition(f.pos());
-    var end = new Position(start.getLine(), start.getCharacter() + f.featureName().baseName().length());
-    return LSP4jUtils.ComparePosition(start, params.getPosition()) <= 0
-      && LSP4jUtils.ComparePosition(end, params.getPosition()) >= 0;
   }
 
   /**

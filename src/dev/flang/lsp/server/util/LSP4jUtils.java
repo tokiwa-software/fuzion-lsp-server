@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.net.URI;
+import java.util.Optional;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
@@ -84,6 +85,22 @@ public final class LSP4jUtils
     var start = Bridge.ToPosition(tokenInfo.start());
     var end = Bridge.ToPosition(tokenInfo.end());
     return new Range(start, end);
+  }
+
+  /**
+   * if not at line start returns textdocumentposition of previous character.
+   * @param p
+   * @return
+   */
+  public static Optional<TextDocumentPositionParams> PreviousCharacter(TextDocumentPositionParams p)
+  {
+    if (p.getPosition().getCharacter() == 0)
+      {
+        return Optional.empty();
+      }
+
+    return Optional.of(new TextDocumentPositionParams(p.getTextDocument(),
+      new Position(p.getPosition().getLine(), p.getPosition().getCharacter() - 1)));
   }
 
 }

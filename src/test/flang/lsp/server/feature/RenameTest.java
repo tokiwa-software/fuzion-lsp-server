@@ -30,7 +30,6 @@ package test.flang.lsp.server.feature;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.RenameParams;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Rename;
@@ -39,8 +38,6 @@ import test.flang.lsp.server.ExtendedBaseTest;
 
 public class RenameTest extends ExtendedBaseTest
 {
-
-
   @Test
   public void PrepareRename() throws Exception
   {
@@ -55,7 +52,8 @@ public class RenameTest extends ExtendedBaseTest
 
     assertEquals("print", Rename.getPrepareRenameResult(Cursor(uri1, 1, 2)).getPlaceholder());
     assertEquals("print", Rename.getPrepareRenameResult(Cursor(uri1, 3, 16)).getPlaceholder());
-    assertEquals(null, Rename.getPrepareRenameResult(Cursor(uri1, 1, 7)).getPlaceholder());
+    assertEquals("print", Rename.getPrepareRenameResult(Cursor(uri1, 1, 7)).getPlaceholder());
+    assertEquals("i", Rename.getPrepareRenameResult(Cursor(uri1, 1, 8)).getPlaceholder());
   }
 
   @Test

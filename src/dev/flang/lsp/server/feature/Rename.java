@@ -72,7 +72,7 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
-    var feature = QueryAST.DeclaredOrCalledFeature(params);
+    var feature = QueryAST.FeatureAt(params);
     if (feature.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
@@ -169,23 +169,19 @@ public class Rename
   // NYI disallow renaming of stdlib
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
-    var pos = Bridge.ToSourcePosition(params);
-    if (!IsAtIdentifier(pos))
+    var featureAt = QueryAST.FeatureAt(params);
+    if (featureAt.isEmpty())
       {
         return new PrepareRenameResult();
       }
-    var token = FuzionLexer.rawTokenAt(pos);
-    if (token.text().trim().isEmpty())
-      {
-        return new PrepareRenameResult();
-      }
-    return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
+
+    return FuzionLexer.IdentifierTokenAt(params)
+      .map(token -> {
+        return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
+      })
+      .orElse(new PrepareRenameResult());
   }
 
-  private static boolean IsAtIdentifier(SourcePosition params)
-  {
-    return FuzionLexer.tokenAt(params).token() == Lexer.Token.t_ident;
-  }
 
   private static boolean IsAtFunKeyword(SourcePosition params)
   {
