@@ -66,4 +66,14 @@ public class Util
       }
     return clazz.getSimpleName();
   }
+
+  /**
+  * NYI need more reliable way than string comparision
+  * @param uri
+  * @return
+  */
+  public static boolean IsStdLib(URI uri)
+  {
+    return uri.toString().contains("/lib/");
+  }
 }

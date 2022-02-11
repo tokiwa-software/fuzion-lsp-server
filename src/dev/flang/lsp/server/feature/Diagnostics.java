@@ -43,12 +43,12 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.lsp.server.util.Log;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
+import dev.flang.shared.Util;
 
 /**
  * provide diagnostics for a given uri
@@ -167,6 +167,9 @@ public class Diagnostics
    */
   private static Stream<Diagnostic> Unused(URI uri)
   {
+    if(Util.IsStdLib(uri)){
+      return Stream.empty();
+    }
     var main = FuzionParser.Main(uri);
     var calledFeatures = ASTWalker.Calls(main)
       .map(x -> x.getKey().calledFeature())

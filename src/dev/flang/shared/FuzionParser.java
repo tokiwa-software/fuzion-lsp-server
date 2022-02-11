@@ -117,16 +117,6 @@ public class FuzionParser extends ANY
     return parserCache.computeIfAbsent(uri + sourceText, key -> createParserCacheRecord(uri));
   }
 
-  /**
-  * NYI need more reliable way than string comparision
-  * @param uri
-  * @return
-  */
-  private static boolean IsStdLib(URI uri)
-  {
-    return uri.toString().contains("/lib/");
-  }
-
   private static ParserCacheRecord createParserCacheRecord(URI uri)
   {
     // NYI
@@ -203,7 +193,7 @@ public class FuzionParser extends ANY
 
   private static File toTempFile(URI uri)
   {
-    var sourceText = IsStdLib(uri) ? "dummyFeature is": SourceText.getText(uri);
+    var sourceText = Util.IsStdLib(uri) ? "dummyFeature is": SourceText.getText(uri);
     File sourceFile = IO.writeToTempFile(sourceText);
     try
       {
