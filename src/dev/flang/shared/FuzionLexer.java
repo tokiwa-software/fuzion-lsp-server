@@ -31,10 +31,6 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
 
-import org.eclipse.lsp4j.TextDocumentPositionParams;
-
-import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.TokenInfo;
@@ -180,12 +176,26 @@ public class FuzionLexer
     return new SourceFile(filePath);
   }
 
-  public static Optional<TokenInfo> IdentifierTokenAt(TextDocumentPositionParams params)
+  /**
+   * if not at line start returns textdocumentposition of previous character.
+   * @param p
+   * @return
+   */
+  private static Optional<SourcePosition> PreviousCharacter(SourcePosition p)
   {
-    var currentToken = tokenAt(Bridge.ToSourcePosition(params));
-    if (currentToken.token() != Token.t_ident && LSP4jUtils.PreviousCharacter(params).isPresent())
+    if (p._column == 1)
       {
-        currentToken = tokenAt(Bridge.ToSourcePosition(LSP4jUtils.PreviousCharacter(params).get()));
+        return Optional.empty();
+      }
+    return Optional.of(new SourcePosition(p._sourceFile, p._line, p._column - 1));
+  }
+
+  public static Optional<TokenInfo> IdentifierTokenAt(SourcePosition pos)
+  {
+    var currentToken = tokenAt(pos);
+    if (currentToken.token() != Token.t_ident && PreviousCharacter(pos).isPresent())
+      {
+        currentToken = tokenAt(PreviousCharacter(pos).get());
       }
     return currentToken.token() == Token.t_ident ? Optional.of(currentToken): Optional.empty();
   }

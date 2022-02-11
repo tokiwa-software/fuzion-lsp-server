@@ -248,7 +248,7 @@ public class QueryAST
    */
   public static Optional<AbstractFeature> FeatureAt(TextDocumentPositionParams params)
   {
-    var token = FuzionLexer.IdentifierTokenAt(params);
+    var token = FuzionLexer.IdentifierTokenAt(Bridge.ToSourcePosition(params));
     return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {
         if (astItem instanceof AbstractFeature f
