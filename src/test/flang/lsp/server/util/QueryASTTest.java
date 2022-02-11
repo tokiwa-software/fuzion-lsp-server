@@ -383,15 +383,18 @@ public class QueryASTTest extends ExtendedBaseTest
       matrices
       matrix
       monad
+      monads
       nil
       numOption
       numOption
+      numOptions
       numeric
       sum
       sum
       numerics
       option
       option
+      options
       ordered
       orderedMap
       orderedMap
