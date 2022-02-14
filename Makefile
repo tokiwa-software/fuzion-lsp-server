@@ -54,7 +54,7 @@ all: classes
 tcp: classes
 	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
 
-classes: $(JAVA_FILES) $(JARS) build_fuzion
+classes: $(JARS) build_fuzion
 	rm -Rf $@
 	mkdir -p $@
 	$(JAVAC) -classpath $(CLASSPATH) -d $@ $(JAVA_FILES)
@@ -147,3 +147,11 @@ release: jar
 	echo "building fuzion_language_server_$(VERSION).zip"
 	rm -f fuzion_language_server_$(VERSION).zip
 	7z a -tzip fuzion_language_server_$(VERSION).zip out.jar README.md LICENSE bin/fuzion_language_server jars/*.jar fuzion/build/bin/ fuzion/build/lib/ fuzion/build/modules/
+
+.PHONY: lint/java
+lint/java: $(JARS) build_fuzion
+	$(JAVAC) -Xlint -classpath $(CLASSPATH) -d classes $(JAVA_FILES)
+
+.PHONY: lint/javadoc
+lint/javadoc: $(JARS) build_fuzion
+	$(JAVAC) -Xdoclint -classpath $(CLASSPATH) -d classes $(JAVA_FILES)
