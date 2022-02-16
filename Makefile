@@ -32,7 +32,7 @@ JAVA_STACKSIZE=16
 VERSION=$(shell cat version.txt)
 DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=127.0.0.1:8000
 CONDITIONS = PRECONDITIONS=true POSTCONDITIONS=true
-JAVA_ARGS =  -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m
+JAVA_ARGS = -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m
 JUNIT_ARGS = --fail-if-no-tests --disable-banner --details=verbose -cp $(CLASSPATH) -p test.flang
 JUNIT_ARGS_PARALLEL = --config=junit.jupiter.execution.parallel.enabled=true --config=junit.jupiter.execution.parallel.mode.default=concurrent
 
