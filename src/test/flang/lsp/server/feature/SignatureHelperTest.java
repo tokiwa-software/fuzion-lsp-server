@@ -49,12 +49,8 @@ public class SignatureHelperTest extends BaseTest
       isInMandelbrotSet(c complex<f64>, maxEscapeIterations i32, z complex<f64>) bool is
         maxEscapeIterations = 0 || z.abs² <= 4 && isInMandelbrotSet c maxEscapeIterations-1 z*z+c
 
-      # NYI how to convert i32 to f64?
-      to_f64(i i32) f64 is
-        if i > 0 1.0 + to_f64(i - 1) else 1.0
-
       steps(start, step f64, numPixels i32) =>
-        array<f64> numPixels (i -> start + to_f64(i) * step)
+        array<f64> numPixels (i -> start + i.as_f64 * step)
 
       mandelbrotImage(yStart, yStep, xStart, xStep f64, height, width i32) =>
         for y in steps yStart yStep height do
@@ -80,10 +76,10 @@ public class SignatureHelperTest extends BaseTest
   public void getSignatureHelpMandelbrot()
   {
     SourceText.setText(uri1, Mandelbrot);
-    assertEquals("yak(s Object) => unit : Object", LabelAt(uri1, new Position(17, 13), 0));
+    assertEquals("yak(s Object) => unit : Object", LabelAt(uri1, new Position(13, 13), 0));
     assertEquals(
       "mandelbrotImage(yStart f64, yStep f64, xStart f64, xStep f64, height i32, width i32) => unit : Object",
-      LabelAt(uri1, new Position(20, 17), 0));
+      LabelAt(uri1, new Position(16, 17), 0));
   }
 
   private String LabelAt(URI uri, final Position position, int index)
