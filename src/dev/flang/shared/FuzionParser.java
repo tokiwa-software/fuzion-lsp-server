@@ -169,9 +169,8 @@ public class FuzionParser extends ANY
 
   private static FrontEndOptions FrontEndOptions(File tempFile)
   {
-    var fuzionHome = Path.of(System.getProperty("fuzion.home"));
     var frontEndOptions =
-      new FrontEndOptions(0, fuzionHome, null, true, JavaModules, 0, false, false, tempFile.getAbsolutePath());
+      new FrontEndOptions(0, SourceText.FuzionHome, null, true, JavaModules, 0, false, false, tempFile.getAbsolutePath());
     return frontEndOptions;
   }
 

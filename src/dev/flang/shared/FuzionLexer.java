@@ -159,7 +159,7 @@ public class FuzionLexer
   public static URI toURI(SourcePosition sourcePosition)
   {
     return Path.of(sourcePosition._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), System.getProperty("fuzion.home"))).toUri();
+      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), SourceText.FuzionHome.toString())).toUri();
   }
 
   public static SourceFile ToSourceFile(URI uri)

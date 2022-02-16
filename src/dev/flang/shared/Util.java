@@ -74,6 +74,6 @@ public class Util
   */
   public static boolean IsStdLib(URI uri)
   {
-    return uri.toString().contains("/lib/");
+    return uri.toString().startsWith(SourceText.FuzionHome.toUri().toString());
   }
 }

@@ -105,7 +105,7 @@ public abstract class BaseTest extends Assert
 
   protected static AbstractFeature Universe()
   {
-    return FuzionParser.Universe(Path.of("./fuzion/build/lib/unit.fz").toUri());
+    return FuzionParser.Universe(Path.of("fuzion/build/lib/unit.fz").toUri());
   }
 
   protected static AbstractFeature DeclaredInUniverse(String name, int argCount)

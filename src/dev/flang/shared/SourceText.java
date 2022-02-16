@@ -43,6 +43,8 @@ public class SourceText
    */
   private static final TreeMap<URI, String> textDocuments = new TreeMap<URI, String>();
 
+  public static final Path FuzionHome = Path.of(System.getProperty("fuzion.home"));
+
   public static void setText(URI uri, String text)
   {
     if (text == null)
