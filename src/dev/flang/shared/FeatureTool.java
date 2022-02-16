@@ -147,14 +147,6 @@ public class FeatureTool extends ANY
    */
   public static String ToLabel(AbstractFeature feature)
   {
-    if (feature.resultType().isChoice())
-      {
-        if (feature.resultType()
-          .choiceGenerics() == null)
-          {
-            return "choice<NYI>";
-          }
-      }
     if (feature.isField())
       {
         return feature.featureName().baseName() + " " + Label(feature.resultType());
@@ -188,6 +180,10 @@ public class FeatureTool extends ANY
   // NYI move to TypeTool?
   private static String Label(AbstractType type)
   {
+    if (type.isChoice() && type.choiceGenerics() == null)
+      {
+        return "choice<?>";
+      }
     return type.toString();
   }
 
