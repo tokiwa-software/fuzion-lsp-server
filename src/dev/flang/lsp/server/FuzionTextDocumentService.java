@@ -94,7 +94,7 @@ public class FuzionTextDocumentService implements TextDocumentService
 
   private void afterSetText(URI uri)
   {
-    debouncer.debounce(Void.class, new Runnable() {
+    debouncer.debounce(uri, new Runnable() {
       @Override
       public void run()
       {
