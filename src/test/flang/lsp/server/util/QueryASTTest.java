@@ -262,6 +262,32 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
   @Test
+  public void CalledFeatureArray()
+  {
+    var sourceText = """
+      ex =>
+        [1].""";
+    SourceText.setText(uri1, sourceText);
+    assertEquals("array", QueryAST
+      .CalledFeature(Cursor(uri1, 1, 6))
+      .get()
+      .qualifiedName());
+  }
+
+  @Test
+  public void CalledFeatureTuple()
+  {
+    var sourceText = """
+      ex =>
+        (1,2).""";
+    SourceText.setText(uri1, sourceText);
+    assertEquals("tuple", QueryAST
+      .CalledFeature(Cursor(uri1, 1, 8))
+      .get()
+      .qualifiedName());
+  }
+
+  @Test
   public void InFeature()
   {
     var sourceText = """

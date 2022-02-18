@@ -38,7 +38,6 @@ import org.junit.jupiter.api.Test;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
-import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
