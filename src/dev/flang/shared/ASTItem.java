@@ -29,7 +29,6 @@ package dev.flang.shared;
 import java.net.URI;
 import java.util.Comparator;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import dev.flang.ast.AbstractCall;
@@ -92,66 +91,61 @@ public class ASTItem
    * @param entry
    * @return
    */
-  public static Optional<SourcePosition> sourcePosition(Object entry)
+  public static SourcePosition sourcePosition(Object entry)
   {
     if (entry instanceof AbstractFeature e)
       {
-        return Optional.of(e.pos());
+        return e.pos();
       }
     if (entry instanceof AbstractType t)
       {
-        return Optional.ofNullable(t.pos());
+        return t.pos();
       }
     if (entry instanceof Stmnt)
       {
-        return Optional.ofNullable(((Stmnt) entry).pos());
+        return ((Stmnt) entry).pos();
       }
     if (entry instanceof Impl)
       {
-        return Optional.ofNullable(((Impl) entry).pos);
+        return ((Impl) entry).pos;
       }
     if (entry instanceof Generic)
       {
-        return Optional.ofNullable(((Generic) entry)._pos);
+        return ((Generic) entry)._pos;
       }
     if (entry instanceof AbstractCase)
       {
-        return Optional.ofNullable(((AbstractCase) entry).pos());
+        return ((AbstractCase) entry).pos();
       }
     if (entry instanceof InlineArray)
       {
-        return Optional.ofNullable(((InlineArray) entry).pos());
+        return ((InlineArray) entry).pos();
       }
     if (entry instanceof Expr)
       {
-        return Optional.ofNullable(((Expr) entry).pos());
+        return ((Expr) entry).pos();
       }
     if (entry instanceof ReturnType)
       {
-        return Optional.empty();
+        return SourcePosition.notAvailable;
       }
     if (entry instanceof Cond)
       {
-        return Optional.empty();
+        return SourcePosition.notAvailable;
       }
     if (entry instanceof FormalGenerics)
       {
-        return Optional.empty();
+        return SourcePosition.notAvailable;
       }
     if (entry instanceof Contract)
       {
-        return Optional.empty();
+        return SourcePosition.notAvailable;
       }
 
     var errorMessage = "sourcePosition(), missing implementation for: " + entry.getClass();
     IO.SYS_ERR.println(errorMessage);
     ErrorHandling.WriteStackTrace(new Exception(errorMessage));
-    return Optional.empty();
-  }
-
-  public static SourcePosition sourcePositionOrNone(Object obj)
-  {
-    return ASTItem.sourcePosition(obj).orElse(SourcePosition.notAvailable);
+    return SourcePosition.notAvailable;
   }
 
   public static boolean IsAbstractFeature(Object o)
@@ -163,11 +157,11 @@ public class ASTItem
   {
     return (entry) -> {
       var sourcePositionOption = sourcePosition(entry.getKey());
-      if (sourcePositionOption.isEmpty())
+      if (sourcePositionOption.isBuiltIn())
         {
           return false;
         }
-      return uri.equals(FuzionParser.getUri(sourcePositionOption.get()));
+      return uri.equals(FuzionParser.getUri(sourcePositionOption));
     };
   }
 
@@ -176,19 +170,19 @@ public class ASTItem
     return (a, b) -> {
       var position1 = sourcePosition(a);
       var position2 = sourcePosition(b);
-      if (position1.isEmpty())
+      if (position1.isBuiltIn())
         {
           return -1;
         }
-      if (position2.isEmpty())
+      if (position2.isBuiltIn())
         {
           return +1;
         }
-      if (position1.get()._line == position2.get()._line)
+      if (position1._line == position2._line)
         {
-          return position1.get()._column - position2.get()._column;
+          return position1._column - position2._column;
         }
-      return position1.get()._line - position2.get()._line;
+      return position1._line - position2._line;
     };
   }
 }

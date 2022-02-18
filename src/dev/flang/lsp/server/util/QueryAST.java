@@ -158,11 +158,7 @@ public class QueryAST extends ANY
     return (entry) -> {
       var astItem = entry.getKey();
       var sourcePositionOption = ASTItem.sourcePosition(astItem);
-      if (sourcePositionOption.isEmpty())
-        {
-          return false;
-        }
-      return !sourcePositionOption.get().isBuiltIn();
+      return !sourcePositionOption.isBuiltIn();
     };
   }
 
@@ -173,11 +169,7 @@ public class QueryAST extends ANY
       var astItem = entry.getKey();
       var cursorPosition = LSP4jUtils.getPosition(params);
       var sourcePositionOption = ASTItem.sourcePosition(astItem);
-      if (sourcePositionOption.isEmpty())
-        {
-          return false;
-        }
-      return cursorPosition.getLine() == Bridge.ToPosition(sourcePositionOption.get()).getLine();
+      return cursorPosition.getLine() == Bridge.ToPosition(sourcePositionOption).getLine();
     };
   }
 
@@ -194,7 +186,7 @@ public class QueryAST extends ANY
       var cursorPosition = LSP4jUtils.getPosition(params);
 
       var sourcePositionOption = ASTItem.sourcePosition(astItem);
-      if (sourcePositionOption.isEmpty())
+      if (sourcePositionOption.isBuiltIn())
         {
           return false;
         }
@@ -203,7 +195,7 @@ public class QueryAST extends ANY
         || LSP4jUtils.ComparePosition(cursorPosition,
           Bridge.ToPosition(FuzionParser.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
-        LSP4jUtils.ComparePosition(cursorPosition, Bridge.ToPosition(sourcePositionOption.get())) >= 0;
+        LSP4jUtils.ComparePosition(cursorPosition, Bridge.ToPosition(sourcePositionOption)) >= 0;
 
       return ItemPositionIsBeforeOrAtCursorPosition && BuiltInOrEndAfterCursor;
     };
@@ -212,19 +204,7 @@ public class QueryAST extends ANY
 
   private static Comparator<? super Object> CompareBySourcePosition =
     Comparator.comparing(obj -> ASTItem.sourcePosition(obj), (sourcePosition1, sourcePosition2) -> {
-      if (sourcePosition1.isEmpty() || sourcePosition2.isEmpty())
-        {
-          if (sourcePosition1.isEmpty() && sourcePosition2.isEmpty())
-            {
-              return 0;
-            }
-          if (sourcePosition1.isEmpty())
-            {
-              return -1;
-            }
-          return 1;
-        }
-      return sourcePosition1.get().compareTo(sourcePosition2.get());
+      return sourcePosition1.compareTo(sourcePosition2);
     });
 
   /**

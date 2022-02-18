@@ -68,7 +68,6 @@ public class Util
   }
 
   /**
-  * NYI need more reliable way than string comparision
   * @param uri
   * @return
   */

@@ -100,8 +100,6 @@ public class ASTWalker
     feature.contract().ens.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
     feature.contract().inv.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
 
-    // NYI do we need to traverse choicetag?
-
     if (descend)
       {
         FuzionParser.DeclaredFeatures(feature, true)

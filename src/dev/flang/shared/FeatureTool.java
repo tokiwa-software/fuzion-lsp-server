@@ -93,12 +93,12 @@ public class FeatureTool extends ANY
         var position = ASTItem.sourcePosition(item);
         // NYI
         var indent = 0;
-        if (position.isEmpty())
+        if (position.isBuiltIn())
           {
             return a;
           }
         return a + System.lineSeparator()
-          + " ".repeat(indent * 2) + position.get()._line + ":" + position.get()._column + ":"
+          + " ".repeat(indent * 2) + position._line + ":" + position._column + ":"
           + Util.ShortName(item.getClass()) + ":" + ASTItem.ToLabel(item);
       }, String::concat);
     return ast;

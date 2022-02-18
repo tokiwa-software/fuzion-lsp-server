@@ -272,8 +272,7 @@ public class FuzionParser extends ANY
         .filter(ASTItem.IsItemInFile(uri))
         .filter(entry -> entry.getValue().compareTo(f) == 0)
         .map(entry -> ASTItem.sourcePosition(entry.getKey()))
-        .filter(sourcePositionOption -> sourcePositionOption.isPresent())
-        .map(sourcePosition -> sourcePosition.get())
+        .filter(sourcePositionOption -> !sourcePositionOption.isBuiltIn())
         .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
         .map(position -> {
           var start =
