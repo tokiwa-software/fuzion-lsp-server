@@ -193,7 +193,8 @@ public class FuzionLexer
   public static Optional<TokenInfo> IdentifierTokenAt(SourcePosition pos)
   {
     var currentToken = tokenAt(pos);
-    if (currentToken.token() != Token.t_ident && PreviousCharacter(pos).isPresent())
+    if (!rawTokenAt(pos).token().equals(Token.t_ident)
+      && PreviousCharacter(pos).isPresent())
       {
         currentToken = tokenAt(PreviousCharacter(pos).get());
       }

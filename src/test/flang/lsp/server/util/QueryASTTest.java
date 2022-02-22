@@ -30,6 +30,7 @@ package test.flang.lsp.server.util;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.util.QueryAST;
@@ -132,9 +133,20 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals("say", feature.featureName().baseName());
 
     feature = QueryAST.FeatureAt(Cursor(uri1, 4, 8)).get();
-    assertEquals("myi32", feature.featureName().baseName());
+    assertEquals("x", feature.featureName().baseName());
+    feature = QueryAST.FeatureAt(Cursor(uri1, 4, 9)).get();
+    assertEquals("x", feature.featureName().baseName());
+
+    feature = QueryAST.FeatureAt(Cursor(uri1, 4, 11)).get();
+    assertEquals("y", feature.featureName().baseName());
 
     feature = QueryAST.FeatureAt(Cursor(uri1, 4, 20)).get();
+    assertEquals("z", feature.featureName().baseName());
+
+    feature = QueryAST.FeatureAt(Cursor(uri1, 4, 21)).get();
+    assertEquals("z", feature.featureName().baseName());
+
+    feature = QueryAST.FeatureAt(Cursor(uri1, 4, 22)).get();
     assertEquals("i32", feature.featureName().baseName());
   }
 

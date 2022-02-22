@@ -65,7 +65,7 @@ public class QueryAST extends ANY
 
   public static Optional<AbstractFeature> CalledFeature(TextDocumentPositionParams params)
   {
-    if(PRECONDITIONS)
+    if (PRECONDITIONS)
       ensure(!Util.IsStdLib(LSP4jUtils.getUri(params)));
 
     var universe = FuzionParser.Universe(LSP4jUtils.getUri(params));
@@ -255,17 +255,6 @@ public class QueryAST extends ANY
       })
       .filter(f -> f != null)
       .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
-      .map(f -> {
-        if (f.resultType().isChoice())
-          {
-            return f;
-          }
-        if (FeatureTool.IsArgument(f))
-          {
-            return f.resultType().featureOfType();
-          }
-        return f;
-      })
       .filter(f -> !FeatureTool.IsInternal(f))
       .filter(f -> !f.pos().isBuiltIn())
       .findFirst()
@@ -279,7 +268,7 @@ public class QueryAST extends ANY
     return QueryAST.InFeature(params)
       .map(contextFeature -> {
         return FeatureTool.FeaturesInScope(contextFeature)
-          .filter(f -> f.qualifiedName().endsWith(text))
+          .filter(f -> f.featureName().baseName().equals(text))
           .findFirst()
           .orElse(null);
       });

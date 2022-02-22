@@ -187,5 +187,40 @@ public class RenameTest extends ExtendedBaseTest
 
   }
 
+  @Test
+  public void RenameArg()
+  {
+    var sourceText = """
+      ex =>
+        a is
+        b (a a) is
+          say a
+          """;
+    SourceText.setText(uri1, sourceText);
+    var cursor = Cursor(uri1, 3, 8);
+    var textEdits = Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "c"))
+      .getChanges()
+      .values()
+      .stream()
+      .findFirst()
+      .get();
+
+    assertEquals(2,textEdits.size());
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 2
+        && edit.getRange().getStart().getCharacter() == 5
+        && edit.getRange().getEnd().getLine() == 2
+        && edit.getRange().getEnd().getCharacter() == 6;
+    }));
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 3
+        && edit.getRange().getStart().getCharacter() == 8
+        && edit.getRange().getEnd().getLine() == 3
+        && edit.getRange().getEnd().getCharacter() == 9;
+    }));
+
+  }
 
 }
