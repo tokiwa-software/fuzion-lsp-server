@@ -30,7 +30,6 @@ package test.flang.lsp.server.util;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.util.QueryAST;
@@ -208,6 +207,15 @@ public class QueryASTTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 6)).get();
     assertEquals("wrappingInteger", wrappingInteger.featureName().baseName());
+  }
+
+  @Test
+  public void FeatureAtActualGeneric()
+  {
+    var sourceText = "i33 : wrappingInteger<i33> is";
+    SourceText.setText(uri1, sourceText);
+    var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 22)).get();
+    assertEquals("i33", wrappingInteger.featureName().baseName());
   }
 
   @Test
