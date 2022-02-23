@@ -130,9 +130,7 @@ public class Diagnostics
           // any uppercase after first char
           || Arrays.stream(splittedBaseName)
             .anyMatch(str -> !str.isEmpty()
-              && str.substring(1).chars().mapToObj(i -> (char) i).anyMatch(c -> Character.isUpperCase(c)))
-        // any minus
-          || basename.chars().mapToObj(i -> (char) i).anyMatch(c -> c.equals('-'));
+              && str.substring(1).chars().mapToObj(i -> (char) i).anyMatch(c -> Character.isUpperCase(c)));
       })
       .map(f -> {
         return new Diagnostic(Bridge.ToRange(f, true),
@@ -149,9 +147,7 @@ public class Diagnostics
         var basename = f.featureName().baseName();
         return
         // any uppercase
-        basename.chars().mapToObj(i -> (char) i).anyMatch(c -> Character.isUpperCase(c))
-          // any minus
-          || basename.chars().mapToObj(i -> (char) i).anyMatch(c -> c.equals('-'));
+        basename.chars().mapToObj(i -> (char) i).anyMatch(c -> Character.isUpperCase(c));
       })
       .map(f -> {
         return new Diagnostic(Bridge.ToRange(f, true), "use snake_case, check: https://flang.dev/design/identifiers",
