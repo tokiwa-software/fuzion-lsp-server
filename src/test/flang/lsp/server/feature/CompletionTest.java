@@ -43,37 +43,15 @@ import test.flang.lsp.server.ExtendedBaseTest;
 
 public class CompletionTest extends ExtendedBaseTest
 {
-  private static final String ListCompletion = """
-    fasta =>
-      selectRandom() =>
-        "a"
-
-      randomFasta() =>
-        (1..10)
-          .map<string>(_ -> selectRandom())
-          .
-        """;
-
-  private static final String FeatureCallCompletion = """
-    fasta =>
-      selectRandom() =>
-        "a"
-
-      randomFasta() =>
-        (1..10)
-          .map<string>(_ -> selectRandom())
-          .fold(strings.)
-        """;
-
-  private static final String IntervallCompletion = """
-      example =>
-        (1..2).
-    """;
-
   @Test
   public void getIntervallCompletions()
   {
-    SourceText.setText(uri1, IntervallCompletion);
+    var sourceText = """
+        example =>
+          (1..2).
+      """;
+
+    SourceText.setText(uri1, sourceText);
     var expected = """
       map<${2:B}> (□ -> □)
       asString
@@ -132,7 +110,18 @@ public class CompletionTest extends ExtendedBaseTest
   @Test
   public void getListCompletions()
   {
-    SourceText.setText(uri1, ListCompletion);
+    var sourceText = """
+      fasta =>
+        selectRandom() =>
+          "a"
+
+        randomFasta() =>
+          (1..10)
+            .map<string>(_ -> selectRandom())
+            .
+          """;
+
+    SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 7, 7));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("fold")));
   }
@@ -140,7 +129,17 @@ public class CompletionTest extends ExtendedBaseTest
   @Test
   public void getFeatureCallCompletions()
   {
-    SourceText.setText(uri1, FeatureCallCompletion);
+    var sourceText = """
+      fasta =>
+        selectRandom() =>
+          "a"
+
+        randomFasta() =>
+          (1..10)
+            .map<string>(_ -> selectRandom())
+            .fold(strings.)
+          """;
+    SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 7, 20));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("concat")));
   }
