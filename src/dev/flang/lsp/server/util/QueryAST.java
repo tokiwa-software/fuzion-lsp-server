@@ -32,8 +32,11 @@ import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.swing.text.AbstractDocument.Content;
 
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
@@ -41,6 +44,8 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
+import dev.flang.parser.Lexer.Token;
+import dev.flang.ast.Constant;
 import dev.flang.shared.ASTItem;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.ErrorHandling;
@@ -72,10 +77,9 @@ public class QueryAST extends ANY
     return ASTWalker.Traverse(universe)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof AbstractCall)
-      .map(entry -> new SimpleEntry<AbstractCall, AbstractFeature>((AbstractCall) entry.getKey(), entry.getValue()))
       .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
-      .filter(entry -> PositionIsBeforeCursor(params, entry.getKey().pos()))
-      .map(entry -> entry.getKey())
+      .filter(entry -> PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
+      .map(entry -> (AbstractCall) entry.getKey())
       .filter(c -> LSP4jUtils.ComparePosition(Bridge.ToPosition(CallTool.endOfCall(c)), params.getPosition()) <= 0)
       .sorted(CompareBySourcePosition.reversed())
       .filter(c -> c.calledFeature() != null)
@@ -87,6 +91,27 @@ public class QueryAST extends ANY
       .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
       // NYI in this case we could try to find possibly called features?
       .filter(f -> f.resultType() != Types.t_ERROR)
+      .findFirst()
+      .or(() -> Constant(params, universe));
+  }
+
+  private static Optional<? extends AbstractFeature> Constant(TextDocumentPositionParams params,
+    AbstractFeature universe)
+  {
+    var posBeforeDot = FuzionLexer.GoBackInLine(Bridge.ToSourcePosition(params), 2);
+    if (posBeforeDot.isEmpty()
+      || FuzionLexer.rawTokenAt(posBeforeDot.get()).token() == Token.t_numliteral)
+      {
+        return Optional.empty();
+      }
+    return ASTWalker.Traverse(universe)
+      .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
+      .filter(entry -> entry.getKey() instanceof Constant)
+      .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
+      .filter(entry -> PositionIsBeforeCursor(params, ((Constant) entry.getKey()).pos()))
+      .map(entry -> ((Constant) entry.getKey()))
+      .sorted(CompareBySourcePosition.reversed())
+      .map(x -> x.type().featureOfType())
       .findFirst();
   }
 

@@ -515,4 +515,45 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals(1, QueryAST.SelfAndDescendants(uri1).count());
   }
 
+
+  @Test
+  public void CalledNumLiteral()
+  {
+    var sourceText = """
+      ex =>
+        (1.2).
+        """;
+
+    SourceText.setText(uri1, sourceText);
+    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 8));
+    assertEquals("f64", calledFeature.get().qualifiedName());
+  }
+
+  @Test
+  public void CalledString()
+  {
+    var sourceText = """
+      ex =>
+        "asdf".
+        """;
+
+    SourceText.setText(uri1, sourceText);
+    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 9));
+    assertEquals("string", calledFeature.get().qualifiedName());
+  }
+
+  @Test
+  public void CalledNothing()
+  {
+    var sourceText = """
+      ex =>
+        1.
+        """;
+
+    SourceText.setText(uri1, sourceText);
+    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 4));
+    assertTrue(calledFeature.isEmpty());
+  }
+
+
 }

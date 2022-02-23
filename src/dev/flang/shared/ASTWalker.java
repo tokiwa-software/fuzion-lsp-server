@@ -42,6 +42,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Box;
 import dev.flang.ast.Check;
+import dev.flang.ast.Constant;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
@@ -210,6 +211,11 @@ public class ASTWalker
           }
         return;
       }
+    // for offering completions on constants
+    if (expr instanceof Constant ac){
+      callback.apply(ac,outer);
+      return;
+    }
     if (expr instanceof AbstractCurrent
       || expr instanceof Unbox
       || expr instanceof AbstractConstant

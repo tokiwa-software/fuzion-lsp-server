@@ -95,11 +95,6 @@ public class FuzionLexer
     });
   }
 
-  private static TokenInfo tokenInfo(Lexer lexer)
-  {
-    return tokenInfo(SourceFile.STDIN.toUri(), lexer);
-  }
-
   private static TokenInfo tokenInfo(URI uri, Lexer lexer)
   {
     var lexerSourcePosition = lexer.sourcePos(lexer.pos());
@@ -177,26 +172,26 @@ public class FuzionLexer
   }
 
   /**
-   * if not at line start returns textdocumentposition of previous character.
    * @param p
+   * @param n number of columns to go back
    * @return
    */
-  private static Optional<SourcePosition> PreviousCharacter(SourcePosition p)
+  public static Optional<SourcePosition> GoBackInLine(SourcePosition p, int n)
   {
-    if (p._column == 1)
+    if (p._column - n < 1)
       {
         return Optional.empty();
       }
-    return Optional.of(new SourcePosition(p._sourceFile, p._line, p._column - 1));
+    return Optional.of(new SourcePosition(p._sourceFile, p._line, p._column - n));
   }
 
   public static Optional<TokenInfo> IdentifierTokenAt(SourcePosition pos)
   {
     var currentToken = tokenAt(pos);
     if (!rawTokenAt(pos).token().equals(Token.t_ident)
-      && PreviousCharacter(pos).isPresent())
+      && GoBackInLine(pos, 1).isPresent())
       {
-        currentToken = tokenAt(PreviousCharacter(pos).get());
+        currentToken = tokenAt(GoBackInLine(pos, 1).get());
       }
     return currentToken.token() == Token.t_ident ? Optional.of(currentToken): Optional.empty();
   }
