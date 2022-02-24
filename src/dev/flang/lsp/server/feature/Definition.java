@@ -57,7 +57,7 @@ public class Definition
 
   private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(AbstractFeature af)
 	{
-    if(FeatureTool.IsAnonymousInnerFeature(af)){
+    if(FeatureTool.IsInternal(af)){
       return getDefinition(af.outer());
     }
     Location location = Bridge.ToLocation(af.pos());

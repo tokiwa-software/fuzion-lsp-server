@@ -88,7 +88,7 @@ public class QueryAST extends ANY
       .filter(c -> !c.calledFeature().qualifiedName().equals("sys.array"))
       .filter(c -> !c.calledFeature().qualifiedName().equals("sys.array.index [ ] ="))
       .map(c -> c.calledFeature())
-      .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
+      .filter(f -> !FeatureTool.IsInternal(f))
       // NYI in this case we could try to find possibly called features?
       .filter(f -> f.resultType() != Types.t_ERROR)
       .findFirst()
@@ -246,7 +246,7 @@ public class QueryAST extends ANY
   public static Optional<AbstractCall> callAt(TextDocumentPositionParams params)
   {
     Optional<AbstractCall> call = ASTItemsBeforeOrAtCursor(params)
-      .filter(item -> Util.HashSetOf(AbstractCall.class).stream().anyMatch(cl -> cl.isAssignableFrom(item.getClass())))
+      .filter(item -> item instanceof AbstractCall)
       .map(c -> (AbstractCall) c)
       .findFirst();
     return call;
@@ -279,9 +279,7 @@ public class QueryAST extends ANY
         return null;
       })
       .filter(f -> f != null)
-      .filter(f -> !FeatureTool.IsAnonymousInnerFeature(f))
       .filter(f -> !FeatureTool.IsInternal(f))
-      .filter(f -> !f.pos().isBuiltIn())
       .findFirst()
       // NYI workaround for not having positions of all types in
       // the AST currently

@@ -223,14 +223,14 @@ public class FuzionParser extends ANY
       .stream();
   }
 
-  public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean IncludeAnonymousInnerFeatures)
+  public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
   {
     return parserCache.SourceModule(f.universe())
       .declaredFeatures(f)
       .values()
       .stream()
-      .filter(feat -> IncludeAnonymousInnerFeatures
-        || !FeatureTool.IsAnonymousInnerFeature(feat));
+      .filter(feat -> includeInternalFeatures
+        || !FeatureTool.IsInternal(feat));
   }
 
   /*

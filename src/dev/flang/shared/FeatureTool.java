@@ -116,11 +116,15 @@ public class FeatureTool extends ANY
       .anyMatch(f -> f.equals(feature));
   }
 
-  public static boolean IsAnonymousInnerFeature(AbstractFeature f)
+  public static boolean IsInternal(AbstractFeature f)
   {
     // NYI use f.visibility()
+    if(f.isUniverse()){
+      return false;
+    }
     return f.resultType().equals(Types.t_ADDRESS)
-      || f.featureName().baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+      || f.featureName().baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX)
+      || IsInternal(f.outer());
   }
 
   static Optional<AbstractFeature> TopLevelFeature(AbstractFeature f)
@@ -214,15 +218,14 @@ public class FeatureTool extends ANY
    */
   static boolean IsOfLastFeature(AbstractFeature feature)
   {
-    return !IsInternal(feature) && SelfAndDescendants(TopLevelFeature(feature).get())
+    return !IsFunctionCall(feature) && SelfAndDescendants(TopLevelFeature(feature).get())
       .noneMatch(f -> f.pos()._line > feature.pos()._line
         && f.pos()._column <= feature.pos()._column);
   }
 
-  public static boolean IsInternal(AbstractFeature f)
+  private static boolean IsFunctionCall(AbstractFeature f)
   {
-    // NYI maybe there is a better way?
-    return Util.HashSetOf("Object", "Function", "call", "result").contains(f.featureName().baseName());
+    return f.redefines().contains(Types.resolved.f_function_call);
   }
 
   private static Set<AbstractFeature> Callers(AbstractFeature f)
