@@ -91,6 +91,7 @@ public class CompletionTest extends ExtendedBaseTest
       infix ∃ (□ -> □)
       concatSequences ${1:s}
       mapSequence<${2:B}> (□ -> □)
+      reduce<${3:R}> ${1:init} (□, □ -> □)
       insert ${1:at} ${2:v}
       sort (□, □ -> □)
       sortBy<${2:O}> (□ -> □)
