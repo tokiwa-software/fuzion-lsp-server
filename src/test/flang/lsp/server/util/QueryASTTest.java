@@ -30,6 +30,7 @@ package test.flang.lsp.server.util;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.util.QueryAST;
@@ -553,6 +554,20 @@ public class QueryASTTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 4));
     assertTrue(calledFeature.isEmpty());
+  }
+
+
+  @Test
+  public void CalledLambdaArgument()
+  {
+    var sourceText = """
+      ex=>
+        (1..2).map<f64> (x -> x.)
+              """;
+
+    SourceText.setText(uri1, sourceText);
+    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 26));
+    assertEquals("x", calledFeature.get().featureName().baseName());
   }
 
 

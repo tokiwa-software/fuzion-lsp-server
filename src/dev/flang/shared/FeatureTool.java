@@ -119,12 +119,8 @@ public class FeatureTool extends ANY
   public static boolean IsInternal(AbstractFeature f)
   {
     // NYI use f.visibility()
-    if(f.isUniverse()){
-      return false;
-    }
     return f.resultType().equals(Types.t_ADDRESS)
-      || f.featureName().baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX)
-      || IsInternal(f.outer());
+      || f.featureName().baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
   }
 
   static Optional<AbstractFeature> TopLevelFeature(AbstractFeature f)
