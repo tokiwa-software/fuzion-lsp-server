@@ -27,7 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.util;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Tag;
@@ -350,162 +352,36 @@ public class QueryASTTest extends ExtendedBaseTest
     sourceText += System.lineSeparator() + "    ";
     SourceText.setText(uri1, sourceText);
 
-    var expectedCompletions = """
-      HelloWorld.level1.level2
-      HelloWorld.level1
-      HelloWorld.innnerFeat
-      Cons
-      cons
-      Function
-      list
-      list
-      InitArray
-      Monoid
-      Object
-      Sequence
-      Sequences
-      Set
-      analysis
-      map
-      array
-      array
-      array2
-      array3
-      bitset
-      bitsets
-      bool
-      FALSE
-      TRUE
-      false
-      true
-      choice
-      codepoint
-      codepoints
-      complex
-      complex
-      complexes
-      conststring
-      debug
-      debug
-      debugLevel
-      error
-      f128
-      f16
-      f32
-      f32s
-      f64
-      f64s
-      float
-      floats
-      fraction
-      fraction
-      fuzion
-      hasEquals
-      hasHash
-      hasInterval
-      hashMap
-      hashMap
-      i128
-      i128
-      i128s
-      i16
-      i16
-      i16s
-      i32
-      i32
-      i32s
-      i64
-      i64
-      i64s
-      i8
-      i8
-      i8s
-      int
-      integer
-      java
-      lists
-      mapOf
-      marray
-      marray
-      matrices
-      matrix
-      monad
-      monads
-      nil
-      numOption
-      numOption
-      numOptions
-      numeric
-      sum
-      sum
-      numerics
-      option
-      option
-      options
-      ordered
-      orderedMap
-      orderedMap
-      outcome
-      outcome
-      partiallyOrdered
-      pedantic
-      psMap
-      psMap
-      psMap
-      psSet
-      psSet
-      psSet
-      quantors
-      safety
-      say
-      say
-      searchableList
-      searchablelist
-      setOf
-      setOf
-      some
-      sortedArray
-      sortedArray
-      spit
-      stdout
-      stream
-      string
-      strings
-      sys
-      tuple
-      u128
-      u128
-      u128s
-      u16
-      u16
-      u16s
-      u32
-      u32
-      u32s
-      u64
-      u64
-      u64s
-      u8
-      u8
-      u8s
-      uint
-      unit
-      void
-      wrappingInteger
-      wrappingIntegers
-      yak
-      HelloWorld
-      Object.asString
-      Object.hashCode
-      Object.prefix $""";
-
     var completions = QueryAST
       .CompletionsAt(Cursor(uri1, 5, 4))
       .map(f -> f.qualifiedName())
-      .collect(Collectors.joining("\n"));
+      .collect(Collectors.toSet());
 
-    assertEquals(expectedCompletions, completions);
+    var expectedCompletions = Arrays.stream(new String[]
+      {
+          "HelloWorld.level1.level2",
+          "HelloWorld.level1",
+          "HelloWorld.innnerFeat",
+          "Function",
+          "list",
+          "Sequence",
+          "array",
+          "bool",
+          "false",
+          "true",
+          "float",
+          "i32",
+          "marray",
+          "outcome",
+          "say",
+          "stream",
+          "string",
+          "strings",
+          "sys",
+          "tuple",
+      }).collect(Collectors.toSet());
 
+    assertTrue(completions.containsAll(expectedCompletions));
   }
 
   @Test
