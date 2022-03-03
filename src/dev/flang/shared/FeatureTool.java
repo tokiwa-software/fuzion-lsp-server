@@ -75,13 +75,21 @@ public class FeatureTool extends ANY
         line = line - 1;
       }
     Collections.reverse(commentLines);
+
+    var commentsOfRedefinedFeatures = feature
+      .redefines()
+      .stream()
+      .map(f -> System.lineSeparator() + "redefines " + f.qualifiedName() + ":" + System.lineSeparator() + CommentOf(f))
+      .collect(Collectors.joining(System.lineSeparator()));
+
     return commentLines
       .stream()
       .map(l -> l.trim())
       .map(l -> l
         .replaceAll("^#", "")
         .trim())
-      .collect(Collectors.joining(System.lineSeparator()));
+      .collect(Collectors.joining(System.lineSeparator()))
+      + commentsOfRedefinedFeatures;
   }
 
   public static String AST(AbstractFeature start)

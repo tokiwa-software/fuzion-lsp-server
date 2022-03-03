@@ -85,6 +85,25 @@ public class FeatureToolTest extends BaseTest
   }
 
   @Test
+  public void CommentOfRedef()
+  {
+    var psSet = DeclaredInUniverse("psSet", 2);
+    var psSetasArray = FuzionParser.DeclaredFeatures(psSet)
+      .filter(f -> f.featureName().baseName().equals("asArray"))
+      .findFirst()
+      .get();
+    var actual = FeatureTool.CommentOf(psSetasArray);
+
+    assertEquals(
+      """
+        create a sorted array from the elements of this set
+
+        redefines Sequence.asArray:
+        collect the contents of this Sequence into an array""" + System.lineSeparator(),
+      actual);
+  }
+
+  @Test
   public void ToLabel()
   {
     var array = DeclaredInUniverse("array", 2);
