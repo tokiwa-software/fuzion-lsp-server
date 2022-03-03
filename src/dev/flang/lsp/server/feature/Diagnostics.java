@@ -79,7 +79,11 @@ public class Diagnostics
     QueryAST.SelfAndDescendants(uri)
       .forEach(x -> {
         var ident = x.featureName().baseName() + x.featureName().argCount();
-        if (usedNames.containsKey(ident) && x.outer().qualifiedName().contains(usedNames.get(ident)))
+        if (
+          usedNames.containsKey(ident) &&
+          x.outer().qualifiedName().contains(usedNames.get(ident)) &&
+          x.outer().isRoutine()
+        )
           {
             featuresReusingNames.add(x);
           }
