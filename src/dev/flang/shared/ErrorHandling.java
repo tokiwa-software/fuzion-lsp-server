@@ -99,7 +99,7 @@ public class ErrorHandling
       {
         return callable.call();
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         return defaultValue;
       }
