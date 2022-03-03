@@ -55,7 +55,7 @@ public class CodeLenses
   private static Stream<CodeLens> codeLensesCallGraph(URI uri)
   {
     return QueryAST.SelfAndDescendants(uri)
-      .filter(f -> !(f.isField() || FeatureTool.IsArgument(f) || FeatureTool.IsInternal(f)))
+      .filter(f -> !(f.isField() || FeatureTool.IsArgument(f)))
       .map(f -> {
         var command =
           new Command(Commands.callGraph.toString(), Commands.callGraph.name(),

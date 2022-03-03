@@ -80,7 +80,7 @@ public class ASTWalker
   private static void TraverseFeature(AbstractFeature feature, BiFunction<Object, AbstractFeature, Boolean> callback,
     boolean descend)
   {
-    if (!callback.apply(feature, feature.outer()))
+    if (!FeatureTool.IsInternal(feature) && !callback.apply(feature, feature.outer()))
       {
         return;
       }

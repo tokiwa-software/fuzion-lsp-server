@@ -272,14 +272,9 @@ public class QueryAST extends ANY
           {
             return ErrorHandling.ResultOrDefault(() -> c.calledFeature(), null);
           }
-        if (astItem instanceof AbstractType t)
-          {
-            return t.featureOfType();
-          }
         return null;
       })
       .filter(f -> f != null)
-      .filter(f -> !FeatureTool.IsInternal(f))
       .findFirst()
       // NYI workaround for not having positions of all types in
       // the AST currently

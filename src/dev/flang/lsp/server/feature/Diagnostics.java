@@ -177,10 +177,6 @@ public class Diagnostics
 
     var unusedFeatures = FeatureTool
       .SelfAndDescendants(main)
-      // NYI: workaround for: #result is only used for features using type
-      // inference
-      // for features using is the name is result even when unused
-      .filter(f -> !FeatureTool.IsInternal(f))
       .filter(f ->
         !calledFeatures.contains(f)
           && !f.equals(main)
