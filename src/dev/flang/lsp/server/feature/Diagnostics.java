@@ -82,7 +82,7 @@ public class Diagnostics
         if (
           usedNames.containsKey(ident) &&
           x.outer().qualifiedName().contains(usedNames.get(ident)) &&
-          x.outer().isRoutine()
+          !FeatureTool.IsArgument(x)
         )
           {
             featuresReusingNames.add(x);
