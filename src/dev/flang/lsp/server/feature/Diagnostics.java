@@ -181,8 +181,14 @@ public class Diagnostics
       // inference
       // for features using is the name is result even when unused
       .filter(f -> !FeatureTool.IsInternal(f))
-      .filter(f -> !calledFeatures.contains(f)
-        && !f.equals(main))
+      .filter(f ->
+        !calledFeatures.contains(f)
+          && !f.equals(main)
+          && !f.featureName().baseName().equals("result")
+          // NYI in this case we would need to do more work to
+          // know if feature is used.
+          && f.redefines().isEmpty()
+          )
       .collect(Collectors.toList());
 
     var unusedDiagnostics = unusedFeatures.stream().map(f -> {
