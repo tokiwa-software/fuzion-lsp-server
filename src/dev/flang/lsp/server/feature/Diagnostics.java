@@ -124,7 +124,7 @@ public class Diagnostics
   private static Stream<Diagnostic> NamingRefs(URI uri)
   {
     return QueryAST.SelfAndDescendants(uri)
-      .filter(f -> f.resultType().isRef() && !f.isField())
+      .filter(f -> (f.isOuterRef() || f.isThisRef()) && !f.isField())
       .filter(f -> {
         var basename = f.featureName().baseName();
         var splittedBaseName = basename.split("_");
@@ -146,7 +146,7 @@ public class Diagnostics
   private static Stream<Diagnostic> NamingFeatures(URI uri)
   {
     var snakeCase = QueryAST.SelfAndDescendants(uri)
-      .filter(f -> !f.resultType().isRef() || f.isField())
+      .filter(f -> !(f.isOuterRef() || f.isThisRef()) || f.isField())
       .filter(f -> {
         var basename = f.featureName().baseName();
         return

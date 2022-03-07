@@ -89,15 +89,23 @@ public class DiagnosticsTest extends ExtendedBaseTest
             storage =>
               badName =>
                 "hello"
+              bad_name ref is
+
+              # get rid of unused diagnostics
               say badName
+              say bad_name
                         """;
         SourceText.setText(uri1, sourceText);
         var diagnostics = Diagnostics.getDiagnostics(uri1).collect(Collectors.toList());
-        assertEquals(1, diagnostics.size());
+        assertEquals(2, diagnostics.size());
         assertEquals(1, diagnostics.get(0).getRange().getStart().getLine());
         assertEquals(2, diagnostics.get(0).getRange().getStart().getCharacter());
         assertEquals(1, diagnostics.get(0).getRange().getEnd().getLine());
         assertEquals(9, diagnostics.get(0).getRange().getEnd().getCharacter());
+        assertEquals(3, diagnostics.get(1).getRange().getStart().getLine());
+        assertEquals(2, diagnostics.get(1).getRange().getStart().getCharacter());
+        assertEquals(3, diagnostics.get(1).getRange().getEnd().getLine());
+        assertEquals(10, diagnostics.get(1).getRange().getEnd().getCharacter());
     }
 
     @Test
