@@ -28,8 +28,10 @@ package dev.flang.shared;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
@@ -62,7 +64,7 @@ public class FuzionLexer
         {
           lexer.next();
         }
-      return tokenInfo(toURI(start), lexer);
+      return tokenInfo(start, lexer);
     });
   }
 
@@ -91,12 +93,13 @@ public class FuzionLexer
         {
           lexer.nextRaw();
         }
-      return tokenInfo(toURI(params), lexer);
+      return tokenInfo(params, lexer);
     });
   }
 
-  private static TokenInfo tokenInfo(URI uri, Lexer lexer)
+  private static TokenInfo tokenInfo(SourcePosition pos, Lexer lexer)
   {
+    var uri = toURI(pos);
     var lexerSourcePosition = lexer.sourcePos(lexer.pos());
     var start =
       new SourcePosition(ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
@@ -122,7 +125,7 @@ public class FuzionLexer
         {
           lexer.next();
         }
-      return tokenInfo(toURI(params), lexer);
+      return tokenInfo(params, lexer);
     });
   }
 
@@ -194,6 +197,20 @@ public class FuzionLexer
         currentToken = tokenAt(GoBackInLine(pos, 1).get());
       }
     return currentToken.token() == Token.t_ident ? Optional.of(currentToken): Optional.empty();
+  }
+
+  public static Stream<TokenInfo> Tokens(String str)
+  {
+    return IO.WithTextInputStream(str, () -> {
+      var result = new ArrayList<TokenInfo>();
+      var lexer = NewLexerStdIn();
+      while (lexer.current() != Token.t_eof)
+        {
+          lexer.next();
+          result.add(tokenInfo(lexer.sourcePos(), lexer));
+        }
+      return result;
+    }).stream();
   }
 
 }

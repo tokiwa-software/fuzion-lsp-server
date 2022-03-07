@@ -29,6 +29,7 @@ package dev.flang.lsp.server.feature;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
@@ -52,6 +53,8 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.IO;
+import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.SourcePosition;
 
@@ -123,13 +126,25 @@ public class Rename
           f.pos()._column + f.featureName().baseName().length() + whitespace.text().length());
       });
 
+    // NYI we don't have correct position of args of fun in the AST yet
     // special case for renaming lamdba args
     if (featureToRename.outer() != null &&
       featureToRename.outer().outer() != null &&
       featureToRename.outer().outer().featureName().baseName().startsWith("#fun"))
       {
+        // last Token before start of #fun.call where tokenText matches baseName
+        var tokenPos = FuzionLexer
+          .Tokens(SourceText.getText(pos))
+          .filter(x -> featureToRename.featureName().baseName().equals(x.text()))
+          .filter(x ->{
+            return x.start().compareTo(new SourcePosition(x.start()._sourceFile,
+              featureToRename.pos()._line, featureToRename.pos()._column)) < 0;
+          })
+          .reduce(null, (r,x) -> x)
+          .start();
+
         pos =
-          new SourcePosition(pos._sourceFile, pos._line, pos._column - LengthOfFeatureIdentifier(featureToRename) - 1);
+          new SourcePosition(pos._sourceFile, tokenPos._line, tokenPos._column);
       }
 
     var assignmentPositions = ASTWalker
