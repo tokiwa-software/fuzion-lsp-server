@@ -94,13 +94,13 @@ public class RenameTest extends ExtendedBaseTest
     }));
   }
 
-  // @Test
-  // NYI failing
+  @Test
   public void RenameChoice() throws Exception
   {
     var sourceText = """
       ex is
         Towers_Disk(size i32, next nil|Towers_Disk) ref is
+        b Towers_Disk|nil := nil
             """;
     SourceText.setText(uri1, sourceText);
 
@@ -113,7 +113,7 @@ public class RenameTest extends ExtendedBaseTest
         .flatMap(f -> f.stream())
         .collect(Collectors.toList());
 
-    assertEquals(2, textEdits.size());
+    assertEquals(3, textEdits.size());
 
     assertTrue(textEdits.stream().anyMatch(edit -> {
       return edit.getRange().getStart().getLine() == 1
@@ -127,6 +127,13 @@ public class RenameTest extends ExtendedBaseTest
         && edit.getRange().getStart().getCharacter() == 33
         && edit.getRange().getEnd().getLine() == 1
         && edit.getRange().getEnd().getCharacter() == 44;
+    }));
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 2
+        && edit.getRange().getStart().getCharacter() == 4
+        && edit.getRange().getEnd().getLine() == 2
+        && edit.getRange().getEnd().getCharacter() == 15;
     }));
   }
 

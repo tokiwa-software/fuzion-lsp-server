@@ -29,7 +29,6 @@ package dev.flang.lsp.server.feature;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
@@ -53,6 +52,7 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.FuzionParser;
 import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
@@ -82,7 +82,7 @@ public class Rename
         throw new ResponseErrorException(responseError);
       }
 
-    Stream<SourcePosition> renamePositions = getRenamePositions(feature.get());
+    Stream<SourcePosition> renamePositions = getRenamePositions(params, feature.get());
 
     var changes = renamePositions
       .map(sourcePosition -> Bridge.ToLocation(sourcePosition))
@@ -95,11 +95,12 @@ public class Rename
 
   /**
    *
+   * @param params
    * @param featureToRename
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(AbstractFeature featureToRename)
+  private static Stream<SourcePosition> getRenamePositions(RenameParams params, AbstractFeature featureToRename)
   {
     var callsSourcePositions = FeatureTool
       .CallsTo(featureToRename)
@@ -136,11 +137,12 @@ public class Rename
         var tokenPos = FuzionLexer
           .Tokens(SourceText.getText(pos))
           .filter(x -> featureToRename.featureName().baseName().equals(x.text()))
-          .filter(x ->{
-            return x.start().compareTo(new SourcePosition(x.start()._sourceFile,
-              featureToRename.pos()._line, featureToRename.pos()._column)) < 0;
+          .filter(x -> {
+            return x.start()
+              .compareTo(new SourcePosition(x.start()._sourceFile,
+                featureToRename.pos()._line, featureToRename.pos()._column)) < 0;
           })
-          .reduce(null, (r,x) -> x)
+          .reduce(null, (r, x) -> x)
           .start();
 
         pos =
@@ -161,9 +163,36 @@ public class Rename
         return whitespace.end();
       });
 
-    return Stream.of(callsSourcePositions, typePositions, Stream.of(pos), assignmentPositions)
+
+    var choiceGenerics = ASTWalker
+      .Traverse(FuzionParser.Main(LSP4jUtils.getUri(params)))
+      .filter(entry -> entry.getKey() instanceof AbstractFeature)
+      .map(entry -> (AbstractFeature) entry.getKey())
+      .filter(f -> f.resultType().isChoice())
+      .filter(f -> {
+        return f.resultType().choiceGenerics().stream().anyMatch(t -> {
+          return t.name().equals(featureToRename.featureName().baseName());
+        });
+      })
+      .map(f -> PositionOfChoiceGeneric(featureToRename.featureName().baseName(), f));
+
+    return Stream.of(callsSourcePositions, typePositions, Stream.of(pos), assignmentPositions, choiceGenerics)
       .reduce(Stream::concat)
       .orElseGet(Stream::empty);
+  }
+
+  private static SourcePosition PositionOfChoiceGeneric(String name, AbstractFeature f)
+  {
+    return FuzionLexer
+      .Tokens(SourceText.getText(f.pos()))
+      .filter(token -> name.equals(token.text()))
+      .filter(token -> {
+        return token.start()
+          .compareTo(new SourcePosition(token.start()._sourceFile, f.pos()._line, f.pos()._column)) > 0;
+      })
+      .findFirst()
+      .get()
+      .start();
   }
 
   private static int LengthOfFeatureIdentifier(AbstractFeature feature)
