@@ -119,9 +119,16 @@ public class QueryAST extends ANY
   {
     return CalledFeature(params)
       .map(x -> x.resultType())
-      .filter(x -> !x.isGenericArgument())
-      .map(x -> {
-        return x.featureOfType();
+      .flatMap(x -> {
+        if (!x.isGenericArgument())
+          {
+            return Optional.of(x.featureOfType());
+          }
+        if (x.isGenericArgument() && !x.genericArgument().constraint().equals(Types.resolved.t_object))
+          {
+            return Optional.of(x.genericArgument().constraint().featureOfType());
+          }
+        return Optional.empty();
       })
       .map(feature -> {
         var declaredFeaturesOfInheritedFeatures =

@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package test.flang.lsp.server.feature;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionContext;
@@ -109,7 +110,7 @@ public class CompletionTest extends ExtendedBaseTest
 
 
   @Test
-  public void getListCompletions()
+  public void ListCompletions()
   {
     var sourceText = """
       fasta =>
@@ -125,6 +126,20 @@ public class CompletionTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 7, 7));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("fold")));
+  }
+
+  @Test
+  public void GenericWithConstraintCompletions()
+  {
+    var sourceText = """
+      a =>
+        b<T:float<T>>(c T) =>
+          c.
+                """;
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 2, 6));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("bytes")));
   }
 
   @Test
@@ -170,5 +185,89 @@ public class CompletionTest extends ExtendedBaseTest
     // NYI replace with future proof assertion
     assertEquals(192, completions.getLeft().size());
   }
+
+  @Test
+  public void CallCompletionsAtStdLib()
+  {
+    var sourceText = """
+      HelloWorld is
+        say "Hello, World!"
+        (1..10).size.
+      """;
+    SourceText.setText(uri1, sourceText);
+    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).count() > 0);
+    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).noneMatch(f -> f.featureName().baseName().length() < 3));
+    assertTrue(
+      QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("sizeOption")));
+
+    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 15)).anyMatch(x -> x.featureName().baseName().equals("max")));
+  }
+
+  @Test
+  public void CallCompletionsAt()
+  {
+    var sourceText = """
+      HelloWorld is
+        level1 is
+          level2 is
+            level3 is
+        level1.
+      """;
+    SourceText.setText(uri1, sourceText);
+    var completions = QueryAST
+      .CallCompletionsAt(Cursor(uri1, 4, 9))
+      .collect(Collectors.toList());
+
+    assertEquals("level2", completions.get(0).featureName().baseName());
+    assertTrue(completions.stream()
+      .allMatch(f -> f.outer().featureName().baseName().equals("level1")
+        || f.outer().featureName().baseName().equals("Object")));
+  }
+
+
+  @Test
+  public void CompletionsAt()
+  {
+    var sourceText = """
+      HelloWorld is
+        innnerFeat is
+        level1 is
+          level2 is
+            level3 is""";
+    sourceText += System.lineSeparator() + "    ";
+    SourceText.setText(uri1, sourceText);
+
+    var completions = QueryAST
+      .CompletionsAt(Cursor(uri1, 5, 4))
+      .map(f -> f.qualifiedName())
+      .collect(Collectors.toSet());
+
+    var expectedCompletions = Arrays.stream(new String[]
+      {
+          "HelloWorld.level1.level2",
+          "HelloWorld.level1",
+          "HelloWorld.innnerFeat",
+          "Function",
+          "list",
+          "Sequence",
+          "array",
+          "bool",
+          "false",
+          "true",
+          "float",
+          "i32",
+          "marray",
+          "outcome",
+          "say",
+          "stream",
+          "string",
+          "strings",
+          "sys",
+          "tuple",
+      }).collect(Collectors.toSet());
+
+    assertTrue(completions.containsAll(expectedCompletions));
+  }
+
 
 }

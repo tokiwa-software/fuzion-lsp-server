@@ -27,12 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.util;
 
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.util.QueryAST;
@@ -229,43 +225,6 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
   @Test
-  public void CallCompletionsAtStdLib()
-  {
-    var sourceText = """
-      HelloWorld is
-        say "Hello, World!"
-        (1..10).size().
-      """;
-    SourceText.setText(uri1, sourceText);
-    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).count() > 0);
-    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).noneMatch(f -> f.featureName().baseName().length() < 3));
-    assertTrue(
-      QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("sizeOption")));
-    assertEquals(0, QueryAST.CallCompletionsAt(Cursor(uri1, 2, 17)).count());
-  }
-
-  @Test
-  public void CallCompletionsAt()
-  {
-    var sourceText = """
-      HelloWorld is
-        level1 is
-          level2 is
-            level3 is
-        level1.
-      """;
-    SourceText.setText(uri1, sourceText);
-    var completions = QueryAST
-      .CallCompletionsAt(Cursor(uri1, 4, 9))
-      .collect(Collectors.toList());
-
-    assertEquals("level2", completions.get(0).featureName().baseName());
-    assertTrue(completions.stream()
-      .allMatch(f -> f.outer().featureName().baseName().equals("level1")
-        || f.outer().featureName().baseName().equals("Object")));
-  }
-
-  @Test
   public void CalledFeature()
   {
     var sourceText = """
@@ -338,50 +297,6 @@ public class QueryASTTest extends ExtendedBaseTest
       .get()
       .featureName()
       .baseName());
-  }
-
-  @Test
-  public void CompletionsAt()
-  {
-    var sourceText = """
-      HelloWorld is
-        innnerFeat is
-        level1 is
-          level2 is
-            level3 is""";
-    sourceText += System.lineSeparator() + "    ";
-    SourceText.setText(uri1, sourceText);
-
-    var completions = QueryAST
-      .CompletionsAt(Cursor(uri1, 5, 4))
-      .map(f -> f.qualifiedName())
-      .collect(Collectors.toSet());
-
-    var expectedCompletions = Arrays.stream(new String[]
-      {
-          "HelloWorld.level1.level2",
-          "HelloWorld.level1",
-          "HelloWorld.innnerFeat",
-          "Function",
-          "list",
-          "Sequence",
-          "array",
-          "bool",
-          "false",
-          "true",
-          "float",
-          "i32",
-          "marray",
-          "outcome",
-          "say",
-          "stream",
-          "string",
-          "strings",
-          "sys",
-          "tuple",
-      }).collect(Collectors.toSet());
-
-    assertTrue(completions.containsAll(expectedCompletions));
   }
 
   @Test
