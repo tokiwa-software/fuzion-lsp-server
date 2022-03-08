@@ -56,7 +56,6 @@ public class CompletionTest extends ExtendedBaseTest
     var expected = """
       map<${2:B}> (□ -> □)
       asString
-      infix : ${1:step}
       asList
       asStream
       forAll (□ -> □)
@@ -67,8 +66,6 @@ public class CompletionTest extends ExtendedBaseTest
       sizeOption
       add
       asString ${1:sep}
-      infix | (□ -> □)
-      infix & (□ -> □)
       asArray
       slice ${1:from} ${2:to}
       fold ${1:m}
@@ -80,16 +77,11 @@ public class CompletionTest extends ExtendedBaseTest
       drop ${1:n}
       takeWhile (□ -> □)
       dropWhile (□ -> □)
-      infix ++ ${1:s}
       cycle
       tails
-      postfix |
       forWhile (□ -> □)
       before (□ -> □)
       filter (□ -> □)
-      infix |& (□ -> □)
-      infix ∀ (□ -> □)
-      infix ∃ (□ -> □)
       concatSequences ${1:s}
       mapSequence<${2:B}> (□ -> □)
       reduce<${3:R}> ${1:init} (□, □ -> □)
@@ -97,8 +89,7 @@ public class CompletionTest extends ExtendedBaseTest
       sort (□, □ -> □)
       sortBy<${2:O}> (□ -> □)
       zip<${3:U}, ${4:V}> ${1:b} (□, □ -> □)
-      hashCode
-      prefix $""";
+      hashCode""";
     var actual = Completion.getCompletions(params(uri1, 1, 9))
       .getLeft()
       .stream()
@@ -183,7 +174,7 @@ public class CompletionTest extends ExtendedBaseTest
     assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 23)).get().featureName().baseName());
     var completions = Completion.getCompletions(params(uri1, 7, 23));
     // NYI replace with future proof assertion
-    assertEquals(192, completions.getLeft().size());
+    assertEquals(116, completions.getLeft().size());
   }
 
   @Test

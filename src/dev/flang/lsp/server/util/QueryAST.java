@@ -142,10 +142,10 @@ public class QueryAST extends ANY
           declaredFeatures.stream().flatMap(x -> x.redefines().stream()).collect(Collectors.toSet());
 
         // subtract redefined features from result
-        // NYI what to do with infix, prefix, postfix?
-        // NYI do we need to filter abstract features?
         return declaredFeatures
           .stream()
+          // filter infix, prefix, postfix features
+          .filter(x -> !x.featureName().baseName().contains(" "))
           .filter(x -> !redefinedFeatures.contains(x));
       })
       .orElse(Stream.empty());
