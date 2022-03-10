@@ -99,7 +99,7 @@ public class ASTItem
       }
     if (entry instanceof AbstractType t)
       {
-        return t.pos();
+        throw new IllegalArgumentException("Not applicable. Type can have multiple source positions.");
       }
     if (entry instanceof Stmnt)
       {
