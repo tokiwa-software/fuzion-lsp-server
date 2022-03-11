@@ -334,19 +334,6 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals("string", calledFeature.get().qualifiedName());
   }
 
-  @Test
-  public void CalledNothing()
-  {
-    var sourceText = """
-      ex =>
-        1.
-        """;
-
-    SourceText.setText(uri1, sourceText);
-    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 4));
-    assertTrue(calledFeature.isEmpty());
-  }
-
 
   @Test
   public void CalledLambdaArgument()
@@ -363,7 +350,7 @@ public class QueryASTTest extends ExtendedBaseTest
 
 
   @Test
-  public void InString()
+  public void InStringComplex()
   {
     var sourceText = """
       ex =>
@@ -388,6 +375,21 @@ public class QueryASTTest extends ExtendedBaseTest
     assertTrue(QueryAST.InString(Cursor(uri1, 3, 11)));
     assertTrue(QueryAST.InString(Cursor(uri1, 3, 12)));
     assertFalse(QueryAST.InString(Cursor(uri1, 3, 13)));
+  }
+
+  @Test
+  public void InStringSimple()
+  {
+    var sourceText = """
+      ex =>
+        "hallo "
+          """;
+
+    SourceText.setText(uri1, sourceText);
+    assertFalse(QueryAST.InString(Cursor(uri1, 1, 2)));
+    assertTrue(QueryAST.InString(Cursor(uri1, 1, 3)));
+    assertTrue(QueryAST.InString(Cursor(uri1, 1, 9)));
+    assertFalse(QueryAST.InString(Cursor(uri1, 1, 10)));
   }
 
 

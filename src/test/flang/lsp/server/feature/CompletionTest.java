@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
 import org.junit.jupiter.api.Test;
 
+import dev.flang.lsp.server.enums.TriggerCharacters;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
@@ -90,7 +91,7 @@ public class CompletionTest extends ExtendedBaseTest
       sortBy<${2:O}> (□ -> □)
       zip<${3:U}, ${4:V}> ${1:b} (□, □ -> □)
       hashCode""";
-    var actual = Completion.getCompletions(params(uri1, 1, 9))
+    var actual = Completion.getCompletions(params(uri1, 1, 9, TriggerCharacters.Dot))
       .getLeft()
       .stream()
       .map(x -> x.getInsertText())
@@ -115,7 +116,7 @@ public class CompletionTest extends ExtendedBaseTest
           """;
 
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 7, 7));
+    var completions = Completion.getCompletions(params(uri1, 7, 7, TriggerCharacters.Dot));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("fold")));
   }
 
@@ -129,7 +130,7 @@ public class CompletionTest extends ExtendedBaseTest
                 """;
 
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 2, 6));
+    var completions = Completion.getCompletions(params(uri1, 2, 6, TriggerCharacters.Dot));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("bytes")));
   }
 
@@ -147,14 +148,14 @@ public class CompletionTest extends ExtendedBaseTest
             .fold(strings.)
           """;
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 7, 20));
+    var completions = Completion.getCompletions(params(uri1, 7, 20, TriggerCharacters.Dot));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("concat")));
   }
 
-  private CompletionParams params(URI uri, int line, int character)
+  private CompletionParams params(URI uri, int line, int character, TriggerCharacters triggerCharacter)
   {
     return new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri), new Position(line, character),
-      new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
+      new CompletionContext(CompletionTriggerKind.TriggerCharacter, triggerCharacter.toString()));
   }
 
   @Test
@@ -172,7 +173,7 @@ public class CompletionTest extends ExtendedBaseTest
           is""";
     SourceText.setText(uri1, sourceText);
     assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 23)).get().featureName().baseName());
-    var completions = Completion.getCompletions(params(uri1, 7, 23));
+    var completions = Completion.getCompletions(params(uri1, 7, 23, TriggerCharacters.Dot));
     // NYI replace with future proof assertion
     assertEquals(116, completions.getLeft().size());
   }
@@ -258,6 +259,45 @@ public class CompletionTest extends ExtendedBaseTest
       }).collect(Collectors.toSet());
 
     assertTrue(completions.containsAll(expectedCompletions));
+  }
+
+  @Test
+  public void NoCompletionsForNumericLiteral()
+  {
+    var sourceText = """
+      ex =>
+        1.
+        """;
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 1, 4, TriggerCharacters.Dot));
+    assertTrue(completions.getLeft().isEmpty());
+  }
+
+  @Test
+  public void NoCompletionsInString()
+  {
+    var sourceText = """
+      ex =>
+        "hallo "
+        """;
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 1, 9, TriggerCharacters.Space));
+    assertTrue(completions.getLeft().isEmpty());
+  }
+
+
+  @Test
+  public void CompletionNumericLiteral()
+  {
+    var sourceText = """
+      ex =>
+        1""" + " ";
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 1, 4, TriggerCharacters.Space));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix +")));
   }
 
 

@@ -213,4 +213,12 @@ public class FuzionLexer
     }).stream();
   }
 
+  public static TokenInfo rawTokenAt(SourcePosition sourcePosition, int shift)
+  {
+    var token =
+      FuzionLexer.rawTokenAt(
+        new SourcePosition(sourcePosition._sourceFile, sourcePosition._line, sourcePosition._column + shift));
+    return token;
+  }
+
 }

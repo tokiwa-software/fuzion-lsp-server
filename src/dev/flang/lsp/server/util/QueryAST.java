@@ -27,12 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.net.URI;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,13 +41,13 @@ import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
-import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTItem;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
+import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
@@ -96,18 +94,17 @@ public class QueryAST extends ANY
   private static Optional<? extends AbstractFeature> Constant(TextDocumentPositionParams params,
     AbstractFeature universe)
   {
-    var posBeforeDot = FuzionLexer.GoBackInLine(Bridge.ToSourcePosition(params), 2);
-    if (posBeforeDot.isEmpty()
-      || FuzionLexer.rawTokenAt(posBeforeDot.get()).token() == Token.t_numliteral)
+    var pos = FuzionLexer.GoBackInLine(Bridge.ToSourcePosition(params), 2);
+    if (pos.isEmpty())
       {
         return Optional.empty();
       }
     return ASTWalker.Traverse(universe)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
-      .filter(entry -> entry.getKey() instanceof Constant)
+      .filter(entry -> entry.getKey() instanceof AbstractConstant)
       .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
-      .filter(entry -> PositionIsBeforeCursor(params, ((Constant) entry.getKey()).pos()))
-      .map(entry -> ((Constant) entry.getKey()))
+      .filter(entry -> PositionIsBeforeCursor(params, ((AbstractConstant) entry.getKey()).pos()))
+      .map(entry -> ((AbstractConstant) entry.getKey()))
       .sorted(CompareBySourcePosition.reversed())
       .map(x -> x.type().featureOfType())
       .findFirst();
@@ -149,6 +146,42 @@ public class QueryAST extends ANY
       .orElse(Stream.empty());
   }
 
+  public static Stream<AbstractFeature> InfixPostfixCompletionsAt(TextDocumentPositionParams params)
+  {
+    return CalledFeature(params)
+      .map(x -> x.resultType())
+      .flatMap(x -> {
+        if (!x.isGenericArgument())
+          {
+            return Optional.of(x.featureOfType());
+          }
+        if (x.isGenericArgument() && !x.genericArgument().constraint().equals(Types.resolved.t_object))
+          {
+            return Optional.of(x.genericArgument().constraint().featureOfType());
+          }
+        return Optional.empty();
+      })
+      .map(feature -> {
+        var declaredFeaturesOfInheritedFeatures =
+          InheritedRecursive(feature).flatMap(c -> FuzionParser.DeclaredFeatures(c.calledFeature()));
+
+        var declaredFeatures = Stream.concat(FuzionParser
+          .DeclaredFeatures(feature), declaredFeaturesOfInheritedFeatures)
+          .collect(Collectors.toList());
+
+        var redefinedFeatures =
+          declaredFeatures.stream().flatMap(x -> x.redefines().stream()).collect(Collectors.toSet());
+
+        // subtract redefined features from result
+        return declaredFeatures
+          .stream()
+          .filter(x -> x.featureName().baseName().startsWith("infix")
+            || x.featureName().baseName().startsWith("postfix"))
+          .filter(x -> !redefinedFeatures.contains(x));
+      })
+      .orElse(Stream.empty());
+  }
+
   private static Stream<AbstractCall> InheritedRecursive(AbstractFeature feature)
   {
     return Stream.concat(feature.inherits().stream(),
@@ -173,30 +206,27 @@ public class QueryAST extends ANY
   {
     var baseFeature = FuzionParser.Universe(LSP4jUtils.getUri(params));
     var astItems = ASTWalker.Traverse(baseFeature)
-      .filter(IsItemNotBuiltIn(params))
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
-      .filter(IsItemOnSameLineAsCursor(params))
       .filter(IsItemInScope(params))
       .map(entry -> entry.getKey())
+      .filter(IsItemNotBuiltIn(params))
+      .filter(IsItemOnSameLineAsCursor(params))
       .sorted(CompareBySourcePosition.reversed());
-
     return astItems;
   }
 
-  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemNotBuiltIn(TextDocumentPositionParams params)
+  private static Predicate<Object> IsItemNotBuiltIn(TextDocumentPositionParams params)
   {
-    return (entry) -> {
-      var astItem = entry.getKey();
+    return (astItem) -> {
       var sourcePositionOption = ASTItem.sourcePosition(astItem);
       return !sourcePositionOption.isBuiltIn();
     };
   }
 
-  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemOnSameLineAsCursor(
+  private static Predicate<Object> IsItemOnSameLineAsCursor(
     TextDocumentPositionParams params)
   {
-    return (entry) -> {
-      var astItem = entry.getKey();
+    return (astItem) -> {
       var cursorPosition = LSP4jUtils.getPosition(params);
       var sourcePositionOption = ASTItem.sourcePosition(astItem);
       return cursorPosition.getLine() == Bridge.ToPosition(sourcePositionOption).getLine();
@@ -332,10 +362,15 @@ public class QueryAST extends ANY
           {
             return false;
           }
-        var start = x.pos()._column - 1;
-        var end = x.pos()._column - 1 + x.str.length();
-        return start < params.getPosition().getCharacter()
-          && params.getPosition().getCharacter() <= end;
+        var start = x.pos()._column;
+        var end = x.pos()._column + x.str.length();
+        if (SourceText.LineAt(x.pos()).charAt(x.pos()._column - 1) == '\"')
+          {
+            return start <= params.getPosition().getCharacter()
+              && params.getPosition().getCharacter() <= end;
+          }
+        return start <= params.getPosition().getCharacter()
+          && params.getPosition().getCharacter() < end;
       });
   }
 

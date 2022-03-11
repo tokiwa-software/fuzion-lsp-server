@@ -46,6 +46,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 import dev.flang.lsp.server.enums.Commands;
+import dev.flang.lsp.server.enums.TriggerCharacters;
 
 /**
  * does the initialization of language server features
@@ -124,11 +125,7 @@ public class FuzionLanguageServer implements LanguageServer
   {
     CompletionOptions completionOptions = new CompletionOptions();
     completionOptions.setResolveProvider(Boolean.FALSE);
-    completionOptions.setTriggerCharacters(List.of(
-      ".", // calls
-      "<", // types
-      "r" // for
-      ));
+    completionOptions.setTriggerCharacters(Arrays.asList(TriggerCharacters.values()).stream().map(x -> x.toString()).collect(Collectors.toList()));
     serverCapabilities.setCompletionProvider(completionOptions);
   }
 

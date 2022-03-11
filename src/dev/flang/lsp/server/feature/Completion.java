@@ -39,8 +39,6 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
@@ -49,6 +47,7 @@ import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.Util;
 
 /**
  * tries offering completions
@@ -56,6 +55,7 @@ import dev.flang.shared.FuzionLexer;
  */
 public class Completion
 {
+  private static final Either<List<CompletionItem>, CompletionList> NoCompletions = Either.forLeft(List.of());
 
   private static CompletionItem buildCompletionItem(String label, String insertText,
     CompletionItemKind completionItemKind)
@@ -80,34 +80,66 @@ public class Completion
 
   public static Either<List<CompletionItem>, CompletionList> getCompletions(CompletionParams params)
   {
+    if (QueryAST.InString(params))
+      {
+        return NoCompletions;
+      }
+
     var triggerCharacter = params.getContext().getTriggerCharacter();
 
     if (".".equals(triggerCharacter))
       {
+        // not offering completion for number
+        if (FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params), -2).token() == Token.t_numliteral)
+          {
+            return NoCompletions;
+          }
         return completions(QueryAST.CallCompletionsAt(params));
       }
-    var token =
-      FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(new TextDocumentPositionParams(params.getTextDocument(),
-        new Position(params.getPosition().getLine(), params.getPosition().getCharacter() - 1))));
-    // NYI behaviour not satisfying
-    if (token.text().equals("for"))
+    if (" ".equals(triggerCharacter))
       {
-        return Either.forLeft(Arrays.asList(
-          buildCompletionItem("for in", "for ${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Keyword),
-          buildCompletionItem("for in while", "for ${1:i} in ${2:0}..${3:10} while ${4:} do",
-            CompletionItemKind.Keyword),
-          buildCompletionItem("for while", "for i:=0, i+1 while ${4:} do", CompletionItemKind.Keyword),
-          buildCompletionItem("for until else", "for ${1:i} in ${2:0}..${3:10} do"
-            + System.lineSeparator() + "until ${4:}"
-            + System.lineSeparator() + "else ${4:}",
-            CompletionItemKind.Keyword)));
+        var tokenBeforeTriggerCharacter = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params), -2).token();
+        if (tokenBeforeTriggerCharacter.equals(Token.t_for))
+          {
+            return Either.forLeft(Arrays.asList(
+              buildCompletionItem("for in", "${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Keyword),
+              buildCompletionItem("for in while", "${1:i} in ${2:0}..${3:10} while ${4:} do",
+                CompletionItemKind.Keyword),
+              buildCompletionItem("for while", "i:=0, i+1 while ${4:} do", CompletionItemKind.Keyword),
+              buildCompletionItem("for until else", "${1:i} in ${2:0}..${3:10} do"
+                + System.lineSeparator() + "until ${4:}"
+                + System.lineSeparator() + "else ${4:}",
+                CompletionItemKind.Keyword)));
+          }
+
+
+        var validTokens = new Token[]
+          {
+              Token.t_ident,
+              Token.t_numliteral,
+              Token.t_rbrace,
+              Token.t_rcrochet,
+              Token.t_rparen,
+              Token.t_stringQQ,
+              Token.t_StringDQ,
+              Token.t_stringBQ
+          };
+        var set = Util.ArrayToSet(validTokens);
+        if (set.contains(tokenBeforeTriggerCharacter))
+          {
+            return completions(QueryAST.InfixPostfixCompletionsAt(params));
+          }
       }
+
+    var previousToken = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params), -1);
+
     // NYI behaviour not satisfying
-    if (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked) && token.token().equals(Token.t_ws))
+    if (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked)
+      && previousToken.token().equals(Token.t_ws))
       {
         return completions(QueryAST.CompletionsAt(params));
       }
-    return Either.forLeft(List.of());
+    return NoCompletions;
   }
 
   private static Either<List<CompletionItem>, CompletionList> completions(Stream<AbstractFeature> features)
@@ -134,16 +166,21 @@ public class Completion
    */
   private static String getInsertText(AbstractFeature feature)
   {
+    // NYI postfix return additional text edit
+    var baseNameReduced = feature
+      .featureName()
+      .baseName()
+      .replaceFirst("^.*\\s", "");
     if (!feature.isRoutine())
       {
-        return feature.featureName().baseName();
+        return baseNameReduced;
       }
 
     var _generics = getGenerics(feature);
 
     var generics = genericsSnippet(feature, _generics);
 
-    return feature.featureName().baseName() + generics + getArguments(feature.arguments());
+    return baseNameReduced + generics + getArguments(feature.arguments());
   }
 
   /**
