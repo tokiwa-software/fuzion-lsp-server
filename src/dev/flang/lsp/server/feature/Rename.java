@@ -53,7 +53,6 @@ import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
-import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.SourcePosition;

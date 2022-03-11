@@ -5,7 +5,6 @@ public enum TriggerCharacters
   Dot("."), // calls
   Space(" "), // infix, postfix
   LessThan("<"), // types NYI
-  r("r"), // for
   None("");
 
   private final String triggerChar;
