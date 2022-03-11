@@ -362,4 +362,33 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
 
+  @Test
+  public void InString()
+  {
+    var sourceText = """
+      ex =>
+        a := "a"
+        l := "l"
+        "h{a}l$l o"
+              """;
+    SourceText.setText(uri1, sourceText);
+    assertFalse(QueryAST.InString(Cursor(uri1, 3, 2)));
+    assertTrue(QueryAST.InString(Cursor(uri1, 3, 3)));
+
+    // {a}
+    assertFalse(QueryAST.InString(Cursor(uri1, 3, 5)));
+    assertFalse(QueryAST.InString(Cursor(uri1, 3, 6)));
+
+    // l
+    assertTrue(QueryAST.InString(Cursor(uri1, 3, 7)));
+
+    // $l
+    assertFalse(QueryAST.InString(Cursor(uri1, 3, 9)));
+
+    assertTrue(QueryAST.InString(Cursor(uri1, 3, 11)));
+    assertTrue(QueryAST.InString(Cursor(uri1, 3, 12)));
+    assertFalse(QueryAST.InString(Cursor(uri1, 3, 13)));
+  }
+
+
 }

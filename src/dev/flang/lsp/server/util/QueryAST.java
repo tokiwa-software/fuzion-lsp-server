@@ -36,16 +36,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.swing.text.AbstractDocument.Content;
-
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
+import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
 import dev.flang.parser.Lexer.Token;
-import dev.flang.ast.Constant;
 import dev.flang.shared.ASTItem;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.ErrorHandling;
@@ -318,6 +316,27 @@ public class QueryAST extends ANY
       })
       .sorted(CompareBySourcePosition.reversed())
       .findFirst();
+  }
+
+  /**
+   * @param params
+   * @return if text document position is inside of string
+   */
+  public static boolean InString(TextDocumentPositionParams params)
+  {
+    return ASTWalker.Traverse(FuzionParser.Main(LSP4jUtils.getUri(params)))
+      .filter(x -> x.getKey() instanceof StrConst)
+      .map(x -> (StrConst) x.getKey())
+      .anyMatch(x -> {
+        if (x.pos()._line - 1 != params.getPosition().getLine())
+          {
+            return false;
+          }
+        var start = x.pos()._column - 1;
+        var end = x.pos()._column - 1 + x.str.length();
+        return start < params.getPosition().getCharacter()
+          && params.getPosition().getCharacter() <= end;
+      });
   }
 
 }
