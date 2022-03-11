@@ -29,8 +29,8 @@ package dev.flang.shared;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import dev.flang.parser.Lexer;
@@ -52,7 +52,7 @@ public class FuzionLexer
     return isIdentifier;
   }
 
-  public static TokenInfo nextTokenOfType(SourcePosition start, HashSet<Token> tokens)
+  public static TokenInfo nextTokenOfType(SourcePosition start, Set<Token> tokens)
   {
     return IO.WithTextInputStream(SourceText.getText(start), () -> {
       var lexer = NewLexerStdIn();

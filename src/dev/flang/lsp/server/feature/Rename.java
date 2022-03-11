@@ -157,7 +157,7 @@ public class Rename
         // NYI better we be if we had the needed and more correct info directly
         // in the AST
         var set =
-          FuzionLexer.nextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.HashSetOf(Token.t_set));
+          FuzionLexer.nextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.ArrayToSet(new Token[]{Token.t_set}));
         var whitespace =
           FuzionLexer.rawTokenAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column));
         return whitespace.end();

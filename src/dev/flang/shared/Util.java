@@ -29,9 +29,9 @@ package dev.flang.shared;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * utils which are independent of fuzion
@@ -53,9 +53,9 @@ public class Util
       }
   }
 
-  public static <T> HashSet<T> HashSetOf(T... values)
+  public static <T> Set<T> ArrayToSet(T[] arr)
   {
-    return Stream.of(values).collect(Collectors.toCollection(HashSet::new));
+    return Arrays.stream(arr).collect(Collectors.toSet());
   }
 
   public static String ShortName(Class<?> clazz)

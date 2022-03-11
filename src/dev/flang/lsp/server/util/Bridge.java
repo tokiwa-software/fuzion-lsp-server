@@ -69,8 +69,11 @@ public class Bridge
     if (baseNameOnly)
       {
         return new Range(ToPosition(feature.pos()), ToPosition(new SourcePosition(feature.pos()._sourceFile,
-          feature.pos()._line, FuzionLexer.nextTokenOfType(feature.pos(), Util.HashSetOf(Token.t_ident))
-          .end()._column)));
+          feature.pos()._line, FuzionLexer.nextTokenOfType(feature.pos(), Util.ArrayToSet(new Token[]
+          {
+              Token.t_ident
+          }))
+            .end()._column)));
       }
     return new Range(ToPosition(feature.pos()), ToPosition(FuzionParser.endOfFeature(feature)));
   }

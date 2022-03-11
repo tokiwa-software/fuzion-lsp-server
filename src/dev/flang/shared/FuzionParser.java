@@ -279,8 +279,8 @@ public class FuzionParser extends ANY
             FuzionLexer.endOfToken(position);
           // NYI maybe use inverse hashset here? i.e. state which tokens can
           // be skipped
-          var token = FuzionLexer.nextTokenOfType(start, Util.HashSetOf(Token.t_eof, Token.t_ident, Token.t_semicolon,
-            Token.t_rbrace, Token.t_rcrochet, Token.t_rparen));
+          var token = FuzionLexer.nextTokenOfType(start, Util.ArrayToSet(new Token[]{Token.t_eof, Token.t_ident, Token.t_semicolon,
+            Token.t_rbrace, Token.t_rcrochet, Token.t_rparen}));
           return new SourcePosition(position._sourceFile, position._line, token.end()._column);
         })
         .findFirst()
