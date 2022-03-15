@@ -131,11 +131,9 @@ public class Completion
           }
       }
 
-    var previousToken = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params), -1);
-
-    // NYI behaviour not satisfying
+    // Invoked: ctrl+space
     if (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked)
-      && previousToken.token().equals(Token.t_ws))
+      && params.getContext().getTriggerCharacter() == null)
       {
         return completions(QueryAST.CompletionsAt(params));
       }
