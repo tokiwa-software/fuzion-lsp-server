@@ -118,7 +118,7 @@ public class FeatureToolTest extends BaseTest
     var graph = FeatureTool.CallGraph(f);
 
     var expected = List.of("""
-      "yak" -> "stdout";
+      "yak" -> "io";
       """, """
       .call" -> "yak";
       """);

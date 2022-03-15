@@ -63,8 +63,8 @@ public class DefinitionTest extends ExtendedBaseTest
             .getLeft()
             .get(0);
 
-        assertTrue(printlnLocation.getUri().endsWith("lib/fuzion/std/out.fz"));
-        assertEquals(32, printlnLocation.getRange().getStart().getLine());
+        assertTrue(printlnLocation.getUri().endsWith("lib/io/out.fz"));
+        assertEquals(41, printlnLocation.getRange().getStart().getLine());
         assertEquals(2, printlnLocation.getRange().getStart().getCharacter());
     }
 }
