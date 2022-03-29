@@ -51,7 +51,7 @@ public class DefinitionTest extends ExtendedBaseTest
         var sayStartPosition = sayLocation.getRange().getStart();
 
         assertTrue(sayUri.endsWith("lib/say.fz"));
-        assertEquals(28, sayStartPosition.getLine());
+        assertEquals(30, sayStartPosition.getLine());
         assertEquals(0, sayStartPosition.getCharacter());
 
         /**
@@ -59,11 +59,11 @@ public class DefinitionTest extends ExtendedBaseTest
          * ┋ indicates the Position used below
          */
         var printlnLocation = Definition
-            .getDefinitionLocation(new DefinitionParams(new TextDocumentIdentifier(sayUri), new Position(28, 28)))
+            .getDefinitionLocation(new DefinitionParams(new TextDocumentIdentifier(sayUri), new Position(30, 28)))
             .getLeft()
             .get(0);
 
-        assertTrue(printlnLocation.getUri().endsWith("lib/io/out.fz"));
+        assertTrue(printlnLocation.getUri().endsWith("lib/io/printEffect.fz"));
         assertEquals(39, printlnLocation.getRange().getStart().getLine());
         assertEquals(2, printlnLocation.getRange().getStart().getCharacter());
     }

@@ -83,6 +83,7 @@ public class CompletionTest extends ExtendedBaseTest
       forWhile (□ -> □)
       before (□ -> □)
       filter (□ -> □)
+      splitAt ${1:at}
       concatSequences ${1:s}
       mapSequence<${2:B}> (□ -> □)
       reduce<${3:R}> ${1:init} (□, □ -> □)

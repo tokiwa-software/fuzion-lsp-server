@@ -89,7 +89,7 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureStdLib()
   {
     var yak = DeclaredInUniverse("yak", 1);
-    assertEquals(33, FuzionParser.endOfFeature(yak)._line);
+    assertEquals(35, FuzionParser.endOfFeature(yak)._line);
     assertEquals(1, FuzionParser.endOfFeature(yak)._column);
   }
 
