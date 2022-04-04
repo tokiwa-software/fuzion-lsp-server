@@ -67,7 +67,7 @@ public class QueryAST extends ANY
   public static Optional<AbstractFeature> CalledFeature(TextDocumentPositionParams params)
   {
     if (PRECONDITIONS)
-      ensure(!Util.IsStdLib(LSP4jUtils.getUri(params)));
+      require(!Util.IsStdLib(LSP4jUtils.getUri(params)));
 
     var universe = FuzionParser.Universe(LSP4jUtils.getUri(params));
     return ASTWalker.Traverse(universe)
