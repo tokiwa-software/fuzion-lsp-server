@@ -170,7 +170,8 @@ public class FuzionParser extends ANY
   private static FrontEndOptions FrontEndOptions(File tempFile)
   {
     var frontEndOptions =
-      new FrontEndOptions(0, SourceText.FuzionHome, null, true, JavaModules, 0, false, false, tempFile.getAbsolutePath());
+      new FrontEndOptions(0, SourceText.FuzionHome, null, true, JavaModules, 0, false, false,
+        tempFile.getAbsolutePath());
     return frontEndOptions;
   }
 
@@ -267,7 +268,7 @@ public class FuzionParser extends ANY
           return new SourcePosition(f.pos()._sourceFile, lines + 1, 1);
         }
       var uri = getUri(f.pos());
-      return ASTWalker.Traverse(f)
+      var result = ASTWalker.Traverse(f)
         .filter(entry -> entry.getValue() != null)
         .filter(ASTItem.IsItemInFile(uri))
         .filter(entry -> entry.getValue().compareTo(f) == 0)
@@ -279,12 +280,25 @@ public class FuzionParser extends ANY
             FuzionLexer.endOfToken(position);
           // NYI maybe use inverse hashset here? i.e. state which tokens can
           // be skipped
-          var token = FuzionLexer.nextTokenOfType(start, Util.ArrayToSet(new Token[]{Token.t_eof, Token.t_ident, Token.t_semicolon,
-            Token.t_rbrace, Token.t_rcrochet, Token.t_rparen}));
-          return new SourcePosition(position._sourceFile, position._line, token.end()._column);
+          var token = FuzionLexer.nextTokenOfType(start, Util.ArrayToSet(new Token[]
+            {
+                Token.t_eof,
+                Token.t_ident,
+                Token.t_semicolon,
+                Token.t_rbrace,
+                Token.t_rcrochet,
+                Token.t_rparen
+            }));
+
+          return new SourcePosition(position._sourceFile, token.end()._line, token.end()._column);
         })
         .findFirst()
         .orElse(f.pos());
+
+      if (POSTCONDITIONS)
+        ensure(f.pos()._line < result._line
+          || (f.pos()._line == result._line && f.pos()._column < result._column));
+      return result;
     });
   }
 

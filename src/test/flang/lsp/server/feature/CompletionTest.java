@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.enums.TriggerCharacters;
@@ -301,5 +302,17 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix +")));
   }
 
+  @Test
+  public void CompletionInLambdaArg()
+  {
+    var sourceText = """
+      ex =>
+        iter := bench<unit> (() -> random.) 1E3
+        say "iterations per sec: $iter"
+        """;
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 1, 36, TriggerCharacters.Dot));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("next_f64")));
+  }
 
 }
