@@ -188,7 +188,15 @@ public class FuzionLexer
     return Optional.of(new SourcePosition(p._sourceFile, p._line, p._column - n));
   }
 
-  public static Optional<TokenInfo> IdentifierTokenAt(SourcePosition pos)
+  /**
+   * looks for an identifier token at position
+   * if none found look for identifier token at position - 1
+   * if none found look for operator   token at position
+   * if none found look for operator   token at position - 1
+   * @param pos
+   * @return
+   */
+  public static Optional<TokenInfo> IdentOrOperatorTokenAt(SourcePosition pos)
   {
     var currentToken = tokenAt(pos);
     if (!rawTokenAt(pos).token().equals(Token.t_ident)
@@ -196,7 +204,18 @@ public class FuzionLexer
       {
         currentToken = tokenAt(GoBackInLine(pos, 1).get());
       }
-    return currentToken.token() == Token.t_ident ? Optional.of(currentToken): Optional.empty();
+    return currentToken.token() == Token.t_ident ? Optional.of(currentToken): OperatorTokenAt(pos);
+  }
+
+  private static Optional<TokenInfo> OperatorTokenAt(SourcePosition pos)
+  {
+    var currentToken = tokenAt(pos);
+    if (!rawTokenAt(pos).token().equals(Token.t_op)
+      && GoBackInLine(pos, 1).isPresent())
+      {
+        currentToken = tokenAt(GoBackInLine(pos, 1).get());
+      }
+    return currentToken.token() == Token.t_op ? Optional.of(currentToken): Optional.empty();
   }
 
   public static Stream<TokenInfo> Tokens(String str)

@@ -174,7 +174,7 @@ public class CompletionTest extends ExtendedBaseTest
               num i32 => num.
           is""";
     SourceText.setText(uri1, sourceText);
-    assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 23)).get().featureName().baseName());
+    assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 22)).get().featureName().baseName());
     var completions = Completion.getCompletions(params(uri1, 7, 23, TriggerCharacters.Dot));
     // NYI replace with future proof assertion
     assertEquals(116, completions.getLeft().size());

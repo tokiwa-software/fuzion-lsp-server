@@ -209,12 +209,26 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
   @Test
-  public void FeatureAtActualGeneric()
+  public void FeatureAtActualGenericOfInherited()
   {
     var sourceText = "i33 : wrappingInteger<i33> is";
     SourceText.setText(uri1, sourceText);
     var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 22)).get();
     assertEquals("i33", wrappingInteger.featureName().baseName());
+  }
+
+  @Test
+  public void FeatureAtActualGeneric()
+  {
+    var sourceText = """
+      ex =>
+        bench<unit> (() -> say "something") 1E3
+            """;
+    SourceText.setText(uri1, sourceText);
+    var unitAtStart = QueryAST.FeatureAt(Cursor(uri1, 1, 8)).get();
+    var unitAtEnd = QueryAST.FeatureAt(Cursor(uri1, 1, 12)).get();
+    assertEquals("unit", unitAtStart.featureName().baseName());
+    assertEquals("unit", unitAtEnd.featureName().baseName());
   }
 
   @Test

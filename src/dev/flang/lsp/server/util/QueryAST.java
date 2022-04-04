@@ -47,6 +47,7 @@ import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
+import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
@@ -295,7 +296,8 @@ public class QueryAST extends ANY
    */
   public static Optional<AbstractFeature> FeatureAt(TextDocumentPositionParams params)
   {
-    var token = FuzionLexer.IdentifierTokenAt(Bridge.ToSourcePosition(params));
+    var sourcePosition = Bridge.ToSourcePosition(params);
+    var token = FuzionLexer.IdentOrOperatorTokenAt(sourcePosition);
     return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {
         if (astItem instanceof AbstractFeature f
@@ -305,7 +307,13 @@ public class QueryAST extends ANY
           }
         if (astItem instanceof AbstractCall c)
           {
-            return ErrorHandling.ResultOrDefault(() -> c.calledFeature(), null);
+            return ErrorHandling.ResultOrDefault(() -> {
+              if (token.map(t -> c.pos()._column + t.text().length() >= sourcePosition._column).orElse(false))
+                {
+                  return c.calledFeature();
+                }
+              return null;
+            }, null);
           }
         return null;
       })

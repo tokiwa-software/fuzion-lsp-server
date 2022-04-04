@@ -218,7 +218,7 @@ public class Rename
         return new PrepareRenameResult();
       }
 
-    return FuzionLexer.IdentifierTokenAt(Bridge.ToSourcePosition(params))
+    return FuzionLexer.IdentOrOperatorTokenAt(Bridge.ToSourcePosition(params))
       .map(token -> {
         return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
       })
