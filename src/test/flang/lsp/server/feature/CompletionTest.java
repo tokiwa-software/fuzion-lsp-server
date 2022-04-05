@@ -34,7 +34,6 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.enums.TriggerCharacters;
@@ -97,9 +96,13 @@ public class CompletionTest extends ExtendedBaseTest
       .getLeft()
       .stream()
       .map(x -> x.getInsertText())
-      .collect(Collectors.joining(System.lineSeparator()));
+      .collect(Collectors.toList());
 
-    assertEquals(expected, actual);
+    Arrays
+      .stream(expected.split(System.lineSeparator()))
+      .forEach(e -> {
+        assertTrue("expected: " + e, actual.stream().anyMatch(a -> a.equals(e)));
+      });
   }
 
 
@@ -256,7 +259,6 @@ public class CompletionTest extends ExtendedBaseTest
           "stream",
           "string",
           "strings",
-          "sys",
           "tuple",
       }).collect(Collectors.toSet());
 

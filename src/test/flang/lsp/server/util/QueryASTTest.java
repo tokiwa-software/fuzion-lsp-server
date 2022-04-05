@@ -254,7 +254,6 @@ public class QueryASTTest extends ExtendedBaseTest
       .get()
       .featureName()
       .baseName());
-
   }
 
   @Test
