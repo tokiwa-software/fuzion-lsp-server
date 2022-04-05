@@ -80,8 +80,7 @@ public class Bridge
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
   {
-    // NYI which symbolkind to use for feature?
-    return new DocumentSymbol(FeatureTool.ToLabel(feature), SymbolKind.Key, ToRange(feature), ToRange(feature));
+    return new DocumentSymbol(FeatureTool.ToLabel(feature), SymbolKind.Class, ToRange(feature), ToRange(feature));
   }
 
   public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
