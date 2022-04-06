@@ -118,7 +118,7 @@ public class ASTWalker
   private static void TraverseStatement(Stmnt s, AbstractFeature outer,
     BiFunction<Object, AbstractFeature, Boolean> callback)
   {
-    if (ASTItem.IsAbstractFeature(s))
+    if (s instanceof AbstractFeature)
       {
         TraverseFeature((AbstractFeature) s, callback, false);
         return;

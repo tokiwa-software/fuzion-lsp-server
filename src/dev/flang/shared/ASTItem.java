@@ -31,22 +31,14 @@ import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
+import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractCase;
+import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
-import dev.flang.ast.Cond;
-import dev.flang.ast.Contract;
-import dev.flang.ast.Expr;
-import dev.flang.ast.FormalGenerics;
-import dev.flang.ast.Generic;
 import dev.flang.ast.If;
-import dev.flang.ast.Impl;
-import dev.flang.ast.InlineArray;
-import dev.flang.ast.ReturnType;
-import dev.flang.ast.Stmnt;
 import dev.flang.ast.Types;
 import dev.flang.util.SourcePosition;
 
@@ -97,60 +89,27 @@ public class ASTItem
       {
         return e.pos();
       }
+    if (entry instanceof AbstractAssign a)
+      {
+        return a.pos();
+      }
+    if (entry instanceof AbstractConstant c)
+      {
+        return c.pos();
+      }
+    if (entry instanceof AbstractCall c)
+      {
+        return c.pos();
+      }
     if (entry instanceof AbstractType t)
       {
         throw new IllegalArgumentException("Not applicable. Type can have multiple source positions.");
-      }
-    if (entry instanceof Stmnt)
-      {
-        return ((Stmnt) entry).pos();
-      }
-    if (entry instanceof Impl)
-      {
-        return ((Impl) entry).pos;
-      }
-    if (entry instanceof Generic)
-      {
-        return ((Generic) entry)._pos;
-      }
-    if (entry instanceof AbstractCase)
-      {
-        return ((AbstractCase) entry).pos();
-      }
-    if (entry instanceof InlineArray)
-      {
-        return ((InlineArray) entry).pos();
-      }
-    if (entry instanceof Expr)
-      {
-        return ((Expr) entry).pos();
-      }
-    if (entry instanceof ReturnType)
-      {
-        return SourcePosition.notAvailable;
-      }
-    if (entry instanceof Cond)
-      {
-        return SourcePosition.notAvailable;
-      }
-    if (entry instanceof FormalGenerics)
-      {
-        return SourcePosition.notAvailable;
-      }
-    if (entry instanceof Contract)
-      {
-        return SourcePosition.notAvailable;
       }
 
     var errorMessage = "sourcePosition(), missing implementation for: " + entry.getClass();
     IO.SYS_ERR.println(errorMessage);
     ErrorHandling.WriteStackTrace(new Exception(errorMessage));
     return SourcePosition.notAvailable;
-  }
-
-  public static boolean IsAbstractFeature(Object o)
-  {
-    return AbstractFeature.class.isAssignableFrom(o.getClass());
   }
 
   public static Predicate<? super Entry<Object, AbstractFeature>> IsItemInFile(URI uri)
