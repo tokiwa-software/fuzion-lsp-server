@@ -93,7 +93,7 @@ public class Diagnostics
           }
       });
     return featuresReusingNames.stream().map(f -> {
-      return new Diagnostic(Bridge.ToRange(f, true),
+      return new Diagnostic(Bridge.ToRangeBaseName(f),
         "name reuse detected, you probably want to use `set`?",
         DiagnosticSeverity.Information, "fuzion language server");
     });
@@ -137,7 +137,7 @@ public class Diagnostics
               && str.substring(1).chars().mapToObj(i -> (char) i).anyMatch(c -> Character.isUpperCase(c)));
       })
       .map(f -> {
-        return new Diagnostic(Bridge.ToRange(f, true),
+        return new Diagnostic(Bridge.ToRangeBaseName(f),
           "use Snake_Pascal_Case for refs, check: https://flang.dev/design/identifiers",
           DiagnosticSeverity.Information, "fuzion language server");
       });
@@ -154,7 +154,7 @@ public class Diagnostics
         basename.chars().mapToObj(i -> (char) i).anyMatch(c -> Character.isUpperCase(c));
       })
       .map(f -> {
-        return new Diagnostic(Bridge.ToRange(f, true), "use snake_case, check: https://flang.dev/design/identifiers",
+        return new Diagnostic(Bridge.ToRangeBaseName(f), "use snake_case, check: https://flang.dev/design/identifiers",
           DiagnosticSeverity.Information, "fuzion language server");
       });
     return snakeCase;
@@ -189,7 +189,7 @@ public class Diagnostics
 
     var unusedDiagnostics = unusedFeatures.stream().map(f -> {
       var diagnostic =
-        new Diagnostic(Bridge.ToRange(f, true), "unused", DiagnosticSeverity.Hint, "fuzion language server");
+        new Diagnostic(Bridge.ToRangeBaseName(f), "unused", DiagnosticSeverity.Hint, "fuzion language server");
       diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
       return diagnostic;
     });

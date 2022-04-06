@@ -38,8 +38,8 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.FuzionLexer;
 import dev.flang.shared.FuzionParser;
-import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
+import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -61,21 +61,17 @@ public class Bridge
 
   public static Range ToRange(AbstractFeature feature)
   {
-    return ToRange(feature, false);
+    return new Range(ToPosition(feature.pos()), ToPosition(FuzionParser.endOfFeature(feature)));
   }
 
-  public static Range ToRange(AbstractFeature feature, boolean baseNameOnly)
+  public static Range ToRangeBaseName(AbstractFeature feature)
   {
-    if (baseNameOnly)
-      {
-        return new Range(ToPosition(feature.pos()), ToPosition(new SourcePosition(feature.pos()._sourceFile,
-          feature.pos()._line, FuzionLexer.nextTokenOfType(feature.pos(), Util.ArrayToSet(new Token[]
-          {
-              Token.t_ident
-          }))
-            .end()._column)));
-      }
-    return new Range(ToPosition(feature.pos()), ToPosition(FuzionParser.endOfFeature(feature)));
+    var baseNamePosition = FeatureTool.BaseNamePosition(feature);
+    return new Range(
+      ToPosition(baseNamePosition),
+      ToPosition(new SourcePosition(baseNamePosition._sourceFile,
+        baseNamePosition._line,
+        baseNamePosition._column + feature.featureName().baseName().length())));
   }
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)

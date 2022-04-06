@@ -45,6 +45,8 @@ import dev.flang.util.SourcePosition;
 
 public class FeatureTool extends ANY
 {
+  private static final long MAX_TOKENS_TO_INSPECT = 20;
+
   public static Stream<AbstractFeature> outerFeatures(AbstractFeature feature)
   {
     if (feature.outer() == null)
@@ -110,6 +112,28 @@ public class FeatureTool extends ANY
           + Util.ShortName(item.getClass()) + ":" + ASTItem.ToLabel(item);
       }, String::concat);
     return ast;
+  }
+
+  /**
+   * @param feature
+   * @return the position of the basename
+   * examples:
+   * infix feature: ==
+   * infix ==
+   * ------^
+   * formArgs feature x2:
+   * feat(x1, x2 i32) is
+   * ---------^
+   */
+  public static SourcePosition BaseNamePosition(AbstractFeature feature)
+  {
+    return FuzionLexer
+      .Tokens(feature.pos(), false)
+      .limit(MAX_TOKENS_TO_INSPECT)
+      .dropWhile(tokenInfo -> !tokenInfo.text().equals(feature.featureName().baseName()))
+      .map(tokenInfo -> tokenInfo.start())
+      .findFirst()
+      .orElse(feature.pos());
   }
 
   public static boolean IsArgument(AbstractFeature feature)

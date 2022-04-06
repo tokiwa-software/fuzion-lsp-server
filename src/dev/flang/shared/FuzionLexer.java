@@ -68,6 +68,34 @@ public class FuzionLexer
     });
   }
 
+  public static Stream<TokenInfo> Tokens(SourcePosition start, boolean allowRaw)
+  {
+    return IO.WithTextInputStream(SourceText.getText(start), () -> {
+      var lexer = NewLexerStdIn();
+      while (lexer.current() != Token.t_eof && lexer.pos() < start.bytePos())
+        {
+          advance(lexer, allowRaw);
+        }
+      return Stream.generate(() -> {
+        var result = tokenInfo(lexer.sourcePos(), lexer);
+        advance(lexer, allowRaw);
+        return result;
+      });
+    });
+  }
+
+  private static void advance(Lexer lexer, boolean allowRaw)
+  {
+    if (allowRaw)
+      {
+        lexer.nextRaw();
+      }
+    else
+      {
+        lexer.next();
+      }
+  }
+
   private static Lexer NewLexerStdIn()
   {
     return new Lexer(SourceFile.STDIN);
