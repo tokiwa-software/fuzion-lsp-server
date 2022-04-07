@@ -54,7 +54,6 @@ public class DocumentSymbols
   {
     var documentSymbol = Bridge.ToDocumentSymbol(feature);
     var children = ParserTool.DeclaredFeatures(feature)
-      .filter(f -> !f.isField())
       .map(f -> {
         return DocumentSymbolTree(f);
       })

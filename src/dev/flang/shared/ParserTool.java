@@ -249,7 +249,7 @@ public class ParserTool extends ANY
       }
     if (feature.featureName().baseName().equals(FuzionConstants.RESULT_NAME))
       {
-        return SourcePosition.notAvailable;
+        return endOfFeature(feature.outer());
       }
     // NYI replace by real end of feature once we have this information in the
     // AST

@@ -34,34 +34,46 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
-import dev.flang.shared.records.TokenInfo;
+import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
 /**
  * provides bridge utility functions converting between lsp4j <-> fuzion
  */
-public class Bridge
+public class Bridge extends ANY
 {
 
   public static Position ToPosition(SourcePosition sourcePosition)
   {
+    if (PRECONDITIONS)
+      require(IsValidSourcePosition(sourcePosition));
     return new Position(sourcePosition._line - 1, sourcePosition._column - 1);
   }
 
   public static Location ToLocation(SourcePosition sourcePosition)
   {
+    if (PRECONDITIONS)
+      require(IsValidSourcePosition(sourcePosition));
     var position = ToPosition(sourcePosition);
     return new Location(ParserTool.getUri(sourcePosition).toString(), new Range(position, position));
   }
 
   public static Range ToRange(AbstractFeature feature)
   {
+    if (PRECONDITIONS)
+      require(IsValidSourcePosition(feature.pos()));
+
     return new Range(ToPosition(feature.pos()), ToPosition(ParserTool.endOfFeature(feature)));
+  }
+
+  private static boolean IsValidSourcePosition(SourcePosition pos)
+  {
+    return !pos.equals(SourcePosition.notAvailable) &&
+      !pos.equals(SourcePosition.builtIn);
   }
 
   public static Range ToRangeBaseName(AbstractFeature feature)
@@ -76,7 +88,36 @@ public class Bridge
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
   {
-    return new DocumentSymbol(FeatureTool.ToLabel(feature), SymbolKind.Class, ToRange(feature), ToRange(feature));
+    return new DocumentSymbol(FeatureTool.ToLabel(feature), SymbolKind(feature), ToRange(feature), ToRange(feature));
+  }
+
+  private static SymbolKind SymbolKind(AbstractFeature feature)
+  {
+    if (feature.isChoice())
+      {
+        return SymbolKind.Enum;
+      }
+    if (feature.isBuiltInPrimitive() && "bool".equals(feature.featureName().baseName()))
+      {
+        return SymbolKind.Boolean;
+      }
+    if (feature.isBuiltInPrimitive())
+      {
+        return SymbolKind.Number;
+      }
+    if (feature.isConstructor() || feature.isIntrinsicConstructor())
+      {
+        return SymbolKind.Constructor;
+      }
+    if (feature.isField())
+      {
+        return SymbolKind.Constant;
+      }
+    if (feature.isRoutine())
+      {
+        return SymbolKind.Function;
+      }
+    return SymbolKind.Class;
   }
 
   public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
