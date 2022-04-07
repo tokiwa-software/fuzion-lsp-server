@@ -29,7 +29,6 @@ package test.flang.shared;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.shared.FeatureTool;
@@ -70,7 +69,6 @@ public class FeatureToolTest extends BaseTest
   }
 
   @Test
-  @Tag("TAG")
   public void CommentOfStdLibFeature()
   {
     var yak = DeclaredInUniverse("yak", 1);

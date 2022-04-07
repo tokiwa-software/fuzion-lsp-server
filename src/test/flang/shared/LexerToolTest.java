@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.LexerTool;
-import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -98,7 +97,15 @@ public class LexerToolTest extends BaseTest
   @Test
   public void Tokens(){
     SourceText.setText(uri1, ManOrBoy);
-    var start = ParserTool.Main(uri1).pos();
+
+    var atSayStart = CursorPosition(uri1, 10, 5);
+    assertEquals("say", LexerTool.Tokens(atSayStart, false).findFirst().get().text());
+    var atSayMiddle = CursorPosition(uri1, 10, 7);
+    assertEquals("say", LexerTool.Tokens(atSayMiddle, false).findFirst().get().text());
+    var atSayEnd = CursorPosition(uri1, 10, 8);
+    assertEquals(Token.t_stringQD, LexerTool.Tokens(atSayEnd, false).findFirst().get().token());
+
+    var start = CursorPosition(uri1, 1, 1);
     assertTrue(LexerTool.Tokens(start, true).count() > 10);
     assertTrue(LexerTool.Tokens(start, false).count() > 10);
     assertTrue(LexerTool.Tokens(start, false).anyMatch(t -> t.text().equals("i32")));
