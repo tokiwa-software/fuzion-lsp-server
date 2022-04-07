@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionParser
+ * Source of class ParserTool
  *
  *---------------------------------------------------------------------*/
 
@@ -28,7 +28,6 @@ package dev.flang.shared;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -62,7 +61,7 @@ import dev.flang.util.SourcePosition;
  * - caches parsing results.
  * - provides a function to get the original URI of a SourcePosition
  */
-public class FuzionParser extends ANY
+public class ParserTool extends ANY
 {
 
   /**
@@ -162,7 +161,7 @@ public class FuzionParser extends ANY
 
   private static FrontEndOptions FrontEndOptions(URI uri)
   {
-    File tempFile = FuzionParser.toTempFile(uri);
+    File tempFile = ParserTool.toTempFile(uri);
     var frontEndOptions = FrontEndOptions(tempFile);
     return frontEndOptions;
   }
@@ -188,7 +187,7 @@ public class FuzionParser extends ANY
       {
         return result;
       }
-    return FuzionLexer.toURI(sourcePosition);
+    return LexerTool.toURI(sourcePosition);
   }
 
   private static File toTempFile(URI uri)
@@ -259,11 +258,11 @@ public class FuzionParser extends ANY
     return EndOfFeatureCache.computeIfAbsent(feature, f -> {
       if (FeatureTool.IsArgument(f))
         {
-          return FuzionLexer.endOfToken(f.pos());
+          return LexerTool.EndOfToken(f.pos());
         }
       if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
         {
-          var sourceText = SourceText.getText(FuzionParser.getUri(f.pos()));
+          var sourceText = SourceText.getText(ParserTool.getUri(f.pos()));
           var lines = sourceText.split("\n").length;
           return new SourcePosition(f.pos()._sourceFile, lines + 1, 1);
         }
@@ -277,10 +276,10 @@ public class FuzionParser extends ANY
         .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
         .map(position -> {
           var start =
-            FuzionLexer.endOfToken(position);
+            LexerTool.EndOfToken(position);
           // NYI maybe use inverse hashset here? i.e. state which tokens can
           // be skipped
-          var token = FuzionLexer.nextTokenOfType(start, Util.ArrayToSet(new Token[]
+          var token = LexerTool.NextTokenOfType(start, Util.ArrayToSet(new Token[]
             {
                 Token.t_eof,
                 Token.t_ident,
@@ -305,7 +304,7 @@ public class FuzionParser extends ANY
   private static Optional<Interpreter> Interpreter(URI uri)
   {
     // NYI get fuzionoptions from client
-    return FuzionParser.FUIR(uri).map(f -> new Interpreter(new FuzionOptions(0, 0, false), f));
+    return ParserTool.FUIR(uri).map(f -> new Interpreter(new FuzionOptions(0, 0, false), f));
   }
 
   public static String Run(URI uri)
@@ -318,7 +317,7 @@ public class FuzionParser extends ANY
     throws Exception
   {
     var result = Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(() -> {
-      var interpreter = FuzionParser.Interpreter(uri);
+      var interpreter = ParserTool.Interpreter(uri);
       interpreter.ifPresent(i -> i.run());
       if (interpreter.isEmpty())
         {

@@ -104,7 +104,7 @@ public class ASTWalker
 
     if (descend)
       {
-        FuzionParser.DeclaredFeatures(feature, true)
+        ParserTool.DeclaredFeatures(feature, true)
           .forEach(f -> TraverseFeature(f, callback, descend));
       }
   }

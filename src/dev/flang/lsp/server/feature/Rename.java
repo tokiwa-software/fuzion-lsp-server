@@ -51,8 +51,8 @@ import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionLexer;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.LexerTool;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.SourcePosition;
@@ -68,7 +68,7 @@ public class Rename
   // NYI check for name collisions?
   public static WorkspaceEdit getWorkspaceEdit(RenameParams params)
   {
-    if (!FuzionLexer.IsValidIdentifier(params.getNewName()))
+    if (!LexerTool.IsValidIdentifier(params.getNewName()))
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "new name no valid identifier.", null);
         throw new ResponseErrorException(responseError);
@@ -109,7 +109,7 @@ public class Rename
           {
             var nextPosition =
               new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length());
-            pos = FuzionLexer.tokenAt(nextPosition).start();
+            pos = LexerTool.TokenAt(nextPosition).start();
           }
         return pos;
       });
@@ -121,7 +121,7 @@ public class Rename
         && f.resultType().featureOfType().equals(featureToRename))
       .map(f -> {
         // NYI we need correct position of type here
-        var whitespace = FuzionLexer.rawTokenAt(FuzionLexer.endOfToken(f.pos()));
+        var whitespace = LexerTool.RawTokenAt(LexerTool.EndOfToken(f.pos()));
         return new SourcePosition(f.pos()._sourceFile, f.pos()._line,
           f.pos()._column + f.featureName().baseName().length() + whitespace.text().length());
       });
@@ -133,8 +133,8 @@ public class Rename
       featureToRename.outer().outer().featureName().baseName().startsWith("#fun"))
       {
         // last Token before start of #fun.call where tokenText matches baseName
-        var tokenPos = FuzionLexer
-          .Tokens(SourceText.getText(pos))
+        var tokenPos = LexerTool
+          .Tokens(new SourcePosition(pos._sourceFile, 1, 1), false)
           .filter(x -> featureToRename.featureName().baseName().equals(x.text()))
           .filter(x -> {
             return x.start()
@@ -156,15 +156,15 @@ public class Rename
         // NYI better we be if we had the needed and more correct info directly
         // in the AST
         var set =
-          FuzionLexer.nextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.ArrayToSet(new Token[]{Token.t_set}));
+          LexerTool.NextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.ArrayToSet(new Token[]{Token.t_set}));
         var whitespace =
-          FuzionLexer.rawTokenAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column));
+          LexerTool.RawTokenAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column));
         return whitespace.end();
       });
 
 
     var choiceGenerics = ASTWalker
-      .Traverse(FuzionParser.Main(LSP4jUtils.getUri(params)))
+      .Traverse(ParserTool.Main(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof AbstractFeature)
       .map(entry -> (AbstractFeature) entry.getKey())
       .filter(f -> f.resultType().isChoice())
@@ -182,8 +182,8 @@ public class Rename
 
   private static SourcePosition PositionOfChoiceGeneric(String name, AbstractFeature f)
   {
-    return FuzionLexer
-      .Tokens(SourceText.getText(f.pos()))
+    return LexerTool
+      .Tokens(new SourcePosition(f.pos()._sourceFile, 1, 1), false)
       .filter(token -> name.equals(token.text()))
       .filter(token -> {
         return token.start()
@@ -218,7 +218,7 @@ public class Rename
         return new PrepareRenameResult();
       }
 
-    return FuzionLexer.IdentOrOperatorTokenAt(Bridge.ToSourcePosition(params))
+    return LexerTool.IdentOrOperatorTokenAt(Bridge.ToSourcePosition(params))
       .map(token -> {
         return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
       })
@@ -228,7 +228,7 @@ public class Rename
 
   private static boolean IsAtFunKeyword(SourcePosition params)
   {
-    return FuzionLexer.tokenAt(params).token() == Lexer.Token.t_fun;
+    return LexerTool.TokenAt(params).token() == Lexer.Token.t_fun;
   }
 
 }

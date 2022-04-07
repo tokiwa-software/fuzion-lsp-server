@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionLexerTest
+ * Source of class LexerToolTest
  *
  *---------------------------------------------------------------------*/
 
@@ -31,12 +31,14 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.shared.FuzionLexer;
+import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.LexerTool;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
-public class FuzionLexerTest extends BaseTest
+public class LexerToolTest extends BaseTest
 {
   @Test
   public void NextToken_a()
@@ -45,7 +47,7 @@ public class FuzionLexerTest extends BaseTest
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(CursorPosition(uri1, 3, 3));
+      LexerTool.RawTokenAt(CursorPosition(uri1, 3, 3));
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
   }
@@ -57,7 +59,7 @@ public class FuzionLexerTest extends BaseTest
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      FuzionLexer.rawTokenAt(CursorPosition(uri1, 7, 8));
+      LexerTool.RawTokenAt(CursorPosition(uri1, 7, 8));
     assertEquals("i32", nextToken.text());
     assertEquals(10, nextToken.end()._column);
   }
@@ -67,7 +69,7 @@ public class FuzionLexerTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 1, 1));
+    var endOfToken = LexerTool.EndOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 1, 1));
     assertEquals(11, endOfToken._column);
     assertEquals(1, endOfToken._line);
 
@@ -78,7 +80,7 @@ public class FuzionLexerTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 3, 7));
+    var endOfToken = LexerTool.EndOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 3, 7));
     assertEquals(10, endOfToken._column);
     assertEquals(3, endOfToken._line);
   }
@@ -88,8 +90,18 @@ public class FuzionLexerTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = FuzionLexer.endOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 3, 4));
+    var endOfToken = LexerTool.EndOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 3, 4));
     assertEquals(5, endOfToken._column);
     assertEquals(3, endOfToken._line);
+  }
+
+  @Test
+  public void Tokens(){
+    SourceText.setText(uri1, ManOrBoy);
+    var start = ParserTool.Main(uri1).pos();
+    assertTrue(LexerTool.Tokens(start, true).count() > 10);
+    assertTrue(LexerTool.Tokens(start, false).count() > 10);
+    assertTrue(LexerTool.Tokens(start, false).anyMatch(t -> t.text().equals("i32")));
+    assertTrue(LexerTool.Tokens(start, false).reduce((first, second) -> second).get().token() == Token.t_eof);
   }
 }

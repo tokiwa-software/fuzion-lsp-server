@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FuzionParserTest
+ * Source of class ParserToolTest
  *
  *---------------------------------------------------------------------*/
 
@@ -33,17 +33,16 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
-public class FuzionParserTest extends BaseTest
+public class ParserToolTest extends BaseTest
 {
   @Test
   public void EndOfFeature()
@@ -53,7 +52,7 @@ public class FuzionParserTest extends BaseTest
         (1..10).forAll()"""
       + System.lineSeparator() + " ";
     SourceText.setText(uri1, sourceText);
-    var endOfFeature = FuzionParser.endOfFeature(FuzionParser.Main(uri1));
+    var endOfFeature = ParserTool.endOfFeature(ParserTool.Main(uri1));
     assertEquals(3, endOfFeature._line);
     assertEquals(2, endOfFeature._column);
   }
@@ -62,11 +61,11 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureLambdaDefinition()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_b = FeatureTool.SelfAndDescendants(FuzionParser.Main(uri1))
+    var feature_b = FeatureTool.SelfAndDescendants(ParserTool.Main(uri1))
       .filter(x -> x.featureName().baseName().equals("b"))
       .findFirst()
       .get();
-    var endOfFeature = FuzionParser.endOfFeature(feature_b);
+    var endOfFeature = ParserTool.endOfFeature(feature_b);
     assertEquals(5, endOfFeature._line);
     assertEquals(4, endOfFeature._column);
 
@@ -76,11 +75,11 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureArgument()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_x1 = FeatureTool.SelfAndDescendants(FuzionParser.Main(uri1))
+    var feature_x1 = FeatureTool.SelfAndDescendants(ParserTool.Main(uri1))
       .filter(x -> x.featureName().baseName().equals("x1"))
       .findFirst()
       .get();
-    var endOfFeature = FuzionParser.endOfFeature(feature_x1);
+    var endOfFeature = ParserTool.endOfFeature(feature_x1);
     assertEquals(3, endOfFeature._line);
     assertEquals(14, endOfFeature._column);
   }
@@ -89,8 +88,8 @@ public class FuzionParserTest extends BaseTest
   public void EndOfFeatureStdLib()
   {
     var yak = DeclaredInUniverse("yak", 1);
-    assertEquals(35, FuzionParser.endOfFeature(yak)._line);
-    assertEquals(1, FuzionParser.endOfFeature(yak)._column);
+    assertEquals(35, ParserTool.endOfFeature(yak)._line);
+    assertEquals(1, ParserTool.endOfFeature(yak)._column);
   }
 
 
@@ -105,13 +104,13 @@ public class FuzionParserTest extends BaseTest
       + System.lineSeparator() + "    ";
     SourceText.setText(uri1, sourceText);
 
-    var level2 = FeatureTool.SelfAndDescendants(FuzionParser.Main(uri1))
+    var level2 = FeatureTool.SelfAndDescendants(ParserTool.Main(uri1))
       .filter(f -> f.qualifiedName().equals("HelloWorld.level1.level2"))
       .findFirst()
       .get();
 
-    assertEquals(5, FuzionParser.endOfFeature(level2)._line);
-    assertEquals(5, FuzionParser.endOfFeature(level2)._column);
+    assertEquals(5, ParserTool.endOfFeature(level2)._line);
+    assertEquals(5, ParserTool.endOfFeature(level2)._column);
   }
 
 
@@ -121,7 +120,7 @@ public class FuzionParserTest extends BaseTest
     var sourceText = """
       """;
     SourceText.setText(uri1, sourceText);
-    var f = FuzionParser.Universe(uri1);
+    var f = ParserTool.Universe(uri1);
     assertEquals("#universe", f.qualifiedName());
   }
 
@@ -137,8 +136,8 @@ public class FuzionParserTest extends BaseTest
             grandChild3 is
       """;
     SourceText.setText(uri1, sourceText);
-    var f = FuzionParser.Main(uri1);
-    var df = FuzionParser.DeclaredFeatures(f).collect(Collectors.toList());
+    var f = ParserTool.Main(uri1);
+    var df = ParserTool.DeclaredFeatures(f).collect(Collectors.toList());
     assertEquals(2, df.size());
     assertTrue(df.stream().anyMatch(x -> x.featureName().baseName().equals("childFeat1")));
   }
@@ -148,7 +147,7 @@ public class FuzionParserTest extends BaseTest
   public void declaredFeaturesUniverse()
   {
     SourceText.setText(uri1, HelloWorld);
-    assertTrue(FuzionParser.DeclaredFeatures(FuzionParser.Universe(uri1)).count() > 10);
+    assertTrue(ParserTool.DeclaredFeatures(ParserTool.Universe(uri1)).count() > 10);
   }
 
   @Test
@@ -158,10 +157,10 @@ public class FuzionParserTest extends BaseTest
       HelloWorld is
         say "Hello World!"
                   """);
-    var mainFeature = FuzionParser.Main(uri1);
-    assertEquals(0, FuzionParser.Errors(uri1).count());
+    var mainFeature = ParserTool.Main(uri1);
+    assertEquals(0, ParserTool.Errors(uri1).count());
     assertEquals("HelloWorld", mainFeature.featureName().baseName());
-    assertEquals(uri1, FuzionParser.getUri(mainFeature.pos()));
+    assertEquals(uri1, ParserTool.getUri(mainFeature.pos()));
   }
 
   @Test
@@ -180,30 +179,30 @@ public class FuzionParserTest extends BaseTest
 
 
                   """);
-    assertDoesNotThrow(() -> FuzionParser.Main(uri1));
-    assertEquals(true, FuzionParser.Errors(uri1).count() > 0);
+    assertDoesNotThrow(() -> ParserTool.Main(uri1));
+    assertEquals(true, ParserTool.Errors(uri1).count() > 0);
   }
 
   @Test
   public void getUriStdLibFile()
   {
-    var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
+    var uri = ParserTool.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
     assertEquals(Util.toURI(Path.of("./").normalize().toUri().toString() + "fuzion/build/lib/yak.fz"), uri);
   }
 
   @Test
   public void UniverseOfStdLibFile()
   {
-    var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
-    assertTrue(FuzionParser.Universe(uri).isUniverse());
+    var uri = ParserTool.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
+    assertTrue(ParserTool.Universe(uri).isUniverse());
   }
 
   @Test
   public void WarningsErrorsOfStdLibFile()
   {
-    var uri = FuzionParser.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
-    assertTrue(FuzionParser.Warnings(uri).findAny().isEmpty());
-    assertTrue(FuzionParser.Errors(uri).findAny().isEmpty());
+    var uri = ParserTool.getUri(new SourcePosition(new SourceFile(Path.of("fuzion/build/lib/yak.fz")), 0, 0));
+    assertTrue(ParserTool.Warnings(uri).findAny().isEmpty());
+    assertTrue(ParserTool.Errors(uri).findAny().isEmpty());
   }
 
 

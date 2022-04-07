@@ -29,10 +29,11 @@ package test.flang.shared;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 
 public class FeatureToolTest extends BaseTest
@@ -41,7 +42,7 @@ public class FeatureToolTest extends BaseTest
   public void ASTbrokenSource()
   {
     SourceText.setText(uri1, UnknownCall);
-    var ex = FuzionParser.Main(uri1);
+    var ex = ParserTool.Main(uri1);
     var ast = FeatureTool.AST(ex);
     assertTrue(ast.contains("Call:hasInterval"));
     assertTrue(ast.contains("Call:called feature unknown"));
@@ -60,8 +61,8 @@ public class FeatureToolTest extends BaseTest
           say "nothing"
       """;
     SourceText.setText(uri1, CommentExample);
-    var innerFeature = FuzionParser
-      .DeclaredFeatures(FuzionParser.Main(uri1))
+    var innerFeature = ParserTool
+      .DeclaredFeatures(ParserTool.Main(uri1))
       .findFirst()
       .orElseThrow();
     assertEquals("first comment line" + System.lineSeparator() + "second comment line",
@@ -69,6 +70,7 @@ public class FeatureToolTest extends BaseTest
   }
 
   @Test
+  @Tag("TAG")
   public void CommentOfStdLibFeature()
   {
     var yak = DeclaredInUniverse("yak", 1);
@@ -90,7 +92,7 @@ public class FeatureToolTest extends BaseTest
   public void CommentOfRedef()
   {
     var psSet = DeclaredInUniverse("psSet", 2);
-    var psSetasArray = FuzionParser.DeclaredFeatures(psSet)
+    var psSetasArray = ParserTool.DeclaredFeatures(psSet)
       .filter(f -> f.featureName().baseName().equals("asArray"))
       .findFirst()
       .get();

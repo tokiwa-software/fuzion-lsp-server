@@ -46,8 +46,8 @@ import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionLexer;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.LexerTool;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
 
 /**
@@ -102,9 +102,9 @@ public class Diagnostics
   private static Stream<Diagnostic> Errors(URI uri)
   {
     var errorDiagnostics =
-      FuzionParser.Errors(uri).filter(error -> FuzionParser.getUri(error.pos).equals(uri)).map((error) -> {
+      ParserTool.Errors(uri).filter(error -> ParserTool.getUri(error.pos).equals(uri)).map((error) -> {
         var message = error.msg + System.lineSeparator() + error.detail;
-        return new Diagnostic(LSP4jUtils.Range(FuzionLexer.rawTokenAt(error.pos)), message, DiagnosticSeverity.Error,
+        return new Diagnostic(LSP4jUtils.Range(LexerTool.RawTokenAt(error.pos)), message, DiagnosticSeverity.Error,
           "fuzion language server");
       });
     return errorDiagnostics;
@@ -113,9 +113,9 @@ public class Diagnostics
   private static Stream<Diagnostic> Warnings(URI uri)
   {
     var warningDiagnostics =
-      FuzionParser.Warnings(uri).filter(warning -> FuzionParser.getUri(warning.pos).equals(uri)).map((warning) -> {
+      ParserTool.Warnings(uri).filter(warning -> ParserTool.getUri(warning.pos).equals(uri)).map((warning) -> {
         var message = warning.msg + System.lineSeparator() + warning.detail;
-        return new Diagnostic(LSP4jUtils.Range(FuzionLexer.rawTokenAt(warning.pos)), message,
+        return new Diagnostic(LSP4jUtils.Range(LexerTool.RawTokenAt(warning.pos)), message,
           DiagnosticSeverity.Warning, "fuzion language server");
       });
     return warningDiagnostics;
@@ -170,7 +170,7 @@ public class Diagnostics
     if(Util.IsStdLib(uri)){
       return Stream.empty();
     }
-    var main = FuzionParser.Main(uri);
+    var main = ParserTool.Main(uri);
     var calledFeatures = ASTWalker.Calls(main)
       .map(x -> x.getKey().calledFeature())
       .collect(Collectors.toSet());

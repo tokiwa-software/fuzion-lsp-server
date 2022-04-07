@@ -36,8 +36,8 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionLexer;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.LexerTool;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.SourcePosition;
@@ -56,12 +56,12 @@ public class Bridge
   public static Location ToLocation(SourcePosition sourcePosition)
   {
     var position = ToPosition(sourcePosition);
-    return new Location(FuzionParser.getUri(sourcePosition).toString(), new Range(position, position));
+    return new Location(ParserTool.getUri(sourcePosition).toString(), new Range(position, position));
   }
 
   public static Range ToRange(AbstractFeature feature)
   {
-    return new Range(ToPosition(feature.pos()), ToPosition(FuzionParser.endOfFeature(feature)));
+    return new Range(ToPosition(feature.pos()), ToPosition(ParserTool.endOfFeature(feature)));
   }
 
   public static Range ToRangeBaseName(AbstractFeature feature)
@@ -81,12 +81,12 @@ public class Bridge
 
   public static TextDocumentPositionParams ToTextDocumentPosition(SourcePosition sourcePosition)
   {
-    return LSP4jUtils.TextDocumentPositionParams(FuzionParser.getUri(sourcePosition), ToPosition(sourcePosition));
+    return LSP4jUtils.TextDocumentPositionParams(ParserTool.getUri(sourcePosition), ToPosition(sourcePosition));
   }
 
   public static SourcePosition ToSourcePosition(TextDocumentPositionParams params)
   {
-    return new SourcePosition(FuzionLexer.ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
+    return new SourcePosition(LexerTool.ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
       params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
   }
 }

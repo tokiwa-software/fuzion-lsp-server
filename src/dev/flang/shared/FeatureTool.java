@@ -59,7 +59,7 @@ public class FeatureTool extends ANY
   public static Stream<AbstractFeature> SelfAndDescendants(AbstractFeature feature)
   {
     return Stream.concat(Stream.of(feature),
-      FuzionParser.DeclaredFeatures(feature).flatMap(f -> SelfAndDescendants(f)));
+      ParserTool.DeclaredFeatures(feature).flatMap(f -> SelfAndDescendants(f)));
   }
 
   public static String CommentOf(AbstractFeature feature)
@@ -69,7 +69,7 @@ public class FeatureTool extends ANY
     while (true)
       {
         var pos = new SourcePosition(feature.pos()._sourceFile, line, 0);
-        if (line < 1 || !FuzionLexer.isCommentLine(pos))
+        if (line < 1 || !LexerTool.isCommentLine(pos))
           {
             break;
           }
@@ -127,7 +127,7 @@ public class FeatureTool extends ANY
    */
   public static SourcePosition BaseNamePosition(AbstractFeature feature)
   {
-    return FuzionLexer
+    return LexerTool
       .Tokens(feature.pos(), false)
       .limit(MAX_TOKENS_TO_INSPECT)
       .dropWhile(tokenInfo -> !tokenInfo.text().equals(feature.featureName().baseName()))
@@ -236,7 +236,7 @@ public class FeatureTool extends ANY
       .reduce(Stream::concat)
       .orElseGet(Stream::empty)
       .flatMap(f -> {
-        return FuzionParser.DeclaredFeatures(f);
+        return ParserTool.DeclaredFeatures(f);
       });
   }
 

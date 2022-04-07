@@ -37,13 +37,13 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.ParserTool;
 
 public class DocumentSymbols
 {
   public static List<Either<SymbolInformation, DocumentSymbol>> getDocumentSymbols(DocumentSymbolParams params)
   {
-    var mainFeature = FuzionParser.Main(LSP4jUtils.getUri(params.getTextDocument()));
+    var mainFeature = ParserTool.Main(LSP4jUtils.getUri(params.getTextDocument()));
 
     var rootSymbol = DocumentSymbols.DocumentSymbolTree(mainFeature);
 
@@ -53,7 +53,7 @@ public class DocumentSymbols
   public static DocumentSymbol DocumentSymbolTree(AbstractFeature feature)
   {
     var documentSymbol = Bridge.ToDocumentSymbol(feature);
-    var children = FuzionParser.DeclaredFeatures(feature)
+    var children = ParserTool.DeclaredFeatures(feature)
       .filter(f -> !f.isField())
       .map(f -> {
         return DocumentSymbolTree(f);

@@ -29,7 +29,7 @@ package test.flang.lsp.server.feature;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
 import test.flang.shared.BaseTest;
@@ -48,9 +48,9 @@ public class CommandTest extends BaseTest{
     SourceText.setText(uri1, HelloWorld);
     SourceText.setText(uri2, PythagoreanTriple);
 
-    FuzionParser.Run(uri1);
-    FuzionParser.Run(uri2);
-    var message = FuzionParser.Run(uri1);
+    ParserTool.Run(uri1);
+    ParserTool.Run(uri2);
+    var message = ParserTool.Run(uri1);
 
     assertEquals("Hello World!" + "\n", message);
   }
@@ -63,10 +63,10 @@ public class CommandTest extends BaseTest{
     SourceText.setText(uri3, PythagoreanTriple);
 
     // NYI this will not throw once fuzion gets faster, how to test properly?
-    assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri1, 100));
-    assertThrows(MaxExecutionTimeExceededException.class, () -> FuzionParser.Run(uri3, 50));
+    assertThrows(MaxExecutionTimeExceededException.class, () -> ParserTool.Run(uri1, 100));
+    assertThrows(MaxExecutionTimeExceededException.class, () -> ParserTool.Run(uri3, 50));
 
-    assertEquals("Hello World!" + "\n", FuzionParser.Run(uri2));
+    assertEquals("Hello World!" + "\n", ParserTool.Run(uri2));
   }
 
 }

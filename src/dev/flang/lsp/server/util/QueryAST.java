@@ -45,8 +45,8 @@ import dev.flang.shared.ASTItem;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionLexer;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.LexerTool;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
@@ -70,11 +70,11 @@ public class QueryAST extends ANY
     if (PRECONDITIONS)
       require(!Util.IsStdLib(LSP4jUtils.getUri(params)));
 
-    var universe = FuzionParser.Universe(LSP4jUtils.getUri(params));
+    var universe = ParserTool.Universe(LSP4jUtils.getUri(params));
     return ASTWalker.Traverse(universe)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof AbstractCall)
-      .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
+      .filter(entry -> PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
       .map(entry -> (AbstractCall) entry.getKey())
       .filter(c -> LSP4jUtils.ComparePosition(Bridge.ToPosition(CallTool.endOfCall(c)), params.getPosition()) <= 0)
@@ -96,15 +96,10 @@ public class QueryAST extends ANY
   private static Optional<? extends AbstractFeature> Constant(TextDocumentPositionParams params,
     AbstractFeature universe)
   {
-    var pos = FuzionLexer.GoBackInLine(Bridge.ToSourcePosition(params), 2);
-    if (pos.isEmpty())
-      {
-        return Optional.empty();
-      }
     return ASTWalker.Traverse(universe)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof AbstractConstant)
-      .filter(entry -> PositionIsAfterOrAtCursor(params, FuzionParser.endOfFeature(entry.getValue())))
+      .filter(entry -> PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, ((AbstractConstant) entry.getKey()).pos()))
       .map(entry -> ((AbstractConstant) entry.getKey()))
       .sorted(CompareBySourcePosition.reversed())
@@ -129,9 +124,9 @@ public class QueryAST extends ANY
       })
       .map(feature -> {
         var declaredFeaturesOfInheritedFeatures =
-          InheritedRecursive(feature).flatMap(c -> FuzionParser.DeclaredFeatures(c.calledFeature()));
+          InheritedRecursive(feature).flatMap(c -> ParserTool.DeclaredFeatures(c.calledFeature()));
 
-        var declaredFeatures = Stream.concat(FuzionParser
+        var declaredFeatures = Stream.concat(ParserTool
           .DeclaredFeatures(feature), declaredFeaturesOfInheritedFeatures)
           .collect(Collectors.toList());
 
@@ -165,9 +160,9 @@ public class QueryAST extends ANY
       })
       .map(feature -> {
         var declaredFeaturesOfInheritedFeatures =
-          InheritedRecursive(feature).flatMap(c -> FuzionParser.DeclaredFeatures(c.calledFeature()));
+          InheritedRecursive(feature).flatMap(c -> ParserTool.DeclaredFeatures(c.calledFeature()));
 
-        var declaredFeatures = Stream.concat(FuzionParser
+        var declaredFeatures = Stream.concat(ParserTool
           .DeclaredFeatures(feature), declaredFeaturesOfInheritedFeatures)
           .collect(Collectors.toList());
 
@@ -206,7 +201,7 @@ public class QueryAST extends ANY
    */
   private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
-    var baseFeature = FuzionParser.Universe(LSP4jUtils.getUri(params));
+    var baseFeature = ParserTool.Universe(LSP4jUtils.getUri(params));
     var astItems = ASTWalker.Traverse(baseFeature)
       .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
       .filter(IsItemInScope(params))
@@ -255,7 +250,7 @@ public class QueryAST extends ANY
 
       boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
         || LSP4jUtils.ComparePosition(cursorPosition,
-          Bridge.ToPosition(FuzionParser.endOfFeature(outer))) <= 0;
+          Bridge.ToPosition(ParserTool.endOfFeature(outer))) <= 0;
       boolean ItemPositionIsBeforeOrAtCursorPosition =
         LSP4jUtils.ComparePosition(cursorPosition, Bridge.ToPosition(sourcePositionOption)) >= 0;
 
@@ -276,7 +271,7 @@ public class QueryAST extends ANY
    */
   public static Stream<AbstractFeature> SelfAndDescendants(URI uri)
   {
-    var baseFeature = FuzionParser.Main(uri);
+    var baseFeature = ParserTool.Main(uri);
     return FeatureTool.SelfAndDescendants(baseFeature);
   }
 
@@ -298,7 +293,7 @@ public class QueryAST extends ANY
   public static Optional<AbstractFeature> FeatureAt(TextDocumentPositionParams params)
   {
     var sourcePosition = Bridge.ToSourcePosition(params);
-    var token = FuzionLexer.IdentOrOperatorTokenAt(sourcePosition);
+    var token = LexerTool.IdentOrOperatorTokenAt(sourcePosition);
     return ASTItemsBeforeOrAtCursor(params)
       .map(astItem -> {
         if (astItem instanceof AbstractFeature f
@@ -346,7 +341,7 @@ public class QueryAST extends ANY
       .filter(f -> {
         var cursorPosition = LSP4jUtils.getPosition(params);
         var startOfFeature = Bridge.ToPosition(f.pos());
-        var endOfFeature = Bridge.ToPosition(FuzionParser.endOfFeature(f));
+        var endOfFeature = Bridge.ToPosition(ParserTool.endOfFeature(f));
         return LSP4jUtils.ComparePosition(cursorPosition, endOfFeature) <= 0 &&
           LSP4jUtils.ComparePosition(cursorPosition, startOfFeature) > 0;
       })
@@ -363,7 +358,7 @@ public class QueryAST extends ANY
    */
   public static boolean InString(TextDocumentPositionParams params)
   {
-    return ASTWalker.Traverse(FuzionParser.Main(LSP4jUtils.getUri(params)))
+    return ASTWalker.Traverse(ParserTool.Main(LSP4jUtils.getUri(params)))
       .filter(x -> x.getKey() instanceof StrConst)
       .map(x -> (StrConst) x.getKey())
       .anyMatch(x -> {

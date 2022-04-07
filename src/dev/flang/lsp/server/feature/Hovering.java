@@ -35,7 +35,7 @@ import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.LexerTool;
 import dev.flang.shared.MarkdownTool;
 
 /**
@@ -47,7 +47,7 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var range = LSP4jUtils.Range(FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params)));
+    var range = LSP4jUtils.Range(LexerTool.RawTokenAt(Bridge.ToSourcePosition(params)));
     var feature = QueryAST.FeatureAt(params);
     return feature.map(f -> {
       var hoverInfo = FeatureTool.CommentOfInMarkdown(f) + System.lineSeparator()

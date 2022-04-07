@@ -29,7 +29,7 @@ package test.flang.shared;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.shared.ASTWalker;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 
 public class ASTWalkerTest extends BaseTest
@@ -46,22 +46,22 @@ public class ASTWalkerTest extends BaseTest
       say "$s maps to {x[s]}"
   """;
     SourceText.setText(uri1, sourceText);
-    ASTWalker.Traverse(FuzionParser.Main(uri1));
+    ASTWalker.Traverse(ParserTool.Main(uri1));
   }
 
   @Test
   public void AllOf()
   {
     SourceText.setText(uri1, HelloWorld);
-    assertEquals("HelloWorld", FuzionParser
+    assertEquals("HelloWorld", ParserTool
       .Main(uri1)
       .featureName()
       .baseName());
     assertEquals("say", ASTWalker
-      .Calls(FuzionParser
+      .Calls(ParserTool
         .Main(uri1))
       .map(x -> x.getKey())
-      .filter(call -> uri1.equals(FuzionParser.getUri(call.pos())))
+      .filter(call -> uri1.equals(ParserTool.getUri(call.pos())))
       .findFirst()
       .get()
       .calledFeature()

@@ -70,7 +70,7 @@ public class SourceText
 
   public static String getText(SourcePosition params)
   {
-    return getText(FuzionLexer.toURI(params));
+    return getText(LexerTool.toURI(params));
   }
 
   private static String ReadFromDisk(URI uri)

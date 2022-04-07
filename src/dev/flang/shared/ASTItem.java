@@ -120,7 +120,7 @@ public class ASTItem
         {
           return false;
         }
-      return uri.equals(FuzionParser.getUri(sourcePositionOption));
+      return uri.equals(ParserTool.getUri(sourcePositionOption));
     };
   }
 

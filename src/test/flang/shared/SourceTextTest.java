@@ -28,7 +28,7 @@ package test.flang.shared;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 
 class SourceTextTest extends BaseTest
@@ -40,7 +40,7 @@ class SourceTextTest extends BaseTest
       myFeat is
       """;
     SourceText.setText(uri1, CommentExample);
-    var myFeatIs = FuzionParser.Main(uri1);
+    var myFeatIs = ParserTool.Main(uri1);
     var sourceText = SourceText.getText(myFeatIs.pos());
     assertEquals(true, sourceText.contains("myFeat is"));
   }

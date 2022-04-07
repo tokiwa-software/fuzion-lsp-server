@@ -33,7 +33,7 @@ import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.IO;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -105,12 +105,12 @@ public abstract class BaseTest extends Assert
 
   protected static AbstractFeature Universe()
   {
-    return FuzionParser.Universe(Path.of("fuzion/build/lib/unit.fz").toUri());
+    return ParserTool.Universe(Path.of("fuzion/build/lib/unit.fz").toUri());
   }
 
   protected static AbstractFeature DeclaredInUniverse(String name, int argCount)
   {
-    return FuzionParser
+    return ParserTool
       .DeclaredFeatures(Universe())
       .filter(f -> f.featureName().baseName().equals(name))
       .filter(f -> f.arguments().size() == argCount)

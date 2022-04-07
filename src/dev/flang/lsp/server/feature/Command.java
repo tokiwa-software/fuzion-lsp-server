@@ -44,7 +44,7 @@ import dev.flang.lsp.server.util.Computation;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionParser;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.IO;
 import dev.flang.shared.Util;
 
@@ -75,7 +75,7 @@ public class Command
   private static void CallGraph(String arg0, String arg1)
   {
     // NYI go to correct feature via more direct way
-    var feature = FeatureTool.SelfAndDescendants(FuzionParser.Universe(Util.toURI(arg0)))
+    var feature = FeatureTool.SelfAndDescendants(ParserTool.Universe(Util.toURI(arg0)))
       .filter(f -> FeatureTool.UniqueIdentifier(f).equals(arg1))
       .findFirst()
       .get();
@@ -117,7 +117,7 @@ public class Command
     var token = FuzionLanguageClient.StartProgress("running", uri.toString());
     try
       {
-        var result = FuzionParser.Run(uri);
+        var result = ParserTool.Run(uri);
         var file = IO.writeToTempFile(result, String.valueOf(System.currentTimeMillis()), ".result");
         Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
       }
@@ -137,7 +137,7 @@ public class Command
 
   private static void showSyntaxTree(URI uri)
   {
-    var feature = FuzionParser.Main(uri);
+    var feature = ParserTool.Main(uri);
     var ast = FeatureTool.AST(feature);
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));

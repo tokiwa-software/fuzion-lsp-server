@@ -46,7 +46,7 @@ import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.FuzionLexer;
+import dev.flang.shared.LexerTool;
 import dev.flang.shared.Util;
 
 /**
@@ -90,7 +90,7 @@ public class Completion
     if (".".equals(triggerCharacter))
       {
         // not offering completion for number
-        if (FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params), -2).token() == Token.t_numliteral)
+        if (LexerTool.RawTokenAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 2)).token() == Token.t_numliteral)
           {
             return NoCompletions;
           }
@@ -98,7 +98,7 @@ public class Completion
       }
     if (" ".equals(triggerCharacter))
       {
-        var tokenBeforeTriggerCharacter = FuzionLexer.rawTokenAt(Bridge.ToSourcePosition(params), -2).token();
+        var tokenBeforeTriggerCharacter = LexerTool.RawTokenAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 2)).token();
         if (tokenBeforeTriggerCharacter.equals(Token.t_for))
           {
             return Either.forLeft(Arrays.asList(
