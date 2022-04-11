@@ -35,11 +35,12 @@ import java.util.stream.Stream;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.TokenInfo;
+import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
-public class LexerTool
+public class LexerTool extends ANY
 {
 
   public static Boolean IsValidIdentifier(String str)
@@ -108,16 +109,22 @@ public class LexerTool
 
   public static TokenInfo TokenAt(SourcePosition params)
   {
-    return Tokens(params, false)
+    var token = Tokens(params, false)
       .findFirst()
       .get();
+    if(POSTCONDITIONS)
+      ensure(params._line == token.start()._line);
+    return token;
   }
 
   public static TokenInfo RawTokenAt(SourcePosition params)
   {
-    return Tokens(params, true)
+    var token = Tokens(params, true)
       .findFirst()
       .get();
+    if(POSTCONDITIONS)
+      ensure(params._line == token.start()._line);
+    return token;
   }
 
   private static Lexer NewLexerStdIn()
