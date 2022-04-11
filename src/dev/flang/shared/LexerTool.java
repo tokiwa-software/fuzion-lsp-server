@@ -51,6 +51,13 @@ public class LexerTool
     return isIdentifier;
   }
 
+  /**
+   * Stream of Tokens from start
+   * Never empty, last token eof is always present
+   * @param start
+   * @param includeRaw
+   * @return
+   */
   public static Stream<TokenInfo> Tokens(SourcePosition start, boolean includeRaw)
   {
     var eof = Stream.of(new TokenInfo(start, "", Token.t_eof));
