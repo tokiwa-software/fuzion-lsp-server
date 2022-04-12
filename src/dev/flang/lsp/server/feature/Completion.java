@@ -207,7 +207,7 @@ public class Completion
     return IntStream
       .range(0, arguments.size())
       .<String>mapToObj(index -> {
-        var argument = arguments.get(index).thisType().featureOfType();
+        var argument = arguments.get(index);
         if (!argument.resultType().isFunType())
           {
             return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
