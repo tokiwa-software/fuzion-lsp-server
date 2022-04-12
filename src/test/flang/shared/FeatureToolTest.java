@@ -89,7 +89,7 @@ public class FeatureToolTest extends BaseTest
   @Test
   public void CommentOfRedef()
   {
-    var psSet = DeclaredInUniverse("psSet", 2);
+    var psSet = DeclaredInUniverse("psSet", 3);
     var psSetasArray = ParserTool.DeclaredFeatures(psSet)
       .filter(f -> f.featureName().baseName().equals("asArray"))
       .findFirst()
@@ -109,7 +109,7 @@ public class FeatureToolTest extends BaseTest
   public void ToLabel()
   {
     var array = DeclaredInUniverse("array", 2);
-    assertEquals("array<T>(length i32, init Function<array.T, i32>) => array<array.T> : Object",
+    assertEquals("array<T>(T Object, internalArray fuzion.sys.array<array.T>) => array<array.T> : Sequence<T>",
       FeatureTool.ToLabel(array));
   }
 

@@ -55,7 +55,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var expected = """
-      map<${2:B}> (□ -> □)
+      map<${3:B}> ${1:B} (□ -> □)
       asString
       asList
       asStream
@@ -85,12 +85,12 @@ public class CompletionTest extends ExtendedBaseTest
       filter (□ -> □)
       splitAt ${1:at}
       concatSequences ${1:s}
-      mapSequence<${2:B}> (□ -> □)
-      reduce<${3:R}> ${1:init} (□, □ -> □)
+      mapSequence<${3:B}> ${1:B} (□ -> □)
+      reduce<${4:R}> ${1:R} ${2:init} (□, □ -> □)
       insert ${1:at} ${2:v}
       sort (□, □ -> □)
-      sortBy<${2:O}> (□ -> □)
-      zip<${3:U}, ${4:V}> ${1:b} (□, □ -> □)
+      sortBy<${3:O}> ${1:O} (□ -> □)
+      zip<${5:U}, ${6:V}> ${1:U} ${2:V} ${3:b} (□, □ -> □)
       hashCode""";
     var actual = Completion.getCompletions(params(uri1, 1, 9, TriggerCharacters.Dot))
       .getLeft()
