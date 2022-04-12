@@ -84,9 +84,13 @@ public class Rename
     Stream<SourcePosition> renamePositions = getRenamePositions(params, feature.get());
 
     var changes = renamePositions
-      .map(sourcePosition -> Bridge.ToLocation(sourcePosition))
+      .map(start -> {
+        var end =
+          new SourcePosition(start._sourceFile, start._line, start._column + LengthOfFeatureIdentifier(feature.get()));
+        return Bridge.ToLocation(start, end);
+      })
       .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
-        getTextEdit(location, LengthOfFeatureIdentifier(feature.get()), params.getNewName())))
+        new TextEdit(location.getRange(), params.getNewName())))
       .collect(Collectors.groupingBy(e -> e.getKey(), Collectors.mapping(e -> e.getValue(), Collectors.toList())));
 
     return new WorkspaceEdit(changes);
@@ -156,7 +160,10 @@ public class Rename
         // NYI better we be if we had the needed and more correct info directly
         // in the AST
         var set =
-          LexerTool.NextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.ArrayToSet(new Token[]{Token.t_set}));
+          LexerTool.NextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.ArrayToSet(new Token[]
+          {
+              Token.t_set
+          }));
         var whitespace =
           LexerTool.RawTokenAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column));
         return whitespace.end();
@@ -199,14 +206,6 @@ public class Rename
     return Arrays.stream(feature.featureName().baseName().split(" "))
       .map(str -> str.length())
       .reduce(0, (acc, item) -> item);
-  }
-
-  private static TextEdit getTextEdit(Location location, int lengthOfOldToken, String newText)
-  {
-    var startPos = location.getRange().getStart();
-    var endPos = new Position(startPos.getLine(), startPos.getCharacter() + lengthOfOldToken);
-    var result = new TextEdit(new Range(startPos, endPos), newText);
-    return result;
   }
 
   // NYI disallow renaming of stdlib

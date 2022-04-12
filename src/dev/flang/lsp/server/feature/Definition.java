@@ -26,8 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Location;
@@ -37,7 +38,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.QueryAST;
-import dev.flang.shared.FeatureTool;
 
 /**
  * tries to provide the definition of a call
@@ -46,19 +46,27 @@ import dev.flang.shared.FeatureTool;
 public class Definition
 {
   public static Either<List<? extends Location>, List<? extends LocationLink>> getDefinitionLocation(
-      DefinitionParams params)
+    DefinitionParams params)
   {
     var feature = QueryAST.FeatureAt(params);
-    if(feature.isEmpty()){
-      return null;
-    }
-    return getDefinition(feature.get());
+    if (feature.isEmpty())
+      {
+        return null;
+      }
+    // NYI should also include where feature is beeing redefined
+    var redefAbstractAndSelf = new TreeSet<>(feature.get().redefines());
+    redefAbstractAndSelf.add(feature.get());
+    return getDefinition(redefAbstractAndSelf.stream().collect(Collectors.toList()));
   }
 
-  private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(AbstractFeature af)
-	{
-    Location location = Bridge.ToLocation(af.pos());
-    return Either.forLeft(Arrays.asList(location));
-	}
+  private static Either<List<? extends Location>, List<? extends LocationLink>> getDefinition(List<AbstractFeature> fl)
+  {
+    return Either
+      .forLeft(
+        fl
+          .stream()
+          .map(f -> Bridge.ToLocation(f))
+          .collect(Collectors.toList()));
+  }
 
 }

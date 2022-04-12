@@ -51,7 +51,7 @@ public class References
         return List.of();
       }
     return FeatureTool.CallsTo(feature.get())
-      .map(entry -> Bridge.ToLocation(entry.getKey().pos()))
+      .map(entry -> Bridge.ToLocation(entry.getKey()))
       .collect(Collectors.toList());
   }
 

@@ -33,6 +33,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
@@ -54,12 +55,11 @@ public class Bridge extends ANY
     return new Position(sourcePosition._line - 1, sourcePosition._column - 1);
   }
 
-  public static Location ToLocation(SourcePosition sourcePosition)
+  public static Location ToLocation(SourcePosition start, SourcePosition end)
   {
     if (PRECONDITIONS)
-      require(IsValidSourcePosition(sourcePosition));
-    var position = ToPosition(sourcePosition);
-    return new Location(ParserTool.getUri(sourcePosition).toString(), new Range(position, position));
+      require(IsValidSourcePosition(start));
+    return new Location(ParserTool.getUri(start).toString(), new Range(ToPosition(start), ToPosition(end)));
   }
 
   public static Range ToRange(AbstractFeature feature)
@@ -129,5 +129,21 @@ public class Bridge extends ANY
   {
     return new SourcePosition(LexerTool.ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
       params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
+  }
+
+  public static Location ToLocation(AbstractCall call)
+  {
+    if (PRECONDITIONS)
+      require(IsValidSourcePosition(call.pos()));
+    return new Location(ParserTool.getUri(call.pos()).toString(),
+      new Range(ToPosition(call.pos()), ToPosition(CallTool.endOfCall(call))));
+  }
+
+  public static Location ToLocation(AbstractFeature af)
+  {
+    if (PRECONDITIONS)
+      require(IsValidSourcePosition(af.pos()));
+    return new Location(ParserTool.getUri(af.pos()).toString(),
+      new Range(ToPosition(af.pos()), ToPosition(ParserTool.endOfFeature(af))));
   }
 }
