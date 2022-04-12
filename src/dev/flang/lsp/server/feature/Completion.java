@@ -90,7 +90,8 @@ public class Completion
     if (".".equals(triggerCharacter))
       {
         // not offering completion for number
-        if (LexerTool.RawTokenAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 2)).token() == Token.t_numliteral)
+        if (LexerTool.RawTokenAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 2))
+          .token() == Token.t_numliteral)
           {
             return NoCompletions;
           }
@@ -98,7 +99,8 @@ public class Completion
       }
     if (" ".equals(triggerCharacter))
       {
-        var tokenBeforeTriggerCharacter = LexerTool.RawTokenAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 2)).token();
+        var tokenBeforeTriggerCharacter =
+          LexerTool.RawTokenAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 2)).token();
         if (tokenBeforeTriggerCharacter.equals(Token.t_for))
           {
             return Either.forLeft(Arrays.asList(
@@ -211,13 +213,12 @@ public class Completion
             return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
           }
 
-        // NYI ${i:□}
         return " (" +
           IntStream.range(1, argument.resultType().generics().size())
             .<String>mapToObj(
-              x -> "□")
+              x -> "${" + ((index + 1) * 100 + x - 1) + ":" + argument.resultType().generics().get(x).name() + "}")
             .collect(Collectors.joining(", "))
-          + " -> " + "□" + ")";
+          + " -> ${" + ((index + 1) * 100 + argument.resultType().generics().size() - 1) + ":" + "r" + "})";
 
       })
       .collect(Collectors.joining());

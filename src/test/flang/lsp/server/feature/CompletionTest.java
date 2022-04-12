@@ -55,11 +55,11 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var expected = """
-      map<${3:B}> ${1:B} (□ -> □)
+      map<${3:B}> ${1:B} (${200:H} -> ${201:r})
       asString
       asList
       asStream
-      forAll (□ -> □)
+      forAll (${100:H} -> ${101:r})
       contains ${1:e}
       size
       upper
@@ -70,27 +70,25 @@ public class CompletionTest extends ExtendedBaseTest
       asArray
       slice ${1:from} ${2:to}
       fold ${1:m}
-      first
-      last
       isEmpty
       count
       take ${1:n}
       drop ${1:n}
-      takeWhile (□ -> □)
-      dropWhile (□ -> □)
+      takeWhile (${100:T} -> ${101:r})
+      dropWhile (${100:T} -> ${101:r})
       cycle
       tails
-      forWhile (□ -> □)
-      before (□ -> □)
-      filter (□ -> □)
+      forWhile (${100:T} -> ${101:r})
+      before (${100:T} -> ${101:r})
+      filter (${100:T} -> ${101:r})
       splitAt ${1:at}
       concatSequences ${1:s}
-      mapSequence<${3:B}> ${1:B} (□ -> □)
-      reduce<${4:R}> ${1:R} ${2:init} (□, □ -> □)
+      mapSequence<${3:B}> ${1:B} (${200:T} -> ${201:r})
+      reduce<${4:R}> ${1:R} ${2:init} (${300:R}, ${301:T} -> ${302:r})
       insert ${1:at} ${2:v}
-      sort (□, □ -> □)
-      sortBy<${3:O}> ${1:O} (□ -> □)
-      zip<${5:U}, ${6:V}> ${1:U} ${2:V} ${3:b} (□, □ -> □)
+      sort (${100:T}, ${101:T} -> ${102:r})
+      sortBy<${3:O}> ${1:O} (${200:T} -> ${201:r})
+      zip<${5:U}, ${6:V}> ${1:U} ${2:V} ${3:b} (${400:T}, ${401:U} -> ${402:r})
       hashCode""";
     var actual = Completion.getCompletions(params(uri1, 1, 9, TriggerCharacters.Dot))
       .getLeft()
