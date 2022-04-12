@@ -179,8 +179,7 @@ public class CompletionTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 22)).get().featureName().baseName());
     var completions = Completion.getCompletions(params(uri1, 7, 23, TriggerCharacters.Dot));
-    // NYI replace with future proof assertion
-    assertEquals(116, completions.getLeft().size());
+    assertTrue(completions.getLeft().size() > 100);
   }
 
   @Test
@@ -193,7 +192,6 @@ public class CompletionTest extends ExtendedBaseTest
       """;
     SourceText.setText(uri1, sourceText);
     assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).count() > 0);
-    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).noneMatch(f -> f.featureName().baseName().length() < 3));
     assertTrue(
       QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("sizeOption")));
 
