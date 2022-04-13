@@ -304,7 +304,8 @@ public class QueryAST extends ANY
         if (astItem instanceof AbstractCall c)
           {
             return ErrorHandling.ResultOrDefault(() -> {
-              if (token.map(t -> c.pos()._column + t.text().length() >= sourcePosition._column).orElse(false))
+              if (token.map(t -> c.pos()._column + t.text().length() >= sourcePosition._column).orElse(false)
+                && !c.calledFeature().equals(Types.f_ERROR))
                 {
                   return c.calledFeature();
                 }
@@ -326,6 +327,7 @@ public class QueryAST extends ANY
       .map(contextFeature -> {
         return FeatureTool.FeaturesInScope(contextFeature)
           .filter(f -> f.featureName().baseName().equals(text))
+          // NYI we could be better here if we considered approximate argcount
           .findFirst()
           .orElse(null);
       });

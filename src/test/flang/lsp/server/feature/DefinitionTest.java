@@ -67,4 +67,27 @@ public class DefinitionTest extends ExtendedBaseTest
         assertEquals(39, printlnLocation.getRange().getStart().getLine());
         assertEquals(2, printlnLocation.getRange().getStart().getCharacter());
     }
+
+    @Test
+    public void JumpToFeatureWrongArgCount()
+    {
+        SourceText.setText(uri1,
+            """
+                ex =>
+                  x (y u32) =>
+                    say y
+                  x
+                                """);
+
+        var cursor = Cursor(uri1, 3, 2);
+
+        var definitions = Definition
+            .getDefinitionLocation(new DefinitionParams(cursor.getTextDocument(), cursor.getPosition()))
+            .getLeft();
+
+        assertEquals(1, definitions.size());
+        assertTrue(definitions.get(0).getUri().startsWith("file:/tmp/fuzion-lsp-server"));
+        assertEquals(1, definitions.get(0).getRange().getStart().getLine());
+        assertEquals(2, definitions.get(0).getRange().getStart().getCharacter());
+    }
 }
