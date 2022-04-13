@@ -61,9 +61,10 @@ public class LexerTool extends ANY
    */
   public static Stream<TokenInfo> Tokens(SourcePosition start, boolean includeRaw)
   {
-    var eof = Stream.of(new TokenInfo(start, "", Token.t_eof));
     return IO.WithTextInputStream(SourceText.getText(start), () -> {
       var lexer = NewLexerStdIn();
+      var lastLine = lexer.lineNum(lexer.byteLength());
+      var eof = Stream.of(new TokenInfo(new SourcePosition(start._sourceFile, lastLine + 1, 1), "", Token.t_eof));
       try
         {
           lexer.setPos(lexer.lineStartPos(start._line));
