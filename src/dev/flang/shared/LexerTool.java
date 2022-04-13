@@ -113,7 +113,13 @@ public class LexerTool extends ANY
     var token = Tokens(params, false)
       .findFirst()
       .get();
-    if(POSTCONDITIONS)
+    if (params._line != token.start()._line)
+      {
+        token = Tokens(GoBackInLine(params, 1), false)
+          .findFirst()
+          .get();
+      }
+    if (POSTCONDITIONS)
       ensure(params._line == token.start()._line);
     return token;
   }
@@ -123,7 +129,13 @@ public class LexerTool extends ANY
     var token = Tokens(params, true)
       .findFirst()
       .get();
-    if(POSTCONDITIONS)
+    if (params._line != token.start()._line)
+      {
+        token = Tokens(GoBackInLine(params, 1), false)
+          .findFirst()
+          .get();
+      }
+    if (POSTCONDITIONS)
       ensure(params._line == token.start()._line);
     return token;
   }

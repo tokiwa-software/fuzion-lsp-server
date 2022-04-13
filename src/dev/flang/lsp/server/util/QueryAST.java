@@ -318,18 +318,22 @@ public class QueryAST extends ANY
       .findFirst()
       // NYI workaround for not having positions of all types in
       // the AST currently
-      .or(() -> FindFeatureByName(params, token.map(t -> t.text()).orElse("")));
+      .or(() -> FindFeatureByName(params));
   }
 
-  public static Optional<AbstractFeature> FindFeatureByName(TextDocumentPositionParams params, String text)
+  public static Optional<AbstractFeature> FindFeatureByName(TextDocumentPositionParams params)
   {
-    return QueryAST.InFeature(params)
-      .map(contextFeature -> {
-        return FeatureTool.FeaturesInScope(contextFeature)
-          .filter(f -> f.featureName().baseName().equals(text))
-          // NYI we could be better here if we considered approximate argcount
-          .findFirst()
-          .orElse(null);
+    return LexerTool.IdentOrOperatorTokenAt(Bridge.ToSourcePosition(params))
+      .flatMap(token -> {
+        return QueryAST.InFeature(params)
+          .map(contextFeature -> {
+            return FeatureTool.FeaturesInScope(contextFeature)
+              .filter(f -> f.featureName().baseName().equals(token.text()))
+              // NYI we could be better here if we considered approximate
+              // argcount
+              .findFirst()
+              .orElse(null);
+          });
       });
   }
 

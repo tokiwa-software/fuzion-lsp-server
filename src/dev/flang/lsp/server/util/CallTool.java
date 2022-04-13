@@ -28,23 +28,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.util.Comparator;
-import java.util.Optional;
 
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractFeature;
 import dev.flang.util.SourcePosition;
 
 public class CallTool
 {
-  /**
-   * @param call
-   * @return
-   */
-  public static Optional<AbstractFeature> featureOf(AbstractCall call)
-  {
-    return QueryAST.InFeature(Bridge.ToTextDocumentPosition(call.pos()));
-  }
-
   /**
    * tries to figure out the end of a call in terms of a sourceposition
    * @param call

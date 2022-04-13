@@ -61,7 +61,7 @@ public class SignatureHelper
     var featureOfCall =
       call.get().target() instanceof AbstractCall callTarget
                                                              ? Optional.of(callTarget.calledFeature())
-                                                             : CallTool.featureOf(call.get());
+                                                             : QueryAST.FindFeatureByName(params);
 
     if (featureOfCall.isEmpty())
       {
