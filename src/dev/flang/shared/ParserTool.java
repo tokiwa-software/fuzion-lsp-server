@@ -97,7 +97,7 @@ public class ParserTool extends ANY
    */
   public static AbstractFeature Main(URI uri)
   {
-    if (Util.IsStdLibLike(uri))
+    if (Util.IsStdLibLike(uri) && !Util.IsStdLib(uri))
       {
         var relativePath = uri.toString().substring(uri.toString().indexOf("/lib/"));
         return DeclaredFeatures(Universe(uri))

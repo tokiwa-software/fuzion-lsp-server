@@ -78,6 +78,6 @@ public class Util
 
   public static boolean IsStdLibLike(URI uri)
   {
-    return uri.toString().contains("/fuzion/lib/");
+    return IsStdLib(uri) || uri.toString().contains("/fuzion/lib/");
   }
 }
