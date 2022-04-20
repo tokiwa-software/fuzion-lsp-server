@@ -131,7 +131,7 @@ public class LexerTool extends ANY
       .get();
     if (params._line != token.start()._line)
       {
-        token = Tokens(GoBackInLine(params, 1), false)
+        token = Tokens(GoBackInLine(params, 1), true)
           .findFirst()
           .get();
       }
