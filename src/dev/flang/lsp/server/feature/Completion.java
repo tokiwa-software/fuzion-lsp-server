@@ -181,26 +181,7 @@ public class Completion
         return baseNameReduced;
       }
 
-    var _generics = getGenerics(feature);
-
-    var generics = genericsSnippet(feature, _generics);
-
-    return baseNameReduced + generics + getArguments(feature.arguments());
-  }
-
-  /**
-   * @return ${4:K -> ordered<psMap.K>}, ${5:V}
-   */
-  private static String getGenerics(AbstractFeature feature)
-  {
-    var _generics = IntStream
-      .range(0, feature.generics().list.size())
-      .mapToObj(index -> {
-        return "${" + (index + 1 + feature.arguments().size()) + ":" + feature.generics().list.get(index).toString()
-          + "}";
-      })
-      .collect(Collectors.joining(", "));
-    return _generics;
+    return baseNameReduced + getArguments(feature.arguments());
   }
 
   /**
@@ -209,10 +190,11 @@ public class Completion
    */
   private static String getArguments(List<AbstractFeature> arguments)
   {
+    var data_args = arguments.stream().filter(x -> !x.isTypeParameter()).collect(Collectors.toList());
     return IntStream
-      .range(0, arguments.size())
+      .range(0, data_args.size())
       .<String>mapToObj(index -> {
-        var argument = arguments.get(index);
+        var argument = data_args.get(index);
         if (!argument.resultType().isFunType())
           {
             return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
@@ -227,23 +209,6 @@ public class Completion
 
       })
       .collect(Collectors.joining());
-  }
-
-  /**
-   *
-   * @param feature
-   * @param _generics
-   * @return <${4:K -> ordered<psMap.K>}, ${5:V}>
-   */
-  private static String genericsSnippet(AbstractFeature feature, String _generics)
-  {
-    if (!feature.generics().isOpen() && feature.generics().list.isEmpty())
-      {
-        return "";
-      }
-    return "<" + _generics
-      + (feature.generics().isOpen() ? "...": "")
-      + ">";
   }
 
 }
