@@ -47,15 +47,19 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    var range = LSP4jUtils.Range(LexerTool.RawTokenAt(Bridge.ToSourcePosition(params)));
-    var feature = QueryAST.FeatureAt(params);
-    return feature.map(f -> {
-      var hoverInfo = FeatureTool.CommentOfInMarkdown(f) + System.lineSeparator()
-        + System.lineSeparator()
-        + MarkdownTool.Bold(MarkdownTool.Escape(FeatureTool.ToLabel(f)));
-      var markupContent = new MarkupContent(MarkupKind.MARKDOWN, hoverInfo.trim());
-      return new Hover(markupContent, range);
-    })
+    return LexerTool.IdentTokenAt(Bridge.ToSourcePosition(params))
+      .flatMap(identToken -> {
+        var range = LSP4jUtils.Range(identToken);
+        return QueryAST
+          .FeatureAt(params)
+          .map(f -> {
+            var hoverInfo = FeatureTool.CommentOfInMarkdown(f) + System.lineSeparator()
+              + System.lineSeparator()
+              + MarkdownTool.Bold(MarkdownTool.Escape(FeatureTool.ToLabel(f)));
+            var markupContent = new MarkupContent(MarkupKind.MARKDOWN, hoverInfo.trim());
+            return new Hover(markupContent, range);
+          });
+      })
       .orElse(null);
   }
 

@@ -128,7 +128,7 @@ public class FeatureTool extends ANY
   public static SourcePosition BaseNamePosition(AbstractFeature feature)
   {
     return LexerTool
-      .Tokens(feature.pos(), false)
+      .TokensFrom(feature.pos(), false)
       .limit(MAX_TOKENS_TO_INSPECT)
       .dropWhile(tokenInfo -> !tokenInfo.text().equals(feature.featureName().baseName()))
       .map(tokenInfo -> tokenInfo.start())

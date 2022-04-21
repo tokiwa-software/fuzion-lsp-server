@@ -55,6 +55,7 @@ import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
+import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -62,7 +63,7 @@ import dev.flang.util.SourcePosition;
  * https://microsoft.github.io/language-server-protocol/specification#textDocument_rename
  * https://microsoft.github.io/language-server-protocol/specification#textDocument_prepareRename
  */
-public class Rename
+public class Rename extends ANY
 {
 
   // NYI check for name collisions?
@@ -111,9 +112,12 @@ public class Rename
       .map(pos -> {
         if (IsAtFunKeyword(pos))
           {
-            var nextPosition =
+            var whitespace =
               new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length());
-            pos = LexerTool.TokenAt(nextPosition).start();
+            pos = LexerTool.NextTokenOfType(whitespace, Util.ArrayToSet(new Token[]
+            {
+                Token.t_ident
+            })).start();
           }
         return pos;
       });
@@ -125,7 +129,9 @@ public class Rename
         && f.resultType().featureOfType().equals(featureToRename))
       .map(f -> {
         // NYI we need correct position of type here
-        var whitespace = LexerTool.RawTokenAt(LexerTool.EndOfToken(f.pos()));
+        var whitespace = LexerTool.TokensAt(LexerTool.EndOfToken(f.pos()), true).right();
+        if (CHECKS)
+          check(whitespace.token() == Token.t_ws);
         return new SourcePosition(f.pos()._sourceFile, f.pos()._line,
           f.pos()._column + f.featureName().baseName().length() + whitespace.text().length());
       });
@@ -138,7 +144,7 @@ public class Rename
       {
         // last Token before start of #fun.call where tokenText matches baseName
         var tokenPos = LexerTool
-          .Tokens(new SourcePosition(pos._sourceFile, 1, 1), false)
+          .TokensFrom(new SourcePosition(pos._sourceFile, 1, 1), false)
           .filter(x -> featureToRename.featureName().baseName().equals(x.text()))
           .filter(x -> {
             return x.start()
@@ -165,7 +171,9 @@ public class Rename
               Token.t_set
           }));
         var whitespace =
-          LexerTool.RawTokenAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column));
+          LexerTool.TokensAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column), true).right();
+        if (CHECKS)
+          check(whitespace.token() == Token.t_ws);
         return whitespace.end();
       });
 
@@ -190,7 +198,7 @@ public class Rename
   private static SourcePosition PositionOfChoiceGeneric(String name, AbstractFeature f)
   {
     return LexerTool
-      .Tokens(new SourcePosition(f.pos()._sourceFile, 1, 1), false)
+      .TokensFrom(new SourcePosition(f.pos()._sourceFile, 1, 1), false)
       .filter(token -> name.equals(token.text()))
       .filter(token -> {
         return token.start()
@@ -227,7 +235,7 @@ public class Rename
 
   private static boolean IsAtFunKeyword(SourcePosition params)
   {
-    return LexerTool.TokenAt(params).token() == Lexer.Token.t_fun;
+    return LexerTool.TokensAt(params, false).right().token() == Lexer.Token.t_fun;
   }
 
 }

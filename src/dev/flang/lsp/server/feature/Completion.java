@@ -90,7 +90,9 @@ public class Completion
     if (".".equals(triggerCharacter))
       {
         // not offering completion for number
-        if (LexerTool.RawTokenAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 2))
+        if (LexerTool
+          .TokensAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 1), false)
+          .left()
           .token() == Token.t_numliteral)
           {
             return NoCompletions;
@@ -100,7 +102,10 @@ public class Completion
     if (" ".equals(triggerCharacter))
       {
         var tokenBeforeTriggerCharacter =
-          LexerTool.RawTokenAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 2)).token();
+          LexerTool.TokensAt(LexerTool
+            .GoBackInLine(Bridge.ToSourcePosition(params), 1), false)
+            .left()
+            .token();
         if (tokenBeforeTriggerCharacter.equals(Token.t_for))
           {
             return Either.forLeft(Arrays.asList(

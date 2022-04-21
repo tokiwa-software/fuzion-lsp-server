@@ -104,7 +104,7 @@ public class Diagnostics
     var errorDiagnostics =
       ParserTool.Errors(uri).filter(error -> ParserTool.getUri(error.pos).equals(uri)).map((error) -> {
         var message = error.msg + System.lineSeparator() + error.detail;
-        return new Diagnostic(LSP4jUtils.Range(LexerTool.RawTokenAt(error.pos)), message, DiagnosticSeverity.Error,
+        return new Diagnostic(LSP4jUtils.Range(LexerTool.TokensAt(error.pos, true).right()), message, DiagnosticSeverity.Error,
           "fuzion language server");
       });
     return errorDiagnostics;
@@ -115,7 +115,7 @@ public class Diagnostics
     var warningDiagnostics =
       ParserTool.Warnings(uri).filter(warning -> ParserTool.getUri(warning.pos).equals(uri)).map((warning) -> {
         var message = warning.msg + System.lineSeparator() + warning.detail;
-        return new Diagnostic(LSP4jUtils.Range(LexerTool.RawTokenAt(warning.pos)), message,
+        return new Diagnostic(LSP4jUtils.Range(LexerTool.TokensAt(warning.pos, true).right()), message,
           DiagnosticSeverity.Warning, "fuzion language server");
       });
     return warningDiagnostics;
