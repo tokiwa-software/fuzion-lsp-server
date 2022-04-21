@@ -55,11 +55,11 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var expected = """
-      map (${100:H} -> ${101:r})
+      map (${101:H} -> ${102:B})
       asString
       asList
       asStream
-      forAll (${100:H} -> ${101:r})
+      forAll (${101:H} -> ${102:unit})
       contains ${1:e}
       size
       upper
@@ -74,21 +74,21 @@ public class CompletionTest extends ExtendedBaseTest
       count
       take ${1:n}
       drop ${1:n}
-      takeWhile (${100:T} -> ${101:r})
-      dropWhile (${100:T} -> ${101:r})
+      takeWhile (${101:T} -> ${102:bool})
+      dropWhile (${101:T} -> ${102:bool})
       cycle
       tails
-      forWhile (${100:T} -> ${101:r})
-      before (${100:T} -> ${101:r})
-      filter (${100:T} -> ${101:r})
+      forWhile (${101:T} -> ${102:bool})
+      before (${101:T} -> ${102:bool})
+      filter (${101:T} -> ${102:bool})
       splitAt ${1:at}
       concatSequences ${1:s}
-      mapSequence (${100:T} -> ${101:r})
-      reduce ${1:init} (${200:R}, ${201:T} -> ${202:r})
+      mapSequence (${101:T} -> ${102:B})
+      reduce ${1:init} (${201:R}, ${202:T} -> ${203:R})
       insert ${1:at} ${2:v}
-      sort (${100:T}, ${101:T} -> ${102:r})
-      sortBy (${100:T} -> ${101:r})
-      zip ${1:b} (${200:T}, ${201:U} -> ${202:r})
+      sort (${101:T}, ${102:T} -> ${103:bool})
+      sortBy (${101:T} -> ${102:O})
+      zip ${1:b} (${201:T}, ${202:U} -> ${203:V})
       hashCode""";
     var actual = Completion.getCompletions(params(uri1, 1, 9, TriggerCharacters.Dot))
       .getLeft()
@@ -101,6 +101,25 @@ public class CompletionTest extends ExtendedBaseTest
       .forEach(e -> {
         assertTrue("expected: " + e, actual.stream().anyMatch(a -> a.equals(e)));
       });
+  }
+
+  @Test
+  public void getNestedLambdaCompletions()
+  {
+    var sourceText = """
+      example =>
+        a is
+          b(c (i32 -> i32) -> i32 -> i32) is
+        a.
+            """;
+
+    SourceText.setText(uri1, sourceText);
+    var actual = Completion.getCompletions(params(uri1, 3, 4, TriggerCharacters.Dot))
+      .getLeft()
+      .get(0)
+      .getInsertText();
+
+    assertEquals("b ( (${10001:i32} -> ${10002:i32}) ->  (${10001:i32} -> ${10002:i32}))", actual);
   }
 
 

@@ -42,6 +42,7 @@ import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer.Token;
@@ -181,7 +182,7 @@ public class Completion
         return baseNameReduced;
       }
 
-    return baseNameReduced + getArguments(feature.arguments());
+    return baseNameReduced + getArguments(feature.valueArguments());
   }
 
   /**
@@ -190,25 +191,50 @@ public class Completion
    */
   private static String getArguments(List<AbstractFeature> arguments)
   {
-    var data_args = arguments.stream().filter(x -> !x.isTypeParameter()).collect(Collectors.toList());
     return IntStream
-      .range(0, data_args.size())
+      .range(0, arguments.size())
       .<String>mapToObj(index -> {
-        var argument = data_args.get(index);
+        var argument = arguments.get(index);
         if (!argument.resultType().isFunType())
           {
             return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
           }
-
-        return " (" +
-          IntStream.range(1, argument.resultType().generics().size())
-            .<String>mapToObj(
-              x -> "${" + ((index + 1) * 100 + x - 1) + ":" + argument.resultType().generics().get(x).name() + "}")
-            .collect(Collectors.joining(", "))
-          + " -> ${" + ((index + 1) * 100 + argument.resultType().generics().size() - 1) + ":" + "r" + "})";
-
+        return getFunArgument((index + 1) * 100, argument.resultType().generics());
       })
       .collect(Collectors.joining());
+  }
+
+  /**
+   * @param offset
+   * @param funArgs
+   * @return example: (${101:H} -> ${102:B})
+   */
+  private static String getFunArgument(int offset, List<AbstractType> funArgs)
+  {
+    return " (" +
+      IntStream.range(1, funArgs.size())
+        .<String>mapToObj(
+          x -> {
+            return argPlaceholder(funArgs.get(x), x, offset);
+          })
+        .collect(Collectors.joining(", "))
+      // result
+      + " -> " + argPlaceholder(funArgs.get(0), funArgs.size(), offset) + ")";
+  }
+
+  /**
+   * @param arg
+   * @param x
+   * @param offset
+   * @return if arg not funType returns something like ${1:x}
+   */
+  private static String argPlaceholder(AbstractType arg, int x, int offset)
+  {
+    if (arg.isFunType())
+      {
+        return getFunArgument(offset * 100, arg.generics());
+      }
+    return "${" + (offset + x) + ":" + arg.name() + "}";
   }
 
 }
