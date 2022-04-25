@@ -76,8 +76,4 @@ public class Util
     return uri.toString().startsWith(SourceText.FuzionHome.toUri().toString());
   }
 
-  public static boolean IsStdLibLike(URI uri)
-  {
-    return IsStdLib(uri) || uri.toString().contains("/fuzion/lib/");
-  }
 }

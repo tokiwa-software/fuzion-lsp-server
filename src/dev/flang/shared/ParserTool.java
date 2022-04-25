@@ -97,14 +97,6 @@ public class ParserTool extends ANY
    */
   public static AbstractFeature Main(URI uri)
   {
-    if (Util.IsStdLibLike(uri) && !Util.IsStdLib(uri))
-      {
-        var relativePath = uri.toString().substring(uri.toString().indexOf("/lib/"));
-        return DeclaredFeatures(Universe(uri))
-          .filter(f -> getUri(f.pos()).toString().endsWith(relativePath))
-          .findAny()
-          .get();
-      }
     return DeclaredFeatures(Universe(uri))
       .filter(f -> getUri(f.pos()).equals(uri))
       .findAny()
@@ -198,7 +190,7 @@ public class ParserTool extends ANY
 
   private static File toTempFile(URI uri)
   {
-    var sourceText = Util.IsStdLibLike(uri) ? "dummyFeature is": SourceText.getText(uri);
+    var sourceText = Util.IsStdLib(uri) ? "dummyFeature is": SourceText.getText(uri);
     File sourceFile = IO.writeToTempFile(sourceText);
     try
       {
