@@ -47,7 +47,6 @@ import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
-import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;

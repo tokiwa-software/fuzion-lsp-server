@@ -94,11 +94,4 @@ public class SourceText
       .split("\n")[param._line - 1];
   }
 
-  public static String RestOfLine(SourcePosition param)
-  {
-    var start = param._column - 1;
-    var line = LineAt(param);
-    return line.length() <= start ? "": line.substring(start);
-  }
-
 }
