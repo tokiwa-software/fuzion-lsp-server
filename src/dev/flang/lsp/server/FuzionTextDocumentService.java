@@ -100,7 +100,7 @@ public class FuzionTextDocumentService implements TextDocumentService
       {
         Diagnostics.publishDiagnostics(uri);
       }
-    }, 1000, TimeUnit.MILLISECONDS);
+    }, Config.DIAGNOSTICS_DEBOUNCE_DELAY_MS, TimeUnit.MILLISECONDS);
   }
 
   @Override

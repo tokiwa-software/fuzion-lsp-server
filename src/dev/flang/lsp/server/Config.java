@@ -40,6 +40,7 @@ public class Config
 {
 
   public static final boolean ComputeAsync = true;
+  public static final long DIAGNOSTICS_DEBOUNCE_DELAY_MS = 1000;
   private static Future<List<Object>> _configuration;
   private static LanguageClient _languageClient;
   private static Transport _transport = Transport.stdio;
