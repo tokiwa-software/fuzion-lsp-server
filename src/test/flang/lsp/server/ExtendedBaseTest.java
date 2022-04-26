@@ -39,7 +39,7 @@ public abstract class ExtendedBaseTest extends BaseTest {
 
   protected static TextDocumentPositionParams Cursor(URI uri, int line, int character)
   {
-    return LSP4jUtils.TextDocumentPositionParams(uri1, line, character);
+    return LSP4jUtils.TextDocumentPositionParams(uri, line, character);
   }
 
 }
