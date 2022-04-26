@@ -32,6 +32,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Definition;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
@@ -89,5 +90,23 @@ public class DefinitionTest extends ExtendedBaseTest
         assertTrue(definitions.get(0).getUri().startsWith("file:/tmp/fuzion-lsp-server"));
         assertEquals(1, definitions.get(0).getRange().getStart().getLine());
         assertEquals(2, definitions.get(0).getRange().getStart().getCharacter());
+    }
+
+    @Test
+    public void JumpToDefinitionOfReturnType()
+    {
+        SourceText.setText(uri1, "ex =>");
+
+        var effect = DeclaredInUniverse("effect", 1);
+
+        var uri = ParserTool.getUri(effect.pos());
+        var cursor = Cursor(uri, 60, 47);
+
+        var definitions = Definition
+            .getDefinitionLocation(new DefinitionParams(cursor.getTextDocument(), cursor.getPosition()))
+            .getLeft();
+
+        assertEquals(1, definitions.size());
+        assertTrue(definitions.get(0).getUri().contains("unit.fz"));
     }
 }

@@ -288,7 +288,7 @@ public class ParserTool extends ANY
           return new SourcePosition(position._sourceFile, token.end()._line, token.end()._column);
         })
         .findFirst()
-        .orElse(f.pos());
+        .orElse(LexerTool.EndOfToken(f.pos()));
 
       if (POSTCONDITIONS)
         ensure(f.pos()._line < result._line
