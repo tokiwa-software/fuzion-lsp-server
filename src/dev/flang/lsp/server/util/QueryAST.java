@@ -41,6 +41,7 @@ import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTItem;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.ErrorHandling;
@@ -187,7 +188,19 @@ public class QueryAST extends ANY
   public static Stream<AbstractFeature> CompletionsAt(TextDocumentPositionParams params)
   {
     return InFeature(params)
-      .map(feature -> FeatureTool.FeaturesInScope(feature))
+      .map(feature -> FeatureTool.FeaturesInScope(feature)
+        .filter(f -> {
+          var tokens = LexerTool.TokensAt(Bridge.ToSourcePosition(params), true);
+          if (tokens.left().token().equals(Token.t_ws))
+            {
+              return true;
+            }
+          if (tokens.left().token().equals(Token.t_ident))
+            {
+              return f.featureName().baseName().startsWith(tokens.left().text());
+            }
+          return false;
+        }))
       .orElse(Stream.empty());
   }
 
