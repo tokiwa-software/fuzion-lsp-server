@@ -71,18 +71,14 @@ public abstract class BaseTest extends Assert
       isInMandelbrotSet(c complex<f64>, maxEscapeIterations i32, z complex<f64>) bool is
         maxEscapeIterations = 0 || z.abs² <= 4 && isInMandelbrotSet c maxEscapeIterations-1 z*z+c
 
-      # NYI how to convert i32 to f64?
-      to_f64(i i32) f64 is
-        if i > 0 1.0 + to_f64(i - 1) else 1.0
-
       steps(start, step f64, numPixels i32) =>
-        array<f64> numPixels (i -> start + to_f64(i) * step)
+        array<f64> numPixels (i -> start + i.as_f64 * step)
 
       mandelbrotImage(yStart, yStep, xStart, xStep f64, height, width i32) =>
         for y in steps yStart yStep height do
           for x in steps xStart xStep width do
             if isInMandelbrotSet (complex x y) 50 (complex 0.0 0.0)
-              yak "⬤"
+              yak "⬤"p
             else
               yak " "
           say ""
