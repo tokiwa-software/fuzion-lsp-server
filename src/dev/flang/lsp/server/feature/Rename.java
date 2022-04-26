@@ -115,9 +115,9 @@ public class Rename extends ANY
             var whitespace =
               new SourcePosition(pos._sourceFile, pos._line, pos._column + Lexer.Token.t_fun.toString().length());
             pos = LexerTool.NextTokenOfType(whitespace, Util.ArrayToSet(new Token[]
-            {
-                Token.t_ident
-            })).start();
+              {
+                  Token.t_ident
+              })).start();
           }
         return pos;
       });
@@ -179,7 +179,7 @@ public class Rename extends ANY
 
 
     var choiceGenerics = ASTWalker
-      .Traverse(ParserTool.Main(LSP4jUtils.getUri(params)))
+      .Traverse(ParserTool.TopLevelFeatures(LSP4jUtils.getUri(params)))
       .filter(entry -> entry.getKey() instanceof AbstractFeature)
       .map(entry -> (AbstractFeature) entry.getKey())
       .filter(f -> f.resultType().isChoice())

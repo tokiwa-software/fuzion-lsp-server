@@ -270,8 +270,9 @@ public class QueryAST extends ANY
    */
   public static Stream<AbstractFeature> SelfAndDescendants(URI uri)
   {
-    var baseFeature = ParserTool.Main(uri);
-    return FeatureTool.SelfAndDescendants(baseFeature);
+    return ParserTool
+      .TopLevelFeatures(uri)
+      .flatMap(f -> FeatureTool.SelfAndDescendants(f));
   }
 
   public static Optional<AbstractCall> callAt(TextDocumentPositionParams params)
@@ -363,7 +364,7 @@ public class QueryAST extends ANY
    */
   public static boolean InString(TextDocumentPositionParams params)
   {
-    return ASTWalker.Traverse(ParserTool.Main(LSP4jUtils.getUri(params)))
+    return ASTWalker.Traverse(ParserTool.TopLevelFeatures(LSP4jUtils.getUri(params)))
       .filter(x -> x.getKey() instanceof StrConst)
       .map(x -> (StrConst) x.getKey())
       .anyMatch(x -> {

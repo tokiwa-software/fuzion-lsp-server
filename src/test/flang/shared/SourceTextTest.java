@@ -40,7 +40,7 @@ class SourceTextTest extends BaseTest
       myFeat is
       """;
     SourceText.setText(uri1, CommentExample);
-    var myFeatIs = ParserTool.Main(uri1);
+    var myFeatIs = ParserTool.TopLevelFeatures(uri1).findFirst().get();;
     var sourceText = SourceText.getText(myFeatIs.pos());
     assertEquals(true, sourceText.contains("myFeat is"));
   }

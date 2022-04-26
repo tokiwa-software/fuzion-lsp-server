@@ -46,7 +46,7 @@ public class ASTWalkerTest extends BaseTest
       say "$s maps to {x[s]}"
   """;
     SourceText.setText(uri1, sourceText);
-    ASTWalker.Traverse(ParserTool.Main(uri1));
+    ASTWalker.Traverse(ParserTool.TopLevelFeatures(uri1));
   }
 
   @Test
@@ -54,12 +54,14 @@ public class ASTWalkerTest extends BaseTest
   {
     SourceText.setText(uri1, HelloWorld);
     assertEquals("HelloWorld", ParserTool
-      .Main(uri1)
+      .TopLevelFeatures(uri1)
+      .findFirst()
+      .get()
       .featureName()
       .baseName());
     assertEquals("say", ASTWalker
       .Calls(ParserTool
-        .Main(uri1))
+        .TopLevelFeatures(uri1).findFirst().get())
       .map(x -> x.getKey())
       .filter(call -> uri1.equals(ParserTool.getUri(call.pos())))
       .findFirst()

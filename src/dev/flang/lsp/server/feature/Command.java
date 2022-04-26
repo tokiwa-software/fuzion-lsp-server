@@ -29,6 +29,7 @@ package dev.flang.lsp.server.feature;
 
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import com.google.gson.JsonPrimitive;
 
@@ -44,8 +45,8 @@ import dev.flang.lsp.server.util.Computation;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.ParserTool;
 import dev.flang.shared.IO;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
 
 public class Command
@@ -137,8 +138,10 @@ public class Command
 
   private static void showSyntaxTree(URI uri)
   {
-    var feature = ParserTool.Main(uri);
-    var ast = FeatureTool.AST(feature);
+    var ast = ParserTool
+      .TopLevelFeatures(uri)
+      .map(f -> FeatureTool.AST(f))
+      .collect(Collectors.joining(System.lineSeparator() + "===" + System.lineSeparator()));
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }

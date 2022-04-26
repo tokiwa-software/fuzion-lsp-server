@@ -41,7 +41,7 @@ public class FeatureToolTest extends BaseTest
   public void ASTbrokenSource()
   {
     SourceText.setText(uri1, UnknownCall);
-    var ex = ParserTool.Main(uri1);
+    var ex = ParserTool.TopLevelFeatures(uri1).findFirst().get();
     var ast = FeatureTool.AST(ex);
     assertTrue(ast.contains("Call:hasInterval"));
     assertTrue(ast.contains("Call:called feature unknown"));
@@ -61,7 +61,7 @@ public class FeatureToolTest extends BaseTest
       """;
     SourceText.setText(uri1, CommentExample);
     var innerFeature = ParserTool
-      .DeclaredFeatures(ParserTool.Main(uri1))
+      .DeclaredFeatures(ParserTool.TopLevelFeatures(uri1).findFirst().get())
       .findFirst()
       .orElseThrow();
     assertEquals("first comment line" + System.lineSeparator() + "second comment line",

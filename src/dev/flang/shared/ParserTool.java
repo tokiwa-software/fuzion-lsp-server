@@ -93,14 +93,12 @@ public class ParserTool extends ANY
 
   /**
    * @param uri
-   * @return main feature in source text
+   * @return top level feature in source text
    */
-  public static AbstractFeature Main(URI uri)
+  public static Stream<AbstractFeature> TopLevelFeatures(URI uri)
   {
     return DeclaredFeatures(Universe(uri))
-      .filter(f -> getUri(f.pos()).equals(uri))
-      .findAny()
-      .get();
+      .filter(f -> getUri(f.pos()).equals(uri));
   }
 
   /**

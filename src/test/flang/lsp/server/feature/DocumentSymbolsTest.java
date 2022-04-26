@@ -38,7 +38,7 @@ public class DocumentSymbolsTest extends BaseTest
   @Test
   public void DocumentSymbols(){
     SourceText.setText(uri1, Mandelbrot);
-    var main = ParserTool.Main(uri1);
+    var main = ParserTool.TopLevelFeatures(uri1).findFirst().get();
     var documentSymbolTree = DocumentSymbols.DocumentSymbolTree(main);
     assertTrue(documentSymbolTree.getChildren().size() > 0);
   }

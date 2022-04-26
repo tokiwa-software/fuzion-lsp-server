@@ -52,7 +52,7 @@ public class ParserToolTest extends BaseTest
         (1..10).forAll()"""
       + System.lineSeparator() + " ";
     SourceText.setText(uri1, sourceText);
-    var endOfFeature = ParserTool.endOfFeature(ParserTool.Main(uri1));
+    var endOfFeature = ParserTool.endOfFeature(ParserTool.TopLevelFeatures(uri1).findFirst().get());
     assertEquals(3, endOfFeature._line);
     assertEquals(2, endOfFeature._column);
   }
@@ -61,7 +61,7 @@ public class ParserToolTest extends BaseTest
   public void EndOfFeatureLambdaDefinition()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_b = FeatureTool.SelfAndDescendants(ParserTool.Main(uri1))
+    var feature_b = FeatureTool.SelfAndDescendants(ParserTool.TopLevelFeatures(uri1).findFirst().get())
       .filter(x -> x.featureName().baseName().equals("b"))
       .findFirst()
       .get();
@@ -75,7 +75,7 @@ public class ParserToolTest extends BaseTest
   public void EndOfFeatureArgument()
   {
     SourceText.setText(uri1, ManOrBoy);
-    var feature_x1 = FeatureTool.SelfAndDescendants(ParserTool.Main(uri1))
+    var feature_x1 = FeatureTool.SelfAndDescendants(ParserTool.TopLevelFeatures(uri1).findFirst().get())
       .filter(x -> x.featureName().baseName().equals("x1"))
       .findFirst()
       .get();
@@ -104,7 +104,7 @@ public class ParserToolTest extends BaseTest
       + System.lineSeparator() + "    ";
     SourceText.setText(uri1, sourceText);
 
-    var level2 = FeatureTool.SelfAndDescendants(ParserTool.Main(uri1))
+    var level2 = FeatureTool.SelfAndDescendants(ParserTool.TopLevelFeatures(uri1).findFirst().get())
       .filter(f -> f.qualifiedName().equals("HelloWorld.level1.level2"))
       .findFirst()
       .get();
@@ -136,7 +136,7 @@ public class ParserToolTest extends BaseTest
             grandChild3 is
       """;
     SourceText.setText(uri1, sourceText);
-    var f = ParserTool.Main(uri1);
+    var f = ParserTool.TopLevelFeatures(uri1).findFirst().get();
     var df = ParserTool.DeclaredFeatures(f).collect(Collectors.toList());
     assertEquals(2, df.size());
     assertTrue(df.stream().anyMatch(x -> x.featureName().baseName().equals("childFeat1")));
@@ -157,7 +157,7 @@ public class ParserToolTest extends BaseTest
       HelloWorld is
         say "Hello World!"
                   """);
-    var mainFeature = ParserTool.Main(uri1);
+    var mainFeature = ParserTool.TopLevelFeatures(uri1).findFirst().get();
     assertEquals(0, ParserTool.Errors(uri1).count());
     assertEquals("HelloWorld", mainFeature.featureName().baseName());
     assertEquals(uri1, ParserTool.getUri(mainFeature.pos()));
@@ -179,7 +179,7 @@ public class ParserToolTest extends BaseTest
 
 
                   """);
-    assertDoesNotThrow(() -> ParserTool.Main(uri1));
+    assertDoesNotThrow(() -> ParserTool.TopLevelFeatures(uri1).findFirst().get());
     assertEquals(true, ParserTool.Errors(uri1).count() > 0);
   }
 

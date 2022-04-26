@@ -67,6 +67,11 @@ public class ASTWalker
     return Traverse(start, true);
   }
 
+  public static Stream<Entry<Object, AbstractFeature>> Traverse(Stream<AbstractFeature> features)
+  {
+    return features.flatMap(f -> Traverse(f, true));
+  }
+
   public static Stream<Entry<Object, AbstractFeature>> Traverse(AbstractFeature start, boolean descend)
   {
     var result = new HashMap<Object, AbstractFeature>();

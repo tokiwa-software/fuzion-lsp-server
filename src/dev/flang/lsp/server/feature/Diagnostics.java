@@ -79,11 +79,9 @@ public class Diagnostics
     QueryAST.SelfAndDescendants(uri)
       .forEach(x -> {
         var ident = x.featureName().baseName() + x.featureName().argCount();
-        if (
-          usedNames.containsKey(ident) &&
+        if (usedNames.containsKey(ident) &&
           x.outer().qualifiedName().contains(usedNames.get(ident)) &&
-          !FeatureTool.IsArgument(x)
-        )
+          !FeatureTool.IsArgument(x))
           {
             featuresReusingNames.add(x);
           }
@@ -104,7 +102,8 @@ public class Diagnostics
     var errorDiagnostics =
       ParserTool.Errors(uri).filter(error -> ParserTool.getUri(error.pos).equals(uri)).map((error) -> {
         var message = error.msg + System.lineSeparator() + error.detail;
-        return new Diagnostic(LSP4jUtils.Range(LexerTool.TokensAt(error.pos, true).right()), message, DiagnosticSeverity.Error,
+        return new Diagnostic(LSP4jUtils.Range(LexerTool.TokensAt(error.pos, true).right()), message,
+          DiagnosticSeverity.Error,
           "fuzion language server");
       });
     return errorDiagnostics;
@@ -167,33 +166,34 @@ public class Diagnostics
    */
   private static Stream<Diagnostic> Unused(URI uri)
   {
-    if(Util.IsStdLib(uri)){
-      return Stream.empty();
-    }
-    var main = ParserTool.Main(uri);
-    var calledFeatures = ASTWalker.Calls(main)
-      .map(x -> x.getKey().calledFeature())
-      .collect(Collectors.toSet());
+    if (Util.IsStdLib(uri))
+      {
+        return Stream.empty();
+      }
+    return ParserTool.TopLevelFeatures(uri)
+      .flatMap(main -> {
+        var calledFeatures = ASTWalker.Calls(main)
+          .map(x -> x.getKey().calledFeature())
+          .collect(Collectors.toSet());
 
-    var unusedFeatures = FeatureTool
-      .SelfAndDescendants(main)
-      .filter(f ->
-        !calledFeatures.contains(f)
-          && !f.equals(main)
-          && !f.featureName().baseName().equals("result")
-          // NYI in this case we would need to do more work to
-          // know if feature is used.
-          && f.redefines().isEmpty()
-          )
-      .collect(Collectors.toList());
+        var unusedFeatures = FeatureTool
+          .SelfAndDescendants(main)
+          .filter(f -> !calledFeatures.contains(f)
+            && !f.equals(main)
+            && !f.featureName().baseName().equals("result")
+        // NYI in this case we would need to do more work to
+        // know if feature is used.
+            && f.redefines().isEmpty())
+          .collect(Collectors.toList());
 
-    var unusedDiagnostics = unusedFeatures.stream().map(f -> {
-      var diagnostic =
-        new Diagnostic(Bridge.ToRangeBaseName(f), "unused", DiagnosticSeverity.Hint, "fuzion language server");
-      diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
-      return diagnostic;
-    });
+        var unusedDiagnostics = unusedFeatures.stream().map(f -> {
+          var diagnostic =
+            new Diagnostic(Bridge.ToRangeBaseName(f), "unused", DiagnosticSeverity.Hint, "fuzion language server");
+          diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
+          return diagnostic;
+        });
 
-    return unusedDiagnostics;
+        return unusedDiagnostics;
+      });
   }
 }
