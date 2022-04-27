@@ -32,6 +32,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.TreeMap;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import dev.flang.util.SourcePosition;
@@ -51,7 +53,7 @@ public class SourceText
       {
         ErrorHandling.WriteStackTraceAndExit(1);
       }
-    textDocuments.put(uri, text);
+    textDocuments.put(uri, AddReplacementCharacterAfterNoneFullStopDots(text));
   }
 
   public static String getText(URI uri)
@@ -86,6 +88,29 @@ public class SourceText
         ErrorHandling.WriteStackTraceAndExit(1, e);
         return null;
       }
+  }
+
+  private static final Pattern DotAtEOL = Pattern.compile("(\\.)\\s*(\r|\n)+");
+
+  private static String AddReplacementCharacterAfterNoneFullStopDots(String text)
+  {
+    var mod_text = DotAtEOL.matcher(text).replaceAll(x -> {
+      // NYI right now this is just a hack...
+      if (LineOfMatch(text, x).matches(".*choice\\s+of.*"))
+        {
+          return x.group();
+        }
+      return ".�" + x.group(1);
+    });
+    return mod_text;
+  }
+
+  private static String LineOfMatch(String text, MatchResult x)
+  {
+    var startIndex = text
+      .substring(0, x.start())
+      .lastIndexOf("\n");
+    return text.substring(startIndex + 1, x.start());
   }
 
   public static String LineAt(SourcePosition param)

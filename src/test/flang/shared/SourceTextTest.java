@@ -26,8 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.shared;
 
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.jupiter.api.Test;
 
+import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 
@@ -40,7 +42,7 @@ class SourceTextTest extends BaseTest
       myFeat is
       """;
     SourceText.setText(uri1, CommentExample);
-    var myFeatIs = ParserTool.TopLevelFeatures(uri1).findFirst().get();;
+    var myFeatIs = ParserTool.TopLevelFeatures(uri1).findFirst().get();
     var sourceText = SourceText.getText(myFeatIs.pos());
     assertEquals(true, sourceText.contains("myFeat is"));
   }
@@ -51,6 +53,18 @@ class SourceTextTest extends BaseTest
     var yak = DeclaredInUniverse("yak", 1);
     var sourceText = SourceText.getText(yak.pos());
     assertEquals(true, sourceText.contains("yak(s ref Object) => io.out.print s"));
+  }
+
+  @Test
+  public void ChoiceOfFullStopNoErrors()
+  {
+    SourceText.setText(uri1, """
+      example is
+        color : choice of red, green, blue.
+              """);
+
+    assertEquals(0,
+      Diagnostics.getDiagnostics(uri1).filter(x -> x.getSeverity().equals(DiagnosticSeverity.Error)).count());
   }
 
 
