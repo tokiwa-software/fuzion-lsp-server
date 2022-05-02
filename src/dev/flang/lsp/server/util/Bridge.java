@@ -51,29 +51,23 @@ public class Bridge extends ANY
   public static Position ToPosition(SourcePosition sourcePosition)
   {
     if (PRECONDITIONS)
-      require(IsValidSourcePosition(sourcePosition));
+      require(!sourcePosition.isBuiltIn());
     return new Position(sourcePosition._line - 1, sourcePosition._column - 1);
   }
 
   public static Location ToLocation(SourcePosition start, SourcePosition end)
   {
     if (PRECONDITIONS)
-      require(IsValidSourcePosition(start));
+      require(!start.isBuiltIn());
     return new Location(ParserTool.getUri(start).toString(), new Range(ToPosition(start), ToPosition(end)));
   }
 
   public static Range ToRange(AbstractFeature feature)
   {
     if (PRECONDITIONS)
-      require(IsValidSourcePosition(feature.pos()));
+      require(!feature.pos().isBuiltIn());
 
     return new Range(ToPosition(feature.pos()), ToPosition(ParserTool.endOfFeature(feature)));
-  }
-
-  private static boolean IsValidSourcePosition(SourcePosition pos)
-  {
-    return !pos.equals(SourcePosition.notAvailable) &&
-      !pos.equals(SourcePosition.builtIn);
   }
 
   public static Range ToRangeBaseName(AbstractFeature feature)
@@ -134,7 +128,7 @@ public class Bridge extends ANY
   public static Location ToLocation(AbstractCall call)
   {
     if (PRECONDITIONS)
-      require(IsValidSourcePosition(call.pos()));
+      require(!call.pos().isBuiltIn());
     return new Location(ParserTool.getUri(call.pos()).toString(),
       new Range(ToPosition(call.pos()), ToPosition(CallTool.endOfCall(call))));
   }
@@ -142,7 +136,7 @@ public class Bridge extends ANY
   public static Location ToLocation(AbstractFeature af)
   {
     if (PRECONDITIONS)
-      require(IsValidSourcePosition(af.pos()));
+      require(!af.pos().isBuiltIn());
     return new Location(ParserTool.getUri(af.pos()).toString(),
       new Range(ToPosition(af.pos()), ToPosition(ParserTool.endOfFeature(af))));
   }

@@ -235,6 +235,9 @@ public class ParserTool extends ANY
    */
   public static SourcePosition endOfFeature(AbstractFeature feature)
   {
+    if (PRECONDITIONS)
+      require(!feature.pos().isBuiltIn());
+
     if (feature instanceof Feature f && !f.nextPos().equals(SourcePosition.notAvailable))
       {
         if (f.nextPos()._sourceFile.byteLength() <= f.nextPos().bytePos())
