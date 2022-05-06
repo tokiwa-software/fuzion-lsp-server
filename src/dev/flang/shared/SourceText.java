@@ -96,7 +96,10 @@ public class SourceText
   {
     var mod_text = DotAtEOL.matcher(text).replaceAll(x -> {
       // NYI right now this is just a hack...
-      if (LineOfMatch(text, x).matches(".*choice\\s+of.*"))
+      if (
+           LineOfMatch(text, x).matches(".*choice\\s+of.*")
+        || LineOfMatch(text, x).matches("\\s*#.*")
+       )
         {
           return x.group();
         }

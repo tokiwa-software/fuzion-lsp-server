@@ -54,8 +54,8 @@ public class FeatureToolTest extends BaseTest
       outerFeat is
         # this should not be part of comment
 
-        # first comment line
-        # second comment line
+        # first comment line.
+        # second comment line.
         innerFeat is
           say "nothing"
       """;
@@ -64,7 +64,7 @@ public class FeatureToolTest extends BaseTest
       .DeclaredFeatures(ParserTool.TopLevelFeatures(uri1).findFirst().get())
       .findFirst()
       .orElseThrow();
-    assertEquals("first comment line" + System.lineSeparator() + "second comment line",
+    assertEquals("first comment line." + System.lineSeparator() + "second comment line.",
       FeatureTool.CommentOf(innerFeature));
   }
 
