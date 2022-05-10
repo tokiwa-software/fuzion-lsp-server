@@ -67,7 +67,7 @@ public class Diagnostics
   public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     // NYI check names of type arguments
-    return Stream.of(Errors(uri), Warnings(uri), Unused(uri), NamingFeatures(uri), NamingRefs(uri), DuplicateName(uri))
+    return Stream.of(Errors(uri), Warnings(uri), Unused(uri), NamingFeatures(uri), NamingRefs(uri), NamingTypeParams(uri), DuplicateName(uri))
       .reduce(Stream::concat)
       .orElseGet(Stream::empty);
   }
@@ -123,6 +123,7 @@ public class Diagnostics
   private static Stream<Diagnostic> NamingRefs(URI uri)
   {
     return QueryAST.SelfAndDescendants(uri)
+      .filter(f -> !f.isTypeParameter())
       .filter(f -> (f.isOuterRef() || f.isThisRef()) && !f.isField())
       .filter(f -> {
         var basename = f.featureName().baseName();
@@ -133,7 +134,7 @@ public class Diagnostics
           // any uppercase after first char
           || Arrays.stream(splittedBaseName)
             .anyMatch(str -> !str.isEmpty()
-              && str.substring(1).chars().mapToObj(i -> (char) i).anyMatch(c -> Character.isUpperCase(c)));
+              && str.substring(1).codePoints().anyMatch(c -> Character.isUpperCase(c)));
       })
       .map(f -> {
         return new Diagnostic(Bridge.ToRangeBaseName(f),
@@ -145,18 +146,35 @@ public class Diagnostics
   private static Stream<Diagnostic> NamingFeatures(URI uri)
   {
     var snakeCase = QueryAST.SelfAndDescendants(uri)
+      .filter(f -> !f.isTypeParameter())
       .filter(f -> !(f.isOuterRef() || f.isThisRef()) || f.isField())
       .filter(f -> {
         var basename = f.featureName().baseName();
         return
         // any uppercase
-        basename.chars().mapToObj(i -> (char) i).anyMatch(c -> Character.isUpperCase(c));
+        basename.codePoints().anyMatch(c -> Character.isUpperCase(c));
       })
       .map(f -> {
-        return new Diagnostic(Bridge.ToRangeBaseName(f), "use snake_case, check: https://flang.dev/design/identifiers",
+        return new Diagnostic(Bridge.ToRangeBaseName(f), "use snake_case for features and value types, check: https://flang.dev/design/identifiers",
           DiagnosticSeverity.Information, "fuzion language server");
       });
     return snakeCase;
+  }
+
+  private static Stream<Diagnostic> NamingTypeParams(URI uri)
+  {
+    var uppercase = QueryAST.SelfAndDescendants(uri)
+      .filter(f -> f.isTypeParameter())
+      .filter(f -> {
+        var basename = f.featureName().baseName();
+        return
+        basename.codePoints().anyMatch(c -> Character.isLowerCase(c));
+      })
+      .map(f -> {
+        return new Diagnostic(Bridge.ToRangeBaseName(f), "use UPPERCASE for type parameters, check: https://flang.dev/design/identifiers",
+          DiagnosticSeverity.Information, "fuzion language server");
+      });
+    return uppercase;
   }
 
   /**
