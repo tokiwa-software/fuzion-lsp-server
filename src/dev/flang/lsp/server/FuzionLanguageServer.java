@@ -64,6 +64,7 @@ public class FuzionLanguageServer implements LanguageServer
     initializeHover(capabilities);
     initializeDefinition(capabilities);
     initializeReferences(capabilities);
+    initializeHighlights(capabilities);
     initializeRename(capabilities);
     initializeCodeActions(capabilities);
     initializeDocumentSymbol(capabilities);
@@ -107,6 +108,11 @@ public class FuzionLanguageServer implements LanguageServer
   private void initializeReferences(ServerCapabilities capabilities)
   {
     capabilities.setReferencesProvider(true);
+  }
+
+  private void initializeHighlights(ServerCapabilities capabilities)
+  {
+    capabilities.setDocumentHighlightProvider(true);
   }
 
   private void initializeDefinition(ServerCapabilities serverCapabilities)

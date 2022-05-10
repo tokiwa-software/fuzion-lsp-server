@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
+import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentHighlightKind;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -130,7 +132,12 @@ public class Bridge extends ANY
     if (PRECONDITIONS)
       require(!call.pos().isBuiltIn());
     return new Location(ParserTool.getUri(call.pos()).toString(),
-      new Range(ToPosition(call.pos()), ToPosition(CallTool.endOfCall(call))));
+      ToRange(call));
+  }
+
+  private static Range ToRange(AbstractCall call)
+  {
+    return new Range(ToPosition(call.pos()), ToPosition(CallTool.endOfCall(call)));
   }
 
   public static Location ToLocation(AbstractFeature af)
@@ -139,5 +146,11 @@ public class Bridge extends ANY
       require(!af.pos().isBuiltIn());
     return new Location(ParserTool.getUri(af.pos()).toString(),
       new Range(ToPosition(af.pos()), ToPosition(ParserTool.endOfFeature(af))));
+  }
+
+  public static DocumentHighlight ToHighlight(AbstractCall c)
+  {
+    // NYI set correct DocumentHighlightKind
+    return new DocumentHighlight(ToRange(c), DocumentHighlightKind.Read);
   }
 }

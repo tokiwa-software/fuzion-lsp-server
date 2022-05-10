@@ -44,6 +44,8 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
@@ -67,6 +69,7 @@ import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Definition;
 import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.lsp.server.feature.DocumentSymbols;
+import dev.flang.lsp.server.feature.Highlight;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Rename;
@@ -155,8 +158,13 @@ public class FuzionTextDocumentService implements TextDocumentService
   public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
     DefinitionParams params)
   {
-
     return Computation.Compute(() -> Definition.getDefinitionLocation(params));
+  }
+
+  @Override
+  public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params)
+  {
+    return Computation.Compute(() -> Highlight.getHightlights(params));
   }
 
   @Override
