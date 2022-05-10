@@ -178,7 +178,10 @@ public class Diagnostics
 
         var unusedFeatures = FeatureTool
           .SelfAndDescendants(main)
-          .filter(f -> !calledFeatures.contains(f)
+          .filter(f ->
+               !f.isTypeParameter() // NYI unused type parameter
+            && !f.isAbstract()
+            && !calledFeatures.contains(f)
             && !f.equals(main)
             && !f.featureName().baseName().equals("result")
         // NYI in this case we would need to do more work to
