@@ -319,6 +319,21 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix +")));
   }
 
+  // @Test
+  // NYI currently failing
+  public void CompletionInfix()
+  {
+    var sourceText = """
+      ex =>
+        all := psSet 0..100
+        removed := psSet 0..100:2
+        (psSet (all.filter (x -> !(removed.contains x))))""" + " ";
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 3, 52, TriggerCharacters.Space));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix ⋃")));
+  }
+
   @Test
   public void CompletionInLambdaArg()
   {
