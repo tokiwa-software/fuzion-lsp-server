@@ -166,7 +166,7 @@ public class ParserTool extends ANY
   {
     var frontEndOptions =
       new FrontEndOptions(0, SourceText.FuzionHome, null, true, JavaModules, 0, false, false,
-        tempFile.getAbsolutePath());
+        tempFile.getAbsolutePath(), true);
     return frontEndOptions;
   }
 
