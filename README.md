@@ -176,3 +176,6 @@
 |semantic tokens|☐|
 |linkedEditingRange|☐|
 |moniker|☐|
+|inlayHints|☑|
+|inlineValue|☐|
+|type hierarchy|☐|

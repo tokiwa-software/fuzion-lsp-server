@@ -55,5 +55,15 @@ public class CallTool
     return new SourcePosition(result.get()._sourceFile, result.get()._line, result.get()._column + 1);
   }
 
+  /**
+   * Is prefix/infix/postfix call
+   * @param c
+   * @return
+   */
+  public static boolean IsFixLikeCall(AbstractCall c)
+  {
+    return c.calledFeature().featureName().baseName().contains(" ");
+  }
+
 
 }

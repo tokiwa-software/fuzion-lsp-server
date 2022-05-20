@@ -60,6 +60,7 @@ public class FuzionLanguageServer implements LanguageServer
     final InitializeResult res = new InitializeResult(new ServerCapabilities());
     var capabilities = res.getCapabilities();
 
+    initializeInlayHints(capabilities);
     initializeCompletion(capabilities);
     initializeHover(capabilities);
     initializeDefinition(capabilities);
@@ -73,6 +74,11 @@ public class FuzionLanguageServer implements LanguageServer
 
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeInlayHints(ServerCapabilities capabilities)
+  {
+    capabilities.setInlayHintProvider(true);
   }
 
   private void initializeSignatureHelp(ServerCapabilities capabilities)
