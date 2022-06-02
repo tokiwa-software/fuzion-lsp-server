@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DiagnosticTag;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Diagnostics;
@@ -170,6 +171,24 @@ public class DiagnosticsTest extends ExtendedBaseTest
     assertEquals(1, diagnostics.size());
     assertEquals(2, diagnostics.get(0).getRange().getStart().getCharacter());
     assertEquals(7, diagnostics.get(0).getRange().getEnd().getCharacter());
+  }
+
+  @Test
+  // NYI currently failing
+  public void IfElseBranchNoRedefInfo()
+  {
+    var sourceText = """
+      ex =>
+        if(true)
+          a := 0
+        else
+          a := 1
+          """;
+    SourceText.setText(uri1, sourceText);
+    var diagnostics = Diagnostics.getDiagnostics(uri1)
+      .filter(x -> x.getSeverity().equals(DiagnosticSeverity.Information))
+      .collect(Collectors.toList());
+    assertEquals(0, diagnostics.size());
   }
 
 }
