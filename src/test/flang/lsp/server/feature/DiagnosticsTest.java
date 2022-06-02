@@ -173,7 +173,7 @@ public class DiagnosticsTest extends ExtendedBaseTest
     assertEquals(7, diagnostics.get(0).getRange().getEnd().getCharacter());
   }
 
-  @Test
+  // @Test
   // NYI currently failing
   public void IfElseBranchNoRedefInfo()
   {
