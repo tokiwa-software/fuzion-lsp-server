@@ -70,9 +70,9 @@ public class QueryAST extends ANY
     if (PRECONDITIONS)
       require(!Util.IsStdLib(LSP4jUtils.getUri(params)));
 
-    var universe = ParserTool.Universe(LSP4jUtils.getUri(params));
-    return ASTWalker.Traverse(universe)
-      .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
+    return ParserTool
+      .TopLevelFeatures(LSP4jUtils.getUri(params))
+      .flatMap(x -> ASTWalker.Traverse(x))
       .filter(entry -> entry.getKey() instanceof AbstractCall)
       .filter(entry -> !entry.getValue().pos().isBuiltIn() && PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
@@ -90,7 +90,7 @@ public class QueryAST extends ANY
       // NYI in this case we could try to find possibly called features?
       .filter(f -> f.resultType() != Types.t_ERROR)
       .findFirst()
-      .or(() -> Constant(params, universe));
+      .or(() -> Constant(params, ParserTool.Universe(LSP4jUtils.getUri(params))));
   }
 
   private static Optional<? extends AbstractFeature> Constant(TextDocumentPositionParams params,
