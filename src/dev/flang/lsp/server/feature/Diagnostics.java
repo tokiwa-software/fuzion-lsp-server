@@ -78,7 +78,7 @@ public class Diagnostics
     var featuresReusingNames = new HashSet<AbstractFeature>();
     QueryAST.SelfAndDescendants(uri)
       .forEach(x -> {
-        var ident = x.featureName().baseName() + x.featureName().argCount();
+        var ident = x.qualifiedName() + x.featureName().argCount();
         if (usedNames.containsKey(ident) &&
           x.outer().qualifiedName().contains(usedNames.get(ident)) &&
           !FeatureTool.IsArgument(x))
@@ -92,7 +92,7 @@ public class Diagnostics
       });
     return featuresReusingNames.stream().map(f -> {
       return new Diagnostic(Bridge.ToRangeBaseName(f),
-        "name reuse detected, you probably want to use `set`?",
+        "name reuse detected.",
         DiagnosticSeverity.Information, "fuzion language server");
     });
   }
