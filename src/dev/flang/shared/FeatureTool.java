@@ -189,7 +189,13 @@ public class FeatureTool extends ANY
         // NYI if no arguments no parens
         var arguments = "(" + feature.arguments()
           .stream()
-          .map(a -> a.featureName().baseName() + " " + Label(a.resultType()))
+          .map(a -> {
+            if (IsInternal(a))
+              {
+                return "_" + " " + Label(a.resultType());
+              }
+            return a.featureName().baseName() + " " + Label(a.resultType());
+          })
           .collect(Collectors.joining(", ")) + ")";
         return feature.featureName().baseName() + feature.generics() + arguments + " => " + Label(feature.resultType())
           + LabelInherited(feature);

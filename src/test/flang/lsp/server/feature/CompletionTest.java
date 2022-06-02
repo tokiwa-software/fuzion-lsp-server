@@ -339,11 +339,12 @@ public class CompletionTest extends ExtendedBaseTest
   {
     var sourceText = """
       ex =>
-        iter := bench<unit> (() -> random.) 1E3
+        iter := bench (() -> random.) 1E3
         say "iterations per sec: $iter"
         """;
+
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 1, 36, TriggerCharacters.Dot));
+    var completions = Completion.getCompletions(params(uri1, 1, 30, TriggerCharacters.Dot));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("next_f64")));
   }
 
