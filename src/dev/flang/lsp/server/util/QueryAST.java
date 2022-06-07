@@ -85,6 +85,7 @@ public class QueryAST extends ANY
       .filter(c -> !c.calledFeature().qualifiedName().equals("fuzion.sys"))
       .filter(c -> !c.calledFeature().qualifiedName().equals("fuzion.sys.array"))
       .filter(c -> !c.calledFeature().qualifiedName().equals("fuzion.sys.array.index [ ] ="))
+      .filter(c -> !c.calledFeature().qualifiedName().equals("unit"))
       .map(c -> c.calledFeature())
       .filter(f -> !FeatureTool.IsInternal(f))
       // NYI in this case we could try to find possibly called features?
