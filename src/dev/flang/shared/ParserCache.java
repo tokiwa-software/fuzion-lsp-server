@@ -36,8 +36,9 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.SourceModule;
 import dev.flang.shared.records.ParserCacheRecord;
+import dev.flang.util.ANY;
 
-public class ParserCache
+public class ParserCache extends ANY
 {
     private int PARSER_CACHE_MAX_SIZE = 10;
 
@@ -51,7 +52,8 @@ public class ParserCache
                     var removeEldestEntry = size() > PARSER_CACHE_MAX_SIZE;
                     if (removeEldestEntry)
                         {
-                            universe2FrontEndMap.remove(eldest.getValue().mir().universe());
+                            var frontEnd = universe2FrontEndMap.remove(eldest.getValue().mir().universe());
+                            check(frontEnd != null, universe2FrontEndMap.size() <= PARSER_CACHE_MAX_SIZE);
                         }
                     return removeEldestEntry;
                 }
