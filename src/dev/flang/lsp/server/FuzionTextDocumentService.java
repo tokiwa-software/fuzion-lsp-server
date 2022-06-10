@@ -194,7 +194,6 @@ public class FuzionTextDocumentService implements TextDocumentService
     return Computation.Compute(() -> null);
   }
 
-
   @Override
   public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
   {

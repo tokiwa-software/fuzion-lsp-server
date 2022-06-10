@@ -39,7 +39,7 @@ import dev.flang.shared.records.ParserCacheRecord;
 
 public class ParserCache
 {
-    private int PARSER_CACHE_MAX_SIZE = 20;
+    private int PARSER_CACHE_MAX_SIZE = 10;
 
     // LRU-Cache holding the most recent results of parser
     private Map<String, ParserCacheRecord> sourceText2ParserCache =
