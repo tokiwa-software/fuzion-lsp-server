@@ -36,7 +36,7 @@ JAVA_ARGS = -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKS
 JUNIT_ARGS = --fail-if-no-tests --disable-banner --details=verbose -cp $(CLASSPATH) -p test.flang
 JUNIT_ARGS_PARALLEL = --config=junit.jupiter.execution.parallel.enabled=true --config=junit.jupiter.execution.parallel.mode.default=concurrent
 
-JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.13.0.jar:jars/org.eclipse.lsp4j.generator-0.13.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.13.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar:jars/org.eclipse.xtext.xbase.lib-2.25.0.jar:jars/guava-31.0.1-jre.jar
+JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.14.0.jar:jars/org.eclipse.lsp4j.generator-0.14.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.14.0.jar:jars/gson-2.8.7.jar:jars/junit-platform-console-standalone-1.8.1.jar:jars/junit-jupiter-api-5.8.1.jar:jars/org.eclipse.xtext.xbase.lib-2.25.0.jar:jars/guava-31.0.1-jre.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 # on windows classpath separator is ; on linux it is :
@@ -72,17 +72,17 @@ debug_supended: classes
 	mkdir -p runDir
 	java $(DEBUGGER_SUSPENDED) -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
 
-jars/org.eclipse.lsp4j-0.13.0.jar:
+jars/org.eclipse.lsp4j-0.14.0.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.13.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.14.0/$(@F)
 
-jars/org.eclipse.lsp4j.generator-0.13.0.jar:
+jars/org.eclipse.lsp4j.generator-0.14.0.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.13.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.14.0/$(@F)
 
-jars/org.eclipse.lsp4j.jsonrpc-0.13.0.jar:
+jars/org.eclipse.lsp4j.jsonrpc-0.14.0.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.13.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.14.0/$(@F)
 
 jars/gson-2.8.7.jar:
 	mkdir -p $(@D)
