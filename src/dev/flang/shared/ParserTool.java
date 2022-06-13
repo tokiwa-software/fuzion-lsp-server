@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 import dev.flang.air.Clazzes;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
@@ -115,7 +114,7 @@ public class ParserTool extends ANY
   private static ParserCacheRecord createParserCacheRecord(URI uri)
   {
     // NYI
-    ClearStaticallyHeldStuffInFuzionCompiler();
+    Clazzes.clear();
 
     var frontEndOptions = FrontEndOptions(uri);
     var frontEnd = new FrontEnd(frontEndOptions);
@@ -126,15 +125,6 @@ public class ParserTool extends ANY
     return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
   }
 
-  /**
-   * NYI remove once we can create MIR multiple times
-  */
-  private static void ClearStaticallyHeldStuffInFuzionCompiler()
-  {
-    Errors.clear();
-    FeatureName.clear();
-    Clazzes.clear();
-  }
 
   private static Optional<FUIR> FUIR(URI uri)
   {
