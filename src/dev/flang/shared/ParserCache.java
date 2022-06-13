@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,6 +36,7 @@ import java.util.function.Function;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.SourceModule;
+import dev.flang.lsp.server.util.Log;
 import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 
@@ -62,9 +64,11 @@ public class ParserCache extends ANY
 
     public ParserCacheRecord computeIfAbsent(String sourceText, Function<String, ParserCacheRecord> mappingFunction)
     {
+    return Log.taskExceedsMaxTime(() -> {
         var result = sourceText2ParserCache.computeIfAbsent(sourceText, mappingFunction);
         universe2FrontEndMap.put(result.mir().universe(), result.frontEnd());
         return result;
+    }, Duration.ofSeconds(1), "parse: " + sourceText);
     }
 
     public SourceModule SourceModule(AbstractFeature universe)

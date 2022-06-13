@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.net.URI;
-import java.util.Optional;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
