@@ -37,6 +37,12 @@ import test.flang.shared.BaseTest;
 
 public abstract class ExtendedBaseTest extends BaseTest {
 
+  /**
+   * @param uri
+   * @param line (zero based)
+   * @param character (zero based)
+   * @return
+   */
   protected static TextDocumentPositionParams Cursor(URI uri, int line, int character)
   {
     return LSP4jUtils.TextDocumentPositionParams(uri, line, character);
