@@ -37,7 +37,6 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 
-import dev.flang.lsp.server.enums.Commands;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;

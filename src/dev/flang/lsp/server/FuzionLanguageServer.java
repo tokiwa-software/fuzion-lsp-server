@@ -45,8 +45,8 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
-import dev.flang.lsp.server.enums.Commands;
 import dev.flang.lsp.server.enums.TriggerCharacters;
+import dev.flang.lsp.server.feature.Commands;
 
 /**
  * does the initialization of language server features
@@ -68,12 +68,21 @@ public class FuzionLanguageServer implements LanguageServer
     initializeHighlights(capabilities);
     initializeRename(capabilities);
     initializeCodeActions(capabilities);
+    initializeCommandExecutions(capabilities);
     initializeDocumentSymbol(capabilities);
     initializeCodeLens(capabilities);
     initializeSignatureHelp(capabilities);
 
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeCommandExecutions(ServerCapabilities capabilities)
+  {
+    var commands = Arrays.stream(Commands.values())
+      .map(c -> c.name())
+      .collect(Collectors.toList());
+    capabilities.setExecuteCommandProvider(new ExecuteCommandOptions(commands));
   }
 
   private void initializeInlayHints(ServerCapabilities capabilities)
@@ -100,10 +109,6 @@ public class FuzionLanguageServer implements LanguageServer
   private void initializeCodeActions(ServerCapabilities capabilities)
   {
     capabilities.setCodeActionProvider(true);
-    var commands = Arrays.stream(Commands.values())
-      .map(c -> c.name())
-      .collect(Collectors.toList());
-    capabilities.setExecuteCommandProvider(new ExecuteCommandOptions(commands));
   }
 
   private void initializeRename(ServerCapabilities capabilities)

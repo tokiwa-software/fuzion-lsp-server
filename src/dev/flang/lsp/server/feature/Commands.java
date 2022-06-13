@@ -20,10 +20,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Command
+ * Source of class Commands
  *
  *---------------------------------------------------------------------*/
-
 
 package dev.flang.lsp.server.feature;
 
@@ -31,16 +30,15 @@ import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import com.google.gson.JsonPrimitive;
-
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ShowDocumentParams;
 
+import com.google.gson.JsonPrimitive;
+
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.FuzionLanguageClient;
-import dev.flang.lsp.server.enums.Commands;
 import dev.flang.lsp.server.util.Computation;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
@@ -49,8 +47,26 @@ import dev.flang.shared.IO;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
 
-public class Command
+public enum Commands
 {
+  showSyntaxTree,
+  run, callGraph;
+
+  public String toString()
+  {
+    switch (this)
+      {
+      case showSyntaxTree :
+        return "Show Syntax Tree";
+      case run :
+        return "Run";
+      case callGraph :
+        return "Call Graph";
+      default:
+        return "not implemented";
+      }
+  }
+
   public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
   {
     var arg0 = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
@@ -145,5 +161,4 @@ public class Command
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }
-
 }

@@ -33,7 +33,7 @@ import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
-import dev.flang.lsp.server.feature.Command;
+import dev.flang.lsp.server.feature.Commands;
 
 public class FuzionWorkspaceService implements WorkspaceService
 {
@@ -55,7 +55,7 @@ public class FuzionWorkspaceService implements WorkspaceService
   @Override
   public CompletableFuture<Object> executeCommand(ExecuteCommandParams params)
   {
-    return Command.Execute(params);
+    return Commands.Execute(params);
   }
 
 
