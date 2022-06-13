@@ -213,7 +213,7 @@ public class ParserTool extends ANY
 
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
-    return parserCache.SourceModule(f.universe())
+    return parserCache.SourceModule(f)
       .declaredOrInheritedFeatures(f)
       .values()
       .stream();
@@ -221,7 +221,7 @@ public class ParserTool extends ANY
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
   {
-    return parserCache.SourceModule(f.universe())
+    return parserCache.SourceModule(f)
       .declaredFeatures(f)
       .values()
       .stream()

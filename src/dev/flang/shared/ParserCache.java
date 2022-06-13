@@ -42,37 +42,43 @@ import dev.flang.util.ANY;
 
 public class ParserCache extends ANY
 {
-    private int PARSER_CACHE_MAX_SIZE = 10;
+  private int PARSER_CACHE_MAX_SIZE = 10;
 
-    // LRU-Cache holding the most recent results of parser
-    private Map<String, ParserCacheRecord> sourceText2ParserCache =
-        Collections
-            .synchronizedMap(new LinkedHashMap<String, ParserCacheRecord>(PARSER_CACHE_MAX_SIZE + 1, .75F, true) {
+  // LRU-Cache holding the most recent results of parser
+  private Map<String, ParserCacheRecord> sourceText2ParserCache =
+    Collections
+      .synchronizedMap(new LinkedHashMap<String, ParserCacheRecord>(PARSER_CACHE_MAX_SIZE + 1, .75F, true) {
 
-                public boolean removeEldestEntry(Map.Entry<String, ParserCacheRecord> eldest)
-                {
-                    var removeEldestEntry = size() > PARSER_CACHE_MAX_SIZE;
-                    if (removeEldestEntry)
-                        {
-                            var frontEnd = universe2FrontEndMap.remove(eldest.getValue().mir().universe());
-                            check(frontEnd != null, universe2FrontEndMap.size() <= PARSER_CACHE_MAX_SIZE);
-                        }
-                    return removeEldestEntry;
-                }
-            });
-    private HashMap<AbstractFeature, FrontEnd> universe2FrontEndMap = new HashMap<>();
+        public boolean removeEldestEntry(Map.Entry<String, ParserCacheRecord> eldest)
+        {
+          var removeEldestEntry = size() > PARSER_CACHE_MAX_SIZE;
+          if (removeEldestEntry)
+            {
+              var frontEnd = universe2FrontEndMap.remove(eldest.getValue().mir().universe());
+              check(frontEnd != null, universe2FrontEndMap.size() <= PARSER_CACHE_MAX_SIZE);
+            }
+          return removeEldestEntry;
+        }
+      });
+  private HashMap<AbstractFeature, FrontEnd> universe2FrontEndMap = new HashMap<>();
 
-    public ParserCacheRecord computeIfAbsent(String sourceText, Function<String, ParserCacheRecord> mappingFunction)
-    {
+  public ParserCacheRecord computeIfAbsent(String sourceText, Function<String, ParserCacheRecord> mappingFunction)
+  {
     return Log.taskExceedsMaxTime(() -> {
-        var result = sourceText2ParserCache.computeIfAbsent(sourceText, mappingFunction);
-        universe2FrontEndMap.put(result.mir().universe(), result.frontEnd());
-        return result;
+      var result = sourceText2ParserCache.computeIfAbsent(sourceText, mappingFunction);
+      universe2FrontEndMap.put(result.mir().universe(), result.frontEnd());
+      return result;
     }, Duration.ofSeconds(1), "parse: " + sourceText);
-    }
+  }
 
-    public SourceModule SourceModule(AbstractFeature universe)
-    {
-        return universe2FrontEndMap.get(universe).module();
-    }
+
+  /**
+   * get the SourceModule the Feature belongs to
+   * @param f
+   * @return
+   */
+  public SourceModule SourceModule(AbstractFeature f)
+  {
+    return universe2FrontEndMap.get(f.universe()).module();
+  }
 }
