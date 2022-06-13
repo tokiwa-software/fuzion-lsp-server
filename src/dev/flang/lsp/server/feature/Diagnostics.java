@@ -120,7 +120,7 @@ public class Diagnostics
     return warningDiagnostics;
   }
 
-  private static Stream<Diagnostic> NamingRefs(URI uri)
+  public static Stream<Diagnostic> NamingRefs(URI uri)
   {
     return QueryAST.SelfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
@@ -143,7 +143,7 @@ public class Diagnostics
       });
   }
 
-  private static Stream<Diagnostic> NamingFeatures(URI uri)
+  public static Stream<Diagnostic> NamingFeatures(URI uri)
   {
     var snakeCase = QueryAST.SelfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
@@ -161,7 +161,7 @@ public class Diagnostics
     return snakeCase;
   }
 
-  private static Stream<Diagnostic> NamingTypeParams(URI uri)
+  public static Stream<Diagnostic> NamingTypeParams(URI uri)
   {
     var uppercase = QueryAST.SelfAndDescendants(uri)
       .filter(f -> f.isTypeParameter())

@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
@@ -62,20 +63,31 @@ import dev.flang.util.SourcePosition;
 public class Rename extends ANY
 {
 
-  // NYI check for name collisions?
-  public static WorkspaceEdit getWorkspaceEdit(RenameParams params)
+  public static WorkspaceEdit getWorkspaceEdit(RenameParams params) throws ResponseErrorException
   {
-    if (!LexerTool.IsValidIdentifier(params.getNewName()))
+    var res = getWorkspaceEditsOrError(params, params.getNewName());
+    if (res.isLeft())
+      {
+        return res.getLeft();
+      }
+    throw res.getRight();
+  }
+
+
+  // NYI check for name collisions?
+  public static Either<WorkspaceEdit, ResponseErrorException> getWorkspaceEditsOrError(TextDocumentPositionParams params, String newName)
+  {
+    if (!LexerTool.IsValidIdentifier(newName))
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidParams, "new name no valid identifier.", null);
-        throw new ResponseErrorException(responseError);
+        return Either.forRight(new ResponseErrorException(responseError));
       }
 
     var feature = QueryAST.FeatureAt(params);
     if (feature.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
-        throw new ResponseErrorException(responseError);
+        return Either.forRight(new ResponseErrorException(responseError));
       }
 
     Stream<SourcePosition> renamePositions = getRenamePositions(params, feature.get());
@@ -87,11 +99,12 @@ public class Rename extends ANY
         return Bridge.ToLocation(start, end);
       })
       .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
-        new TextEdit(location.getRange(), params.getNewName())))
+        new TextEdit(location.getRange(), newName)))
       .collect(Collectors.groupingBy(e -> e.getKey(), Collectors.mapping(e -> e.getValue(), Collectors.toList())));
 
-    return new WorkspaceEdit(changes);
+    return Either.forLeft(new WorkspaceEdit(changes));
   }
+
 
   /**
    *
@@ -100,7 +113,7 @@ public class Rename extends ANY
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(RenameParams params, AbstractFeature featureToRename)
+  private static Stream<SourcePosition> getRenamePositions(TextDocumentPositionParams params, AbstractFeature featureToRename)
   {
     var callsSourcePositions = FeatureTool
       .CallsTo(featureToRename)

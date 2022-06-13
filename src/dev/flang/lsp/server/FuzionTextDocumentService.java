@@ -66,6 +66,7 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
+import dev.flang.lsp.server.feature.CodeActions;
 import dev.flang.lsp.server.feature.CodeLenses;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Definition;
@@ -191,7 +192,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
   {
-    return Computation.Compute(() -> null);
+    return Computation.Compute(() -> CodeActions.getCodeActions(params));
   }
 
   @Override
