@@ -233,8 +233,7 @@ public class RenameTest extends ExtendedBaseTest
 
   }
 
-  // @Test
-  // NYI currently failing
+  @Test
   public void RegressionRenameMandelbrotImage()
   {
     SourceText.setText(uri1, Mandelbrot);
