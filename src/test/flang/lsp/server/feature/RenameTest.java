@@ -233,6 +233,15 @@ public class RenameTest extends ExtendedBaseTest
 
   }
 
+  // @Test
+  // NYI currently failing
+  public void RegressionRenameMandelbrotImage()
+  {
+    SourceText.setText(uri1, Mandelbrot);
+    var atMandelbrotImage = Params(uri1, 7, 10, "mandelbrot_image");
+    assertTrue(Rename.getWorkspaceEdit(atMandelbrotImage).getChanges().size() > 0);
+  }
+
   @Test
   public void RenameLamdaArg()
   {
