@@ -26,42 +26,56 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
+import java.net.URI;
+
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import dev.flang.lsp.server.feature.CodeActions;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
 public class CodeActionsTest extends ExtendedBaseTest
 {
-    @Test
-    public void FixNaming()
-    {
-        var sourceText = """
-            ex =>
-              SomeFeature_Name is""";
-        SourceText.setText(uri1, sourceText);
 
-        var textDocument = Cursor(uri1, 1, 5).getTextDocument();
+  @Test
+  public void FixNaming()
+  {
+    var sourceText = """
+      ex =>
+        SomeFeature_Name is""";
+    SourceText.setText(uri1, sourceText);
 
+    assertEquals("some_feature_name", CodeActions
+      .getCodeActions(Params(uri1))
+      .get(0)
+      .getRight()
+      .getEdit()
+      .getChanges()
+      .get(uri1.toString())
+      .get(0)
+      .getNewText());
+  }
 
-        var codeActionParams = new CodeActionParams(textDocument,
-            new Range(new Position(0, 0),
-                new Position(10, 1)),
-            new CodeActionContext());
+  private static CodeActionParams Params(URI uri)
+  {
+    return new CodeActionParams(LSP4jUtils.TextDocumentIdentifier(uri),
+      new Range(new Position(0, 0),
+        new Position(100, 1)),
+      new CodeActionContext());
+  }
 
-        assertEquals("some_feature_name", CodeActions
-            .getCodeActions(codeActionParams)
-            .get(0)
-            .getRight()
-            .getEdit()
-            .getChanges()
-            .get(textDocument.getUri())
-            .get(0)
-            .getNewText());
-    }
+  @Test(timeout = 500)
+  public void FixMandelbrotNaming()
+  {
+    SourceText.setText(uri1, Mandelbrot);
+
+    assertTrue(CodeActions
+      .getCodeActions(Params(uri1))
+      .size() > 0);
+  }
 }
