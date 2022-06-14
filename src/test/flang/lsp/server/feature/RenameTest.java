@@ -27,10 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
+import java.net.URI;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.RenameParams;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Rename;
@@ -39,6 +39,13 @@ import test.flang.lsp.server.ExtendedBaseTest;
 
 public class RenameTest extends ExtendedBaseTest
 {
+
+  public static RenameParams Params(URI uri, int line, int character, String newName)
+  {
+    var cursor = Cursor(uri, line, character);
+    return new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "h");
+  }
+
   @Test
   public void PrepareRename() throws Exception
   {
@@ -68,9 +75,8 @@ public class RenameTest extends ExtendedBaseTest
             """;
     SourceText.setText(uri1, sourceText);
 
-    var cursor = Cursor(uri1, 1, 2);
     var textEdits =
-      Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "Tower_Disk"))
+      Rename.getWorkspaceEdit(Params(uri1, 1, 2, "Tower_Disk"))
         .getChanges()
         .values()
         .stream()
@@ -104,9 +110,8 @@ public class RenameTest extends ExtendedBaseTest
             """;
     SourceText.setText(uri1, sourceText);
 
-    var cursor = Cursor(uri1, 1, 33);
     var textEdits =
-      Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "Tower_Disk"))
+      Rename.getWorkspaceEdit(Params(uri1, 1, 33, "Tower_Disk"))
         .getChanges()
         .values()
         .stream()
@@ -148,9 +153,8 @@ public class RenameTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
 
-    var cursor = Cursor(uri1, 1, 2);
     var textEdits =
-      Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "b"))
+      Rename.getWorkspaceEdit(Params(uri1, 1, 2, "b"))
         .getChanges()
         .values()
         .stream()
@@ -179,8 +183,7 @@ public class RenameTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
 
-    var cursor = Cursor(uri1, 1, 2);
-    var values = Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "write"))
+    var values = Rename.getWorkspaceEdit(Params(uri1, 1, 2, "write"))
       .getChanges()
       .values();
     assertEquals(1, values.size());
@@ -205,15 +208,14 @@ public class RenameTest extends ExtendedBaseTest
           say a
           """;
     SourceText.setText(uri1, sourceText);
-    var cursor = Cursor(uri1, 3, 8);
-    var textEdits = Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "c"))
+    var textEdits = Rename.getWorkspaceEdit(Params(uri1, 3, 8, "c"))
       .getChanges()
       .values()
       .stream()
       .findFirst()
       .get();
 
-    assertEquals(2,textEdits.size());
+    assertEquals(2, textEdits.size());
 
     assertTrue(textEdits.stream().anyMatch(edit -> {
       return edit.getRange().getStart().getLine() == 2
@@ -243,15 +245,14 @@ public class RenameTest extends ExtendedBaseTest
           """;
     SourceText.setText(uri1, sourceText);
 
-    var cursor = Cursor(uri1, 2, 9);
-    var textEdits = Rename.getWorkspaceEdit(new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "h"))
+    var textEdits = Rename.getWorkspaceEdit(Params(uri1, 2, 9, "h"))
       .getChanges()
       .values()
       .stream()
       .findFirst()
       .get();
 
-    assertEquals(2,textEdits.size());
+    assertEquals(2, textEdits.size());
 
     assertTrue(textEdits.stream().anyMatch(edit -> {
       return edit.getRange().getStart().getLine() == 2
