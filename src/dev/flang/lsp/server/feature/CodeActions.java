@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
@@ -50,17 +51,36 @@ public class CodeActions
   public static List<Either<Command, CodeAction>> getCodeActions(CodeActionParams params)
   {
     var uri = LSP4jUtils.getUri(params.getTextDocument());
-
-    // NYI codeaction for NamingRefs, NamingTypeParams
-    return Diagnostics.NamingFeatures(uri)
-      .map(d -> CodeActionForDiagnostic(uri, d, oldName -> Converter.ToSnakeCase(oldName)).orElse(null))
-      .filter(ca -> ca != null)
-      .<Either<Command, CodeAction>>map(
-        ca -> Either.forRight(ca))
+    return Stream.of(
+      NameingFixes(Diagnostics.NamingFeatures(uri), uri, oldName -> Converter.ToSnakeCase(oldName)),
+      NameingFixes(Diagnostics.NamingRefs(uri), uri, oldName -> Converter.ToSnakePascalCase(oldName)),
+      NameingFixes(Diagnostics.NamingTypeParams(uri), uri, oldName -> oldName.toUpperCase()))
+      .reduce(Stream::concat)
+      .orElseGet(Stream::empty)
       .collect(Collectors.toList());
   }
 
-  private static Optional<CodeAction> CodeActionForDiagnostic(URI uri, Diagnostic d, Function<String, String> newName)
+  private static Stream<Either<Command, CodeAction>> NameingFixes(Stream<Diagnostic> diagnostics, URI uri,
+    Function<String, String> fix)
+  {
+    return diagnostics
+      .map(d -> CodeActionForNameingIssue(uri, d, fix))
+      .filter(Optional::isPresent)
+      .map(Optional::get)
+      .<Either<Command, CodeAction>>map(
+        ca -> Either.forRight(ca));
+  }
+
+  /**
+   * if renameing of identifier is possible
+   * return code action for fixing identifier name
+   *
+   * @param uri
+   * @param d
+   * @param newName
+   * @return
+   */
+  private static Optional<CodeAction> CodeActionForNameingIssue(URI uri, Diagnostic d, Function<String, String> newName)
   {
     var textDocumentPosition =
       new TextDocumentPositionParams(LSP4jUtils.TextDocumentIdentifier(uri), d.getRange().getStart());
