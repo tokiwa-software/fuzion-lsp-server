@@ -29,9 +29,9 @@ package dev.flang.lsp.server;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import com.google.gson.JsonObject;
-
 import org.eclipse.lsp4j.services.LanguageClient;
+
+import com.google.gson.JsonObject;
 
 import dev.flang.lsp.server.enums.Transport;
 import dev.flang.shared.ParserTool;
@@ -44,6 +44,9 @@ public class Config
   private static Future<List<Object>> _configuration;
   private static LanguageClient _languageClient;
   private static Transport _transport = Transport.stdio;
+
+  // can be "messages", "off", "verbose"
+  private static String _trace = "off";
 
   public static LanguageClient languageClient()
   {
@@ -99,6 +102,16 @@ public class Config
       {
         return new dev.flang.util.List();
       }
+  }
+
+  public static void setTrace(String value)
+  {
+    _trace = value;
+  }
+
+  public static String getTrace()
+  {
+    return _trace;
   }
 
 

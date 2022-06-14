@@ -39,8 +39,10 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.SetTraceParams;
 import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.TraceValue;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
@@ -168,5 +170,11 @@ public class FuzionLanguageServer implements LanguageServer
   public WorkspaceService getWorkspaceService()
   {
     return new FuzionWorkspaceService();
+  }
+
+  @Override
+  public void setTrace(SetTraceParams params)
+  {
+    Config.setTrace(params.getValue());
   }
 }
