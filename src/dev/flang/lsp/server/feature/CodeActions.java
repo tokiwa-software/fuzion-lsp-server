@@ -42,6 +42,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.Converter;
 
 public class CodeActions
 {
@@ -52,28 +53,11 @@ public class CodeActions
 
     // NYI codeaction for NamingRefs, NamingTypeParams
     return Diagnostics.NamingFeatures(uri)
-      .map(d -> CodeActionForDiagnostic(uri, d, oldName -> ToSnakeCase(oldName)).orElse(null))
+      .map(d -> CodeActionForDiagnostic(uri, d, oldName -> Converter.ToSnakeCase(oldName)).orElse(null))
       .filter(ca -> ca != null)
       .<Either<Command, CodeAction>>map(
         ca -> Either.forRight(ca))
       .collect(Collectors.toList());
-  }
-
-  private static String ToSnakeCase(String oldName)
-  {
-    var a = oldName.codePoints().mapToObj(ch -> {
-      if (Character.isUpperCase(ch))
-        {
-          return "_" + Character.toString(Character.toLowerCase(ch));
-        }
-      return Character.toString(ch);
-    }).collect(Collectors.joining());
-    if (oldName.startsWith("_"))
-      {
-        return a;
-      }
-    // strip leading underscore
-    return a.replaceAll("^_", "");
   }
 
   private static Optional<CodeAction> CodeActionForDiagnostic(URI uri, Diagnostic d, Function<String, String> newName)

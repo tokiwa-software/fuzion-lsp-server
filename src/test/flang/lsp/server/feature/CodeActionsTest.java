@@ -43,7 +43,7 @@ public class CodeActionsTest extends ExtendedBaseTest
     {
         var sourceText = """
             ex =>
-              SomeFeatureName is""";
+              SomeFeature_Name is""";
         SourceText.setText(uri1, sourceText);
 
         var textDocument = Cursor(uri1, 1, 5).getTextDocument();
