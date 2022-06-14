@@ -30,7 +30,11 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -74,6 +78,31 @@ public class Util
   public static boolean IsStdLib(URI uri)
   {
     return uri.toString().startsWith(SourceText.FuzionHome.toUri().toString());
+  }
+
+
+  /**
+   * map of least recently used
+   * @param <T>
+   * @param <U>
+   * @param maxSize the maximum size this LRU holds
+   * @param c called when an item is removed
+   * @return
+   */
+  public static <T, U> Map<T, U> ThreadSafeLRUMap(int maxSize, Consumer<Map.Entry<T, U>> c)
+  {
+    return Collections
+      .synchronizedMap(new LinkedHashMap<T, U>(maxSize + 1, .75F, true) {
+        public boolean removeEldestEntry(Map.Entry<T, U> eldest)
+        {
+          var removeEldestEntry = size() > maxSize;
+          if (c != null && removeEldestEntry)
+            {
+              c.accept(eldest);
+            }
+          return removeEldestEntry;
+        }
+      });
   }
 
 }

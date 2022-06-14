@@ -44,23 +44,17 @@ public class ParserCache extends ANY
 {
   private int PARSER_CACHE_MAX_SIZE = 10;
 
+  /*
+   * this map is kept in sync with sourceText2ParserCache
+   */
+  private HashMap<AbstractFeature, FrontEnd> universe2FrontEndMap = new HashMap<>();
+
   // LRU-Cache holding the most recent results of parser
   private Map<String, ParserCacheRecord> sourceText2ParserCache =
-    Collections
-      .synchronizedMap(new LinkedHashMap<String, ParserCacheRecord>(PARSER_CACHE_MAX_SIZE + 1, .75F, true) {
-
-        public boolean removeEldestEntry(Map.Entry<String, ParserCacheRecord> eldest)
-        {
-          var removeEldestEntry = size() > PARSER_CACHE_MAX_SIZE;
-          if (removeEldestEntry)
-            {
-              var frontEnd = universe2FrontEndMap.remove(eldest.getValue().mir().universe());
-              check(frontEnd != null, universe2FrontEndMap.size() <= PARSER_CACHE_MAX_SIZE);
-            }
-          return removeEldestEntry;
-        }
-      });
-  private HashMap<AbstractFeature, FrontEnd> universe2FrontEndMap = new HashMap<>();
+    Util.ThreadSafeLRUMap(PARSER_CACHE_MAX_SIZE, (removed) -> {
+      var frontEnd = universe2FrontEndMap.remove(removed.getValue().mir().universe());
+      check(frontEnd != null, universe2FrontEndMap.size() <= PARSER_CACHE_MAX_SIZE);
+    });
 
   public ParserCacheRecord computeIfAbsent(String sourceText, Function<String, ParserCacheRecord> mappingFunction)
   {

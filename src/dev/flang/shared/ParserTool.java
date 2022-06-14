@@ -82,13 +82,7 @@ public class ParserTool extends ANY
   /**
    * LRU-Cache holding end of feature calculations
    */
-  private static final Map<AbstractFeature, SourcePosition> EndOfFeatureCache = Collections
-    .synchronizedMap(new LinkedHashMap<AbstractFeature, SourcePosition>(END_OF_FEATURE_CACHE_MAX_SIZE + 1, .75F, true) {
-      public boolean removeEldestEntry(Map.Entry<AbstractFeature, SourcePosition> eldest)
-      {
-        return size() > END_OF_FEATURE_CACHE_MAX_SIZE;
-      }
-    });
+  private static final Map<AbstractFeature, SourcePosition> EndOfFeatureCache = Util.ThreadSafeLRUMap(END_OF_FEATURE_CACHE_MAX_SIZE, null);
 
   /**
    * @param uri
