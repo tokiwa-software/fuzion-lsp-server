@@ -39,15 +39,15 @@ import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
 
-public class Computation {
+public class Computation
+{
   private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
-  private static final int MAX_EXECUTION_TIME_MS = 1000;
 
-  public static <T> CompletableFuture<T> Compute(Callable<T> callable)
+  public static <T> CompletableFuture<T> Compute(Callable<T> callable, int maxTimeInMs)
   {
     if (Config.ComputeAsync)
       {
-        return ComputeAsyncWithTimeout(callable);
+        return ComputeAsyncWithTimeout(callable, maxTimeInMs);
       }
     try
       {
@@ -59,7 +59,7 @@ public class Computation {
       }
   }
 
-  private static <T> CompletableFuture<T> ComputeAsyncWithTimeout(Callable<T> callable)
+  private static <T> CompletableFuture<T> ComputeAsyncWithTimeout(Callable<T> callable, int maxTimeInMs)
   {
     // NYI log time of computations
     final Throwable context = Config.DEBUG() ? ErrorHandling.CurrentStacktrace(): null;
@@ -67,7 +67,7 @@ public class Computation {
       try
         {
           var result = Concurrency.RunWithPeriodicCancelCheck(cancelChecker, callable, INTERVALL_CHECK_CANCELLED_MS,
-            MAX_EXECUTION_TIME_MS);
+            maxTimeInMs);
 
           if (Config.DEBUG() && result.nanoSeconds() > 100_000_000)
             {
@@ -89,10 +89,10 @@ public class Computation {
         }
       catch (InterruptedException | TimeoutException | MaxExecutionTimeExceededException e)
         {
-          if (Config.DEBUG() && e instanceof MaxExecutionTimeExceededException)
+          if (e instanceof MaxExecutionTimeExceededException)
             {
               Log.message(
-                "Time exceeded" + System.lineSeparator() + ErrorHandling.toString(context), MessageType.Warning);
+                "Time exceeded" + System.lineSeparator() + ErrorHandling.toString(context), MessageType.Error);
             }
         }
       return null;

@@ -67,6 +67,8 @@ public enum Commands
       }
   }
 
+  private static CompletableFuture<Object> completedFuture = CompletableFuture.completedFuture(null);
+
   public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
   {
     var arg0 = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
@@ -75,17 +77,17 @@ public enum Commands
       {
       case showSyntaxTree :
         Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(arg0)));
-        return Computation.Compute(() -> null);
+        return completedFuture;
       case run :
         Concurrency.RunInBackground(() -> evaluate(Util.toURI(arg0)));
-        return Computation.Compute(() -> null);
+        return completedFuture;
       case callGraph :
         var arg1 = ((JsonPrimitive) params.getArguments().get(1)).getAsString();
         Concurrency.RunInBackground(() -> CallGraph(arg0, arg1));
-        return Computation.Compute(() -> null);
+        return completedFuture;
       default:
         ErrorHandling.WriteStackTrace(new Exception("not implemented"));
-        return Computation.Compute(() -> null);
+        return completedFuture;
       }
   }
 

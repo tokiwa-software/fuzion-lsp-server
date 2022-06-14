@@ -28,6 +28,7 @@ package dev.flang.lsp.server;
 
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -139,84 +140,89 @@ public class FuzionTextDocumentService implements TextDocumentService
 
   }
 
+  private <T> CompletableFuture<T> AbortAfterOneSecond(Callable<T> c)
+  {
+    return Computation.Compute(c, 1000);
+  }
+
   @Override
   public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position)
   {
-    return Computation.Compute(() -> Completion.getCompletions(position));
+    return AbortAfterOneSecond(() -> Completion.getCompletions(position));
 
   }
 
   @Override
   public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
   {
-    return Computation.Compute(() -> unresolved);
+    return AbortAfterOneSecond(() -> unresolved);
   }
 
   @Override
   public CompletableFuture<Hover> hover(HoverParams params)
   {
-    return Computation.Compute(() -> Hovering.getHover(params));
+    return AbortAfterOneSecond(() -> Hovering.getHover(params));
   }
 
   @Override
   public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
     DefinitionParams params)
   {
-    return Computation.Compute(() -> Definition.getDefinitionLocation(params));
+    return AbortAfterOneSecond(() -> Definition.getDefinitionLocation(params));
   }
 
   @Override
   public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params)
   {
-    return Computation.Compute(() -> Highlight.getHightlights(params));
+    return AbortAfterOneSecond(() -> Highlight.getHightlights(params));
   }
 
   @Override
   public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
   {
-    return Computation.Compute(() -> References.getReferences(params));
+    return AbortAfterOneSecond(() -> References.getReferences(params));
   }
 
   @Override
   public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
   {
-    return Computation.Compute(() -> Rename.getWorkspaceEdit(params));
+    return AbortAfterOneSecond(() -> Rename.getWorkspaceEdit(params));
   }
 
   @Override
   public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
   {
-    return Computation.Compute(() -> Either.forRight(Rename.getPrepareRenameResult(params)));
+    return AbortAfterOneSecond(() -> Either.forRight(Rename.getPrepareRenameResult(params)));
   }
 
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
   {
-    return Computation.Compute(() -> CodeActions.getCodeActions(params));
+    return AbortAfterOneSecond(() -> CodeActions.getCodeActions(params));
   }
 
   @Override
   public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
   {
-    return Computation.Compute(() -> DocumentSymbols.getDocumentSymbols(params));
+    return AbortAfterOneSecond(() -> DocumentSymbols.getDocumentSymbols(params));
   }
 
   @Override
   public CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params)
   {
-    return Computation.Compute(() -> InlayHints.getInlayHints(params));
+    return AbortAfterOneSecond(() -> InlayHints.getInlayHints(params));
   }
 
   @Override
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
   {
-    return Computation.Compute(() -> CodeLenses.getCodeLenses(params));
+    return AbortAfterOneSecond(() -> CodeLenses.getCodeLenses(params));
   }
 
   @Override
   public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
   {
-    return Computation.Compute(() -> SignatureHelper.getSignatureHelp(params));
+    return AbortAfterOneSecond(() -> SignatureHelper.getSignatureHelp(params));
   }
 
 }
