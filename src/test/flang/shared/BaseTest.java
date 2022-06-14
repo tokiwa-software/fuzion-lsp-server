@@ -78,7 +78,7 @@ public abstract class BaseTest extends Assert
         for y in steps yStart yStep height do
           for x in steps xStart xStep width do
             if isInMandelbrotSet (complex x y) 50 (complex 0.0 0.0)
-              yak "⬤"p
+              yak "⬤"
             else
               yak " "
           say ""
