@@ -170,7 +170,7 @@ public class ParserTool extends ANY
       {
         return result;
       }
-    return LexerTool.toURI(sourcePosition);
+    return SourceText.UriOf(sourcePosition);
   }
 
   private static File toTempFile(URI uri)

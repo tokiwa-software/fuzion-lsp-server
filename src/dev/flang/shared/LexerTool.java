@@ -30,7 +30,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,7 +38,6 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.shared.records.Tokens;
 import dev.flang.util.ANY;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -57,6 +55,7 @@ public class LexerTool extends ANY
 
   private static TokenInfo EOFTokenInfo(SourcePosition pos)
   {
+    // NYI reuse lexer, also feed lexer from file
     return IO.WithTextInputStream(SourceText.getText(pos), () -> {
       var lexer = NewLexerStdIn();
       var lastLine = lexer.lineNum(lexer.byteLength());
@@ -73,6 +72,7 @@ public class LexerTool extends ANY
    */
   public static Stream<TokenInfo> TokensFrom(SourcePosition start, boolean includeRaw)
   {
+    // NYI reuse lexer, also feed lexer from file
     return IO.WithTextInputStream(SourceText.getText(start), () -> {
       var lexer = NewLexerStdIn();
 
@@ -92,7 +92,7 @@ public class LexerTool extends ANY
           advance(lexer, includeRaw);
         }
       return Stream.concat(Stream.generate(() -> {
-        var result = tokenInfo(lexer, toURI(start));
+        var result = tokenInfo(lexer, SourceText.UriOf(start));
         advance(lexer, includeRaw);
         return result;
       })
@@ -171,12 +171,6 @@ public class LexerTool extends ANY
     return TokensAt(start, true)
       .right()
       .end();
-  }
-
-  public static URI toURI(SourcePosition sourcePosition)
-  {
-    return Path.of(sourcePosition._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), SourceText.FuzionHome.toString())).toUri();
   }
 
   public static SourceFile ToSourceFile(URI uri)

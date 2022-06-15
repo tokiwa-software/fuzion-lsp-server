@@ -36,6 +36,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 public class SourceText
@@ -72,7 +73,7 @@ public class SourceText
 
   public static String getText(SourcePosition params)
   {
-    return getText(LexerTool.toURI(params));
+    return getText(UriOf(params));
   }
 
   private static String ReadFromDisk(URI uri)
@@ -96,10 +97,8 @@ public class SourceText
   {
     var mod_text = DotAtEOL.matcher(text).replaceAll(x -> {
       // NYI right now this is just a hack...
-      if (
-           LineOfMatch(text, x).matches(".*choice\\s+of.*")
-        || LineOfMatch(text, x).matches("\\s*#.*")
-       )
+      if (LineOfMatch(text, x).matches(".*choice\\s+of.*")
+        || LineOfMatch(text, x).matches("\\s*#.*"))
         {
           return x.group();
         }
@@ -120,6 +119,12 @@ public class SourceText
   {
     return SourceText.getText(param)
       .split("\n")[param._line - 1];
+  }
+
+  public static URI UriOf(SourcePosition sourcePosition)
+  {
+    return Path.of(sourcePosition._sourceFile._fileName.toString()
+      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), FuzionHome.toString())).toUri();
   }
 
 }
