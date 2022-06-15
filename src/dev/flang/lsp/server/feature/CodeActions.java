@@ -28,7 +28,6 @@ package dev.flang.lsp.server.feature;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,23 +49,30 @@ public class CodeActions
 
   public static List<Either<Command, CodeAction>> getCodeActions(CodeActionParams params)
   {
-    var uri = LSP4jUtils.getUri(params.getTextDocument());
     return Stream.of(
-      NameingFixes(Diagnostics.NamingFeatures(uri), uri, oldName -> Converter.ToSnakeCase(oldName)),
-      NameingFixes(Diagnostics.NamingRefs(uri), uri, oldName -> Converter.ToSnakePascalCase(oldName)),
-      NameingFixes(Diagnostics.NamingTypeParams(uri), uri, oldName -> oldName.toUpperCase()))
+      NameingFixes(params, Diagnostics.nameingFeatures, oldName -> Converter.ToSnakeCase(oldName)),
+      NameingFixes(params, Diagnostics.nameingRefs, oldName -> Converter.ToSnakePascalCase(oldName)),
+      NameingFixes(params, Diagnostics.nameingTypeParams, oldName -> oldName.toUpperCase()))
       .reduce(Stream::concat)
       .orElseGet(Stream::empty)
       .collect(Collectors.toList());
   }
 
-  private static Stream<Either<Command, CodeAction>> NameingFixes(Stream<Diagnostic> diagnostics, URI uri,
+  private static Stream<Diagnostic> getDiagnostics(CodeActionParams params, Diagnostics diag)
+  {
+    return params
+      .getContext()
+      .getDiagnostics()
+      .stream()
+      .filter(x -> x.getCode().isRight() && x.getCode().getRight().equals(diag.ordinal()));
+  }
+
+  private static Stream<Either<Command, CodeAction>> NameingFixes(CodeActionParams params, Diagnostics diag,
     Function<String, String> fix)
   {
-    return diagnostics
+    var uri = LSP4jUtils.getUri(params.getTextDocument());
+    return getDiagnostics(params, diag)
       .map(d -> CodeActionForNameingIssue(uri, d, fix))
-      .filter(Optional::isPresent)
-      .map(Optional::get)
       .<Either<Command, CodeAction>>map(
         ca -> Either.forRight(ca));
   }
@@ -77,10 +83,10 @@ public class CodeActions
    *
    * @param uri
    * @param d
-   * @param newName
+   * @param convertIdentifier
    * @return
    */
-  private static Optional<CodeAction> CodeActionForNameingIssue(URI uri, Diagnostic d, Function<String, String> newName)
+  private static CodeAction CodeActionForNameingIssue(URI uri, Diagnostic d, Function<String, String> convertIdentifier)
   {
     var textDocumentPosition =
       new TextDocumentPositionParams(LSP4jUtils.TextDocumentIdentifier(uri), d.getRange().getStart());
@@ -90,19 +96,15 @@ public class CodeActions
       .featureName()
       .baseName();
 
-    return Rename
-      .getWorkspaceEditsOrError(
-        new TextDocumentPositionParams(textDocumentPosition.getTextDocument(), d.getRange().getStart()),
-        newName.apply(oldName))
-      .<Optional<CodeAction>>map(edit -> {
-        var res = new CodeAction();
-        res.setTitle("fix name");
-        res.setKind(CodeActionKind.QuickFix);
-        res.setDiagnostics(List.of(d));
-        res.setEdit(edit);
-        return Optional.of(res);
-      }, err -> Optional.empty());
+    var res = new CodeAction();
+    res.setTitle("fix identifier");
+    res.setKind(CodeActionKind.QuickFix);
+    res.setDiagnostics(List.of(d));
+    res.setCommand(Commands.Create(Commands.codeActionFixIdentifier, uri,
+      List.of(d.getRange().getStart().getLine(), d.getRange().getStart().getCharacter(),
+        convertIdentifier.apply(oldName))));
 
+    return res;
   }
 
 }

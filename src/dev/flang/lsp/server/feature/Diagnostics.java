@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DiagnosticTag;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.Range;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Config;
@@ -54,8 +55,9 @@ import dev.flang.shared.Util;
  * provide diagnostics for a given uri
  * https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics
  */
-public class Diagnostics
+public enum Diagnostics
 {
+  nameingRefs, nameingFeatures, nameingTypeParams, duplicateName, errors, warnings, unusedFeatures;
 
   public static void publishDiagnostics(URI uri)
   {
@@ -67,7 +69,9 @@ public class Diagnostics
   public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     // NYI check names of type arguments
-    return Stream.of(Errors(uri), Warnings(uri), Unused(uri), NamingFeatures(uri), NamingRefs(uri), NamingTypeParams(uri), DuplicateName(uri))
+    return Stream
+      .of(Errors(uri), Warnings(uri), Unused(uri), NamingFeatures(uri), NamingRefs(uri), NamingTypeParams(uri),
+        DuplicateName(uri))
       .reduce(Stream::concat)
       .orElseGet(Stream::empty);
   }
@@ -91,9 +95,9 @@ public class Diagnostics
           }
       });
     return featuresReusingNames.stream().map(f -> {
-      return new Diagnostic(Bridge.ToRangeBaseName(f),
+      return Create(Bridge.ToRangeBaseName(f),
         "name reuse detected.",
-        DiagnosticSeverity.Information, "fuzion language server");
+        DiagnosticSeverity.Information, duplicateName);
     });
   }
 
@@ -102,9 +106,9 @@ public class Diagnostics
     var errorDiagnostics =
       ParserTool.Errors(uri).filter(error -> ParserTool.getUri(error.pos).equals(uri)).map((error) -> {
         var message = error.msg + System.lineSeparator() + error.detail;
-        return new Diagnostic(LSP4jUtils.Range(LexerTool.TokensAt(error.pos, true).right()), message,
+        return Create(LSP4jUtils.Range(LexerTool.TokensAt(error.pos, true).right()), message,
           DiagnosticSeverity.Error,
-          "fuzion language server");
+          errors);
       });
     return errorDiagnostics;
   }
@@ -114,13 +118,13 @@ public class Diagnostics
     var warningDiagnostics =
       ParserTool.Warnings(uri).filter(warning -> ParserTool.getUri(warning.pos).equals(uri)).map((warning) -> {
         var message = warning.msg + System.lineSeparator() + warning.detail;
-        return new Diagnostic(LSP4jUtils.Range(LexerTool.TokensAt(warning.pos, true).right()), message,
-          DiagnosticSeverity.Warning, "fuzion language server");
+        return Create(LSP4jUtils.Range(LexerTool.TokensAt(warning.pos, true).right()), message,
+          DiagnosticSeverity.Warning, warnings);
       });
     return warningDiagnostics;
   }
 
-  public static Stream<Diagnostic> NamingRefs(URI uri)
+  private static Stream<Diagnostic> NamingRefs(URI uri)
   {
     return QueryAST.SelfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
@@ -137,13 +141,13 @@ public class Diagnostics
               && str.substring(1).codePoints().anyMatch(c -> Character.isUpperCase(c)));
       })
       .map(f -> {
-        return new Diagnostic(Bridge.ToRangeBaseName(f),
+        return Create(Bridge.ToRangeBaseName(f),
           "use Snake_Pascal_Case for refs, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, "fuzion language server");
+          DiagnosticSeverity.Information, nameingRefs);
       });
   }
 
-  public static Stream<Diagnostic> NamingFeatures(URI uri)
+  private static Stream<Diagnostic> NamingFeatures(URI uri)
   {
     var snakeCase = QueryAST.SelfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
@@ -155,27 +159,38 @@ public class Diagnostics
         basename.codePoints().anyMatch(c -> Character.isUpperCase(c));
       })
       .map(f -> {
-        return new Diagnostic(Bridge.ToRangeBaseName(f), "use snake_case for features and value types, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, "fuzion language server");
+        return Create(Bridge.ToRangeBaseName(f),
+          "use snake_case for features and value types, check: https://flang.dev/design/identifiers",
+          DiagnosticSeverity.Information, nameingFeatures);
       });
     return snakeCase;
   }
 
-  public static Stream<Diagnostic> NamingTypeParams(URI uri)
+  private static Stream<Diagnostic> NamingTypeParams(URI uri)
   {
     var uppercase = QueryAST.SelfAndDescendants(uri)
       .filter(f -> f.isTypeParameter())
       .filter(f -> {
         var basename = f.featureName().baseName();
-        return
-        basename.codePoints().anyMatch(c -> Character.isLowerCase(c));
+        return basename.codePoints().anyMatch(c -> Character.isLowerCase(c));
       })
       .map(f -> {
-        return new Diagnostic(Bridge.ToRangeBaseName(f), "use UPPERCASE for type parameters, check: https://flang.dev/design/identifiers",
-          DiagnosticSeverity.Information, "fuzion language server");
+        return Create(Bridge.ToRangeBaseName(f),
+          "use UPPERCASE for type parameters, check: https://flang.dev/design/identifiers",
+          DiagnosticSeverity.Information, Diagnostics.nameingTypeParams);
       });
     return uppercase;
   }
+
+
+  private static Diagnostic Create(Range range, String msg, DiagnosticSeverity diagnosticSeverity, Diagnostics d)
+  {
+    var diagnostic = new Diagnostic(range, msg,
+      diagnosticSeverity, "fuzion language server");
+    diagnostic.setCode(d.ordinal());
+    return diagnostic;
+  }
+
 
   /**
    * diagnostics for unused features
@@ -194,10 +209,9 @@ public class Diagnostics
           .map(x -> x.getKey().calledFeature())
           .collect(Collectors.toSet());
 
-        var unusedFeatures = FeatureTool
+        var unused = FeatureTool
           .SelfAndDescendants(main)
-          .filter(f ->
-               !f.isTypeParameter() // NYI unused type parameter
+          .filter(f -> !f.isTypeParameter() // NYI unused type parameter
             && !f.isAbstract()
             && !calledFeatures.contains(f)
             && !f.equals(main)
@@ -207,9 +221,9 @@ public class Diagnostics
             && f.redefines().isEmpty())
           .collect(Collectors.toList());
 
-        var unusedDiagnostics = unusedFeatures.stream().map(f -> {
+        var unusedDiagnostics = unused.stream().map(f -> {
           var diagnostic =
-            new Diagnostic(Bridge.ToRangeBaseName(f), "unused", DiagnosticSeverity.Hint, "fuzion language server");
+            Create(Bridge.ToRangeBaseName(f), "unused", DiagnosticSeverity.Hint, unusedFeatures);
           diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
           return diagnostic;
         });

@@ -27,19 +27,25 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.feature;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.ShowDocumentParams;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import com.google.gson.JsonPrimitive;
 
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.FuzionLanguageClient;
-import dev.flang.lsp.server.util.Computation;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
@@ -50,18 +56,20 @@ import dev.flang.shared.Util;
 public enum Commands
 {
   showSyntaxTree,
-  run, callGraph;
+  run, callGraph, codeActionFixIdentifier;
 
   public String toString()
   {
     switch (this)
       {
       case showSyntaxTree :
-        return "Show Syntax Tree";
+        return "Show syntax tree";
       case run :
         return "Run";
       case callGraph :
-        return "Call Graph";
+        return "Show call graph";
+      case codeActionFixIdentifier :
+        return "Apply code action";
       default:
         return "not implemented";
       }
@@ -71,24 +79,68 @@ public enum Commands
 
   public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
   {
-    var arg0 = ((JsonPrimitive) params.getArguments().get(0)).getAsString();
+    var uri = getArgAsString(params, 0);
 
     switch (Commands.valueOf(params.getCommand()))
       {
+
       case showSyntaxTree :
-        Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(arg0)));
+        Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
         return completedFuture;
+
+
       case run :
-        Concurrency.RunInBackground(() -> evaluate(Util.toURI(arg0)));
+        Concurrency.RunInBackground(() -> evaluate(Util.toURI(uri)));
         return completedFuture;
+
+
       case callGraph :
-        var arg1 = ((JsonPrimitive) params.getArguments().get(1)).getAsString();
-        Concurrency.RunInBackground(() -> CallGraph(arg0, arg1));
+        var arg1 = getArgAsString(params, 1);
+        Concurrency.RunInBackground(() -> CallGraph(uri, arg1));
         return completedFuture;
+
+
+      case codeActionFixIdentifier :
+
+        var line = getArgAsInt(params, 1);
+        var character = getArgAsInt(params, 2);
+        var newName = getArgAsString(params, 3);
+
+        return Rename
+          .getWorkspaceEditsOrError(
+            new TextDocumentPositionParams(new TextDocumentIdentifier(uri), new Position(line, character)), newName)
+          .map(
+            edit -> {
+              Config.languageClient().applyEdit(new ApplyWorkspaceEditParams(edit));
+              return completedFuture;
+            },
+            error -> {
+              Config.languageClient().showMessage(new MessageParams(MessageType.Error, error.getMessage()));
+              return completedFuture;
+            });
+
       default:
         ErrorHandling.WriteStackTrace(new Exception("not implemented"));
         return completedFuture;
       }
+  }
+
+  private static String getArgAsString(ExecuteCommandParams params, int index)
+  {
+    return ((JsonPrimitive) params.getArguments().get(index)).getAsString();
+  }
+
+  private static int getArgAsInt(ExecuteCommandParams params, int index)
+  {
+    return ((JsonPrimitive) params.getArguments().get(index)).getAsInt();
+  }
+
+  public static Command Create(Commands c, URI uri, List<Object> args)
+  {
+    var arguments = new ArrayList<Object>();
+    arguments.add(uri.toString());
+    arguments.addAll(args);
+    return new Command(c.toString(), c.name(), arguments);
   }
 
   private static void CallGraph(String arg0, String arg1)
