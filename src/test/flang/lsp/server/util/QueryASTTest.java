@@ -405,5 +405,17 @@ public class QueryASTTest extends ExtendedBaseTest
     assertFalse(QueryAST.InString(Cursor(uri1, 1, 10)));
   }
 
+  @Test
+  public void CalledFeatureNone()
+  {
+    var sourceText = """
+      ex =>
+        a := "first"
+        b""" + " ";
+    SourceText.setText(uri1, sourceText);
+    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 2, 4));
+    assertTrue(calledFeature.isEmpty());
+  }
+
 
 }
