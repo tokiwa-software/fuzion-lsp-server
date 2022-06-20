@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
@@ -67,9 +68,10 @@ public class ASTWalker
     return Traverse(start, true);
   }
 
-  public static Stream<Entry<Object, AbstractFeature>> Traverse(Stream<AbstractFeature> features)
+  public static Stream<Entry<Object, AbstractFeature>> Traverse(URI uri)
   {
-    return features.flatMap(f -> Traverse(f, true));
+    return ParserTool.TopLevelFeatures(uri)
+      .flatMap(f -> Traverse(f, true));
   }
 
   public static Stream<Entry<Object, AbstractFeature>> Traverse(AbstractFeature start, boolean descend)

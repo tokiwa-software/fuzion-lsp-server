@@ -214,15 +214,12 @@ public class QueryAST extends ANY
    */
   private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
-    var baseFeature = ParserTool.Universe(LSP4jUtils.getUri(params));
-    var astItems = ASTWalker.Traverse(baseFeature)
-      .filter(ASTItem.IsItemInFile(LSP4jUtils.getUri(params)))
+    return ASTWalker.Traverse(LSP4jUtils.getUri(params))
       .filter(IsItemInScope(params))
       .map(entry -> entry.getKey())
       .filter(IsItemNotBuiltIn(params))
       .filter(IsItemOnSameLineAsCursor(params))
       .sorted(CompareBySourcePosition.reversed());
-    return astItems;
   }
 
   private static Predicate<Object> IsItemNotBuiltIn(TextDocumentPositionParams params)
@@ -378,7 +375,7 @@ public class QueryAST extends ANY
    */
   public static boolean InString(TextDocumentPositionParams params)
   {
-    return ASTWalker.Traverse(ParserTool.TopLevelFeatures(LSP4jUtils.getUri(params)))
+    return ASTWalker.Traverse(LSP4jUtils.getUri(params))
       .filter(x -> x.getKey() instanceof StrConst)
       .map(x -> (StrConst) x.getKey())
       .anyMatch(x -> {

@@ -42,7 +42,6 @@ import dev.flang.lsp.server.util.CallTool;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.ParserTool;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
@@ -56,7 +55,7 @@ public class InlayHints extends ANY
 
   public static List<InlayHint> getInlayHints(InlayHintParams params)
   {
-    return ASTWalker.Traverse(ParserTool.TopLevelFeatures(LSP4jUtils.getUri(params.getTextDocument())))
+    return ASTWalker.Traverse(LSP4jUtils.getUri(params.getTextDocument()))
       .filter(e -> e.getKey() instanceof AbstractCall)
       .map(e -> (AbstractCall) e.getKey())
       .filter(c -> IsInRange(params.getRange(), c.pos()))

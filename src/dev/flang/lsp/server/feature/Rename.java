@@ -50,7 +50,6 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
-import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
@@ -188,7 +187,7 @@ public class Rename extends ANY
 
 
     var choiceGenerics = ASTWalker
-      .Traverse(ParserTool.TopLevelFeatures(LSP4jUtils.getUri(params)))
+      .Traverse(LSP4jUtils.getUri(params))
       .filter(entry -> entry.getKey() instanceof AbstractFeature)
       .map(entry -> (AbstractFeature) entry.getKey())
       .filter(f -> f.resultType().isChoice())

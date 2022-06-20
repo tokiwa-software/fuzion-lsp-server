@@ -46,7 +46,7 @@ public class ASTWalkerTest extends BaseTest
       say "$s maps to {x[s]}"
   """;
     SourceText.setText(uri1, sourceText);
-    ASTWalker.Traverse(ParserTool.TopLevelFeatures(uri1));
+    ASTWalker.Traverse(uri1);
   }
 
   @Test
