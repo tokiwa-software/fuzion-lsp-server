@@ -245,17 +245,7 @@ public class ASTWalker
         return;
       }
     c.actuals().forEach(a -> TraverseExpression(a, outer, callback));
-    // this should be enough to not run into an infinite recursion...
-    if (c.target() == null || !IsSameSourceFile(c.target(), outer))
-      {
-        return;
-      }
     TraverseExpression(c.target(), outer, callback);
-  }
-
-  private static boolean IsSameSourceFile(Expr e, AbstractFeature outer)
-  {
-    return e.pos()._sourceFile.equals(outer.pos()._sourceFile);
   }
 
   /**

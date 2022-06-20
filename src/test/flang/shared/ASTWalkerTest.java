@@ -50,6 +50,18 @@ public class ASTWalkerTest extends BaseTest
   }
 
   @Test
+  public void TraverseRecursive(){
+    var sourceText = """
+        ex =>
+          a is
+            if true
+              a
+        """;
+    SourceText.setText(uri1, sourceText);
+    ASTWalker.Traverse(uri1);
+  }
+
+  @Test
   public void AllOf()
   {
     SourceText.setText(uri1, HelloWorld);
