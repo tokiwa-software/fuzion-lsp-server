@@ -3,3 +3,4 @@ classes/
 *.jar
 *.zip
 Manifest.txt
+async-profiler/
