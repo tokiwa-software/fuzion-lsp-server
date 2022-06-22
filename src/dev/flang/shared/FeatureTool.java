@@ -100,7 +100,7 @@ public class FeatureTool extends ANY
       .map(x -> x.getKey())
       .sorted(ASTItem.CompareByLineThenByColumn())
       .reduce("", (a, item) -> {
-        var position = ASTItem.sourcePosition(item);
+        var position = item.pos();
         // NYI
         var indent = 0;
         if (position.isBuiltIn())

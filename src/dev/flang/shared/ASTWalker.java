@@ -53,6 +53,7 @@ import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
+import dev.flang.util.HasSourcePosition;
 
 public class ASTWalker
 {
@@ -63,20 +64,20 @@ public class ASTWalker
    * @param start
    * @return
    */
-  public static Stream<Entry<Object, AbstractFeature>> Traverse(AbstractFeature start)
+  public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(AbstractFeature start)
   {
     return Traverse(start, true);
   }
 
-  public static Stream<Entry<Object, AbstractFeature>> Traverse(URI uri)
+  public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(URI uri)
   {
     return ParserTool.TopLevelFeatures(uri)
       .flatMap(f -> Traverse(f, true));
   }
 
-  public static Stream<Entry<Object, AbstractFeature>> Traverse(AbstractFeature start, boolean descend)
+  public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(AbstractFeature start, boolean descend)
   {
-    var result = new HashMap<Object, AbstractFeature>();
+    var result = new HashMap<HasSourcePosition, AbstractFeature>();
     TraverseFeature(start, (item, outer) -> {
       var isAlreadyPresent = result.containsKey(item);
       result.put(item, outer);
@@ -85,7 +86,8 @@ public class ASTWalker
     return result.entrySet().stream();
   }
 
-  private static void TraverseFeature(AbstractFeature feature, BiFunction<Object, AbstractFeature, Boolean> callback,
+  private static void TraverseFeature(AbstractFeature feature,
+    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback,
     boolean descend)
   {
     if (!FeatureTool.IsInternal(feature) && !callback.apply(feature, feature.outer()))
@@ -117,13 +119,13 @@ public class ASTWalker
   }
 
   private static void TraverseCase(AbstractCase c, AbstractFeature outer,
-    BiFunction<Object, AbstractFeature, Boolean> callback)
+    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
   {
     TraverseBlock(c.code(), outer, callback);
   }
 
   private static void TraverseStatement(Stmnt s, AbstractFeature outer,
-    BiFunction<Object, AbstractFeature, Boolean> callback)
+    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
   {
     if (s instanceof AbstractFeature)
       {
@@ -153,7 +155,7 @@ public class ASTWalker
   }
 
   private static void TraverseAssign(AbstractAssign a, AbstractFeature outer,
-    BiFunction<Object, AbstractFeature, Boolean> callback)
+    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
   {
     if (!callback.apply(a, outer))
       {
@@ -167,13 +169,13 @@ public class ASTWalker
   }
 
   private static void TraverseBlock(AbstractBlock b, AbstractFeature outer,
-    BiFunction<Object, AbstractFeature, Boolean> callback)
+    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
   {
     b.statements_.forEach(s -> TraverseStatement(s, outer, callback));
   }
 
   private static void TraverseExpression(Expr expr, AbstractFeature outer,
-    BiFunction<Object, AbstractFeature, Boolean> callback)
+    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
   {
     if (expr == null)
       {
@@ -238,7 +240,7 @@ public class ASTWalker
   }
 
   private static void TraverseCall(AbstractCall c, AbstractFeature outer,
-    BiFunction<Object, AbstractFeature, Boolean> callback)
+    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
   {
     if (!callback.apply(c, outer))
       {

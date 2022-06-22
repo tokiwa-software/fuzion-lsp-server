@@ -257,7 +257,7 @@ public class ParserTool extends ANY
         .filter(entry -> entry.getValue() != null)
         .filter(ASTItem.IsItemInFile(uri))
         .filter(entry -> entry.getValue().compareTo(f) == 0)
-        .map(entry -> ASTItem.sourcePosition(entry.getKey()))
+        .map(entry -> entry.getKey().pos())
         .filter(sourcePositionOption -> !sourcePositionOption.isBuiltIn())
         .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
         .map(position -> {

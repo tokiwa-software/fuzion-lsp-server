@@ -42,7 +42,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
 import dev.flang.parser.Lexer.Token;
-import dev.flang.shared.ASTItem;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
@@ -51,6 +50,7 @@ import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 public class QueryAST extends ANY
@@ -212,7 +212,7 @@ public class QueryAST extends ANY
    * @param params
    * @return
    */
-  private static Stream<Object> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
+  private static Stream<HasSourcePosition> ASTItemsBeforeOrAtCursor(TextDocumentPositionParams params)
   {
     return ASTWalker.Traverse(LSP4jUtils.getUri(params))
       .filter(IsItemInScope(params))
@@ -222,20 +222,20 @@ public class QueryAST extends ANY
       .sorted(CompareBySourcePosition.reversed());
   }
 
-  private static Predicate<Object> IsItemNotBuiltIn(TextDocumentPositionParams params)
+  private static Predicate<HasSourcePosition> IsItemNotBuiltIn(TextDocumentPositionParams params)
   {
     return (astItem) -> {
-      var sourcePositionOption = ASTItem.sourcePosition(astItem);
+      var sourcePositionOption = astItem.pos();
       return !sourcePositionOption.isBuiltIn();
     };
   }
 
-  private static Predicate<Object> IsItemOnSameLineAsCursor(
+  private static Predicate<HasSourcePosition> IsItemOnSameLineAsCursor(
     TextDocumentPositionParams params)
   {
     return (astItem) -> {
       var cursorPosition = LSP4jUtils.getPosition(params);
-      var sourcePositionOption = ASTItem.sourcePosition(astItem);
+      var sourcePositionOption = astItem.pos();
       return cursorPosition.getLine() == Bridge.ToPosition(sourcePositionOption).getLine();
     };
   }
@@ -245,14 +245,15 @@ public class QueryAST extends ANY
    * @param params
    * @return
    */
-  private static Predicate<? super Entry<Object, AbstractFeature>> IsItemInScope(TextDocumentPositionParams params)
+  private static Predicate<? super Entry<HasSourcePosition, AbstractFeature>> IsItemInScope(
+    TextDocumentPositionParams params)
   {
     return (entry) -> {
       var astItem = entry.getKey();
       var outer = entry.getValue();
       var cursorPosition = LSP4jUtils.getPosition(params);
 
-      var sourcePositionOption = ASTItem.sourcePosition(astItem);
+      var sourcePositionOption = astItem.pos();
       if (sourcePositionOption.isBuiltIn())
         {
           return false;
@@ -269,8 +270,8 @@ public class QueryAST extends ANY
   }
 
 
-  private static Comparator<? super Object> CompareBySourcePosition =
-    Comparator.comparing(obj -> ASTItem.sourcePosition(obj), (sourcePosition1, sourcePosition2) -> {
+  private static Comparator<? super HasSourcePosition> CompareBySourcePosition =
+    Comparator.comparing(obj -> obj.pos(), (sourcePosition1, sourcePosition2) -> {
       return sourcePosition1.compareTo(sourcePosition2);
     });
 

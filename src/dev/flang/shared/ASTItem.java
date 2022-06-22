@@ -31,21 +31,18 @@ import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
-import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.If;
 import dev.flang.ast.Types;
-import dev.flang.util.SourcePosition;
+import dev.flang.util.HasSourcePosition;
 
 public class ASTItem
 {
 
-  public static String ToLabel(Object item)
+  public static String ToLabel(HasSourcePosition item)
   {
     try
       {
@@ -77,45 +74,10 @@ public class ASTItem
       }
   }
 
-  // NYI remove once we have ISourcePosition interface
-  /**
-   * getPosition of ASTItem
-   * @param entry
-   * @return
-   */
-  public static SourcePosition sourcePosition(Object entry)
-  {
-    if (entry instanceof AbstractFeature e)
-      {
-        return e.pos();
-      }
-    if (entry instanceof AbstractAssign a)
-      {
-        return a.pos();
-      }
-    if (entry instanceof AbstractConstant c)
-      {
-        return c.pos();
-      }
-    if (entry instanceof AbstractCall c)
-      {
-        return c.pos();
-      }
-    if (entry instanceof AbstractType t)
-      {
-        throw new IllegalArgumentException("Not applicable. Type can have multiple source positions.");
-      }
-
-    var errorMessage = "sourcePosition(), missing implementation for: " + entry.getClass();
-    IO.SYS_ERR.println(errorMessage);
-    ErrorHandling.WriteStackTrace(new Exception(errorMessage));
-    return SourcePosition.notAvailable;
-  }
-
-  public static Predicate<? super Entry<Object, AbstractFeature>> IsItemInFile(URI uri)
+  public static Predicate<? super Entry<HasSourcePosition, AbstractFeature>> IsItemInFile(URI uri)
   {
     return (entry) -> {
-      var sourcePositionOption = sourcePosition(entry.getKey());
+      var sourcePositionOption = entry.getKey().pos();
       if (sourcePositionOption.isBuiltIn())
         {
           return false;
@@ -124,11 +86,11 @@ public class ASTItem
     };
   }
 
-  public static Comparator<? super Object> CompareByLineThenByColumn()
+  public static Comparator<? super HasSourcePosition> CompareByLineThenByColumn()
   {
     return (a, b) -> {
-      var position1 = sourcePosition(a);
-      var position2 = sourcePosition(b);
+      var position1 = a.pos();
+      var position2 = b.pos();
       if (position1.isBuiltIn())
         {
           return -1;
