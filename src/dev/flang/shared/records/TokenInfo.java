@@ -93,7 +93,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       }
   }
 
-  public Stream<Integer> SemanticTokenData(Optional<TokenInfo> previousToken,
+  public Stream<Integer> SemanticTokenData(TokenInfo previousToken,
     Map<Integer, HashSet<HasSourcePosition>> pos2Item)
   {
     var tokenType = TokenType(pos2Item);
@@ -102,12 +102,14 @@ public record TokenInfo(SourcePosition start, String text, Token token)
         return Stream.empty();
       }
 
-    return previousToken.map(x -> {
-      var IsSameLine = line() == x.line();
-      return Stream.of(line() - x.line(), startChar() - (IsSameLine ? x.startChar(): 0),
-        length(), tokenType.get().num, Modifiers(pos2Item));
-    })
-      .orElse(Stream.of(line(), startChar(), length(), tokenType.get().num, Modifiers(pos2Item)));
+    var IsSameLine = line() == previousToken.line();
+    if (line() - previousToken.line() < 0)
+      {
+        return Stream.<Integer>empty();
+      }
+    return Stream.of(line() - previousToken.line(), startChar() - (IsSameLine ? previousToken.startChar(): 0),
+      length(), tokenType.get().num, Modifiers(pos2Item));
+
   }
 
   // NYI

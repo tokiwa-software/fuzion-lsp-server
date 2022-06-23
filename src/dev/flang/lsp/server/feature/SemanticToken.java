@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -46,11 +45,14 @@ import dev.flang.lsp.server.enums.TokenModifier;
 import dev.flang.lsp.server.enums.TokenType;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourceFile;
+import dev.flang.util.SourcePosition;
 
 public class SemanticToken extends ANY
 {
@@ -60,7 +62,8 @@ public class SemanticToken extends ANY
 
   public static SemanticTokens getSemanticTokens(SemanticTokensParams params)
   {
-    // NYI HACK since there is cases now where multiple features have same sourceposition
+    // NYI HACK since there is cases now where multiple features have same
+    // sourceposition
     // should be changed in the compiler.
     var pos2Item = new HashMap<Integer, HashSet<HasSourcePosition>>();
 
@@ -93,7 +96,9 @@ public class SemanticToken extends ANY
     return IntStream
       .range(0, lexerTokens.size())
       .mapToObj(x -> {
-        Optional<TokenInfo> previousToken = x == 0 ? Optional.empty(): Optional.of(lexerTokens.get(x - 1));
+        var beginningOfFileToken =
+          new TokenInfo(new SourcePosition(new SourceFile(SourceFile.STDIN), 1, 1), "", Token.t_undefined);
+        var previousToken = x == 0 ? beginningOfFileToken: lexerTokens.get(x - 1);
         return lexerTokens.get(x).SemanticTokenData(previousToken, pos2Item);
       })
       .flatMap(x -> x)
