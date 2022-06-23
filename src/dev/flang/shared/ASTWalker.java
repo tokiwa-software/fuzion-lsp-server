@@ -26,8 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.net.URI;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
@@ -79,18 +79,24 @@ public class ASTWalker
   {
     var result = new HashMap<HasSourcePosition, AbstractFeature>();
     TraverseFeature(start, (item, outer) -> {
+      if (item instanceof AbstractFeature af && FeatureTool.IsInternal(af))
+        {
+          return true;
+        }
       var isAlreadyPresent = result.containsKey(item);
       result.put(item, outer);
       return !isAlreadyPresent;
     }, descend);
-    return result.entrySet().stream();
+    return result
+      .entrySet()
+      .stream();
   }
 
   private static void TraverseFeature(AbstractFeature feature,
     BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback,
     boolean descend)
   {
-    if (!FeatureTool.IsInternal(feature) && !callback.apply(feature, feature.outer()))
+    if (!callback.apply(feature, feature.outer()))
       {
         return;
       }
