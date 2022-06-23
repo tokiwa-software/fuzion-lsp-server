@@ -286,18 +286,18 @@ public class FeatureTool extends ANY
     for(AbstractFeature caller : Callers(f))
       {
         sb.append(
-          "  " + Quoute(caller.qualifiedName()) + " -> " + Quoute(f.qualifiedName()) + ";" + System.lineSeparator());
+          "  " + Quote(caller.qualifiedName()) + " -> " + Quote(f.qualifiedName()) + ";" + System.lineSeparator());
       }
     for(AbstractFeature callee : Callees(f))
       {
         sb.append(
-          "  " + Quoute(f.qualifiedName()) + " -> " + Quoute(callee.qualifiedName()) + ";" + System.lineSeparator());
+          "  " + Quote(f.qualifiedName()) + " -> " + Quote(callee.qualifiedName()) + ";" + System.lineSeparator());
       }
     sb.append("}");
     return sb.toString();
   }
 
-  private static String Quoute(String qualifiedName)
+  private static String Quote(String qualifiedName)
   {
     return "\"" + qualifiedName + "\"";
   }
