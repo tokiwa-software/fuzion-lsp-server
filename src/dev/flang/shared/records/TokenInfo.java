@@ -148,7 +148,23 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   {
     if (token.isKeyword())
       {
-        return Optional.of(TokenType.Keyword);
+        switch (token)
+          {
+          case t_lazy :
+          case t_synchronized :
+          case t_const :
+          case t_leaf :
+          case t_infix :
+          case t_prefix :
+          case t_postfix :
+          case t_export :
+          case t_private :
+          case t_protected :
+          case t_public :
+            return Optional.of(TokenType.Modifier);
+          default:
+            return Optional.of(TokenType.Keyword);
+          }
       }
     switch (token)
       {
@@ -178,7 +194,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
         return GetItem(pos2Item)
           .map(TokenInfo::ItemToToken)
           // NYI
-          .orElse(Optional.of(TokenType.Type));
+          .orElse(Optional.empty());
       case t_error :
       case t_ws :
       case t_comma :
@@ -206,26 +222,33 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       {
         switch (af.kind())
           {
+          case OpenTypeParameter :
+          case TypeParameter :
+            return Optional.of(TokenType.TypeParameter);
           case Field :
             if (FeatureTool.IsArgument(af))
               {
                 return Optional.of(TokenType.Parameter);
               }
             return Optional.of(TokenType.Property);
-          case OpenTypeParameter :
-          case TypeParameter :
-            return Optional.of(TokenType.TypeParameter);
           case Choice :
             return Optional.of(TokenType.Enum);
           case Intrinsic :
           case Abstract :
           case Routine :
+            if (af.outer().isChoice())
+              {
+                return Optional.of(TokenType.EnumMember);
+              }
             if (FeatureTool.IsNamespaceLike(af))
               {
                 return Optional.of(TokenType.Namespace);
               }
-            // NYI
-            return Optional.of(TokenType.Class);
+            if (af.isConstructor())
+              {
+                return Optional.of(TokenType.Class);
+              }
+            return Optional.of(TokenType.Function);
           }
       }
     var ac = (AbstractCall) item;
@@ -237,7 +260,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       {
         return Optional.of(TokenType.Operator);
       }
-    // NYI
+    // "normal" call
     return Optional.<TokenType>empty();
   }
 
