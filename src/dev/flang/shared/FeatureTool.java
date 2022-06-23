@@ -318,4 +318,9 @@ public class FeatureTool extends ANY
         && entry.getKey().calledFeature().equals(feature));
   }
 
+  public static boolean IsNamespaceLike(AbstractFeature af)
+  {
+    return af.isConstructor() && af.arguments().size() == 0 && !IsArgument(af);
+  }
+
 }
