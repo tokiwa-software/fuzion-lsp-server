@@ -46,6 +46,8 @@ import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
+import dev.flang.ast.Feature;
+import dev.flang.ast.Feature.State;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
 import dev.flang.ast.Nop;
@@ -80,6 +82,14 @@ public class ASTWalker
     var result = new HashMap<HasSourcePosition, AbstractFeature>();
     TraverseFeature(start, (item, outer) -> {
       if (item instanceof AbstractFeature af && FeatureTool.IsInternal(af))
+        {
+          return true;
+        }
+      if (item instanceof AbstractCall c
+        // include calls to "error features" in result
+        && !(c.calledFeature() instanceof Feature f && f.state() == State.ERROR)
+      // exclude calls to internal features
+        && FeatureTool.IsInternal(c.calledFeature()))
         {
           return true;
         }
