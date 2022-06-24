@@ -102,8 +102,6 @@ public class Config
       }
     catch (Exception e)
       {
-        Config.languageClient()
-          .showMessage(new MessageParams(MessageType.Error, "Error parsing java module settings."));
         return List.of();
       }
   }
