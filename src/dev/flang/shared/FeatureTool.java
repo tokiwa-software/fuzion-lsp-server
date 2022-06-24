@@ -136,7 +136,9 @@ public class FeatureTool extends ANY
     if (feature.featureName().baseName().startsWith("index [")
       || feature.featureName().baseName().startsWith("infix ")
       || feature.featureName().baseName().startsWith("prefix ")
-      || feature.featureName().baseName().startsWith("postfix "))
+      || feature.featureName().baseName().startsWith("postfix ")
+      || feature.featureName().baseName().startsWith("ternary ")
+      )
       {
         return feature.pos();
       }
