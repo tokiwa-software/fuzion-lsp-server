@@ -55,16 +55,16 @@ public class SemanticTokenTest extends ExtendedBaseTest
   @Test
   public void GetSemanticTokensFaulhaber()
   {
-    SourceText.setText(uri2, Faulhaber);
+    SourceText.setText(uri1, Faulhaber);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri2, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
     AssertBasicDataSanity(semanticTokens);
   }
 
   @Test
   public void GetSemanticTokensFunKeyWord()
   {
-    SourceText.setText(uri2, """
+    SourceText.setText(uri1, """
         ex is
           print(i i32) =>
             yak i
@@ -73,7 +73,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
             .forAll (fun print)
       """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri2, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
     AssertBasicDataSanity(semanticTokens);
   }
 
