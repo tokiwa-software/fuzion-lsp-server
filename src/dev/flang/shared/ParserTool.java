@@ -28,9 +28,8 @@ package dev.flang.shared;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -52,7 +51,6 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
-import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -70,7 +68,7 @@ public class ParserTool extends ANY
 
   private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 100;
 
-  private static List<String> JavaModules = new List<String>();
+  private static List<String> JavaModules = List.<String>of();
 
   public static void SetJavaModules(List<String> javaModules)
   {
@@ -82,7 +80,8 @@ public class ParserTool extends ANY
   /**
    * LRU-Cache holding end of feature calculations
    */
-  private static final Map<AbstractFeature, SourcePosition> EndOfFeatureCache = Util.ThreadSafeLRUMap(END_OF_FEATURE_CACHE_MAX_SIZE, null);
+  private static final Map<AbstractFeature, SourcePosition> EndOfFeatureCache =
+    Util.ThreadSafeLRUMap(END_OF_FEATURE_CACHE_MAX_SIZE, null);
 
   /**
    * @param uri
@@ -103,7 +102,8 @@ public class ParserTool extends ANY
   {
     var sourceText = SourceText.getText(uri);
     var result = parserCache.computeIfAbsent(uri + sourceText, key -> createParserCacheRecord(uri));
-    // NYI hack! Without this the test RegressionRenameMandelbrotImage fails when running all tests
+    // NYI hack! Without this the test RegressionRenameMandelbrotImage fails
+    // when running all tests
     Types.resolved = result.resolved();
     return result;
   }
@@ -152,7 +152,9 @@ public class ParserTool extends ANY
   private static FrontEndOptions FrontEndOptions(File tempFile)
   {
     var frontEndOptions =
-      new FrontEndOptions(0, SourceText.FuzionHome, null, true, JavaModules, 0, false, false,
+      new FrontEndOptions(0, SourceText.FuzionHome, null, true, new dev.flang.util.List<String>(JavaModules.iterator()),
+        0,
+        false, false,
         tempFile.getAbsolutePath(), true);
     return frontEndOptions;
   }
