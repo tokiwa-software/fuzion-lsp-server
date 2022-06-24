@@ -91,6 +91,20 @@ public class SemanticTokenTest extends ExtendedBaseTest
     AssertBasicDataSanity(semanticTokens);
   }
 
+  @Test
+  public void GetSemanticTokensDesctructureTuple()
+  {
+    SourceText.setText(uri1, """
+      ex is
+        a =>
+          (1,1)
+        (b, c) := a
+            """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+    AssertBasicDataSanity(semanticTokens);
+  }
+
   private static void AssertNoNegative(SemanticTokens st)
   {
     assertTrue(st.getData().stream().noneMatch(x -> x < 0));

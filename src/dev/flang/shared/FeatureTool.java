@@ -135,11 +135,17 @@ public class FeatureTool extends ANY
   // parsing
   public static SourcePosition BaseNamePosition(AbstractFeature feature)
   {
-    var start = IsLambdaArg(feature) ?
+    IO.SYS_ERR.println(feature.toString() + feature.pos());
+    var start = LexerTool
+      .TokensFrom(feature.pos(), false)
+      .map(x -> x.text().equals("->") || x.text().equals(":="))
+      .findFirst()
+      .orElse(false) ?
     // NYI HACK start lexing at start of line since
     // pos of lambda arg is the pos of the lambda arrow (->).
-                                     new SourcePosition(feature.pos()._sourceFile, feature.pos()._line, 1)
-                                     : feature.pos();
+    // and destructed pos is pos of caching operator :=
+                     new SourcePosition(feature.pos()._sourceFile, feature.pos()._line, 1)
+                     : feature.pos();
     return LexerTool
       .TokensFrom(start, false)
       .limit(MAX_TOKENS_TO_INSPECT)
