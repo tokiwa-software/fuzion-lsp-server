@@ -105,6 +105,150 @@ public class SemanticTokenTest extends ExtendedBaseTest
     AssertBasicDataSanity(semanticTokens);
   }
 
+  @Test
+  public void GetSemanticTokensPrefixInfixPostfix()
+  {
+    SourceText.setText(uri1, """
+      # This file is part of the Fuzion language implementation.
+      #
+      # The Fuzion language implementation is free software: you can redistribute it
+      # and/or modify it under the terms of the GNU General Public License as published
+      # by the Free Software Foundation, version 3 of the License.
+      #
+      # The Fuzion language implementation is distributed in the hope that it will be
+      # useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+      # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+      # License for more details.
+      #
+      # You should have received a copy of the GNU General Public License along with The
+      # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+      # -----------------------------------------------------------------------
+      #
+      #  Tokiwa Software GmbH, Germany
+      #
+      #  Source code of Fuzion standard library feature bitset
+      #
+      #  Author: Fridtjof Siebert (siebert@tokiwa.software)
+      #
+      # -----------------------------------------------------------------------
+
+      # bitset -- persistent set of unsigned integers
+      #
+      bitset : choice <nil,         # empty bitset
+                      u64,         # unit bitset
+                      array<bool>> # general
+      is
+
+        # test if the given bit is part of this bitset
+        #
+        has (bit u64) bool is
+          match bitset.this
+            _ nil   => false
+            x u64   => bit == x
+            a array => a.length.as_u64 > bit && a[bit.as_i32]
+
+        # alternative for has using []
+        #
+        index[] (bit u64) => has bit
+
+        # set the given bit
+        put (bit u64) bitset is
+          if has bit
+            bitset.this
+          else
+            match bitset.this
+              _ nil   => bit
+              x u64   => array<bool> bit.max(x).as_i32+1 (i -> i.as_u64 == bit || i.as_u64 == x)
+              a array => a.put bit.as_i32 true false
+
+        # union of two bitsets
+        #
+        infix ⋃ (other bitset) bitset is
+          match bitset.this
+            _ nil   => other
+            x u64   => other.put x
+            a array =>
+              match other
+                _ nil   => bitset.this
+                x u64   => bitset.this.put x
+                b array =>
+                  array<bool> a.length.max(b.length) (i -> (has i.as_u64) || (other.has i.as_u64))
+
+        # get the highest bit in this bitset
+        #
+        highest option<u64> is
+          match bitset.this
+            _ nil   => nil
+            x u64   => x
+            a array => a.length.as_u64-1
+
+        # compare two bitsets
+        #
+        infix == (other bitset) bool is
+          h := highest >>= i -> other.highest >>= j -> i.max j
+          match h
+            _ nil => true
+            m u64 =>
+              for
+                r := true, r && ((has i) <=> other.has i)
+                i in u64 0 .. m
+              else
+                r
+
+        # create a string representation of a bitset of the form "{2, 4}
+        #
+        redef asString string is
+          match highest
+            _ nil => "\\{}"
+            h u64 =>
+              for
+                first := true, first && !(has i)
+                s := "", s + (if (has i) comma + $i else "")
+                comma := if (first) "" else ", "
+                i in u64 0 .. h
+              else
+                "\\{" + s + "}"
+
+      /*
+      has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
+      */
+
+        # an empty bitset
+        #
+        empty bitset is nil
+
+        # monoid of bitset with infix ⋃ operation.
+        #
+        union : Monoid<bitset> is
+          redef infix ∙ (a, b bitset) => a ⋃ b
+          redef infix == (a, b bitset) => a == b
+          redef e bitset is empty
+
+
+      # bitsets -- unit type defining features related to bitest but not
+      # requiring an instance
+      #
+      bitsets is
+
+        # an empty bitset
+        #
+        empty bitset is nil
+
+
+        # monoid of bitset with infix ⋃ operation.
+        #
+        union : Monoid<bitset> is
+          redef infix ∙ (a, b bitset) => a ⋃ b
+          redef infix == (a, b bitset) => a == b
+          redef e bitset is empty
+          """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+    AssertBasicDataSanity(semanticTokens);
+  }
+
   private static void AssertNoNegative(SemanticTokens st)
   {
     assertTrue(st.getData().stream().noneMatch(x -> x < 0));

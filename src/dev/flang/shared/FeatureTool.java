@@ -135,7 +135,10 @@ public class FeatureTool extends ANY
   // parsing
   public static SourcePosition BaseNamePosition(AbstractFeature feature)
   {
-    if (feature.featureName().baseName().startsWith("index ["))
+    if (feature.featureName().baseName().startsWith("index [")
+      || feature.featureName().baseName().startsWith("infix ")
+      || feature.featureName().baseName().startsWith("prefix ")
+      || feature.featureName().baseName().startsWith("postfix "))
       {
         return feature.pos();
       }
