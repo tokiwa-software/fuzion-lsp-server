@@ -26,10 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -47,6 +49,7 @@ import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
+import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.ANY;
@@ -60,22 +63,28 @@ public class SemanticToken extends ANY
   public static final SemanticTokensLegend Legend =
     new SemanticTokensLegend(TokenType.asList, TokenModifier.asList);
 
+  // https://stackoverflow.com/questions/23699371/java-8-distinct-by-property
+  public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor)
+  {
+    Set<Object> seen = ConcurrentHashMap.newKeySet();
+    return t -> seen.add(keyExtractor.apply(t));
+  }
+
   public static SemanticTokens getSemanticTokens(SemanticTokensParams params)
   {
-    // NYI HACK since there is cases now where multiple features have same
-    // sourceposition
-    // should be changed in the compiler.
-    var pos2Item = new HashMap<Integer, HashSet<HasSourcePosition>>();
-
-    ASTWalker
+    var pos2Item = ASTWalker
       .Traverse(LSP4jUtils.getUri(params.getTextDocument()))
       .map(e -> e.getKey())
       .filter(x -> x instanceof AbstractFeature || x instanceof AbstractCall)
-      .forEach(x -> {
-        var key = TokenInfo.KeyOf(x.pos());
-        pos2Item.putIfAbsent(key, new HashSet<HasSourcePosition>());
-        pos2Item.get(key).add(x);
-      });
+      // NYI what to do if there is multiple things at same pos?
+      .filter(distinctByKey(x -> {
+        var pos = x instanceof AbstractFeature af ? FeatureTool.BaseNamePosition(af): x.pos();
+        return TokenInfo.KeyOf(pos);
+      }))
+      .collect(Collectors.toUnmodifiableMap(x -> {
+        var pos = x instanceof AbstractFeature af ? FeatureTool.BaseNamePosition(af): x.pos();
+        return TokenInfo.KeyOf(pos);
+      }, x -> x));
 
     var lexerTokens =
       LexerTool
@@ -91,7 +100,7 @@ public class SemanticToken extends ANY
   }
 
   private static List<Integer> SemanticTokenData(List<TokenInfo> lexerTokens,
-    Map<Integer, HashSet<HasSourcePosition>> pos2Item)
+    Map<Integer, HasSourcePosition> pos2Item)
   {
     return IntStream
       .range(0, lexerTokens.size())

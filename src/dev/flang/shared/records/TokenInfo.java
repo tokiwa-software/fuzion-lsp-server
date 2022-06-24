@@ -94,7 +94,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   }
 
   public Stream<Integer> SemanticTokenData(TokenInfo previousToken,
-    Map<Integer, HashSet<HasSourcePosition>> pos2Item)
+    Map<Integer, HasSourcePosition> pos2Item)
   {
     var tokenType = TokenType(pos2Item);
     if (length() < 1)
@@ -103,17 +103,18 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       }
 
     var IsSameLine = line() == previousToken.line();
-    if (line() - previousToken.line() < 0)
-      {
-        return Stream.<Integer>empty();
-      }
-    return Stream.of(line() - previousToken.line(), startChar() - (IsSameLine ? previousToken.startChar(): 0),
-      length(), tokenType.get().num, Modifiers(pos2Item));
+
+    int realitiveLine = line() - previousToken.line();
+    int relativeChar = startChar() - (IsSameLine ? previousToken.startChar(): 0);
+    Integer tokenTypeNum = tokenType.get().num;
+
+    return Stream.of(realitiveLine, relativeChar,
+      length(), tokenTypeNum, Modifiers(pos2Item));
 
   }
 
   // NYI
-  private Integer Modifiers(Map<Integer, HashSet<HasSourcePosition>> pos2Item)
+  private Integer Modifiers(Map<Integer, HasSourcePosition> pos2Item)
   {
     switch (token)
       {
@@ -139,12 +140,12 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       }
   }
 
-  public boolean IsSemanticToken(Map<Integer, HashSet<HasSourcePosition>> pos2Item)
+  public boolean IsSemanticToken(Map<Integer, HasSourcePosition> pos2Item)
   {
     return TokenType(pos2Item).isPresent();
   }
 
-  private Optional<TokenType> TokenType(Map<Integer, HashSet<HasSourcePosition>> pos2Item)
+  private Optional<TokenType> TokenType(Map<Integer, HasSourcePosition> pos2Item)
   {
     if (token.isKeyword())
       {
@@ -193,8 +194,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       case t_ident :
         return GetItem(pos2Item)
           .map(TokenInfo::ItemToToken)
-          // NYI
-          .orElse(Optional.empty());
+          .orElse(Optional.of(TokenType.Type));
       case t_error :
       case t_ws :
       case t_comma :
@@ -236,10 +236,6 @@ public record TokenInfo(SourcePosition start, String text, Token token)
           case Intrinsic :
           case Abstract :
           case Routine :
-            if (af.outer().isChoice())
-              {
-                return Optional.of(TokenType.EnumMember);
-              }
             if (FeatureTool.IsNamespaceLike(af))
               {
                 return Optional.of(TokenType.Namespace);
@@ -248,7 +244,11 @@ public record TokenInfo(SourcePosition start, String text, Token token)
               {
                 return Optional.of(TokenType.Class);
               }
-            return Optional.of(TokenType.Function);
+            if (FeatureTool.outerFeatures(af).allMatch(x -> FeatureTool.IsNamespaceLike(x)))
+              {
+                return Optional.of(TokenType.Function);
+              }
+            return Optional.of(TokenType.Method);
           }
       }
     var ac = (AbstractCall) item;
@@ -261,27 +261,18 @@ public record TokenInfo(SourcePosition start, String text, Token token)
         return Optional.of(TokenType.Operator);
       }
     // "normal" call
-    return Optional.<TokenType>empty();
+    return ItemToToken(ac.calledFeature());
   }
 
-  private Optional<HasSourcePosition> GetItem(Map<Integer, HashSet<HasSourcePosition>> pos2Item)
+  private Optional<HasSourcePosition> GetItem(Map<Integer, HasSourcePosition> pos2Item)
   {
     var key = KeyOf(start);
     if (!pos2Item.containsKey(key))
       {
         return Optional.empty();
       }
-    return pos2Item
-      .get(key)
-      .stream()
-      .filter(x -> {
-        if (x instanceof AbstractFeature af)
-          {
-            return af.featureName().baseName().equals(text);
-          }
-        return ((AbstractCall) x).calledFeature().featureName().baseName().equals(text);
-      })
-      .findFirst();
+    return Optional.of(pos2Item
+      .get(key));
   }
 
   // NYI move this somewhere better
