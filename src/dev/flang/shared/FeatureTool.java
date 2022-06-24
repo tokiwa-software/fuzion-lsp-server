@@ -135,7 +135,10 @@ public class FeatureTool extends ANY
   // parsing
   public static SourcePosition BaseNamePosition(AbstractFeature feature)
   {
-    IO.SYS_ERR.println(feature.toString() + feature.pos());
+    if (feature.featureName().baseName().startsWith("index ["))
+      {
+        return feature.pos();
+      }
     var start = LexerTool
       .TokensFrom(feature.pos(), false)
       .map(x -> x.text().equals("->") || x.text().equals(":="))
