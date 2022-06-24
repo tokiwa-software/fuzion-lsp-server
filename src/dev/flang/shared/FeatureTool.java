@@ -367,7 +367,10 @@ public class FeatureTool extends ANY
 
   public static boolean IsNamespaceLike(AbstractFeature af)
   {
-    return af.isConstructor() && af.arguments().size() == 0 && !IsArgument(af);
+    return af.isConstructor()
+      && af.arguments().size() == 0
+      && !IsArgument(af)
+      && af.code().containsOnlyDeclarations();
   }
 
 }
