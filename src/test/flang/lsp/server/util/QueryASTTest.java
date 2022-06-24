@@ -47,7 +47,7 @@ public class QueryASTTest extends ExtendedBaseTest
     SourceText.setText(uri4, PythagoreanTriple);
     assertEquals(1, QueryAST.SelfAndDescendants(uri1).count());
     assertEquals(1, QueryAST.SelfAndDescendants(uri2).count());
-    assertEquals(13, QueryAST.SelfAndDescendants(uri3).count());
+    assertEquals(11, QueryAST.SelfAndDescendants(uri3).count());
     assertEquals(3, QueryAST.SelfAndDescendants(uri4).count());
   }
 

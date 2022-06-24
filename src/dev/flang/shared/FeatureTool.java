@@ -153,7 +153,10 @@ public class FeatureTool extends ANY
     // NYI use f.visibility()
     return f.resultType().equals(Types.t_ADDRESS)
       || f.featureName().baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX)
-      || f.featureName().baseName().startsWith("@");
+      || f.featureName().baseName().startsWith("@")
+      || f.featureName().baseName().endsWith("#type")
+      || f.featureName().baseName().equals("result")
+      || f.featureName().baseName().equals("call");
   }
 
   static Optional<AbstractFeature> TopLevelFeature(AbstractFeature f)
