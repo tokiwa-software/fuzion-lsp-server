@@ -179,10 +179,12 @@ public class FeatureTool extends ANY
   {
     // NYI this is a hack!
     return f.resultType().equals(Types.t_ADDRESS)
-      || f.featureName().baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX)
       || f.featureName().baseName().startsWith("@")
-      || f.featureName().baseName().endsWith("#type")
       || f.featureName().baseName().equals("result")
+      || f.featureName()
+        .baseName()
+        .contains(FuzionConstants.INTERNAL_NAME_PREFIX) // Confusingly # is not
+                                                        // just used as prefix
       || f.visibility().toString().contains(Consts.VISIBILITY_INVISIBLE.toString())
       || (f.featureName().baseName().equals("call") && IsInternal(f.outer())) // lambda
       // NYI hack
