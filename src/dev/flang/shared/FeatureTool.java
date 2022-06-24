@@ -46,8 +46,6 @@ import dev.flang.util.SourcePosition;
 
 public class FeatureTool extends ANY
 {
-  private static final long MAX_TOKENS_TO_INSPECT = 20;
-
   public static Stream<AbstractFeature> outerFeatures(AbstractFeature feature)
   {
     if (feature.outer() == null)
@@ -154,25 +152,10 @@ public class FeatureTool extends ANY
                      : feature.pos();
     return LexerTool
       .TokensFrom(start, false)
-      .limit(MAX_TOKENS_TO_INSPECT)
       .dropWhile(tokenInfo -> !tokenInfo.text().equals(feature.featureName().baseName()))
       .map(tokenInfo -> tokenInfo.start())
       .findFirst()
       .get();
-  }
-
-  private static boolean IsLambdaArg(AbstractFeature feature)
-  {
-    if (feature.outer() == null || feature.outer().outer() == null)
-      {
-        return false;
-      }
-    return feature
-      .outer()
-      .outer()
-      .featureName()
-      .baseName()
-      .startsWith(FuzionConstants.LAMBDA_PREFIX);
   }
 
   public static boolean IsArgument(AbstractFeature feature)
