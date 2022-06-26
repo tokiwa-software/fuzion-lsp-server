@@ -48,7 +48,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, Mandelbrot);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(Params());
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -57,7 +57,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, Faulhaber);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(Params());
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -73,7 +73,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
             .forAll (fun print)
       """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(Params());
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -87,7 +87,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
         (a,a)
             """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(Params());
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -101,7 +101,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
         (b, c) := a
             """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(Params());
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -245,7 +245,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
           redef e bitset is empty
           """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(Params());
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -282,7 +282,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
       feature is
             """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(Params());
 
     AssertBasicDataSanity(semanticTokens);
 
@@ -319,7 +319,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
                   """);
 
     var semanticTokens =
-      SemanticToken.getSemanticTokens(new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument()));
+      SemanticToken.getSemanticTokens(Params());
 
     AssertBasicDataSanity(semanticTokens);
 
@@ -346,6 +346,11 @@ public class SemanticTokenTest extends ExtendedBaseTest
     // --^
     assertEquals(semanticTokens, 12, 0, 2, 3, TokenType.Type, 0);
 
+  }
+
+  private SemanticTokensParams Params()
+  {
+    return new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument());
   }
 
   @SuppressWarnings("unused")
