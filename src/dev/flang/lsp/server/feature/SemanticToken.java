@@ -72,6 +72,26 @@ public class SemanticToken extends ANY
 
   public static SemanticTokens getSemanticTokens(SemanticTokensParams params)
   {
+    var pos2Item = Pos2Item(params);
+    return new SemanticTokens(SemanticTokenData(LexerTokens(params, pos2Item), pos2Item));
+  }
+
+  private static List<TokenInfo> LexerTokens(SemanticTokensParams params, Map<Integer, HasSourcePosition> pos2Item)
+  {
+    var lexerTokens =
+      LexerTool
+        .TokensFrom(
+          Bridge.ToSourcePosition(
+            new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))),
+          // raw because we need comments
+          true)
+        .filter(x -> x.IsSemanticToken(pos2Item))
+        .collect(Collectors.toList());
+    return lexerTokens;
+  }
+
+  private static Map<Integer, HasSourcePosition> Pos2Item(SemanticTokensParams params)
+  {
     var pos2Item = ASTWalker
       .Traverse(LSP4jUtils.getUri(params.getTextDocument()))
       .map(e -> e.getKey())
@@ -85,18 +105,7 @@ public class SemanticToken extends ANY
         var pos = x instanceof AbstractFeature af ? FeatureTool.BaseNamePosition(af): x.pos();
         return TokenInfo.KeyOf(pos);
       }, x -> x));
-
-    var lexerTokens =
-      LexerTool
-        .TokensFrom(
-          Bridge.ToSourcePosition(
-            new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))),
-          // raw because we need comments
-          true)
-        .filter(x -> x.IsSemanticToken(pos2Item))
-        .collect(Collectors.toList());
-
-    return new SemanticTokens(SemanticTokenData(lexerTokens, pos2Item));
+    return pos2Item;
   }
 
   private static List<Integer> SemanticTokenData(List<TokenInfo> lexerTokens,
