@@ -102,15 +102,18 @@ public record TokenInfo(SourcePosition start, String text, Token token)
         return Stream.empty();
       }
 
-    var IsSameLine = line() == previousToken.line();
-
-    int realitiveLine = line() - previousToken.line();
-    int relativeChar = startChar() - (IsSameLine ? previousToken.startChar(): 0);
+    int relativeLine = line() - previousToken.line();
+    int relativeChar = startChar() - (IsSameLine(previousToken) ? previousToken.startChar(): 0);
     Integer tokenTypeNum = tokenType.get().num;
 
-    return Stream.of(realitiveLine, relativeChar,
+    return Stream.of(relativeLine, relativeChar,
       length(), tokenTypeNum, Modifiers(pos2Item));
 
+  }
+
+  private boolean IsSameLine(TokenInfo previousToken)
+  {
+    return line().equals(previousToken.line());
   }
 
   // NYI
