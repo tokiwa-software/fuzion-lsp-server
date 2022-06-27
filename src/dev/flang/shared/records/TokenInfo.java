@@ -197,6 +197,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       case t_ident :
         return GetItem(pos2Item)
           .map(TokenInfo::ItemToToken)
+          // NYI check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
       case t_error :
       case t_ws :
@@ -241,6 +242,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
           case Routine :
             if (FeatureTool.IsNamespaceLike(af))
               {
+                // NYI check if used in choice => EnumMember
                 return Optional.of(TokenType.Namespace);
               }
             if (af.isConstructor())
