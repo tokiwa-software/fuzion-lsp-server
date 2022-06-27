@@ -28,9 +28,12 @@ package test.flang.shared;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Timeout;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.shared.ParserTool;
@@ -38,6 +41,8 @@ import dev.flang.shared.IO;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
+// NYI all tests should not need more than 100ms, currently 500
+@Nested @Timeout(value = 500, unit = TimeUnit.MILLISECONDS)
 public abstract class BaseTest extends Assert
 {
   protected static final URI uri1 = IO.writeToTempFile("").toURI();
