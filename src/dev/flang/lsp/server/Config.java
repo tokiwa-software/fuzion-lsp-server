@@ -84,7 +84,7 @@ public class Config
     ParserTool.SetJavaModules(Config.JavaModules());
   }
 
-  private static dev.flang.util.List<String> JavaModules()
+  private static List<String> JavaModules()
   {
     try
       {
@@ -92,7 +92,7 @@ public class Config
           .getAsJsonObject()
           .getAsJsonObject("java")
           .getAsJsonArray("modules");
-        var result = new dev.flang.util.List<String>();
+        var result = List.<String>of();
         modules.forEach(jsonElement -> {
           result.add(jsonElement.getAsString());
         });
@@ -100,7 +100,7 @@ public class Config
       }
     catch (Exception e)
       {
-        return new dev.flang.util.List();
+        return List.of();
       }
   }
 

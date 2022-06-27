@@ -31,9 +31,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
+import dev.flang.util.SourcePosition;
 
 public class FeatureToolTest extends BaseTest
 {
@@ -109,7 +112,8 @@ public class FeatureToolTest extends BaseTest
   public void ToLabel()
   {
     var array = DeclaredInUniverse("array", 5);
-    assertEquals("array<T>(T Object, internalArray fuzion.sys.array<array.T>, _ unit, _ unit, _ unit) => array<array.T> : Sequence<T>",
+    assertEquals(
+      "array<T>(T Object, internalArray fuzion.sys.array<array.T>, _ unit, _ unit, _ unit) => array<array.T> : Sequence<T>",
       FeatureTool.ToLabel(array));
   }
 
@@ -126,6 +130,44 @@ public class FeatureToolTest extends BaseTest
       """);
 
     assertTrue(expected.stream().allMatch(e -> graph.contains(e)));
+  }
+
+  @Test
+  public void BaseNamePositionTest()
+  {
+    var ex = """
+      i33(val i33) : wrappingInteger<i33>, hasInterval<i33>, i33s is
+        redef  prefix  -° i33 is intrinsic
+        infix  ⋃ (other i33) is abstract
+        private  div (other i33) i33 is intrinsic
+        lamda_fun (i33,i33) -> i32 := (first_lamdba_arg, second_lambda_arg) -> 3
+        feat (arg_one, arg_two i33) is
+        redef max i33 is
+
+      i33s is
+        """;
+    ;
+    SourceText.setText(uri1, ex);
+
+    assertEquals(18, GetFeature("-°")._column);
+    assertEquals(10, GetFeature("⋃")._column);
+    assertEquals(12, GetFeature("div")._column);
+    assertEquals(34, GetFeature("first_lamdba_arg")._column);
+    assertEquals(52, GetFeature("second_lambda_arg")._column);
+    assertEquals(9, GetFeature("arg_one")._column);
+    assertEquals(18, GetFeature("arg_two")._column);
+    assertEquals(9, GetFeature("max")._column);
+  }
+
+  private SourcePosition GetFeature(String name)
+  {
+    var first_lambda_arg = FeatureTool.BaseNamePosition(ASTWalker
+      .Traverse(uri1)
+      .filter(x -> x.getKey() instanceof AbstractFeature af && af.featureName().baseName().contains(name))
+      .map(x -> (AbstractFeature) x.getKey())
+      .findFirst()
+      .get());
+    return first_lambda_arg;
   }
 
 }

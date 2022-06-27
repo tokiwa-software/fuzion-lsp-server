@@ -60,6 +60,8 @@ import org.eclipse.lsp4j.PrepareRenameResult;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SemanticTokens;
+import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -78,6 +80,7 @@ import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.InlayHints;
 import dev.flang.lsp.server.feature.References;
 import dev.flang.lsp.server.feature.Rename;
+import dev.flang.lsp.server.feature.SemanticToken;
 import dev.flang.lsp.server.feature.SignatureHelper;
 import dev.flang.lsp.server.util.Computation;
 import dev.flang.lsp.server.util.LSP4jUtils;
@@ -223,6 +226,12 @@ public class FuzionTextDocumentService implements TextDocumentService
   public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
   {
     return AbortAfterOneSecond(() -> SignatureHelper.getSignatureHelp(params));
+  }
+
+  @Override
+  public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params)
+  {
+    return AbortAfterOneSecond(() -> SemanticToken.getSemanticTokens(params));
   }
 
 }

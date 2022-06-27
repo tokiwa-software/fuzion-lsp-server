@@ -26,7 +26,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared.records;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractFeature;
+import dev.flang.lsp.server.enums.TokenModifier;
+import dev.flang.lsp.server.enums.TokenType;
+import dev.flang.lsp.server.util.CallTool;
 import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.FeatureTool;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -38,4 +50,241 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   {
     return new SourcePosition(start._sourceFile, start._line, start._column + text.length());
   }
+
+  /*
+   * starting line of token, zero based
+   */
+  private Integer line()
+  {
+    return start._line - 1;
+  }
+
+  /*
+  * starting column of token, zero based
+  */
+  private Integer startChar()
+  {
+    switch (token)
+      {
+      case t_StringDD :
+      case t_StringDB :
+      case t_stringBD :
+      case t_stringBB :
+        return start._column - 1 + 1;
+      default:
+        return start._column - 1;
+      }
+  }
+
+  private Integer length()
+  {
+    switch (token)
+      {
+      case t_stringQD :
+      case t_stringQB :
+        return text.length() - 1;
+      case t_StringDD :
+      case t_StringDB :
+      case t_stringBD :
+      case t_stringBB :
+        return text.length() - 2;
+      default:
+        return text.length();
+      }
+  }
+
+  public Stream<Integer> SemanticTokenData(TokenInfo previousToken,
+    Map<Integer, HasSourcePosition> pos2Item)
+  {
+    var tokenType = TokenType(pos2Item);
+    if (length() < 1)
+      {
+        return Stream.empty();
+      }
+
+    int relativeLine = line() - previousToken.line();
+    int relativeChar = startChar() - (IsSameLine(previousToken) ? previousToken.startChar(): 0);
+    Integer tokenTypeNum = tokenType.get().num;
+
+    return Stream.of(relativeLine, relativeChar,
+      length(), tokenTypeNum, Modifiers(pos2Item));
+
+  }
+
+  private boolean IsSameLine(TokenInfo previousToken)
+  {
+    return line().equals(previousToken.line());
+  }
+
+  // NYI
+  private Integer Modifiers(Map<Integer, HasSourcePosition> pos2Item)
+  {
+    switch (token)
+      {
+      case t_ident :
+        var modifiers = new HashSet<TokenModifier>();
+        GetItem(pos2Item)
+          .ifPresent(item -> {
+            if (item instanceof AbstractFeature af)
+              {
+                if (af.isAbstract())
+                  {
+                    modifiers.add(TokenModifier.Abstract);
+                  }
+                if (af.isField())
+                  {
+                    modifiers.add(TokenModifier.Readonly);
+                  }
+              }
+          });
+        return TokenModifier.DataOf(modifiers);
+      default:
+        return 0;
+      }
+  }
+
+  public boolean IsSemanticToken(Map<Integer, HasSourcePosition> pos2Item)
+  {
+    return TokenType(pos2Item).isPresent();
+  }
+
+  private Optional<TokenType> TokenType(Map<Integer, HasSourcePosition> pos2Item)
+  {
+    if (token.isKeyword())
+      {
+        switch (token)
+          {
+          case t_lazy :
+          case t_synchronized :
+          case t_const :
+          case t_leaf :
+          case t_infix :
+          case t_prefix :
+          case t_postfix :
+          case t_export :
+          case t_private :
+          case t_protected :
+          case t_public :
+            return Optional.of(TokenType.Modifier);
+          default:
+            return Optional.of(TokenType.Keyword);
+          }
+      }
+    switch (token)
+      {
+      case t_comment :
+        return Optional.of(TokenType.Comment);
+      case t_numliteral :
+        return Optional.of(TokenType.Number);
+      case t_stringQQ :
+      case t_stringQD :
+      case t_stringQB :
+      case t_StringDQ :
+      case t_StringDD :
+      case t_StringDB :
+      case t_stringBQ :
+      case t_stringBD :
+      case t_stringBB :
+        return Optional.of(TokenType.String);
+      case t_op :
+        if (text.equals("=>")
+          || text.equals("->")
+          || text.equals(":="))
+          {
+            return Optional.of(TokenType.Keyword);
+          }
+        return Optional.of(TokenType.Operator);
+      case t_ident :
+        return GetItem(pos2Item)
+          .map(TokenInfo::ItemToToken)
+          // NYI check if all cases are considered
+          .orElse(Optional.of(TokenType.Type));
+      case t_error :
+      case t_ws :
+      case t_comma :
+      case t_lparen :
+      case t_rparen :
+      case t_lbrace :
+      case t_rbrace :
+      case t_lcrochet :
+      case t_rcrochet :
+      case t_semicolon :
+      case t_eof :
+      case t_indentationLimit :
+      case t_lineLimit :
+      case t_spaceLimit :
+      case t_undefined :
+        return Optional.empty();
+      default:
+        throw new RuntimeException("not implemented.");
+      }
+  }
+
+  private static Optional<TokenType> ItemToToken(HasSourcePosition item)
+  {
+    if (item instanceof AbstractFeature af)
+      {
+        switch (af.kind())
+          {
+          case OpenTypeParameter :
+          case TypeParameter :
+            return Optional.of(TokenType.TypeParameter);
+          case Field :
+            if (FeatureTool.IsArgument(af))
+              {
+                return Optional.of(TokenType.Parameter);
+              }
+            return Optional.of(TokenType.Property);
+          case Choice :
+            return Optional.of(TokenType.Enum);
+          case Intrinsic :
+          case Abstract :
+          case Routine :
+            if (FeatureTool.IsNamespaceLike(af))
+              {
+                // NYI check if used in choice => EnumMember
+                return Optional.of(TokenType.Namespace);
+              }
+            if (af.isConstructor())
+              {
+                return Optional.of(TokenType.Class);
+              }
+            if (FeatureTool.outerFeatures(af).allMatch(x -> FeatureTool.IsNamespaceLike(x)))
+              {
+                return Optional.of(TokenType.Function);
+              }
+            return Optional.of(TokenType.Method);
+          }
+      }
+    var ac = (AbstractCall) item;
+    if (ac.isInheritanceCall())
+      {
+        return Optional.of(TokenType.Interface);
+      }
+    if (CallTool.IsFixLikeCall(ac))
+      {
+        return Optional.of(TokenType.Operator);
+      }
+    // "normal" call
+    return ItemToToken(ac.calledFeature());
+  }
+
+  private Optional<HasSourcePosition> GetItem(Map<Integer, HasSourcePosition> pos2Item)
+  {
+    var key = KeyOf(start);
+    if (!pos2Item.containsKey(key))
+      {
+        return Optional.empty();
+      }
+    return Optional.of(pos2Item
+      .get(key));
+  }
+
+  // NYI move this somewhere better
+  public static Integer KeyOf(SourcePosition pos)
+  {
+    // NYI better key
+    return pos._line * 1000 + pos._column;
+  }
+
 }

@@ -43,6 +43,8 @@ public class Computation
 {
   private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
 
+
+  // NYI should return result/error
   public static <T> CompletableFuture<T> Compute(Callable<T> callable, int maxTimeInMs)
   {
     if (Config.ComputeAsync)
@@ -79,6 +81,7 @@ public class Computation
 
           return result.result();
         }
+      // NYI should not be handled here
       catch (ExecutionException e)
         {
           if (Config.DEBUG())

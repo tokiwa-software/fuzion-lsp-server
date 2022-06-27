@@ -38,17 +38,19 @@ import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.RenameOptions;
+import org.eclipse.lsp4j.SemanticTokensServerFull;
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SetTraceParams;
 import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.eclipse.lsp4j.TraceValue;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 import dev.flang.lsp.server.enums.TriggerCharacters;
 import dev.flang.lsp.server.feature.Commands;
+import dev.flang.lsp.server.feature.SemanticToken;
 
 /**
  * does the initialization of language server features
@@ -74,9 +76,17 @@ public class FuzionLanguageServer implements LanguageServer
     initializeDocumentSymbol(capabilities);
     initializeCodeLens(capabilities);
     initializeSignatureHelp(capabilities);
+    initializeSemanticTokens(capabilities);
 
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private void initializeSemanticTokens(ServerCapabilities capabilities)
+  {
+    // NYI support delta
+    // NYI support range
+    capabilities.setSemanticTokensProvider(new SemanticTokensWithRegistrationOptions(SemanticToken.Legend, new SemanticTokensServerFull(false), false));
   }
 
   private void initializeCommandExecutions(ServerCapabilities capabilities)
@@ -144,7 +154,8 @@ public class FuzionLanguageServer implements LanguageServer
   {
     CompletionOptions completionOptions = new CompletionOptions();
     completionOptions.setResolveProvider(Boolean.FALSE);
-    completionOptions.setTriggerCharacters(Arrays.asList(TriggerCharacters.values()).stream().map(x -> x.toString()).collect(Collectors.toList()));
+    completionOptions.setTriggerCharacters(
+      Arrays.asList(TriggerCharacters.values()).stream().map(x -> x.toString()).collect(Collectors.toList()));
     serverCapabilities.setCompletionProvider(completionOptions);
   }
 

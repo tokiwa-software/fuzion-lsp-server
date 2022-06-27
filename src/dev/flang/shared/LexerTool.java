@@ -144,7 +144,12 @@ public class LexerTool extends ANY
 
   private static Lexer NewLexerStdIn()
   {
-    return new Lexer(SourceFile.STDIN);
+    var lexer = new Lexer(SourceFile.STDIN);
+    // HACK the following is necessary because currently on instantiation
+    // lexer calls next(), skipping any raw tokens at start
+    lexer.setPos(0);
+    lexer.nextRaw();
+    return lexer;
   }
 
   private static TokenInfo tokenInfo(Lexer lexer, URI uri)
