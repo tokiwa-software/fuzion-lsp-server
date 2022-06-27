@@ -133,14 +133,9 @@ public class FeatureTool extends ANY
   // parsing
   public static SourcePosition BaseNamePosition(AbstractFeature feature)
   {
-    if (feature.featureName().baseName().startsWith("index [")
-      || feature.featureName().baseName().startsWith("infix ")
-      || feature.featureName().baseName().startsWith("prefix ")
-      || feature.featureName().baseName().startsWith("postfix ")
-      || feature.featureName().baseName().startsWith("ternary ")
-      )
+    if (feature.featureName().baseName().contains(" "))
       {
-        return feature.pos();
+        return BaseNameWithSpacePosition(feature);
       }
     var start = LexerTool
       .TokensFrom(feature.pos(), false)
@@ -152,9 +147,21 @@ public class FeatureTool extends ANY
     // and destructed pos is pos of caching operator :=
                      new SourcePosition(feature.pos()._sourceFile, feature.pos()._line, 1)
                      : feature.pos();
+
     return LexerTool
       .TokensFrom(start, false)
       .dropWhile(tokenInfo -> !tokenInfo.text().equals(feature.featureName().baseName()))
+      .map(tokenInfo -> tokenInfo.start())
+      .findFirst()
+      .get();
+  }
+
+  private static SourcePosition BaseNameWithSpacePosition(AbstractFeature feature)
+  {
+    var baseNameParts = feature.featureName().baseName().split(" ", 2);
+    return LexerTool
+      .TokensFrom(feature.pos(), false)
+      .dropWhile(tokenInfo -> !(baseNameParts[1].startsWith(tokenInfo.text())))
       .map(tokenInfo -> tokenInfo.start())
       .findFirst()
       .get();
