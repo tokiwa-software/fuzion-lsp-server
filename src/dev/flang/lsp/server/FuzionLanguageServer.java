@@ -76,13 +76,13 @@ public class FuzionLanguageServer implements LanguageServer
     initializeDocumentSymbol(capabilities);
     initializeCodeLens(capabilities);
     initializeSignatureHelp(capabilities);
-    initializeSemantikTokens(capabilities);
+    initializeSemanticTokens(capabilities);
 
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
     return CompletableFuture.supplyAsync(() -> res);
   }
 
-  private void initializeSemantikTokens(ServerCapabilities capabilities)
+  private void initializeSemanticTokens(ServerCapabilities capabilities)
   {
     // NYI support delta
     // NYI support range
