@@ -38,6 +38,7 @@ import dev.flang.lsp.server.enums.TokenType;
 import dev.flang.lsp.server.util.CallTool;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.ParserTool;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
@@ -240,16 +241,25 @@ public record TokenInfo(SourcePosition start, String text, Token token)
           case Intrinsic :
           case Abstract :
           case Routine :
-            if (FeatureTool.IsNamespaceLike(af))
+            if (af.isConstructor()
+              && af.valueArguments().size() == 0
+              && af.code().containsOnlyDeclarations())
               {
-                // NYI check if used in choice => EnumMember
-                return Optional.of(TokenType.Namespace);
+                if (ParserTool.DeclaredFeatures(af).count() > 0)
+                  {
+                    return Optional.of(TokenType.Namespace);
+                  }
+                if (FeatureTool.IsUsedInChoice(af))
+                  {
+                    return Optional.of(TokenType.EnumMember);
+                  }
+                return Optional.of(TokenType.Type);
               }
             if (af.isConstructor())
               {
                 return Optional.of(TokenType.Class);
               }
-            if (FeatureTool.outerFeatures(af).allMatch(x -> FeatureTool.IsNamespaceLike(x)))
+            if (FeatureTool.outerFeatures(af).allMatch(x -> x.valueArguments().size() == 0))
               {
                 return Optional.of(TokenType.Function);
               }

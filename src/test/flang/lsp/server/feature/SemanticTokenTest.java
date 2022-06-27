@@ -27,9 +27,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package test.flang.lsp.server.feature;
 
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensParams;
@@ -75,6 +77,33 @@ public class SemanticTokenTest extends ExtendedBaseTest
     var semanticTokens =
       SemanticToken.getSemanticTokens(Params());
     AssertBasicDataSanity(semanticTokens);
+  }
+
+  @Test
+  public void GetSemanticTokensChoiceEnum()
+  {
+    SourceText.setText(uri1, """
+      ex is
+        apple is
+        orange is
+        jack_fruit is
+        potato is
+        fruit choice apple orange is
+          apple
+        exotic_fruit : choice orange jack_fruit is
+            """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params());
+    AssertBasicDataSanity(semanticTokens);
+
+    // apple is enum member
+    assertEquals(semanticTokens, 2, 1, 2, 5, TokenType.EnumMember, 0);
+
+    // jack_fruit is enum member
+    assertEquals(semanticTokens, 6, 1, 2, 10, TokenType.EnumMember, 0);
+
+    // potato is type
+    assertEquals(semanticTokens, 8, 1, 2, 6, TokenType.Type, 0);
   }
 
 
@@ -280,6 +309,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
     SourceText.setText(uri1, """
       # comment
       feature is
+        child_feat is
             """);
     var semanticTokens =
       SemanticToken.getSemanticTokens(Params());
@@ -294,6 +324,9 @@ public class SemanticTokenTest extends ExtendedBaseTest
 
     // Keyword
     assertEquals(semanticTokens, 2, 0, 8, 2, TokenType.Keyword, 0);
+
+    // child_feat
+    assertEquals(semanticTokens, 3, 1, 2, "child_feat".length(), TokenType.Type, 0);
   }
 
   private void assertEquals(SemanticTokens st, int tokenIndex, Integer relativeLine, Integer relativeStartChar,
@@ -356,14 +389,20 @@ public class SemanticTokenTest extends ExtendedBaseTest
   @SuppressWarnings("unused")
   private void PrintDebug(SemanticTokens semanticTokens)
   {
-    AtomicInteger counter = new AtomicInteger();
-    semanticTokens.getData()
-      .stream()
-      .collect(Collectors.groupingBy(x -> counter.getAndIncrement() / 5))
-      .values()
+    GroupData(semanticTokens)
       .forEach(c -> {
         IO.SYS_ERR.println(c.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
       });
+  }
+
+  private Stream<List<Integer>> GroupData(SemanticTokens semanticTokens)
+  {
+    AtomicInteger counter = new AtomicInteger();
+    return semanticTokens.getData()
+      .stream()
+      .collect(Collectors.groupingBy(x -> counter.getAndIncrement() / 5))
+      .values()
+      .stream();
   }
 
 }

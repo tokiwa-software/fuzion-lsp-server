@@ -360,12 +360,23 @@ public class FeatureTool extends ANY
         && entry.getKey().calledFeature().equals(feature));
   }
 
-  public static boolean IsNamespaceLike(AbstractFeature af)
+  public static boolean IsUsedInChoice(AbstractFeature af)
   {
-    return af.isConstructor()
-      && af.arguments().size() == 0
-      && !IsArgument(af)
-      && af.code().containsOnlyDeclarations();
+    var uri = ParserTool.getUri(af.pos());
+    var result = ASTWalker.Traverse(uri)
+      .anyMatch(x -> x.getKey() instanceof AbstractFeature f &&
+        (FeatureIsChoiceMember(f.thisType(), af)
+          ||
+          f.hasResultField() && FeatureIsChoiceMember(f.resultType(), af)));
+    return result;
+  }
+
+  private static boolean FeatureIsChoiceMember(AbstractType at, AbstractFeature af)
+  {
+    return at.isChoice()
+      && at.choiceGenerics()
+        .stream()
+        .anyMatch(t -> t.equals(af.thisType()));
   }
 
 }
