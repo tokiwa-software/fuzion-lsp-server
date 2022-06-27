@@ -120,6 +120,26 @@ public class SemanticTokenTest extends ExtendedBaseTest
     AssertBasicDataSanity(semanticTokens);
   }
 
+
+  @Test
+  public void GetSemanticTokensArray()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        a => 1
+        b := [a,2]
+            """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params());
+    AssertBasicDataSanity(semanticTokens);
+
+    // total token amount is 9
+    assertEquals(9 * 5, semanticTokens.getData().size());
+
+    //a in array is function
+    assertEquals(semanticTokens, 7, 0, 4, 1, TokenType.Function, 0);
+  }
+
   @Test
   public void GetSemanticTokensDesctructureTuple()
   {
