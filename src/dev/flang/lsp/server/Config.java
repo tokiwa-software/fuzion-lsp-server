@@ -29,8 +29,6 @@ package dev.flang.lsp.server;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import org.eclipse.lsp4j.MessageParams;
-import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import com.google.gson.JsonObject;
