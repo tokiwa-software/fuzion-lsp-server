@@ -279,10 +279,10 @@ public class FeatureTool extends ANY
    */
   public static Stream<AbstractFeature> FeaturesInScope(AbstractFeature feature)
   {
-    return Stream
-      .of(Stream.of(feature), outerFeatures(feature), feature.inherits().stream().map(c -> c.calledFeature()))
-      .reduce(Stream::concat)
-      .orElseGet(Stream::empty)
+    return Util.ConcatStreams(
+      Stream.of(feature),
+      outerFeatures(feature),
+      feature.inherits().stream().map(c -> c.calledFeature()))
       .flatMap(f -> {
         return ParserTool.DeclaredFeatures(f);
       });

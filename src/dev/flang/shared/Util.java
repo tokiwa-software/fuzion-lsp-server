@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * utils which are independent of fuzion
@@ -103,6 +104,13 @@ public class Util
           return removeEldestEntry;
         }
       });
+  }
+
+  public static <T> Stream<T> ConcatStreams(Stream<T>... streams)
+  {
+    return Stream.of(streams)
+      .reduce(Stream::concat)
+      .orElseGet(Stream::empty);
   }
 
 }

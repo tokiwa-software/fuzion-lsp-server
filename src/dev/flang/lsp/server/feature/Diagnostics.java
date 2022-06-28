@@ -69,11 +69,14 @@ public enum Diagnostics
   public static Stream<Diagnostic> getDiagnostics(URI uri)
   {
     // NYI check names of type arguments
-    return Stream
-      .of(Errors(uri), Warnings(uri), Unused(uri), NamingFeatures(uri), NamingRefs(uri), NamingTypeParams(uri),
-        DuplicateName(uri))
-      .reduce(Stream::concat)
-      .orElseGet(Stream::empty);
+    return Util.ConcatStreams(
+      Errors(uri),
+      Warnings(uri),
+      Unused(uri),
+      NamingFeatures(uri),
+      NamingRefs(uri),
+      NamingTypeParams(uri),
+      DuplicateName(uri));
   }
 
   private static Stream<Diagnostic> DuplicateName(URI uri)

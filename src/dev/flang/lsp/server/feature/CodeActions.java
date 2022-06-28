@@ -43,18 +43,17 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.Converter;
+import dev.flang.shared.Util;
 
 public class CodeActions
 {
 
   public static List<Either<Command, CodeAction>> getCodeActions(CodeActionParams params)
   {
-    return Stream.of(
+    return Util.ConcatStreams(
       NameingFixes(params, Diagnostics.nameingFeatures, oldName -> Converter.ToSnakeCase(oldName)),
       NameingFixes(params, Diagnostics.nameingRefs, oldName -> Converter.ToSnakePascalCase(oldName)),
       NameingFixes(params, Diagnostics.nameingTypeParams, oldName -> oldName.toUpperCase()))
-      .reduce(Stream::concat)
-      .orElseGet(Stream::empty)
       .collect(Collectors.toList());
   }
 

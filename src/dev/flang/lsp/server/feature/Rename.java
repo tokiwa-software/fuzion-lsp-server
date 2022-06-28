@@ -74,7 +74,8 @@ public class Rename extends ANY
 
 
   // NYI check for name collisions?
-  public static Either<WorkspaceEdit, ResponseErrorException> getWorkspaceEditsOrError(TextDocumentPositionParams params, String newName)
+  public static Either<WorkspaceEdit, ResponseErrorException> getWorkspaceEditsOrError(
+    TextDocumentPositionParams params, String newName)
   {
     if (!LexerTool.IsValidIdentifier(newName))
       {
@@ -112,7 +113,8 @@ public class Rename extends ANY
    * @param featureIdentifier
    * @return stream of sourcepositions where renamings must be done
    */
-  private static Stream<SourcePosition> getRenamePositions(TextDocumentPositionParams params, AbstractFeature featureToRename)
+  private static Stream<SourcePosition> getRenamePositions(TextDocumentPositionParams params,
+    AbstractFeature featureToRename)
   {
     var callsSourcePositions = FeatureTool
       .CallsTo(featureToRename)
@@ -198,9 +200,12 @@ public class Rename extends ANY
       })
       .map(f -> PositionOfChoiceGeneric(featureToRename.featureName().baseName(), f));
 
-    return Stream.of(callsSourcePositions, typePositions, Stream.of(pos), assignmentPositions, choiceGenerics)
-      .reduce(Stream::concat)
-      .orElseGet(Stream::empty);
+    return Util.ConcatStreams(
+      callsSourcePositions,
+      typePositions,
+      Stream.of(pos),
+      assignmentPositions,
+      choiceGenerics);
   }
 
   private static SourcePosition PositionOfChoiceGeneric(String name, AbstractFeature f)
