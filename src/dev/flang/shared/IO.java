@@ -160,7 +160,7 @@ public class IO
         var inputStream = new PipedInputStream();
         var reader = new BufferedReader(new InputStreamReader(inputStream));
         var result = new PrintStream(new PipedOutputStream(inputStream));
-        new Thread(
+        Concurrency.RunInBackground(
           () -> {
             try
               {
@@ -173,7 +173,7 @@ public class IO
               {
                 System.exit(1);
               }
-          }).start();
+          });
         return result;
       }
     catch (IOException e)
