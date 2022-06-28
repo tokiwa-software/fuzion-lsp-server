@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package test.flang.lsp.server.feature;
 
 
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -50,7 +51,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, Mandelbrot);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -59,7 +60,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, Faulhaber);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -75,8 +76,55 @@ public class SemanticTokenTest extends ExtendedBaseTest
             .forAll (fun print)
       """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
+  }
+
+  @Test
+  public void GetSemanticTokensString()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        (a,b) := (0,0)
+        say "$a {if a <= b then "ok" else "not ok!"}"
+            """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params(uri1));
+
+    AssertBasicDataSanity(semanticTokens);
+
+    // say
+    assertEquals(semanticTokens, 7, 1, 2, 3, TokenType.Function, 0);
+    // "
+    assertEquals(semanticTokens, 8, 0, 4, 1, TokenType.String, 0);
+    // $
+    assertEquals(semanticTokens, 9, 0, 1, 1, TokenType.Operator, 0);
+    // a
+    assertEquals(semanticTokens, 10, 0, 1, 1, TokenType.Property, 0);
+    // _
+    assertEquals(semanticTokens, 11, 0, 1, 1, TokenType.String, 0);
+    // {
+    assertEquals(semanticTokens, 12, 0, 1, 1, TokenType.Operator, 0);
+    // if
+    assertEquals(semanticTokens, 13, 0, 1, 2, TokenType.Keyword, 0);
+    // a
+    assertEquals(semanticTokens, 14, 0, 3, 1, TokenType.Property, 0);
+    // <=
+    assertEquals(semanticTokens, 15, 0, 2, 2, TokenType.Operator, 0);
+    // b
+    assertEquals(semanticTokens, 16, 0, 3, 1, TokenType.Property, 0);
+    // then
+    assertEquals(semanticTokens, 17, 0, 2, 4, TokenType.Keyword, 0);
+    // "ok"
+    assertEquals(semanticTokens, 18, 0, 5, 4, TokenType.String, 0);
+    // else
+    assertEquals(semanticTokens, 19, 0, 5, 4, TokenType.Keyword, 0);
+    // "not ok!"
+    assertEquals(semanticTokens, 20, 0, 5, 9, TokenType.String, 0);
+    // }
+    assertEquals(semanticTokens, 21, 0, 9, 1, TokenType.Operator, 0);
+    // "
+    assertEquals(semanticTokens, 22, 0, 1, 1, TokenType.String, 0);
   }
 
   @Test
@@ -93,7 +141,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
         exotic_fruit : choice orange jack_fruit is
             """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
 
     // apple is enum member
@@ -116,7 +164,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
         (a,a)
             """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -130,7 +178,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
         b := [a,2]
             """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
 
     // total token amount is 9
@@ -150,7 +198,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
         (b, c) := a
             """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -294,7 +342,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
           redef e bitset is empty
           """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
   }
 
@@ -332,7 +380,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
         child_feat is
             """);
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
 
     AssertBasicDataSanity(semanticTokens);
 
@@ -372,7 +420,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
                   """);
 
     var semanticTokens =
-      SemanticToken.getSemanticTokens(Params());
+      SemanticToken.getSemanticTokens(Params(uri1));
 
     AssertBasicDataSanity(semanticTokens);
 
@@ -401,9 +449,9 @@ public class SemanticTokenTest extends ExtendedBaseTest
 
   }
 
-  private SemanticTokensParams Params()
+  private SemanticTokensParams Params(URI uri)
   {
-    return new SemanticTokensParams(Cursor(uri1, 0, 0).getTextDocument());
+    return new SemanticTokensParams(Cursor(uri, 0, 0).getTextDocument());
   }
 
   @SuppressWarnings("unused")
@@ -413,7 +461,8 @@ public class SemanticTokenTest extends ExtendedBaseTest
       .collect(Collectors.toList());
     IntStream.range(0, data.size())
       .forEach(idx -> {
-        IO.SYS_ERR.println(idx + ": " + data.get(idx).stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
+        IO.SYS_ERR
+          .println(idx + ": " + data.get(idx).stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
       });
   }
 

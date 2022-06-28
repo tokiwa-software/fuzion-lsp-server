@@ -66,33 +66,12 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   */
   private Integer startChar()
   {
-    switch (token)
-      {
-      case t_StringDD :
-      case t_StringDB :
-      case t_stringBD :
-      case t_stringBB :
-        return start._column - 1 + 1;
-      default:
-        return start._column - 1;
-      }
+    return start._column - 1;
   }
 
   private Integer length()
   {
-    switch (token)
-      {
-      case t_stringQD :
-      case t_stringQB :
-        return text.length() - 1;
-      case t_StringDD :
-      case t_StringDB :
-      case t_stringBD :
-      case t_stringBB :
-        return text.length() - 2;
-      default:
-        return text.length();
-      }
+    return text.length();
   }
 
   public Stream<Integer> SemanticTokenData(TokenInfo previousToken,
@@ -111,9 +90,12 @@ public record TokenInfo(SourcePosition start, String text, Token token)
     if (ANY.CHECKS)
       ANY.check(relativeLine != 0 || relativeChar >= previousToken.length());
 
-    return Stream.of(relativeLine, relativeChar,
-      length(), tokenTypeNum, Modifiers(pos2Item));
-
+    return Stream.of(
+      relativeLine,
+      relativeChar,
+      length(),
+      tokenTypeNum,
+      Modifiers(pos2Item));
   }
 
   private boolean IsSameLine(TokenInfo previousToken)
@@ -182,15 +164,18 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       case t_numliteral :
         return Optional.of(TokenType.Number);
       case t_stringQQ :
+      case t_StringDQ :
+        return Optional.of(TokenType.String);
       case t_stringQD :
       case t_stringQB :
-      case t_StringDQ :
       case t_StringDD :
       case t_StringDB :
       case t_stringBQ :
       case t_stringBD :
       case t_stringBB :
-        return Optional.of(TokenType.String);
+        if (ANY.PRECONDITIONS)
+          ANY.check(false);
+        return Optional.empty();
       case t_op :
         if (text.equals("=>")
           || text.equals("->")

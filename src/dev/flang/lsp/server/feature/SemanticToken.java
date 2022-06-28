@@ -34,6 +34,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SemanticTokens;
@@ -84,6 +85,41 @@ public class SemanticToken extends ANY
           new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))),
         // raw because we need comments
         true)
+
+      // map all special strings to normal strings plus operator(s)
+      .flatMap(t -> {
+        switch (t.token())
+          {
+          case t_stringBQ :    // '}+-*"' in "abc{x}+-*"
+            return Stream.of(
+              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column),
+                t.text().substring(0, 1), Token.t_op),
+              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + 1),
+                t.text().substring(1), Token.t_stringQQ));
+          case t_stringQD :    // '"x is $' in "x is $x.".
+          case t_StringDD :    // '+-*$' in "abc$x+-*$x.".
+          case t_stringQB :    // '"a+b is {' in "a+b is {a+b}."
+          case t_StringDB :    // '+-*{' in "abc$x+-*{a+b}."
+            return Stream.of(
+              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column),
+                t.text().substring(0, t.text().length() - 1), Token.t_stringQQ),
+              new TokenInfo(
+                new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + t.text().length() - 1),
+                t.text().substring(t.text().length() - 1, t.text().length()), Token.t_op));
+          case t_stringBD :    // '}+-*$' in "abc{x}+-*$x.".
+          case t_stringBB :    // '}+-*{' in "abc{x}+-*{a+b}."
+            return Stream.of(
+              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column), "}",
+                Token.t_op),
+              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + 1),
+                t.text().substring(1, t.text().length() - 1), Token.t_stringQQ),
+              new TokenInfo(
+                new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + t.text().length() - 1),
+                t.text().substring(t.text().length() - 1, t.text().length()), Token.t_op));
+          default:
+            return Stream.of(t);
+          }
+      })
       .filter(x -> x.IsSemanticToken(pos2Item))
       .collect(Collectors.toList());
   }
