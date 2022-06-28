@@ -115,7 +115,7 @@ public class FeatureTool extends ANY
 
   /**
    * @param feature
-   * @return the position of the basename
+   * @return the position of the name excluding prefix/infix/postfix etc.
    *
    * Examples:
    *
@@ -131,11 +131,17 @@ public class FeatureTool extends ANY
    */
   // NYI we should probably extend the parser to have save these position during
   // parsing
-  public static SourcePosition BaseNamePosition(AbstractFeature feature)
+  public static SourcePosition BareNamePosition(AbstractFeature feature)
   {
     if (feature.featureName().baseName().contains(" "))
       {
-        return BaseNameWithSpacePosition(feature);
+        var baseNameParts = feature.featureName().baseName().split(" ", 2);
+        return LexerTool
+          .TokensFrom(feature.pos(), false)
+          .dropWhile(tokenInfo -> !(baseNameParts[1].startsWith(tokenInfo.text())))
+          .map(tokenInfo -> tokenInfo.start())
+          .findFirst()
+          .get();
       }
     var start = LexerTool
       .TokensFrom(feature.pos(), false)
@@ -156,15 +162,18 @@ public class FeatureTool extends ANY
       .get();
   }
 
-  private static SourcePosition BaseNameWithSpacePosition(AbstractFeature feature)
+  /**
+   * strips leading infix/prefix/postfix etc.
+   * @param f
+   * @return
+   */
+  public static String BareName(AbstractFeature f)
   {
-    var baseNameParts = feature.featureName().baseName().split(" ", 2);
-    return LexerTool
-      .TokensFrom(feature.pos(), false)
-      .dropWhile(tokenInfo -> !(baseNameParts[1].startsWith(tokenInfo.text())))
-      .map(tokenInfo -> tokenInfo.start())
-      .findFirst()
-      .get();
+    if (f.featureName().baseName().contains(" "))
+      {
+        return f.featureName().baseName().substring(f.featureName().baseName().indexOf(" ") + 1);
+      }
+    return f.featureName().baseName();
   }
 
   public static boolean IsArgument(AbstractFeature feature)
@@ -378,5 +387,7 @@ public class FeatureTool extends ANY
         .stream()
         .anyMatch(t -> t.equals(af.thisType()));
   }
+
+
 
 }

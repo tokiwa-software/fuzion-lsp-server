@@ -26,12 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -64,16 +63,42 @@ public class SemanticToken extends ANY
   public static final SemanticTokensLegend Legend =
     new SemanticTokensLegend(TokenType.asList, TokenModifier.asList);
 
-  // https://stackoverflow.com/questions/23699371/java-8-distinct-by-property
-  public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor)
-  {
-    Set<Object> seen = ConcurrentHashMap.newKeySet();
-    return t -> seen.add(keyExtractor.apply(t));
-  }
-
   public static SemanticTokens getSemanticTokens(SemanticTokensParams params)
   {
-    var pos2Item = Pos2Item(params);
+    var pos2Item = Pos2Items(params)
+      .entrySet()
+      .stream()
+      .map(e -> {
+
+        // try to filter all generated features/calls
+        var tmp = e.getValue().stream().filter(x -> {
+          if (x instanceof AbstractFeature af)
+            {
+              return LexerTool
+                .TokensAt(FeatureTool.BareNamePosition(af), false)
+                .right()
+                .text()
+                .equals(FeatureTool.BareName(af));
+            }
+          var c = (AbstractCall) x;
+          return LexerTool
+            .TokensAt(c.pos(), false)
+            .right()
+            .text()
+            .equals(FeatureTool.BareName(c.calledFeature()));
+        }).collect(Collectors.toList());
+
+
+        // happens for e.g. syntax sugar for tuples
+        if (tmp.isEmpty())
+          {
+            return null;
+          }
+
+        return new SimpleEntry<Integer, HasSourcePosition>(e.getKey(), tmp.get(0));
+      })
+      .filter(x -> x != null)
+      .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
     return new SemanticTokens(SemanticTokenData(LexerTokens(params, pos2Item), pos2Item));
   }
 
@@ -124,22 +149,23 @@ public class SemanticToken extends ANY
       .collect(Collectors.toList());
   }
 
-  private static Map<Integer, HasSourcePosition> Pos2Item(SemanticTokensParams params)
+  private static Map<Integer, HashSet<HasSourcePosition>> Pos2Items(SemanticTokensParams params)
   {
-    var pos2Item = ASTWalker
+    var result = new TreeMap<Integer, HashSet<HasSourcePosition>>();
+
+    ASTWalker
       .Traverse(LSP4jUtils.getUri(params.getTextDocument()))
       .map(e -> e.getKey())
       .filter(x -> x instanceof AbstractFeature || x instanceof AbstractCall)
-      // NYI what to do if there is multiple things at same pos?
-      .filter(distinctByKey(x -> {
-        var pos = x instanceof AbstractFeature af ? FeatureTool.BaseNamePosition(af): x.pos();
-        return TokenInfo.KeyOf(pos);
-      }))
-      .collect(Collectors.toUnmodifiableMap(x -> {
-        var pos = x instanceof AbstractFeature af ? FeatureTool.BaseNamePosition(af): x.pos();
-        return TokenInfo.KeyOf(pos);
-      }, x -> x));
-    return pos2Item;
+      .forEach(x -> {
+        var key = TokenInfo.KeyOf(x instanceof AbstractFeature af ? FeatureTool.BareNamePosition(af): x.pos());
+        result.computeIfAbsent(key, (k) -> new HashSet<HasSourcePosition>());
+        result.computeIfPresent(key, (k, v) -> {
+          v.add(x);
+          return v;
+        });
+      });
+    return result;
   }
 
   private static List<Integer> SemanticTokenData(List<TokenInfo> lexerTokens,

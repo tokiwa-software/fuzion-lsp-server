@@ -161,7 +161,7 @@ public class FeatureToolTest extends BaseTest
 
   private SourcePosition GetFeature(String name)
   {
-    var first_lambda_arg = FeatureTool.BaseNamePosition(ASTWalker
+    var first_lambda_arg = FeatureTool.BareNamePosition(ASTWalker
       .Traverse(uri1)
       .filter(x -> x.getKey() instanceof AbstractFeature af && af.featureName().baseName().contains(name))
       .map(x -> (AbstractFeature) x.getKey())

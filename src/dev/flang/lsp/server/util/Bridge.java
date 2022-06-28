@@ -74,7 +74,7 @@ public class Bridge extends ANY
 
   public static Range ToRangeBaseName(AbstractFeature feature)
   {
-    var baseNamePosition = FeatureTool.BaseNamePosition(feature);
+    var baseNamePosition = FeatureTool.BareNamePosition(feature);
     return new Range(
       ToPosition(baseNamePosition),
       ToPosition(new SourcePosition(baseNamePosition._sourceFile,
