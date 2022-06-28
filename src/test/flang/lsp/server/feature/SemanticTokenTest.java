@@ -136,7 +136,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
     // total token amount is 9
     assertEquals(9 * 5, semanticTokens.getData().size());
 
-    //a in array is function
+    // a in array is function
     assertEquals(semanticTokens, 7, 0, 4, 1, TokenType.Function, 0);
   }
 
@@ -415,7 +415,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
       });
   }
 
-  private Stream<List<Integer>> GroupData(SemanticTokens semanticTokens)
+  private static Stream<List<Integer>> GroupData(SemanticTokens semanticTokens)
   {
     AtomicInteger counter = new AtomicInteger();
     return semanticTokens.getData()
