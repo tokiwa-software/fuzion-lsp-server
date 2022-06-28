@@ -33,6 +33,8 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Feature;
+import dev.flang.ast.Feature.State;
 import dev.flang.lsp.server.enums.TokenModifier;
 import dev.flang.lsp.server.enums.TokenType;
 import dev.flang.lsp.server.util.CallTool;
@@ -214,6 +216,10 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   {
     if (item instanceof AbstractFeature af)
       {
+        if (af instanceof Feature f && f.state().equals(State.ERROR))
+          {
+            return Optional.empty();
+          }
         switch (af.kind())
           {
           case OpenTypeParameter :

@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensParams;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.enums.TokenType;
@@ -75,6 +76,18 @@ public class SemanticTokenTest extends ExtendedBaseTest
           (1..2)
             .forAll (fun print)
       """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params(uri1));
+    AssertBasicDataSanity(semanticTokens);
+  }
+
+  @Test
+  public void GetSemanticTokensSyntaxError()
+  {
+    SourceText.setText(uri1, """
+      ex is
+        say "Primes using loop:"; primes 1000; say
+            """);
     var semanticTokens =
       SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
