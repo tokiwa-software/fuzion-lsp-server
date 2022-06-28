@@ -202,7 +202,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
-  public void GetSemanticTokensDesctructureTuple()
+  public void GetSemanticTokensDestructureTuple()
   {
     SourceText.setText(uri1, """
       ex is
