@@ -36,10 +36,11 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
-public class SourceText
+public class SourceText extends ANY
 {
   /**
    * currently open text documents and their contents
@@ -50,10 +51,9 @@ public class SourceText
 
   public static void setText(URI uri, String text)
   {
-    if (text == null)
-      {
-        ErrorHandling.WriteStackTraceAndExit(1);
-      }
+    if (PRECONDITIONS)
+      require(text != null);
+
     textDocuments.put(uri, AddReplacementCharacterAfterNoneFullStopDots(text));
   }
 
