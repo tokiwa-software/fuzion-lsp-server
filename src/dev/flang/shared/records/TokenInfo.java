@@ -39,6 +39,7 @@ import dev.flang.lsp.server.util.CallTool;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
+import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
@@ -106,6 +107,9 @@ public record TokenInfo(SourcePosition start, String text, Token token)
     int relativeLine = line() - previousToken.line();
     int relativeChar = startChar() - (IsSameLine(previousToken) ? previousToken.startChar(): 0);
     Integer tokenTypeNum = tokenType.get().num;
+
+    if (ANY.CHECKS)
+      ANY.check(relativeLine != 0 || relativeChar >= previousToken.length());
 
     return Stream.of(relativeLine, relativeChar,
       length(), tokenTypeNum, Modifiers(pos2Item));
