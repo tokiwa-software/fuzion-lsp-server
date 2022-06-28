@@ -409,9 +409,11 @@ public class SemanticTokenTest extends ExtendedBaseTest
   @SuppressWarnings("unused")
   private void PrintDebug(SemanticTokens semanticTokens)
   {
-    GroupData(semanticTokens)
-      .forEach(c -> {
-        IO.SYS_ERR.println(c.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
+    var data = GroupData(semanticTokens)
+      .collect(Collectors.toList());
+    IntStream.range(0, data.size())
+      .forEach(idx -> {
+        IO.SYS_ERR.println(idx + ": " + data.get(idx).stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
       });
   }
 
