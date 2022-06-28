@@ -78,16 +78,14 @@ public class SemanticToken extends ANY
 
   private static List<TokenInfo> LexerTokens(SemanticTokensParams params, Map<Integer, HasSourcePosition> pos2Item)
   {
-    var lexerTokens =
-      LexerTool
-        .TokensFrom(
-          Bridge.ToSourcePosition(
-            new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))),
-          // raw because we need comments
-          true)
-        .filter(x -> x.IsSemanticToken(pos2Item))
-        .collect(Collectors.toList());
-    return lexerTokens;
+    return LexerTool
+      .TokensFrom(
+        Bridge.ToSourcePosition(
+          new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))),
+        // raw because we need comments
+        true)
+      .filter(x -> x.IsSemanticToken(pos2Item))
+      .collect(Collectors.toList());
   }
 
   private static Map<Integer, HasSourcePosition> Pos2Item(SemanticTokensParams params)
