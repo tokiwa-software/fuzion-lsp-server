@@ -27,78 +27,52 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import org.eclipse.lsp4j.MessageType;
 
-import dev.flang.lsp.server.Config;
-import dev.flang.shared.CompletableFutures;
 import dev.flang.shared.Concurrency;
-import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
 
 public class Computation
 {
   private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
 
-
-  // NYI should return result/error
-  public static <T> CompletableFuture<T> Compute(Callable<T> callable, int maxTimeInMs)
+  public static <T> CompletableFuture<T> CancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
   {
-    if (Config.ComputeAsync)
-      {
-        return ComputeAsyncWithTimeout(callable, maxTimeInMs);
-      }
-    try
-      {
-        return CompletableFuture.completedFuture(callable.call());
-      }
-    catch (Exception e)
-      {
-        throw new RuntimeException(e);
-      }
-  }
-
-  private static <T> CompletableFuture<T> ComputeAsyncWithTimeout(Callable<T> callable, int maxTimeInMs)
-  {
-    // NYI log time of computations
-    final Throwable context = Config.DEBUG() ? ErrorHandling.CurrentStacktrace(): null;
-    return CompletableFutures.computeAsync(cancelChecker -> {
+    var result = new CompletableFuture<T>();
+    return result.completeAsync(() -> {
       try
         {
-          var result = Concurrency.RunWithPeriodicCancelCheck(cancelChecker, callable, INTERVALL_CHECK_CANCELLED_MS,
-            maxTimeInMs);
-
-          if (Config.DEBUG() && result.nanoSeconds() > 100_000_000)
-            {
-              Log.message(
-                "Computation took " + Math.floor(result.nanoSeconds() / 1_000_000) + "ms: " + System.lineSeparator()
-                  + ErrorHandling.toString(context),
-                MessageType.Warning);
-            }
-
-          return result.result();
+          return Concurrency.RunWithPeriodicCancelCheck(callable, () -> {
+            if (result.isCancelled())
+              {
+                throw new CancellationException();
+              }
+          }, INTERVALL_CHECK_CANCELLED_MS,
+            maxTimeInMs).result();
         }
-      // NYI should not be handled here
       catch (ExecutionException e)
         {
-          if (Config.DEBUG())
-            {
-              ErrorHandling.WriteStackTrace(context);
-              ErrorHandling.WriteStackTrace(e);
-            }
+          Log.message("[" + callee + "] An excecution exception occurred: " + e, MessageType.Error);
         }
-      catch (InterruptedException | TimeoutException | MaxExecutionTimeExceededException e)
+      catch (MaxExecutionTimeExceededException e)
         {
-          if (e instanceof MaxExecutionTimeExceededException)
-            {
-              Log.message(
-                "Time exceeded" + System.lineSeparator() + ErrorHandling.toString(context), MessageType.Error);
-            }
+          Log.message("[" + callee + "] Max excecution time exceeded: " + e, MessageType.Warning);
+        }
+      catch (CancellationException e)
+        {
+          Log.message("[" + callee + "] was cancelled.", MessageType.Info);
+        }
+      catch (Throwable th)
+        {
+          Log.message("[" + callee + "] An unexpected error occurred: " + th, MessageType.Error);
         }
       return null;
     });
+
+
   }
 }

@@ -30,11 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.eclipse.lsp4j.CompletionContext;
@@ -49,7 +47,6 @@ import org.junit.jupiter.api.Test;
 // NYI remove dependency of dev.flang.lsp and move to dev.flang.shared
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.shared.CompletableFutures;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
@@ -84,7 +81,9 @@ public class ConcurrencyTest extends ExtendedBaseTest
     request2.join();
 
     assertTrue(results.get(0) instanceof MaxExecutionTimeExceededException);
-    assertTrue(((ComputationPerformance<Either<List<CompletionItem>, CompletionList>>) results.get(1)).result().getLeft().size() > 10);
+    assertTrue(((ComputationPerformance<Either<List<CompletionItem>, CompletionList>>) results.get(1)).result()
+      .getLeft()
+      .size() > 10);
 
   }
 
@@ -104,28 +103,22 @@ public class ConcurrencyTest extends ExtendedBaseTest
   }
 
   private Object getCompletion(int maxExcecutionTime)
-    throws InterruptedException, ExecutionException
+    throws InterruptedException, ExecutionException, CancellationException, TimeoutException,
+    MaxExecutionTimeExceededException
   {
-    return CompletableFutures.computeAsync(cancelChecker -> {
-      try
-        {
-          var completionParams =
-            new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
-              new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
-          return Concurrency.RunWithPeriodicCancelCheck(cancelChecker,
-            () -> Completion.getCompletions(completionParams),
-            5, maxExcecutionTime);
-        }
-      catch (InterruptedException | ExecutionException | TimeoutException | MaxExecutionTimeExceededException e)
-        {
-          return e;
-        }
-    })
-      .get();
+    var completionParams =
+      new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
+        new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
+    return Concurrency.RunWithPeriodicCancelCheck(
+      () -> Completion.getCompletions(completionParams),
+      () -> {
+      },
+      5, maxExcecutionTime);
   }
 
   @Test
-  public void SuccessfulRequestAfterSomeMaxExecutionTimeExceededRequests() throws InterruptedException, ExecutionException
+  public void SuccessfulRequestAfterSomeMaxExecutionTimeExceededRequests()
+    throws InterruptedException, ExecutionException
   {
     var sourceText = """
       ex2 is
@@ -135,27 +128,15 @@ public class ConcurrencyTest extends ExtendedBaseTest
 
     int requestCount = 10;
 
-    var exectuor = Executors.newFixedThreadPool(8);
-
-    var countDownLatch = new CountDownLatch(requestCount);
-
     IntStream.range(0, requestCount)
-      .mapToObj(index -> {
-        return exectuor.submit(() -> getCompletion(TenMilliseconds));
-      })
-      .collect(Collectors.toList())
-      .stream()
-      .forEach(future -> {
-        assertDoesNotThrow(() -> {
-          assertTrue(future.get() instanceof MaxExecutionTimeExceededException);
-          countDownLatch.countDown();
+      .forEach(idx -> {
+        assertThrows(MaxExecutionTimeExceededException.class, () -> {
+          getCompletion(TenMilliseconds);
         });
       });
 
-    countDownLatch.await();
-
     assertDoesNotThrow(
-      () -> ((ComputationPerformance<Either<List<CompletionItem>, CompletionList>>) exectuor.submit(() -> getCompletion(5000)).get()));
+      () -> getCompletion(5000));
   }
 
 }

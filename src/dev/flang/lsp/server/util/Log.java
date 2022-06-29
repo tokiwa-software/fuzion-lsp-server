@@ -58,19 +58,16 @@ public class Log extends ANY
   public static void message(String str, MessageType messageType)
   {
     String result = "";
-    if (Config.DEBUG())
+    var lines = str.split("\n");
+    for(String line : lines)
       {
-        var lines = str.split("\n");
-        for(String line : lines)
+        result += " ".repeat(indentation * 2) + line + System.lineSeparator();
+        if (indentation == MAX_INDENT - 1)
           {
-            result += " ".repeat(indentation * 2) + line + System.lineSeparator();
-            if (indentation == MAX_INDENT - 1)
-              {
-                result += "..." + System.lineSeparator();
-              }
+            result += "..." + System.lineSeparator();
           }
-        Config.languageClient().logMessage(new MessageParams(messageType, result));
       }
+    Config.languageClient().logMessage(new MessageParams(messageType, result));
   }
 
 

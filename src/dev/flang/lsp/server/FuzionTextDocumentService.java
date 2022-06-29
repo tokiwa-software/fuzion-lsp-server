@@ -143,95 +143,94 @@ public class FuzionTextDocumentService implements TextDocumentService
 
   }
 
-  private <T> CompletableFuture<T> AbortAfterOneSecond(Callable<T> c)
+  private <T> CompletableFuture<T> AbortAfterOneSecond(Callable<T> c, String callee)
   {
-    return Computation.Compute(c, 1000);
+    return Computation.CancellableComputation(c, callee, 1000);
   }
 
   @Override
   public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position)
   {
-    return AbortAfterOneSecond(() -> Completion.getCompletions(position));
-
+    return AbortAfterOneSecond(() -> Completion.getCompletions(position), "completion");
   }
 
   @Override
   public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
   {
-    return AbortAfterOneSecond(() -> unresolved);
+    return AbortAfterOneSecond(() -> unresolved, "resolve completion");
   }
 
   @Override
   public CompletableFuture<Hover> hover(HoverParams params)
   {
-    return AbortAfterOneSecond(() -> Hovering.getHover(params));
+    return AbortAfterOneSecond(() -> Hovering.getHover(params), "hover");
   }
 
   @Override
   public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
     DefinitionParams params)
   {
-    return AbortAfterOneSecond(() -> Definition.getDefinitionLocation(params));
+    return AbortAfterOneSecond(() -> Definition.getDefinitionLocation(params), "definition");
   }
 
   @Override
   public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params)
   {
-    return AbortAfterOneSecond(() -> Highlight.getHightlights(params));
+    return AbortAfterOneSecond(() -> Highlight.getHightlights(params), "document highlight");
   }
 
   @Override
   public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
   {
-    return AbortAfterOneSecond(() -> References.getReferences(params));
+    return AbortAfterOneSecond(() -> References.getReferences(params), "references");
   }
 
   @Override
   public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
   {
-    return AbortAfterOneSecond(() -> Rename.getWorkspaceEdit(params));
+    return AbortAfterOneSecond(() -> Rename.getWorkspaceEdit(params), "rename");
   }
 
   @Override
   public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
   {
-    return AbortAfterOneSecond(() -> Either.forRight(Rename.getPrepareRenameResult(params)));
+    return AbortAfterOneSecond(() -> Either.forRight(Rename.getPrepareRenameResult(params)), "prepare rename");
   }
 
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
   {
-    return AbortAfterOneSecond(() -> CodeActions.getCodeActions(params));
+    return AbortAfterOneSecond(() -> CodeActions.getCodeActions(params), "code action");
   }
 
   @Override
   public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
   {
-    return AbortAfterOneSecond(() -> DocumentSymbols.getDocumentSymbols(params));
+    return AbortAfterOneSecond(() -> DocumentSymbols.getDocumentSymbols(params), "document symbol");
   }
 
   @Override
   public CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params)
   {
-    return AbortAfterOneSecond(() -> InlayHints.getInlayHints(params));
+    return AbortAfterOneSecond(() -> InlayHints.getInlayHints(params), "inlay hint");
   }
 
   @Override
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
   {
-    return AbortAfterOneSecond(() -> CodeLenses.getCodeLenses(params));
+    return AbortAfterOneSecond(() -> CodeLenses.getCodeLenses(params), "code lens");
   }
 
   @Override
   public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
   {
-    return AbortAfterOneSecond(() -> SignatureHelper.getSignatureHelp(params));
+    return AbortAfterOneSecond(() -> SignatureHelper.getSignatureHelp(params), "signature help");
   }
 
   @Override
   public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params)
   {
-    return AbortAfterOneSecond(() -> SemanticToken.getSemanticTokens(params));
+    return AbortAfterOneSecond(() -> SemanticToken.getSemanticTokens(params), "semantic tokens full");
   }
 
 }

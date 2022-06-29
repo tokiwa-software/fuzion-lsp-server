@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +35,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import dev.flang.shared.CompletableFutures.FutureCancelChecker;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
 import dev.flang.shared.records.ComputationPerformance;
 
@@ -61,8 +61,8 @@ public class Concurrency
    * periodically check if callable meanwhile has been cancelled
    * and/or maximum execution time has been reached
    * @param <T>
-   * @param cancelToken
    * @param callable
+   * @param checkCancelled
    * @param intervallCancelledCheckInMs
    * @param maxExecutionTimeInMs
    * @return
@@ -70,27 +70,28 @@ public class Concurrency
    * @throws ExecutionException
    * @throws TimeoutException
    * @throws MaxExecutionTimeExceededException
+   * @throws CancellationException
    */
   public static <T> ComputationPerformance<T> RunWithPeriodicCancelCheck(
-    FutureCancelChecker cancelToken, Callable<T> callable, int intervallCancelledCheckInMs, int maxExecutionTimeInMs)
-    throws InterruptedException, ExecutionException, TimeoutException, MaxExecutionTimeExceededException
+    Callable<T> callable, Runnable checkCancelled, int intervallCancelledCheckInMs, int maxExecutionTimeInMs)
+    throws InterruptedException, ExecutionException, TimeoutException, MaxExecutionTimeExceededException,
+    CancellationException
   {
+
     Future<ComputationPerformance<T>> future = executor.submit(() -> {
       long startTime = System.nanoTime();
       var result = callable.call();
       long stopTime = System.nanoTime();
       return new ComputationPerformance<T>(result, stopTime - startTime);
     });
+
     try
       {
         var timeElapsedInMs = 0;
         var completed = false;
         while (!completed)
           {
-            if (cancelToken != null)
-              {
-                cancelToken.checkCanceled();
-              }
+            checkCancelled.run();
             try
               {
                 future.get(intervallCancelledCheckInMs, TimeUnit.MILLISECONDS);

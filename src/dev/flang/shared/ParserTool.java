@@ -304,14 +304,15 @@ public class ParserTool extends ANY
   public synchronized static String Run(URI uri, int timeout)
     throws Exception
   {
-    var result = Concurrency.RunWithPeriodicCancelCheck(null, IO.WithCapturedStdOutErr(() -> {
+    var result = Concurrency.RunWithPeriodicCancelCheck(IO.WithCapturedStdOutErr(() -> {
       var interpreter = ParserTool.Interpreter(uri);
       interpreter.ifPresent(i -> i.run());
       if (interpreter.isEmpty())
         {
           throw new RuntimeException("Interpreter could not be created.");
         }
-    }), timeout, timeout);
+    }),() -> {
+    }, timeout, timeout);
     return result.result();
   }
 
