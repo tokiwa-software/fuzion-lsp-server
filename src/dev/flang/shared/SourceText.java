@@ -95,19 +95,23 @@ public class SourceText extends ANY
 
   private static String AddReplacementCharacterAfterNoneFullStopDots(String text)
   {
-    var mod_text = DotAtEOL.matcher(text).replaceAll(x -> {
-      String line = x.group(1) + x.group(2);
-      // NYI right now this is just a hack...
-      var isChoiceOf = Pattern.compile(".*choice\\s+of.*", Pattern.DOTALL);
-      var isComment = Pattern.compile("\\s*#.*", Pattern.DOTALL);
-      if (isChoiceOf.matcher(line).matches()
-        || isComment.matcher(line).matches())
-        {
-          return line;
-        }
-      return x.group(1) + "�" + x.group(2);
-    });
-    return mod_text;
+    return DotAtEOL
+      .matcher(text.replaceAll("\\$", "MAGIC_STRING_DOLLAR"))
+      .replaceAll(x -> {
+        String group1 = x.group(1);
+        String group2 = x.group(2);
+        String line = group1 + group2;
+        // NYI right now this is just a hack...
+        var isChoiceOf = Pattern.compile(".*choice\\s+of.*", Pattern.DOTALL);
+        var isComment = Pattern.compile("\\s*#.*", Pattern.DOTALL);
+        if (isChoiceOf.matcher(line).matches()
+          || isComment.matcher(line).matches())
+          {
+            return line;
+          }
+        return group1 + "�" + group2;
+      })
+      .replaceAll("MAGIC_STRING_DOLLAR", "\\&");
   }
 
   public static String LineAt(SourcePosition param)
