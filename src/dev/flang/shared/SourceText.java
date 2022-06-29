@@ -91,28 +91,23 @@ public class SourceText extends ANY
       }
   }
 
-  private static final Pattern DotAtEOL = Pattern.compile("(\\.)\\s*(\r|\n)+");
+  private static final Pattern DotAtEOL = Pattern.compile("(^.+\\.)(\\s*$)", Pattern.MULTILINE);
 
   private static String AddReplacementCharacterAfterNoneFullStopDots(String text)
   {
     var mod_text = DotAtEOL.matcher(text).replaceAll(x -> {
+      String line = x.group(1) + x.group(2);
       // NYI right now this is just a hack...
-      if (LineOfMatch(text, x).matches(".*choice\\s+of.*")
-        || LineOfMatch(text, x).matches("\\s*#.*"))
+      var isChoiceOf = Pattern.compile(".*choice\\s+of.*", Pattern.DOTALL);
+      var isComment = Pattern.compile("\\s*#.*", Pattern.DOTALL);
+      if (isChoiceOf.matcher(line).matches()
+        || isComment.matcher(line).matches())
         {
-          return x.group();
+          return line;
         }
-      return ".�" + x.group(1);
+      return x.group(1) + "�" + x.group(2);
     });
     return mod_text;
-  }
-
-  private static String LineOfMatch(String text, MatchResult x)
-  {
-    var startIndex = text
-      .substring(0, x.start())
-      .lastIndexOf("\n");
-    return text.substring(startIndex + 1, x.start());
   }
 
   public static String LineAt(SourcePosition param)
