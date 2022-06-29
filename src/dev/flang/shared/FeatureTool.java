@@ -28,6 +28,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
@@ -93,9 +94,9 @@ public class FeatureTool extends ANY
       + commentsOfRedefinedFeatures;
   }
 
-  public static String AST(AbstractFeature start)
+  public static String AST(URI uri)
   {
-    var ast = ASTWalker.Traverse(start)
+    var ast = ASTWalker.Traverse(uri)
       .map(x -> x.getKey())
       .sorted(ASTItem.CompareByLineThenByColumn())
       .reduce("", (a, item) -> {
@@ -323,8 +324,8 @@ public class FeatureTool extends ANY
   {
     return ASTWalker.Traverse(f, false)
       .map(e -> e.getKey())
-      .filter(obj -> AbstractCall.class.isAssignableFrom(obj.getClass()))
-      .<AbstractFeature>map(obj -> ((AbstractCall) obj).calledFeature())
+      .filter(obj -> obj instanceof AbstractCall)
+      .map(obj -> ((AbstractCall) obj).calledFeature())
       .collect(Collectors.toSet());
   }
 

@@ -210,7 +210,7 @@ public enum Commands
   {
     var ast = ParserTool
       .TopLevelFeatures(uri)
-      .map(f -> FeatureTool.AST(f))
+      .map(f -> FeatureTool.AST(uri))
       .collect(Collectors.joining(System.lineSeparator() + "===" + System.lineSeparator()));
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));

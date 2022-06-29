@@ -54,7 +54,6 @@ import dev.flang.shared.LexerTool;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
-import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 public class SemanticToken extends ANY
