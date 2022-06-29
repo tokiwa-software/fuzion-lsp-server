@@ -27,6 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
+
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
@@ -41,7 +44,8 @@ public class CommandTest extends BaseTest
    * get in the way.
    * @throws Exception
    */
-  // NYI @Test takes >1 sec
+  @Test
+  @Disabled // too slow
   public void RunMultiple() throws Exception
   {
     SourceText.setText(uri1, HelloWorld);
@@ -54,7 +58,8 @@ public class CommandTest extends BaseTest
     assertEquals("Hello World!" + "\n", message);
   }
 
-  // NYI @Test takes >1 sec
+  @Test
+  @Disabled // too slow
   public void RunSuccessfulAfterRunWithTimeoutException() throws Exception
   {
     SourceText.setText(uri1, ManOrBoy);

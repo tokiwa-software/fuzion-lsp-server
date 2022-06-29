@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.enums.TriggerCharacters;
@@ -319,8 +320,8 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix +")));
   }
 
-  // @Test
-  // NYI currently failing
+  @Test
+  @Disabled // failing
   public void CompletionInfix()
   {
     var sourceText = """

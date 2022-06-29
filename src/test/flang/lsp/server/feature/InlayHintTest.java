@@ -30,6 +30,8 @@ package test.flang.lsp.server.feature;
 import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.InlayHints;
 import dev.flang.shared.SourceText;
@@ -38,8 +40,8 @@ import test.flang.lsp.server.ExtendedBaseTest;
 public class InlayHintTest extends ExtendedBaseTest
 {
 
-  // @Test
-  // NYI currently failing
+  @Test
+  @Disabled // failing
   public void InlayHintsComposedArg()
   {
     SourceText.setText(uri1, Mandelbrot);

@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DiagnosticTag;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Diagnostics;
@@ -38,8 +39,8 @@ import test.flang.lsp.server.ExtendedBaseTest;
 
 public class DiagnosticsTest extends ExtendedBaseTest
 {
-  // @Test
-  // NYI failing
+  @Test
+  @Disabled // failing
   public void DiagnosticsShowAirErrors()
   {
     var sourceText = """
@@ -172,8 +173,8 @@ public class DiagnosticsTest extends ExtendedBaseTest
     assertEquals(7, diagnostics.get(0).getRange().getEnd().getCharacter());
   }
 
-  // @Test
-  // NYI currently failing
+  @Test
+  @Disabled // failing
   public void IfElseBranchNoRedefInfo()
   {
     var sourceText = """

@@ -73,7 +73,6 @@ public class CodeActionsTest extends ExtendedBaseTest
       new CodeActionContext(Diagnostics.getDiagnostics(uri).collect(Collectors.toList())));
   }
 
-  // NYI codeaction too slow @Test(timeout = 500)
   @Test
   public void FixMandelbrotNaming()
   {
