@@ -111,7 +111,7 @@ public class SourceText extends ANY
           }
         return group1 + "�" + group2;
       })
-      .replaceAll("MAGIC_STRING_DOLLAR", "\\&");
+      .replaceAll("MAGIC_STRING_DOLLAR", "\\$");
   }
 
   public static String LineAt(SourcePosition param)
