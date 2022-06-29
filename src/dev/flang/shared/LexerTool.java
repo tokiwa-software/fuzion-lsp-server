@@ -28,6 +28,8 @@ package dev.flang.shared;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,83 +65,73 @@ public class LexerTool extends ANY
     });
   }
 
-  /**
-   * Stream of Tokens from start
-   * Never empty, last token eof is always present
-   * @param start
-   * @param includeRaw
-   * @return
-   */
-  public static Stream<TokenInfo> TokensFrom(SourcePosition start, boolean includeRaw)
+  private static Map<String, List<TokenInfo>> tokenCache =
+    Util.ThreadSafeLRUMap(10, (removed) -> {
+
+    });
+
+  private static Stream<TokenInfo> Tokenize(SourcePosition start)
   {
-    // NYI reuse lexer, also feed lexer from file
     return IO.WithTextInputStream(SourceText.getText(start), () -> {
       var lexer = NewLexerStdIn();
-
       var eof = Stream.of(EOFTokenInfo(start));
-      try
-        {
-          lexer.setPos(lexer.lineStartPos(start._line));
-        }
-      catch (ArrayIndexOutOfBoundsException e)
-        {
-          return eof;
-        }
-      while (lexer.current() != Token.t_eof
-        && (lexer.sourcePos()._line < start._line
-          || lexer.sourcePos()._column < start._column))
-        {
-          advance(lexer, includeRaw);
-        }
       return Stream.concat(Stream.generate(() -> {
-        var result = tokenInfo(lexer, SourceText.UriOf(start));
-        advance(lexer, includeRaw);
+        var result = tokenInfo(lexer, start._sourceFile);
+        advance(lexer);
         return result;
-      })
-        .takeWhile(tokenInfo -> tokenInfo.token() != Token.t_eof), eof);
+      }).takeWhile(tokenInfo -> tokenInfo.token() != Token.t_eof), eof);
     });
   }
 
-  private static void advance(Lexer lexer, boolean includeRaw)
+  /**
+   * @param start
+   * @return stream of tokens starting at start.
+   * if start is in the middle of a token return this token as well.
+   */
+  public static Stream<TokenInfo> TokensFrom(SourcePosition start)
   {
-    if (includeRaw)
+    return tokenCache.computeIfAbsent(SourceText.getText(start),
+      (k) -> Tokenize(start).collect(Collectors.toUnmodifiableList()))
+      .stream()
+      .dropWhile(x -> x.end()._line < start._line
+        || x.end()._column <= start._column);
+  }
+
+  private static void advance(Lexer lexer)
+  {
+    lexer.nextRaw();
+    while (lexer.current() == Token.t_error ||
+      lexer.current() == Token.t_undefined)
       {
         lexer.nextRaw();
-      }
-    else
-      {
-        lexer.next();
       }
   }
 
   public static TokenInfo NextTokenOfType(SourcePosition start, Set<Token> tokens)
   {
-    return TokensFrom(start, true)
+    return TokensFrom(start)
       .filter(x -> tokens.contains(x.token()))
       .findFirst()
       .orElse(EOFTokenInfo(start));
   }
 
-  public static Tokens TokensAt(SourcePosition params, boolean includeRaw)
+  /**
+   * @param the position of the cursor
+   * @return token left and right of cursor
+   */
+  public static Tokens TokensAt(SourcePosition params)
   {
-    var tokens = TokensFrom(new SourcePosition(params._sourceFile, params._line, 1), includeRaw)
-      .filter(x -> x.start()._line == params._line)
-      .dropWhile(x -> x.end()._column < params._column)
-      .takeWhile(x -> x.start()._column <= params._column)
+    var tokens = Stream.concat(TokensFrom(GoBackInLine(params, 1))
+      .limit(2), Stream.of(EOFTokenInfo(params)))
       .collect(Collectors.toList());
 
-    switch (tokens.size())
+    // between two tokens
+    if (tokens.get(0).end()._line == params._line
+      && tokens.get(0).end()._column == params._column)
       {
-      case 0 :
-        var eof = EOFTokenInfo(params);
-        return new Tokens(eof, eof);
-      case 1 :
-        return new Tokens(tokens.get(0), tokens.get(0));
-      case 2 :
         return new Tokens(tokens.get(0), tokens.get(1));
-      default:
-        throw new RuntimeException("too many tokens in result");
       }
+    return new Tokens(tokens.get(0), tokens.get(0));
   }
 
   private static Lexer NewLexerStdIn()
@@ -148,22 +140,22 @@ public class LexerTool extends ANY
     // HACK the following is necessary because currently on instantiation
     // lexer calls next(), skipping any raw tokens at start
     lexer.setPos(0);
-    lexer.nextRaw();
+    advance(lexer);
     return lexer;
   }
 
-  private static TokenInfo tokenInfo(Lexer lexer, URI uri)
+  private static TokenInfo tokenInfo(Lexer lexer, SourceFile sf)
   {
     var lexerSourcePosition = lexer.sourcePos(lexer.pos());
     var start =
-      new SourcePosition(ToSourceFile(uri), lexerSourcePosition._line, lexerSourcePosition._column);
+      new SourcePosition(sf, lexerSourcePosition._line, lexerSourcePosition._column);
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
     return new TokenInfo(start, tokenString, lexer.current());
   }
 
   public static boolean isCommentLine(SourcePosition params)
   {
-    return TokensFrom(params, true)
+    return TokensFrom(params)
       .filter(x -> x.start()._line == params._line)
       .dropWhile(x -> x.token() == Token.t_ws)
       .findFirst()
@@ -173,7 +165,7 @@ public class LexerTool extends ANY
 
   public static SourcePosition EndOfToken(SourcePosition start)
   {
-    return TokensAt(start, true)
+    return TokensAt(start)
       .right()
       .end();
   }
@@ -217,7 +209,7 @@ public class LexerTool extends ANY
   {
     return IdentTokenAt(pos)
       .or(() -> {
-        var tokens = TokensAt(pos, false);
+        var tokens = TokensAt(pos);
         if (tokens.right().token() == Token.t_op)
           {
             return Optional.of(tokens.right());
@@ -232,7 +224,7 @@ public class LexerTool extends ANY
 
   public static Optional<TokenInfo> IdentTokenAt(SourcePosition pos)
   {
-    var tokens = TokensAt(pos, false);
+    var tokens = TokensAt(pos);
     if (tokens.right().token() == Token.t_ident)
       {
         return Optional.of(tokens.right());

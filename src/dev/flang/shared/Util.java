@@ -113,4 +113,9 @@ public class Util
       .orElseGet(Stream::empty);
   }
 
+  public static <T> T LastOrDefault(Stream<T> s, T t)
+  {
+    return s.reduce((a, b) -> b).orElse(t);
+  }
+
 }

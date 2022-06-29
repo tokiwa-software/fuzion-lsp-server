@@ -138,14 +138,14 @@ public class FeatureTool extends ANY
       {
         var baseNameParts = feature.featureName().baseName().split(" ", 2);
         return LexerTool
-          .TokensFrom(feature.pos(), false)
+          .TokensFrom(feature.pos())
           .dropWhile(tokenInfo -> !(baseNameParts[1].startsWith(tokenInfo.text())))
           .map(tokenInfo -> tokenInfo.start())
           .findFirst()
           .get();
       }
     var start = LexerTool
-      .TokensFrom(feature.pos(), false)
+      .TokensFrom(feature.pos())
       .map(x -> x.text().equals("->") || x.text().equals(":="))
       .findFirst()
       .orElse(false) ?
@@ -156,7 +156,7 @@ public class FeatureTool extends ANY
                      : feature.pos();
 
     return LexerTool
-      .TokensFrom(start, false)
+      .TokensFrom(start)
       .dropWhile(tokenInfo -> !tokenInfo.text().equals(feature.featureName().baseName()))
       .map(tokenInfo -> tokenInfo.start())
       .findFirst()

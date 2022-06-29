@@ -262,23 +262,7 @@ public class ParserTool extends ANY
         .map(entry -> entry.getKey().pos())
         .filter(sourcePositionOption -> !sourcePositionOption.isBuiltIn())
         .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
-        .map(position -> {
-          var start =
-            LexerTool.EndOfToken(position);
-          // NYI maybe use inverse hashset here? i.e. state which tokens can
-          // be skipped
-          var token = LexerTool.NextTokenOfType(start, Util.ArrayToSet(new Token[]
-            {
-                Token.t_eof,
-                Token.t_ident,
-                Token.t_semicolon,
-                Token.t_rbrace,
-                Token.t_rcrochet,
-                Token.t_rparen
-            }));
-
-          return new SourcePosition(position._sourceFile, token.end()._line, token.end()._column);
-        })
+        .map(position -> LexerTool.EndOfToken(position))
         .findFirst()
         .orElse(LexerTool.EndOfToken(f.pos()));
 
@@ -311,7 +295,7 @@ public class ParserTool extends ANY
         {
           throw new RuntimeException("Interpreter could not be created.");
         }
-    }),() -> {
+    }), () -> {
     }, timeout, timeout);
     return result.result();
   }

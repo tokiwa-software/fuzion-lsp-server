@@ -188,10 +188,10 @@ public class QueryAST extends ANY
 
   public static Stream<AbstractFeature> CompletionsAt(TextDocumentPositionParams params)
   {
+    var tokens = LexerTool.TokensAt(Bridge.ToSourcePosition(params));
     return InFeature(params)
       .map(feature -> FeatureTool.FeaturesInScope(feature)
         .filter(f -> {
-          var tokens = LexerTool.TokensAt(Bridge.ToSourcePosition(params), true);
           if (tokens.left().token().equals(Token.t_ws))
             {
               return true;

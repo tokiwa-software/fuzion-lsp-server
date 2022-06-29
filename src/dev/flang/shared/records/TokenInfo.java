@@ -41,6 +41,7 @@ import dev.flang.lsp.server.util.CallTool;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
@@ -52,7 +53,9 @@ public record TokenInfo(SourcePosition start, String text, Token token)
 {
   public SourcePosition end()
   {
-    return new SourcePosition(start._sourceFile, start._line, start._column + text.length());
+    var lines = (int) text.lines().count();
+    return new SourcePosition(start._sourceFile, start._line + lines - 1,
+      lines == 1 ? start._column + text.length(): Util.LastOrDefault(text.lines(), "").length() + 1);
   }
 
   /*

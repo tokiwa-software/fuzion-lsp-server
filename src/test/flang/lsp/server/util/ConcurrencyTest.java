@@ -131,7 +131,7 @@ public class ConcurrencyTest extends ExtendedBaseTest
     IntStream.range(0, requestCount)
       .forEach(idx -> {
         assertThrows(MaxExecutionTimeExceededException.class, () -> {
-          getCompletion(TenMilliseconds);
+          getCompletion(1);
         });
       });
 

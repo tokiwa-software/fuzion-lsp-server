@@ -74,14 +74,14 @@ public class SemanticToken extends ANY
           if (x instanceof AbstractFeature af)
             {
               return LexerTool
-                .TokensAt(FeatureTool.BareNamePosition(af), false)
+                .TokensAt(FeatureTool.BareNamePosition(af))
                 .right()
                 .text()
                 .equals(FeatureTool.BareName(af));
             }
           var c = (AbstractCall) x;
           return LexerTool
-            .TokensAt(c.pos(), false)
+            .TokensAt(c.pos())
             .right()
             .text()
             .equals(FeatureTool.BareName(c.calledFeature()));
@@ -106,9 +106,7 @@ public class SemanticToken extends ANY
     return LexerTool
       .TokensFrom(
         Bridge.ToSourcePosition(
-          new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))),
-        // raw because we need comments
-        true)
+          new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))))
 
       // map all special strings to normal strings plus operator(s)
       .flatMap(t -> {

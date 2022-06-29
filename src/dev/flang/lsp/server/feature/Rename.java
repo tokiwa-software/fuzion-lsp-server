@@ -139,7 +139,7 @@ public class Rename extends ANY
         && f.resultType().featureOfType().equals(featureToRename))
       .map(f -> {
         // NYI we need correct position of type here
-        var whitespace = LexerTool.TokensAt(LexerTool.EndOfToken(f.pos()), true).right();
+        var whitespace = LexerTool.TokensAt(LexerTool.EndOfToken(f.pos())).right();
         if (CHECKS)
           check(whitespace.token() == Token.t_ws);
         return new SourcePosition(f.pos()._sourceFile, f.pos()._line,
@@ -154,7 +154,7 @@ public class Rename extends ANY
       {
         // last Token before start of #fun.call where tokenText matches baseName
         var tokenPos = LexerTool
-          .TokensFrom(new SourcePosition(pos._sourceFile, 1, 1), false)
+          .TokensFrom(new SourcePosition(pos._sourceFile, 1, 1))
           .filter(x -> featureToRename.featureName().baseName().equals(x.text()))
           .filter(x -> {
             return x.start()
@@ -181,7 +181,7 @@ public class Rename extends ANY
               Token.t_set
           }));
         var whitespace =
-          LexerTool.TokensAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column), true).right();
+          LexerTool.TokensAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column)).right();
         if (CHECKS)
           check(whitespace.token() == Token.t_ws);
         return whitespace.end();
@@ -211,7 +211,7 @@ public class Rename extends ANY
   private static SourcePosition PositionOfChoiceGeneric(String name, AbstractFeature f)
   {
     return LexerTool
-      .TokensFrom(new SourcePosition(f.pos()._sourceFile, 1, 1), false)
+      .TokensFrom(new SourcePosition(f.pos()._sourceFile, 1, 1))
       .filter(token -> name.equals(token.text()))
       .filter(token -> {
         return token.start()
@@ -248,7 +248,7 @@ public class Rename extends ANY
 
   private static boolean IsAtFunKeyword(SourcePosition params)
   {
-    return LexerTool.TokensAt(params, false).right().token() == Lexer.Token.t_fun;
+    return LexerTool.TokensAt(params).right().token() == Lexer.Token.t_fun;
   }
 
 }

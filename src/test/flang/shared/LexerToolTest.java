@@ -45,7 +45,7 @@ public class LexerToolTest extends BaseTest
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      LexerTool.TokensAt(CursorPosition(uri1, 3, 3), true)
+      LexerTool.TokensAt(CursorPosition(uri1, 3, 3))
         .right();
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
@@ -56,7 +56,7 @@ public class LexerToolTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var tokens = LexerTool.TokensAt(CursorPosition(uri1, 7, 8), true);
+    var tokens = LexerTool.TokensAt(CursorPosition(uri1, 7, 8));
     assertTrue(tokens.right().equals(tokens.left()));
     var nextToken = tokens.right();
     assertEquals("i32", nextToken.text());
@@ -99,17 +99,19 @@ public class LexerToolTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
+    var beforeSay = CursorPosition(uri1, 10, 4);
+    assertEquals("\n    ", LexerTool.TokensFrom(beforeSay).findFirst().get().text());
     var atSayStart = CursorPosition(uri1, 10, 5);
-    assertEquals("say", LexerTool.TokensFrom(atSayStart, false).findFirst().get().text());
+    assertEquals("say", LexerTool.TokensFrom(atSayStart).findFirst().get().text());
     var atSayMiddle = CursorPosition(uri1, 10, 7);
-    assertEquals("say", LexerTool.TokensFrom(atSayMiddle, false).findFirst().get().text());
+    assertEquals("say", LexerTool.TokensFrom(atSayMiddle).findFirst().get().text());
     var atSayEnd = CursorPosition(uri1, 10, 8);
-    assertEquals("say", LexerTool.TokensFrom(atSayEnd, false).findFirst().get().text());
+    assertEquals(" ", LexerTool.TokensFrom(atSayEnd).findFirst().get().text());
 
     var start = CursorPosition(uri1, 1, 1);
-    assertTrue(LexerTool.TokensFrom(start, true).count() > 10);
-    assertTrue(LexerTool.TokensFrom(start, false).count() > 10);
-    assertTrue(LexerTool.TokensFrom(start, false).anyMatch(t -> t.text().equals("i32")));
-    assertTrue(LexerTool.TokensFrom(start, false).reduce((first, second) -> second).get().token() == Token.t_eof);
+    assertTrue(LexerTool.TokensFrom(start).count() > 10);
+    assertTrue(LexerTool.TokensFrom(start).count() > 10);
+    assertTrue(LexerTool.TokensFrom(start).anyMatch(t -> t.text().equals("i32")));
+    assertTrue(LexerTool.TokensFrom(start).reduce((first, second) -> second).get().token() == Token.t_eof);
   }
 }

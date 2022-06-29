@@ -26,7 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.shared;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
@@ -36,8 +38,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Timeout;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.shared.ParserTool;
 import dev.flang.shared.IO;
+import dev.flang.shared.ParserTool;
+import dev.flang.util.Errors;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -223,8 +226,23 @@ public abstract class BaseTest extends Assert
   @BeforeAll
   public static void setup()
   {
+    Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
     IO.Init((line) -> {
     }, (line) -> {
     });
   }
+
+  protected static String Read(Path of)
+  {
+    try
+      {
+        return Files.readString(of);
+      }
+    catch (IOException e)
+      {
+        assertTrue(false);
+        return "";
+      }
+  }
+
 }

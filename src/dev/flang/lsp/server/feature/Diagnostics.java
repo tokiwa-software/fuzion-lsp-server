@@ -109,7 +109,7 @@ public enum Diagnostics
     var errorDiagnostics =
       ParserTool.Errors(uri).filter(error -> ParserTool.getUri(error.pos).equals(uri)).map((error) -> {
         var message = error.msg + System.lineSeparator() + error.detail;
-        return Create(LSP4jUtils.Range(LexerTool.TokensAt(error.pos, true).right()), message,
+        return Create(LSP4jUtils.Range(LexerTool.TokensAt(error.pos).right()), message,
           DiagnosticSeverity.Error,
           errors);
       });
@@ -121,7 +121,7 @@ public enum Diagnostics
     var warningDiagnostics =
       ParserTool.Warnings(uri).filter(warning -> ParserTool.getUri(warning.pos).equals(uri)).map((warning) -> {
         var message = warning.msg + System.lineSeparator() + warning.detail;
-        return Create(LSP4jUtils.Range(LexerTool.TokensAt(warning.pos, true).right()), message,
+        return Create(LSP4jUtils.Range(LexerTool.TokensAt(warning.pos).right()), message,
           DiagnosticSeverity.Warning, warnings);
       });
     return warningDiagnostics;
