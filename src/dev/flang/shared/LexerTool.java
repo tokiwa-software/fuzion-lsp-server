@@ -57,12 +57,13 @@ public class LexerTool extends ANY
 
   private static TokenInfo EOFTokenInfo(SourcePosition pos)
   {
-    // NYI reuse lexer, also feed lexer from file
-    return IO.WithTextInputStream(SourceText.getText(pos), () -> {
-      var lexer = NewLexerStdIn();
-      var lastLine = lexer.lineNum(lexer.byteLength());
-      return new TokenInfo(new SourcePosition(pos._sourceFile, lastLine + 1, 1), "", Token.t_eof);
-    });
+    return new TokenInfo(
+      new SourcePosition(
+        pos._sourceFile,
+        (int) SourceText.getText(pos).lines().count() + 1,
+        1),
+      "",
+      Token.t_eof);
   }
 
   private static Map<String, List<TokenInfo>> tokenCache =
