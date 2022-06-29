@@ -60,7 +60,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
    */
   private Integer line()
   {
-    return start._line - 1;
+    return start._line == 0 ? 0: start._line - 1;
   }
 
   /*
@@ -68,7 +68,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   */
   private Integer startChar()
   {
-    return start._column - 1;
+    return start._column == 0 ? 0: start._column - 1;
   }
 
   private Integer length()

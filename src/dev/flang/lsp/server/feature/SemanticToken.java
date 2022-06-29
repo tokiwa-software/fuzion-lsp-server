@@ -175,7 +175,7 @@ public class SemanticToken extends ANY
       .range(0, lexerTokens.size())
       .mapToObj(x -> {
         var beginningOfFileToken =
-          new TokenInfo(new SourcePosition(new SourceFile(SourceFile.STDIN), 1, 1), "", Token.t_undefined);
+          new TokenInfo(SourcePosition.notAvailable, "", Token.t_undefined);
         var previousToken = x == 0 ? beginningOfFileToken: lexerTokens.get(x - 1);
         return lexerTokens.get(x).SemanticTokenData(previousToken, pos2Item);
       })

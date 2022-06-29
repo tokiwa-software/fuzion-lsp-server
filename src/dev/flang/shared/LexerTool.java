@@ -180,11 +180,10 @@ public class LexerTool extends ANY
 
   public static SourceFile ToSourceFile(URI uri)
   {
+    if (PRECONDITIONS)
+      require(!uri.equals(SourceFile.STDIN.toUri()));
+
     var filePath = Path.of(uri);
-    if (uri.equals(SourceFile.STDIN.toUri()))
-      {
-        return new SourceFile(SourceFile.STDIN);
-      }
     if (filePath.equals(SourcePosition.builtIn._sourceFile._fileName))
       {
         return SourcePosition.builtIn._sourceFile;
