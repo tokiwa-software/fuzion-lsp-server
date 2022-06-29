@@ -388,6 +388,11 @@ public class FeatureTool extends ANY
         .anyMatch(t -> t.equals(af.thisType()));
   }
 
+  public static boolean DoesInherit(AbstractFeature af)
+  {
+    return af.inherits().stream().anyMatch(x -> !x.calledFeature().qualifiedName().equals("Object"));
+  }
+
 
 
 }

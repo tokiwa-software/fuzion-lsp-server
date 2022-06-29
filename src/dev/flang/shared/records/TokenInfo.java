@@ -238,7 +238,8 @@ public record TokenInfo(SourcePosition start, String text, Token token)
           case Routine :
             if (af.isConstructor()
               && af.valueArguments().size() == 0
-              && af.code().containsOnlyDeclarations())
+              && af.code().containsOnlyDeclarations()
+              && !FeatureTool.DoesInherit(af))
               {
                 if (ParserTool.DeclaredFeatures(af).count() > 0)
                   {
