@@ -34,7 +34,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Timeout;
@@ -48,7 +48,7 @@ import dev.flang.util.SourcePosition;
 
 // NYI all tests should not need more than 100ms, currently 500
 @Nested @Timeout(value = 500, unit = TimeUnit.MILLISECONDS)
-public abstract class BaseTest extends Assert
+public abstract class BaseTest extends Assertions
 {
   protected static final URI uri1 = IO.writeToTempFile("").toURI();
   protected static final URI uri2 = IO.writeToTempFile("").toURI();

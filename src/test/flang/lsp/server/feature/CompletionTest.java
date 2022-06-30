@@ -100,7 +100,7 @@ public class CompletionTest extends ExtendedBaseTest
     Arrays
       .stream(expected.split(System.lineSeparator()))
       .forEach(e -> {
-        assertTrue("expected: " + e, actual.stream().anyMatch(a -> a.equals(e)));
+        assertTrue(actual.stream().anyMatch(a -> a.equals(e)), () -> "expected: " + e);
       });
   }
 
@@ -320,8 +320,7 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix +")));
   }
 
-  @Test
-  @Disabled // failing
+  @Test @Disabled // failing
   public void CompletionInfix()
   {
     var sourceText = """
