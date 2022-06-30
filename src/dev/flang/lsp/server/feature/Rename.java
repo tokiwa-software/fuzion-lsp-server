@@ -189,9 +189,7 @@ public class Rename extends ANY
 
 
     var choiceGenerics = ASTWalker
-      .Traverse(LSP4jUtils.getUri(params))
-      .filter(entry -> entry.getKey() instanceof AbstractFeature)
-      .map(entry -> (AbstractFeature) entry.getKey())
+      .Features(LSP4jUtils.getUri(params))
       .filter(f -> f.resultType().isChoice())
       .filter(f -> {
         return f.resultType().choiceGenerics().stream().anyMatch(t -> {

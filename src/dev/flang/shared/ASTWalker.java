@@ -274,9 +274,18 @@ public class ASTWalker
   {
     return Traverse(start)
       .filter(entry -> {
-        return AbstractCall.class.isAssignableFrom(entry.getKey().getClass());
+        return entry.getKey() instanceof AbstractCall;
       })
       .map(obj -> new SimpleEntry<>((AbstractCall) obj.getKey(), obj.getValue()));
+  }
+
+  public static Stream<AbstractFeature> Features(URI uri)
+  {
+    return Traverse(uri)
+      .filter(entry -> {
+        return entry.getKey() instanceof AbstractFeature;
+      })
+      .map(obj -> (AbstractFeature) obj.getKey());
   }
 
   /**
