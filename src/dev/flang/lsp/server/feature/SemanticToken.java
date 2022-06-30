@@ -51,6 +51,7 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
+import dev.flang.shared.Util;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
@@ -124,20 +125,22 @@ public class SemanticToken extends ANY
           case t_StringDB :    // '+-*{' in "abc$x+-*{a+b}."
             return Stream.of(
               new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column),
-                t.text().substring(0, t.length() - 1), Token.t_stringQQ),
+                t.text().substring(0, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
-                new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + t.length() - 1),
-                t.text().substring(t.length() - 1, t.length()), Token.t_op));
+                new SourcePosition(t.start()._sourceFile, t.start()._line,
+                  t.start()._column + Util.CodepointCount(t.text()) - 1),
+                t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
           case t_stringBD :    // '}+-*$' in "abc{x}+-*$x.".
           case t_stringBB :    // '}+-*{' in "abc{x}+-*{a+b}."
             return Stream.of(
               new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column), "}",
                 Token.t_op),
               new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + 1),
-                t.text().substring(1, t.length() - 1), Token.t_stringQQ),
+                t.text().substring(1, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
-                new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + t.length() - 1),
-                t.text().substring(t.length() - 1, t.length()), Token.t_op));
+                new SourcePosition(t.start()._sourceFile, t.start()._line,
+                  t.start()._column + Util.CodepointCount(t.text()) - 1),
+                t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
           default:
             return Stream.of(t);
           }

@@ -67,7 +67,7 @@ public class InlayHints extends ANY
         check(c.actuals().size() == c.calledFeature().valueArguments().size());
 
         return IntStream.range(0, c.actuals().size())
-          .filter(idx -> Util.CodepointCount(c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
+          .filter(idx -> Util.CharCount(c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
           .mapToObj(idx -> {
             var inlayHint = new InlayHint(Bridge.ToPosition(c.actuals().get(idx).pos()),
               Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));

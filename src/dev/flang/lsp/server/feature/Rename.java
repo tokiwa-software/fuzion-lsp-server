@@ -123,7 +123,7 @@ public class Rename extends ANY
         if (IsAtFunKeyword(pos))
           {
             var whitespace =
-              new SourcePosition(pos._sourceFile, pos._line, pos._column + Util.CodepointCount(Lexer.Token.t_fun.toString()));
+              new SourcePosition(pos._sourceFile, pos._line, pos._column + Util.CharCount(Lexer.Token.t_fun.toString()));
             pos = LexerTool.NextTokenOfType(whitespace, Util.ArrayToSet(new Token[]
               {
                   Token.t_ident
@@ -143,7 +143,7 @@ public class Rename extends ANY
         if (CHECKS)
           check(whitespace.token() == Token.t_ws);
         return new SourcePosition(f.pos()._sourceFile, f.pos()._line,
-          f.pos()._column + Util.CodepointCount(f.featureName().baseName()) + whitespace.length());
+          f.pos()._column + Util.CharCount(f.featureName().baseName()) + Util.CodepointCount(whitespace.text()));
       });
 
     // NYI we don't have correct position of args of fun in the AST yet
@@ -225,7 +225,7 @@ public class Rename extends ANY
   private static int LengthOfFeatureIdentifier(AbstractFeature feature)
   {
     return Arrays.stream(feature.featureName().baseName().split(" "))
-      .map(str -> Util.CodepointCount(str))
+      .map(str -> Util.CharCount(str))
       .reduce(0, (acc, item) -> item);
   }
 

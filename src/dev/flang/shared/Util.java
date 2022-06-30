@@ -120,10 +120,20 @@ public class Util
 
   /*
    * returns codepoint count of text
+   * 😀 => 1
    */
   public static int CodepointCount(String text)
   {
     return Integer.valueOf((int) text.codePoints().count());
+  }
+
+  /*
+   * returns char count of text
+   * 😀 => 2
+   */
+  public static int CharCount(String text)
+  {
+    return text.codePoints().map(cp -> Character.charCount(cp)).sum();
   }
 
 }

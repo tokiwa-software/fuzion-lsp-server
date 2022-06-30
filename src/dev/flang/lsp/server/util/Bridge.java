@@ -79,7 +79,7 @@ public class Bridge extends ANY
       ToPosition(baseNamePosition),
       ToPosition(new SourcePosition(baseNamePosition._sourceFile,
         baseNamePosition._line,
-        baseNamePosition._column + Util.CodepointCount(feature.featureName().baseName()))));
+        baseNamePosition._column + Util.CharCount(feature.featureName().baseName()))));
   }
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)

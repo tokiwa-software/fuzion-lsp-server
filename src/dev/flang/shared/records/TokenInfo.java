@@ -41,6 +41,7 @@ import dev.flang.lsp.server.util.CallTool;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.HasSourcePosition;
@@ -55,7 +56,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   {
     var lines = (int) text.lines().count();
     return new SourcePosition(start._sourceFile, start._line + lines - 1,
-      lines == 1 ? start._column + length(): Util.CodepointCount(Util.LastOrDefault(text.lines(), "")) + 1);
+      lines == 1 ? start._column + length(): Util.CharCount(Util.LastOrDefault(text.lines(), "")) + 1);
   }
 
   /*
@@ -67,16 +68,25 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   }
 
   /*
-  * starting column of token, zero based
+  * startChar of token, zero based
   */
   private Integer startChar()
   {
-    return start._column == 0 ? 0: start._column - 1;
+    if (start._column == 0)
+      {
+        return 0;
+      }
+    return SourceText
+      .LineAt(start)
+      .codePoints()
+      .limit(start._column - 1)
+      .map(cp -> Character.charCount(cp))
+      .sum();
   }
 
-  public Integer length()
+  private Integer length()
   {
-    return Util.CodepointCount(text);
+    return Util.CharCount(text());
   }
 
   public Stream<Integer> SemanticTokenData(TokenInfo previousToken,

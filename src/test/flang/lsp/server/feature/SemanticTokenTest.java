@@ -186,6 +186,31 @@ public class SemanticTokenTest extends ExtendedBaseTest
     AssertBasicDataSanity(semanticTokens);
   }
 
+  @Test
+  public void GetSemanticTokensSpecialChar()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        smiley := "😀"
+        say "😀:$smiley"
+                  """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params(uri1));
+    AssertBasicDataSanity(semanticTokens);
+
+    // "😀"
+    assertEquals(semanticTokens, 4, 0, 3, 4, TokenType.String, 0);
+    // "😀:
+    assertEquals(semanticTokens, 6, 0, 4, 4, TokenType.String, 0);
+    // $
+    assertEquals(semanticTokens, 7, 0, 4, 1, TokenType.Operator, 0);
+    // smiley
+    assertEquals(semanticTokens, 8, 0, 1, 6, TokenType.Type, 0);
+    // "
+    assertEquals(semanticTokens, 9, 0, 6, 1, TokenType.String, 0);
+
+  }
+
 
   @Test
   public void GetSemanticTokensArray()
@@ -280,7 +305,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
     AssertBasicDataSanity(semanticTokens);
 
     // Comment
-    assertEquals(semanticTokens, 0, 0, 0, Util.CodepointCount("# comment\n"), TokenType.Comment, 0);
+    assertEquals(semanticTokens, 0, 0, 0, Util.CharCount("# comment\n"), TokenType.Comment, 0);
 
     // Feature
     assertEquals(semanticTokens, 1, 1, 0, 7, TokenType.Namespace, 0);
@@ -289,7 +314,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
     assertEquals(semanticTokens, 2, 0, 8, 2, TokenType.Keyword, 0);
 
     // child_feat
-    assertEquals(semanticTokens, 3, 1, 2, Util.CodepointCount("child_feat"), TokenType.Type, 0);
+    assertEquals(semanticTokens, 3, 1, 2, Util.CharCount("child_feat"), TokenType.Type, 0);
   }
 
   private void assertEquals(SemanticTokens st, int tokenIndex, Integer relativeLine, Integer relativeStartChar,

@@ -316,7 +316,7 @@ public class QueryAST extends ANY
         if (astItem instanceof AbstractCall c)
           {
             return ErrorHandling.ResultOrDefault(() -> {
-              if (token.map(t -> c.pos()._column + t.length() >= sourcePosition._column).orElse(false)
+              if (token.map(t -> c.pos()._column + Util.CodepointCount(t.text()) >= sourcePosition._column).orElse(false)
                 && !c.calledFeature().equals(Types.f_ERROR))
                 {
                   return c.calledFeature();
@@ -385,7 +385,7 @@ public class QueryAST extends ANY
             return false;
           }
         var start = x.pos()._column;
-        var end = x.pos()._column + Util.CodepointCount(x.str);
+        var end = x.pos()._column + Util.CharCount(x.str);
         if (SourceText.LineAt(x.pos()).charAt(x.pos()._column - 1) == '\"')
           {
             return start <= params.getPosition().getCharacter()
