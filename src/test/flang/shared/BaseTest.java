@@ -234,6 +234,11 @@ public abstract class BaseTest extends Assertions
     });
   }
 
+  protected String Read(String path)
+  {
+    return Read(Path.of(path));
+  }
+
   protected String Read(Path of)
   {
     try
