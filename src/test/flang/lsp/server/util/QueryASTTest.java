@@ -100,7 +100,21 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
   @Test
-  public void featureAtWithinLoop()
+  public void FeatureAtFixFeature()
+  {
+    var sourceText = Read("fuzion/lib/string.fz");
+    SourceText.setText(uri1, sourceText);
+
+    var atStartOfFeature = QueryAST.FeatureAt(Cursor(uri1, 56, 2)).get();
+    var atStartOfBarename = QueryAST.FeatureAt(Cursor(uri1, 56, 8)).get();
+    var atEndOrBarename = QueryAST.FeatureAt(Cursor(uri1, 56, 9)).get();
+    assertEquals("infix *", atStartOfFeature.featureName().baseName());
+    assertEquals("infix *", atStartOfBarename.featureName().baseName());
+    assertEquals("infix *", atEndOrBarename.featureName().baseName());
+  }
+
+  @Test
+  public void FeatureAtWithinLoop()
   {
     var sourceText = """
       ex8 is

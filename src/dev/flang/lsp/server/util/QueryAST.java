@@ -304,33 +304,66 @@ public class QueryAST extends ANY
    */
   public static Optional<AbstractFeature> FeatureAt(TextDocumentPositionParams params)
   {
-    var sourcePosition = Bridge.ToSourcePosition(params);
-    var token = LexerTool.IdentOrOperatorTokenAt(sourcePosition);
-    return ASTItemsBeforeOrAtCursor(params)
-      .map(astItem -> {
-        if (astItem instanceof AbstractFeature f
-          && token.<Boolean>map(x -> x.text().equals(f.featureName().baseName())).orElse(false))
-          {
-            return f;
-          }
-        if (astItem instanceof AbstractCall c)
-          {
-            return ErrorHandling.ResultOrDefault(() -> {
-              if (token.map(t -> c.pos()._column + Util.CodepointCount(t.text()) >= sourcePosition._column).orElse(false)
-                && !c.calledFeature().equals(Types.f_ERROR))
-                {
-                  return c.calledFeature();
-                }
-              return null;
-            }, null);
-          }
-        return null;
+    return FeatureDefinedAt(params)
+      .or(() -> {
+        var sourcePosition = Bridge.ToSourcePosition(params);
+        var token = LexerTool.IdentOrOperatorTokenAt(sourcePosition);
+        return ASTItemsBeforeOrAtCursor(params)
+          .map(astItem -> {
+            if (astItem instanceof AbstractFeature f
+              && token.<Boolean>map(x -> x.text().equals(f.featureName().baseName())).orElse(false))
+              {
+                return f;
+              }
+            if (astItem instanceof AbstractCall c)
+              {
+                return ErrorHandling.ResultOrDefault(() -> {
+                  if (token.map(t -> c.pos()._column + Util.CodepointCount(t.text()) >= sourcePosition._column)
+                    .orElse(false)
+                    && !c.calledFeature().equals(Types.f_ERROR))
+                    {
+                      return c.calledFeature();
+                    }
+                  return null;
+                }, null);
+              }
+            return null;
+          })
+          .filter(f -> f != null)
+          .findFirst()
+          // NYI workaround for not having positions of all types in
+          // the AST currently
+          .or(() -> FindFeatureByName(params));
+      });
+  }
+
+  /**
+   * if we are somewhere here:
+   *
+   * infix * ...
+   * ^^^^^^^
+   *
+   * or somewhere here:
+   *
+   * some_feat ... is
+   * ^^^^^^^^^
+   *
+   * return the matching feature
+   */
+  private static Optional<AbstractFeature> FeatureDefinedAt(TextDocumentPositionParams params)
+  {
+    return ASTWalker.Features(LSP4jUtils.getUri(params))
+      .filter(af -> !FeatureTool.IsArgument(af))
+      // line
+      .filter(x -> params.getPosition().getLine() == (x.pos()._line - 1))
+      .filter(x -> {
+        var start = x.pos()._column - 1;
+        // NYI should work most of the time but there might be additional
+        // whitespace?
+        var end = start + Util.CodepointCount(x.featureName().baseName());
+        return start <= params.getPosition().getCharacter() && params.getPosition().getCharacter() <= end;
       })
-      .filter(f -> f != null)
-      .findFirst()
-      // NYI workaround for not having positions of all types in
-      // the AST currently
-      .or(() -> FindFeatureByName(params));
+      .findAny();
   }
 
   public static Optional<AbstractFeature> FindFeatureByName(TextDocumentPositionParams params)
