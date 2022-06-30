@@ -30,7 +30,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
@@ -232,7 +234,7 @@ public abstract class BaseTest extends Assert
     });
   }
 
-  protected static String Read(Path of)
+  protected String Read(Path of)
   {
     try
       {
@@ -243,6 +245,19 @@ public abstract class BaseTest extends Assert
         assertTrue(false);
         return "";
       }
+  }
+
+  protected Stream<Path> StdLibFiles() throws IOException
+  {
+    return Files.find(Paths.get("fuzion/lib"), 5, (p, bfa) -> bfa.isRegularFile());
+  }
+
+  protected Stream<Path> TestFiles(boolean includeNegative) throws IOException
+  {
+    return Files
+      .find(Paths.get("fuzion/tests"), 5, (p, bfa) -> bfa.isRegularFile()
+        && p.toString().endsWith(".fz")
+        && (includeNegative || !p.toString().contains("_negative")));
   }
 
 }

@@ -29,9 +29,9 @@ package test.flang.lsp.server.feature;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -39,7 +39,9 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensParams;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import dev.flang.lsp.server.enums.TokenType;
 import dev.flang.lsp.server.feature.SemanticToken;
@@ -220,10 +222,22 @@ public class SemanticTokenTest extends ExtendedBaseTest
   @Test
   public void GetSemanticTokensPrefixInfixPostfix() throws IOException
   {
-    SourceText.setText(uri1, Files.readString(Path.of("fuzion/lib/bitset.fz")));
+    SourceText.setText(uri1, Read(Path.of("fuzion/lib/bitset.fz")));
     var semanticTokens =
       SemanticToken.getSemanticTokens(Params(uri1));
     AssertBasicDataSanity(semanticTokens);
+  }
+
+  @Test @Timeout(value = 60, unit = TimeUnit.SECONDS) @Disabled // too slow
+  public void GetSemanticTokensStdLib() throws IOException
+  {
+    StdLibFiles()
+      .forEach(p -> {
+        SourceText.setText(uri1, Read(p));
+        var semanticTokens =
+          SemanticToken.getSemanticTokens(Params(uri1));
+        AssertBasicDataSanity(semanticTokens);
+      });
   }
 
   private static void AssertNoNegative(SemanticTokens st)
