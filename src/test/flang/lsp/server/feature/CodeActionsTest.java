@@ -26,18 +26,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
+import java.io.IOException;
 import java.net.URI;
-import java.util.stream.Collector;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import javax.tools.Diagnostic;
 
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.junit.Test;
-import org.junit.runners.Parameterized.Parameter;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import dev.flang.lsp.server.feature.CodeActions;
 import dev.flang.lsp.server.feature.Diagnostics;
@@ -81,5 +81,15 @@ public class CodeActionsTest extends ExtendedBaseTest
     assertTrue(CodeActions
       .getCodeActions(Params(uri1))
       .size() > 0);
+  }
+
+  @Test @Timeout(value = 60, unit = TimeUnit.SECONDS) @Disabled // too slow
+  public void CodeActions() throws IOException
+  {
+    StdLibAndAllTestFiles()
+      .forEach(p -> {
+        SourceText.setText(uri1, Read(p));
+        assertDoesNotThrow(() -> CodeActions.getCodeActions(Params(uri1)));
+      });
   }
 }
