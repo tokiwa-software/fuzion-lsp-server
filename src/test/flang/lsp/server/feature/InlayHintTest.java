@@ -29,7 +29,6 @@ package test.flang.lsp.server.feature;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
@@ -70,7 +69,7 @@ public class InlayHintTest extends ExtendedBaseTest
   @Test @Timeout(value = 60, unit = TimeUnit.SECONDS) @Disabled // too slow
   public void InlayHints() throws IOException
   {
-    Stream.concat(StdLibFiles(), TestFiles(true))
+    StdLibAndAllTestFiles()
       .forEach(p -> {
         SourceText.setText(uri1, Read(p));
         assertDoesNotThrow(() -> InlayHints.getInlayHints(Params()));
