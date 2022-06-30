@@ -45,13 +45,13 @@ public class Highlight
   public static List<? extends DocumentHighlight> getHightlights(DocumentHighlightParams params)
   {
     var feature = QueryAST.FeatureAt(params);
-    if (feature.isEmpty())
-      {
-        return List.of();
-      }
-    return FeatureTool.CallsTo(feature.get())
-      .map(entry -> entry.getKey())
-      .map(c -> Bridge.ToHighlight(c))
-      .collect(Collectors.toList());
+    return feature
+      .map(f -> {
+        return FeatureTool.CallsTo(f)
+          .map(entry -> entry.getKey())
+          .map(c -> Bridge.ToHighlight(c))
+          .collect(Collectors.toList());
+      })
+      .orElse(List.of());
   }
 }
