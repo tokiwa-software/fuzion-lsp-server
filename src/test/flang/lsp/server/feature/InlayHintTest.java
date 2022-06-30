@@ -27,11 +27,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import dev.flang.lsp.server.feature.InlayHints;
 import dev.flang.shared.SourceText;
@@ -40,15 +45,13 @@ import test.flang.lsp.server.ExtendedBaseTest;
 public class InlayHintTest extends ExtendedBaseTest
 {
 
-  @Test
-  @Disabled // failing
+  @Test @Disabled // failing
   public void InlayHintsComposedArg()
   {
     SourceText.setText(uri1, Mandelbrot);
-    var cursor = Cursor(uri1, 1, 8);
 
     var inlayHints = InlayHints
-      .getInlayHints(new InlayHintParams(cursor.getTextDocument(), new Range(new Position(0, 0), new Position(3,0))));
+      .getInlayHints(Params());
 
     assertEquals(1, inlayHints.size());
 
@@ -57,5 +60,21 @@ public class InlayHintTest extends ExtendedBaseTest
     assertEquals(66, inlayHints.get(0).getPosition().getCharacter());
   }
 
+
+  private InlayHintParams Params()
+  {
+    var cursor = Cursor(uri1, 1, 1);
+    return new InlayHintParams(cursor.getTextDocument(), new Range(new Position(0, 0), new Position(3, 0)));
+  }
+
+  @Test @Timeout(value = 60, unit = TimeUnit.SECONDS) @Disabled // too slow
+  public void InlayHints() throws IOException
+  {
+    Stream.concat(StdLibFiles(), TestFiles(true))
+      .forEach(p -> {
+        SourceText.setText(uri1, Read(p));
+        assertDoesNotThrow(() -> InlayHints.getInlayHints(Params()));
+      });
+  }
 
 }
