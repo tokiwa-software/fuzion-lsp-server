@@ -257,7 +257,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   @Test @Timeout(value = 60, unit = TimeUnit.SECONDS) @Disabled // too slow
   public void GetSemanticTokensStdLib() throws IOException
   {
-    StdLibFiles()
+    StdLibAndAllTestFiles()
       .forEach(p -> {
         SourceText.setText(uri1, Read(p));
         var semanticTokens =

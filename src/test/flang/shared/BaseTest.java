@@ -252,6 +252,11 @@ public abstract class BaseTest extends Assertions
       }
   }
 
+  protected Stream<Path> StdLibAndAllTestFiles() throws IOException
+  {
+    return Stream.concat(StdLibFiles(), TestFiles(true));
+  }
+
   protected Stream<Path> StdLibFiles() throws IOException
   {
     return Files.find(Paths.get("fuzion/lib"), 5, (p, bfa) -> bfa.isRegularFile());
