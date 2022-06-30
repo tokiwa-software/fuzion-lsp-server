@@ -42,6 +42,7 @@ import dev.flang.lsp.server.util.CallTool;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
@@ -66,7 +67,7 @@ public class InlayHints extends ANY
         check(c.actuals().size() == c.calledFeature().valueArguments().size());
 
         return IntStream.range(0, c.actuals().size())
-          .filter(idx -> c.calledFeature().valueArguments().get(idx).featureName().baseName().length() >= MIN_PARAM_NAME_LENGTH)
+          .filter(idx -> Util.CodepointCount(c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
           .mapToObj(idx -> {
             var inlayHint = new InlayHint(Bridge.ToPosition(c.actuals().get(idx).pos()),
               Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));

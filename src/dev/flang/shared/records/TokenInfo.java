@@ -55,7 +55,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   {
     var lines = (int) text.lines().count();
     return new SourcePosition(start._sourceFile, start._line + lines - 1,
-      lines == 1 ? start._column + text.length(): Util.LastOrDefault(text.lines(), "").length() + 1);
+      lines == 1 ? start._column + length(): Util.CodepointCount(Util.LastOrDefault(text.lines(), "")) + 1);
   }
 
   /*
@@ -74,9 +74,9 @@ public record TokenInfo(SourcePosition start, String text, Token token)
     return start._column == 0 ? 0: start._column - 1;
   }
 
-  private Integer length()
+  public Integer length()
   {
-    return text.length();
+    return Util.CodepointCount(text);
   }
 
   public Stream<Integer> SemanticTokenData(TokenInfo previousToken,

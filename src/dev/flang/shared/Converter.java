@@ -66,12 +66,18 @@ public class Converter
       .codePoints()
       .mapToObj(cp -> Character.toString(cp))
       .reduce("", (res, c) -> {
-        if (res.isEmpty() || res.charAt(res.length() - 1) == '_')
+        if (res.isEmpty() || res.codePointAt(res.length() - 1) == CodepointOf('_'))
           {
             return res + c.toUpperCase();
           }
         return res + c;
       });
+  }
+
+
+  private static int CodepointOf(char c)
+  {
+    return String.valueOf(c).codePointAt(0);
   }
 
 }

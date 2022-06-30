@@ -35,7 +35,7 @@ public class ConverterTest extends BaseTest
   @Test
   public void SnakePascalCase()
   {
-    assertEquals("Snake_Pascal_Case", Converter.ToSnakePascalCase("snakePascal_case"));
+    assertEquals("Sn😀ke_P😀scal_C😀se", Converter.ToSnakePascalCase("sn😀keP😀scal_c😀se"));
   }
 
 }

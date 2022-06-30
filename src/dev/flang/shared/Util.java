@@ -118,4 +118,12 @@ public class Util
     return s.reduce((a, b) -> b).orElse(t);
   }
 
+  /*
+   * returns codepoint count of text
+   */
+  public static int CodepointCount(String text)
+  {
+    return Integer.valueOf((int) text.codePoints().count());
+  }
+
 }

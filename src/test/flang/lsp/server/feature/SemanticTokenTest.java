@@ -47,6 +47,7 @@ import dev.flang.lsp.server.enums.TokenType;
 import dev.flang.lsp.server.feature.SemanticToken;
 import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
+import dev.flang.shared.Util;
 import test.flang.lsp.server.ExtendedBaseTest;
 
 public class SemanticTokenTest extends ExtendedBaseTest
@@ -279,7 +280,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
     AssertBasicDataSanity(semanticTokens);
 
     // Comment
-    assertEquals(semanticTokens, 0, 0, 0, "# comment\n".length(), TokenType.Comment, 0);
+    assertEquals(semanticTokens, 0, 0, 0, Util.CodepointCount("# comment\n"), TokenType.Comment, 0);
 
     // Feature
     assertEquals(semanticTokens, 1, 1, 0, 7, TokenType.Namespace, 0);
@@ -288,7 +289,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
     assertEquals(semanticTokens, 2, 0, 8, 2, TokenType.Keyword, 0);
 
     // child_feat
-    assertEquals(semanticTokens, 3, 1, 2, "child_feat".length(), TokenType.Type, 0);
+    assertEquals(semanticTokens, 3, 1, 2, Util.CodepointCount("child_feat"), TokenType.Type, 0);
   }
 
   private void assertEquals(SemanticTokens st, int tokenIndex, Integer relativeLine, Integer relativeStartChar,

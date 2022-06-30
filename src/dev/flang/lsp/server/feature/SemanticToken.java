@@ -124,20 +124,20 @@ public class SemanticToken extends ANY
           case t_StringDB :    // '+-*{' in "abc$x+-*{a+b}."
             return Stream.of(
               new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column),
-                t.text().substring(0, t.text().length() - 1), Token.t_stringQQ),
+                t.text().substring(0, t.length() - 1), Token.t_stringQQ),
               new TokenInfo(
-                new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + t.text().length() - 1),
-                t.text().substring(t.text().length() - 1, t.text().length()), Token.t_op));
+                new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + t.length() - 1),
+                t.text().substring(t.length() - 1, t.length()), Token.t_op));
           case t_stringBD :    // '}+-*$' in "abc{x}+-*$x.".
           case t_stringBB :    // '}+-*{' in "abc{x}+-*{a+b}."
             return Stream.of(
               new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column), "}",
                 Token.t_op),
               new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + 1),
-                t.text().substring(1, t.text().length() - 1), Token.t_stringQQ),
+                t.text().substring(1, t.length() - 1), Token.t_stringQQ),
               new TokenInfo(
-                new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + t.text().length() - 1),
-                t.text().substring(t.text().length() - 1, t.text().length()), Token.t_op));
+                new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + t.length() - 1),
+                t.text().substring(t.length() - 1, t.length()), Token.t_op));
           default:
             return Stream.of(t);
           }
