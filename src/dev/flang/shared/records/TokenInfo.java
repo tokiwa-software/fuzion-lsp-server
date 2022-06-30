@@ -52,6 +52,7 @@ import dev.flang.util.SourcePosition;
  */
 public record TokenInfo(SourcePosition start, String text, Token token)
 {
+  //NYI this is too expensive
   public SourcePosition end()
   {
     var lines = (int) text.lines().count();
