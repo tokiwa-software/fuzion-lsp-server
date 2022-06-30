@@ -74,12 +74,12 @@ public class Bridge extends ANY
 
   public static Range ToRangeBaseName(AbstractFeature feature)
   {
-    var baseNamePosition = FeatureTool.BareNamePosition(feature);
+    var bareNamePosition = FeatureTool.BareNamePosition(feature);
     return new Range(
-      ToPosition(baseNamePosition),
-      ToPosition(new SourcePosition(baseNamePosition._sourceFile,
-        baseNamePosition._line,
-        baseNamePosition._column + Util.CharCount(feature.featureName().baseName()))));
+      ToPosition(bareNamePosition),
+      ToPosition(new SourcePosition(bareNamePosition._sourceFile,
+        bareNamePosition._line,
+        bareNamePosition._column + Util.CharCount(FeatureTool.BareName(feature)))));
   }
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
