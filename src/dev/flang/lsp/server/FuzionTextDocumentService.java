@@ -90,6 +90,8 @@ import dev.flang.shared.Util;
 
 public class FuzionTextDocumentService implements TextDocumentService
 {
+  private static final int MAX_COMPUTATION_TIME_MS = 5000;
+
   @Override
   public void didOpen(DidOpenTextDocumentParams params)
   {
@@ -143,94 +145,92 @@ public class FuzionTextDocumentService implements TextDocumentService
 
   }
 
-  private <T> CompletableFuture<T> AbortAfterOneSecond(Callable<T> c, String callee)
-  {
-    return Computation.CancellableComputation(c, callee, 1000);
-  }
-
   @Override
   public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position)
   {
-    return AbortAfterOneSecond(() -> Completion.getCompletions(position), "completion");
+    return Computation.CancellableComputation(() -> Completion.getCompletions(position), "completion", 5000);
   }
 
   @Override
   public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved)
   {
-    return AbortAfterOneSecond(() -> unresolved, "resolve completion");
+    return Computation.CancellableComputation(() -> unresolved, "resolve completion", MAX_COMPUTATION_TIME_MS);
   }
 
   @Override
   public CompletableFuture<Hover> hover(HoverParams params)
   {
-    return AbortAfterOneSecond(() -> Hovering.getHover(params), "hover");
+    return Computation.CancellableComputation(() -> Hovering.getHover(params), "hover", 5000);
   }
 
   @Override
   public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
     DefinitionParams params)
   {
-    return AbortAfterOneSecond(() -> Definition.getDefinitionLocation(params), "definition");
+    return Computation.CancellableComputation(() -> Definition.getDefinitionLocation(params), "definition", 5000);
   }
 
   @Override
   public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params)
   {
-    return AbortAfterOneSecond(() -> Highlight.getHightlights(params), "document highlight");
+    return Computation.CancellableComputation(() -> Highlight.getHightlights(params), "document highlight", 5000);
   }
 
   @Override
   public CompletableFuture<List<? extends Location>> references(ReferenceParams params)
   {
-    return AbortAfterOneSecond(() -> References.getReferences(params), "references");
+    return Computation.CancellableComputation(() -> References.getReferences(params), "references", 5000);
   }
 
   @Override
   public CompletableFuture<WorkspaceEdit> rename(RenameParams params)
   {
-    return AbortAfterOneSecond(() -> Rename.getWorkspaceEdit(params), "rename");
+    return Computation.CancellableComputation(() -> Rename.getWorkspaceEdit(params), "rename", 5000);
   }
 
   @Override
   public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
   {
-    return AbortAfterOneSecond(() -> Either.forRight(Rename.getPrepareRenameResult(params)), "prepare rename");
+    return Computation.CancellableComputation(() -> Either.forRight(Rename.getPrepareRenameResult(params)),
+      "prepare rename", 5000);
   }
 
   @Override
   public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params)
   {
-    return AbortAfterOneSecond(() -> CodeActions.getCodeActions(params), "code action");
+    return Computation.CancellableComputation(() -> CodeActions.getCodeActions(params), "code action", 5000);
   }
 
   @Override
   public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
   {
-    return AbortAfterOneSecond(() -> DocumentSymbols.getDocumentSymbols(params), "document symbol");
+    return Computation.CancellableComputation(() -> DocumentSymbols.getDocumentSymbols(params), "document symbol",
+      5000);
   }
 
   @Override
   public CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params)
   {
-    return AbortAfterOneSecond(() -> InlayHints.getInlayHints(params), "inlay hint");
+    return Computation.CancellableComputation(() -> InlayHints.getInlayHints(params), "inlay hint", 5000);
   }
 
   @Override
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)
   {
-    return AbortAfterOneSecond(() -> CodeLenses.getCodeLenses(params), "code lens");
+    return Computation.CancellableComputation(() -> CodeLenses.getCodeLenses(params), "code lens", 5000);
   }
 
   @Override
   public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams params)
   {
-    return AbortAfterOneSecond(() -> SignatureHelper.getSignatureHelp(params), "signature help");
+    return Computation.CancellableComputation(() -> SignatureHelper.getSignatureHelp(params), "signature help", 5000);
   }
 
   @Override
   public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params)
   {
-    return AbortAfterOneSecond(() -> SemanticToken.getSemanticTokens(params), "semantic tokens full");
+    return Computation.CancellableComputation(() -> SemanticToken.getSemanticTokens(params), "semantic tokens full",
+      5000);
   }
 
 }
