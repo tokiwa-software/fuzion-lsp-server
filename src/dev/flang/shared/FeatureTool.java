@@ -373,11 +373,10 @@ public class FeatureTool extends ANY
   public static boolean IsUsedInChoice(AbstractFeature af)
   {
     var uri = ParserTool.getUri(af.pos());
-    var result = ASTWalker.Traverse(uri)
-      .anyMatch(x -> x.getKey() instanceof AbstractFeature f &&
-        (FeatureIsChoiceMember(f.thisType(), af)
-          ||
-          f.hasResultField() && FeatureIsChoiceMember(f.resultType(), af)));
+    var result = ASTWalker
+      .Features(uri)
+      .anyMatch(f -> FeatureIsChoiceMember(f.thisType(), af)
+        || f.hasResultField() && FeatureIsChoiceMember(f.resultType(), af));
     return result;
   }
 
