@@ -396,4 +396,12 @@ public class SemanticTokenTest extends ExtendedBaseTest
       .stream();
   }
 
+  @Test
+  public void SemanticTokenRegression()
+  {
+    SourceText.setText(uri1, Read("test_data/webserver_no_such_el_exception.fz"));
+    var semanticTokens = SemanticToken.getSemanticTokens(Params(uri1));
+    AssertBasicDataSanity(semanticTokens);
+  }
+
 }

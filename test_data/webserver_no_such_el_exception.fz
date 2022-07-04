@@ -1,0 +1,188 @@
+webserver : fuzion.std, Java.java.net, Java.java.io is
+
+
+  # open server socket
+  open_server_socket =>
+    port := 8080
+    serversocket := ServerSocket.new port
+    if serversocket!!
+      panic serversocket.err.asString
+
+    serversocket.val
+
+
+  # get input and data output stream from socket
+  get_input_output_stream(s ServerSocket) tuple<InputStream, DataOutputStream> is
+    match s.accept
+      e error => panic e.asString
+      s Socket =>
+        match s.getInputStream
+          e error => panic e.asString
+          i InputStream =>
+            input  := i
+            match s.getOutputStream
+              e error => panic e.asString
+              o OutputStream =>
+                output := DataOutputStream.new o
+                (input,output)
+
+
+  content_types is
+    html is
+      redef asString => "text/html; charset=UTF-8"
+
+    text is # NYI
+
+  content_type : choice<content_types.html, content_types.text> is
+
+
+  # send data to output stream
+  send(output DataOutputStream, data string, content_type content_type, status i32)
+  pre status >= 100 && status < 1000
+    =>
+    ok := output.writeBytes (
+                        "HTTP/1.1 $status OK\n"
+                      + "Connection: close\n"
+                      + "Server: Fuzion WebServer v0.01\n"
+                      + "Content-Length: " + data.byteLength + "\n"
+                      + "Content-Type: $content_type\n"
+                      + "\n"
+                      + data)
+    if ok!!
+      say "#### {ok.err}"
+
+  GET is; POST is; UNKNOWN is
+  request_method : choice <GET, POST, UNKNOWN> is
+    redef asString =>
+      match request_method.this
+        GET => "GET"
+        POST => "POST"
+        * => "UNKNOWN"
+
+
+
+  client_from_forwarded_for_header(http_headers map string string) =>
+    http_headers["X-Forwarded-For"]
+      .bind InetAddress (v ->
+        match InetAddress.getByName v
+          e error => nil
+          v InetAddress => v
+      )
+
+  handle_request(client InetAdress, req_head head, output DataOutputStream) bool is
+
+    send_data(data string, content_type content_type, status_code i32) => send output data content_type status_code
+
+    match req_head.method
+      GET => send_data req_head.url content_types.html 200
+      POST =>
+      UNKNOWN =>
+    false
+
+  request_context(private client InetAddress, private input InputStream, private output DataOutputStream) is
+
+    read_header(max_bytes i32) string is
+      byte_stream stream<option<u8>> is
+        ref : stream<option<u8>>
+            redef hasNext bool is
+              match input.available
+                error => false
+                v i32 => v > 0
+            redef next option<u8>
+            is
+              match input.read
+                error => nil
+                b i32 => if b < 0 then nil else b.as_u8
+
+      # carriage return
+      cr := u8 13
+      # line feed
+      lf := u8 10
+      not_empty_line (u8) -> bool is
+        state := mut (u8 0)
+        (x) ->
+                if state.get = 3 & x = lf
+                  false
+                else
+                  # NYI the next line exists because issue #329
+                  state.get
+                  if (state.get = 0 & x = cr
+                    | state.get = 1 & x = lf
+                    | state.get = 2 & x = cr)
+                    state <- (state.get + 1)
+                  else
+                    state <- 0
+                  true
+
+      ref : string
+        data Sequence<u8> := byte_stream
+          .takeWhile(x -> x??)
+          .map(x -> x.get)
+          .takeWhile not_empty_line
+          .take max_bytes
+          .asArray
+        redef utf8 Sequence<u8> is data
+
+    http_header_map(s string) map<string,string> is
+      res := (s
+        .split "\r\n")
+        .map(x -> ((x.find " ").map(idx -> (x.substring 0 idx, x.substring idx+1 x.codepointLength))))
+        .filter(x -> x.exists)
+        .mapSequence(x -> x.get)
+        .asArray
+      psMap res.mapSequence(x -> x.values.0) res.mapSequence(x -> x.values.1)
+
+
+    head(method request_method, url string, http_headers map<string,string>) is
+
+    head head is
+      lazy(() ->
+        s := (read_header 4E3)
+        method request_method := if s.startsWith "GET" then GET else if s.startsWith "POST" then POST else UNKNOWN
+        url := strings.fromCodepoints (s
+          .asCodepoints
+          .dropWhile(x -> x /= " ")
+          .dropWhile(x -> x = " ")
+          .takeWhile(x -> x /= " "))
+        map := (http_header_map (strings.fromCodepoints s.asCodepoints.dropWhile(x -> x /= "\n").drop(1)))
+        head method url map
+      )
+
+    unit
+
+  handle_request(req_context request_context) =>
+
+    say "{req_context.head.method} {req_context.head.url}"
+
+    # nyi get client from default
+    close_output_stream := match client_from_forwarded_for_header req_context.head.http_headers
+      c InetAdress => handle_request c req_context.head output
+      * => handle_request client req_context.head output
+
+
+    # close streams
+    input.close
+    if close_output_stream
+      output.close
+
+    # NYI we should not need to return unit here
+    unit
+
+
+  # should the requests be processed in background threads?
+  multi_threaded := false
+
+
+  # start of main program
+  socket := open_server_socket
+  say "successfully acquired server socket"
+
+
+  while true do
+    (input,output) := get_input_output_stream socket
+
+    if multi_threaded
+      # NYI use thread pool
+      concur.thread.spawn(() -> handle_request (request_context socket.getInetAddress input output)
+    else
+      handle_request socket.getInetAddress input output
