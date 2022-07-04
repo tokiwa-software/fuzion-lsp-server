@@ -123,7 +123,8 @@ public class Rename extends ANY
         if (IsAtFunKeyword(pos))
           {
             var whitespace =
-              new SourcePosition(pos._sourceFile, pos._line, pos._column + Util.CharCount(Lexer.Token.t_fun.toString()));
+              new SourcePosition(pos._sourceFile, pos._line,
+                pos._column + Util.CharCount(Lexer.Token.t_fun.toString()));
             pos = LexerTool.NextTokenOfType(whitespace, Util.ArrayToSet(new Token[]
               {
                   Token.t_ident
@@ -131,7 +132,7 @@ public class Rename extends ANY
           }
         return pos;
       });
-    var pos = featureToRename.pos();
+    var pos = FeatureTool.BareNamePosition(featureToRename);
 
     // positions where feature is used as type
     var typePositions = FeatureTool.SelfAndDescendants(featureToRename.universe())
@@ -146,27 +147,6 @@ public class Rename extends ANY
           f.pos()._column + Util.CharCount(f.featureName().baseName()) + Util.CodepointCount(whitespace.text()));
       });
 
-    // NYI we don't have correct position of args of fun in the AST yet
-    // special case for renaming lamdba args
-    if (featureToRename.outer() != null &&
-      featureToRename.outer().outer() != null &&
-      featureToRename.outer().outer().featureName().baseName().startsWith("#fun"))
-      {
-        // last Token before start of #fun.call where tokenText matches baseName
-        var tokenPos = LexerTool
-          .TokensFrom(new SourcePosition(pos._sourceFile, 1, 1))
-          .filter(x -> featureToRename.featureName().baseName().equals(x.text()))
-          .filter(x -> {
-            return x.start()
-              .compareTo(new SourcePosition(x.start()._sourceFile,
-                featureToRename.pos()._line, featureToRename.pos()._column)) < 0;
-          })
-          .reduce(null, (r, x) -> x)
-          .start();
-
-        pos =
-          new SourcePosition(pos._sourceFile, tokenPos._line, tokenPos._column);
-      }
 
     var assignmentPositions = ASTWalker
       .Assignments(featureToRename.outer(), featureToRename)
