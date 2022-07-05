@@ -1,0 +1,19 @@
+pythagoreanTriple is
+  cₘₐₓ := 100    # max length of hypothenuse
+
+  # iterate over all interesting real/imag pairs while c<max
+  for real in 1..cₘₐₓ do
+    for
+      # imag >= real is not interesting, v².real or v².imag would be negative
+      # so we end imag at real-1
+      imag in 1..real-1
+
+      v := complex real imag
+      v² := v * v
+      f := v².real.gcd v².imag  # 1 or 2 (if real+imag is even)
+      a := v².real / f
+      b := v².imag / f
+      c := v .abs² / f
+    while c < cₘₐₓ
+      if real.gcd imag = 1  # filter duplicates
+        say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
