@@ -3,7 +3,7 @@ package dev.flang.lsp.server.enums;
 public enum TriggerCharacters
 {
   Dot("."), // calls
-  Space(" "), // infix, postfix
+  Space(" "), // infix, postfix, types
   LessThan("<"), // types NYI
   None("");
 

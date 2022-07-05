@@ -307,6 +307,27 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(completions.getLeft().isEmpty());
   }
 
+  @Test
+  public void NoCompletionsInIncompleteFeature()
+  {
+    var sourceText = """
+      ex =>
+        my_feat(a i32)
+        """ + " ";
+
+    SourceText.setText(uri1, sourceText);
+
+    // NYI this should eventually offer suitable types
+    var completions = Completion.getCompletions(params(uri1, 1, 12, TriggerCharacters.Space));
+    assertTrue(completions.getLeft().isEmpty());
+
+    completions = Completion.getCompletions(params(uri1, 1, 16, TriggerCharacters.Space));
+    assertTrue(completions.getLeft().isEmpty());
+
+    completions = Completion.getCompletions(params(uri1, 1, 17, TriggerCharacters.Space));
+    assertTrue(completions.getLeft().isEmpty());
+  }
+
 
   @Test
   public void CompletionNumericLiteral()
