@@ -29,6 +29,7 @@ package dev.flang.lsp.server.feature;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintKind;
@@ -63,19 +64,25 @@ public class InlayHints extends ANY
       .filter(c -> !CallTool.IsFixLikeCall(c))
       .filter(c -> !FeatureTool.IsInternal(c.calledFeature()))
       .flatMap(c -> {
-
-        check(c.actuals().size() == c.calledFeature().valueArguments().size());
-
-        return IntStream.range(0, c.actuals().size())
-          .filter(idx -> Util.CharCount(c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
-          .mapToObj(idx -> {
-            var inlayHint = new InlayHint(Bridge.ToPosition(c.actuals().get(idx).pos()),
-              Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));
-            inlayHint.setKind(InlayHintKind.Parameter);
-            inlayHint.setPaddingLeft(true);
-            inlayHint.setPaddingRight(true);
-            return inlayHint;
-          });
+        if (c.actuals().size() == c.calledFeature().valueArguments().size())
+          {
+            return IntStream.range(0, c.actuals().size())
+              .filter(idx -> Util.CharCount(
+                c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
+              .mapToObj(idx -> {
+                var inlayHint = new InlayHint(Bridge.ToPosition(c.actuals().get(idx).pos()),
+                  Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));
+                inlayHint.setKind(InlayHintKind.Parameter);
+                inlayHint.setPaddingLeft(true);
+                inlayHint.setPaddingRight(true);
+                return inlayHint;
+              });
+          }
+        // NYI when is actuals count != calledFeature valueArgs count?
+        else
+          {
+            return Stream.empty();
+          }
       })
       .collect(Collectors.toList());
   }
