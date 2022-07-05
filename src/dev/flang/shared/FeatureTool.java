@@ -299,6 +299,7 @@ public class FeatureTool extends ANY
       Stream.of(feature),
       outerFeatures(feature),
       feature.inherits().stream().map(c -> c.calledFeature()))
+      .filter(f -> !f.thisType().containsError())
       .flatMap(f -> {
         return ParserTool.DeclaredFeatures(f);
       });
