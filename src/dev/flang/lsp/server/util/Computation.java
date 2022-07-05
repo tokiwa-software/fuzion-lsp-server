@@ -26,19 +26,23 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 
+import dev.flang.lsp.server.Config;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
 
 public class Computation
 {
   private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
+  private static LocalDateTime lastErrorMessageSent = LocalDateTime.MIN;
 
   public static <T> CompletableFuture<T> CancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
   {
@@ -57,6 +61,7 @@ public class Computation
       catch (ExecutionException e)
         {
           Log.message("[" + callee + "] An excecution exception occurred: " + e, MessageType.Error);
+          NotifyUser();
         }
       catch (MaxExecutionTimeExceededException e)
         {
@@ -69,10 +74,18 @@ public class Computation
       catch (Throwable th)
         {
           Log.message("[" + callee + "] An unexpected error occurred: " + th, MessageType.Error);
+          NotifyUser();
         }
       return null;
     });
+  }
 
-
+  private static void NotifyUser()
+  {
+    if (lastErrorMessageSent.plusMinutes(1).isBefore(LocalDateTime.now()))
+      {
+        lastErrorMessageSent = LocalDateTime.now();
+        Config.languageClient().showMessage(new MessageParams(MessageType.Error, "An error occurred. :-( See logs."));
+      }
   }
 }
