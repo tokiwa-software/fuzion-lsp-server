@@ -101,7 +101,7 @@ public abstract class BaseTest extends Assertions
       .get();
   }
 
-  @BeforeAll
+  // @BeforeAll
   public static void setup()
   {
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;

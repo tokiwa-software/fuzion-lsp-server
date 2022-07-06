@@ -28,17 +28,25 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.shared;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
+import dev.flang.parser.Lexer;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.IO;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
+import dev.flang.util.Errors;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -181,6 +189,41 @@ public class ParserToolTest extends BaseTest
                   """);
     assertDoesNotThrow(() -> ParserTool.TopLevelFeatures(uri1).findFirst().get());
     assertEquals(true, ParserTool.Errors(uri1).count() > 0);
+  }
+
+  @Test @Timeout(value = 10000) @Tag("TAG")
+  public void Fuzz()
+  {
+    Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
+    var rand = new Random();
+    var keywords = Arrays.stream(Lexer.Token._keywords).map(x -> x.toString()).collect(Collectors.toList());
+    var others = List.of("(",")","{","}","\"", "$","1", ".", ",");
+    var ws = List.of(" ", "\n");
+
+    for (int i = 0; i < 100; i++) {
+      Stream<String> randomIdents = IntStream.range(0, 20).mapToObj(x -> getRandomIdent(rand));
+      List<String> sourceWords = Stream.concat(randomIdents, Stream.concat(keywords.stream(), others.stream())).collect(Collectors.toList());
+      var text = rand
+        .ints(20, 0, sourceWords.size())
+        .<String>mapToObj(idx -> sourceWords.get(idx) + ws.get(rand.nextInt(2)))
+        .collect(Collectors.joining());
+
+      System.err.println("====");
+      System.err.println(text);
+      System.err.println("====");
+
+      SourceText.setText(uri1, text);
+      ParserTool.TopLevelFeatures(uri1);
+    }
+  }
+
+  private String getRandomIdent(Random rand)
+  {
+    return rand.ints()
+      .filter(x -> Character.isValidCodePoint(x))
+      .limit(10)
+      .mapToObj(x -> Character.toString(x))
+      .collect(Collectors.joining());
   }
 
   @Test
