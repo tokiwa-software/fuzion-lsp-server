@@ -37,19 +37,6 @@ import dev.flang.util.ANY;
 
 public class Log extends ANY
 {
-  private static final int MAX_INDENT = 10;
-  private static int indentation = 0;
-
-  public static void increaseIndentation()
-  {
-    indentation++;
-  }
-
-  public static void decreaseIndentation()
-  {
-    indentation--;
-  }
-
   public static void message(String str)
   {
     message(str, MessageType.Log);
@@ -57,19 +44,8 @@ public class Log extends ANY
 
   public static void message(String str, MessageType messageType)
   {
-    String result = "";
-    var lines = str.split("\n");
-    for(String line : lines)
-      {
-        result += " ".repeat(indentation * 2) + line + System.lineSeparator();
-        if (indentation == MAX_INDENT - 1)
-          {
-            result += "..." + System.lineSeparator();
-          }
-      }
-    Config.languageClient().logMessage(new MessageParams(messageType, result));
+    Config.languageClient().logMessage(new MessageParams(messageType, str));
   }
-
 
   /**
    * Log if computation of task takes longer than maxTime
