@@ -56,6 +56,25 @@ import dev.flang.shared.Util;
  */
 public class Completion
 {
+  public enum TriggerCharacters
+  {
+    Dot("."), // calls
+    Space(" "), // infix, postfix, types
+    LessThan("<"); // types NYI
+
+    private final String triggerChar;
+
+    private TriggerCharacters(String s)
+    {
+      triggerChar = s;
+    }
+
+    public String toString()
+    {
+      return this.triggerChar;
+    }
+  }
+
   private static final Either<List<CompletionItem>, CompletionList> NoCompletions = Either.forLeft(List.of());
 
   private static CompletionItem buildCompletionItem(String label, String insertText,

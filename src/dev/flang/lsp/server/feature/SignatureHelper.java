@@ -34,20 +34,41 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.ParameterInformation;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SignatureInformation;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.lsp.server.util.CallTool;
 import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
+import dev.flang.util.ANY;
 
-public class SignatureHelper
+public class SignatureHelper extends ANY
 {
+
+  public enum TriggerCharacters
+  {
+    Comma(","),
+    Space(" "),
+    ParensLeft("(");
+
+    private final String triggerChar;
+
+    private TriggerCharacters(String s)
+    {
+      triggerChar = s;
+    }
+
+    public String toString()
+{
+      return this.triggerChar;
+    }
+  }
 
   public static SignatureHelp getSignatureHelp(SignatureHelpParams params)
   {
