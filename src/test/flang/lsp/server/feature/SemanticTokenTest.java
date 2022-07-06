@@ -71,6 +71,15 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  public void GetSemanticTokensEmpty()
+  {
+    SourceText.setText(uri1, "");
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params(uri1));
+    AssertBasicDataSanity(semanticTokens);
+  }
+
+  @Test
   public void GetSemanticTokensFunKeyWord()
   {
     SourceText.setText(uri1, """
