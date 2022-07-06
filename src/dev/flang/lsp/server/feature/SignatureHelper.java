@@ -65,13 +65,16 @@ public class SignatureHelper extends ANY
     }
 
     public String toString()
-{
+    {
       return this.triggerChar;
     }
   }
 
   public static SignatureHelp getSignatureHelp(SignatureHelpParams params)
   {
+    if (PRECONDITIONS)
+      require(params.getPosition().getCharacter() > 0);
+
     Optional<AbstractCall> call = QueryAST.callAt(params);
 
     if (call.isEmpty())
@@ -79,10 +82,13 @@ public class SignatureHelper extends ANY
         return new SignatureHelp();
       }
 
+    var previousPosition = new TextDocumentPositionParams(params.getTextDocument(),
+      new Position(params.getPosition().getLine(), params.getPosition().getCharacter() - 1));
+
     var featureOfCall =
       call.get().target() instanceof AbstractCall callTarget
                                                              ? Optional.of(callTarget.calledFeature())
-                                                             : QueryAST.FindFeatureByName(params);
+                                                             : QueryAST.FindFeatureByName(previousPosition);
 
     if (featureOfCall.isEmpty())
       {
