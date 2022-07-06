@@ -46,6 +46,8 @@ public class Computation
 
   public static <T> CompletableFuture<T> CancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
   {
+    Log.message("[" + callee + "] started computing.", MessageType.Log);
+
     var result = new CompletableFuture<T>();
     return result.completeAsync(() -> {
       try
