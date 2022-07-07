@@ -60,10 +60,34 @@ public class InlayHintTest extends ExtendedBaseTest
   }
 
 
+  @Test @Disabled // failing
+  public void InlayHintsChainedCall()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        a is
+          b := "asdf"
+
+        my_say(arg string) is
+          say arg
+
+        my_say a.b
+              """);
+
+    var inlayHints = InlayHints
+      .getInlayHints(Params());
+
+    assertEquals(1, inlayHints.size());
+    assertEquals("arg:", inlayHints.get(0).getLabel().getLeft());
+    assertEquals(7, inlayHints.get(0).getPosition().getLine());
+    assertEquals(9, inlayHints.get(0).getPosition().getCharacter());
+  }
+
+
   private InlayHintParams Params()
   {
     var cursor = Cursor(uri1, 1, 1);
-    return new InlayHintParams(cursor.getTextDocument(), new Range(new Position(0, 0), new Position(3, 0)));
+    return new InlayHintParams(cursor.getTextDocument(), new Range(new Position(0, 0), new Position(100, 0)));
   }
 
   @Test @Timeout(value = 60, unit = TimeUnit.SECONDS) @Disabled // too slow
