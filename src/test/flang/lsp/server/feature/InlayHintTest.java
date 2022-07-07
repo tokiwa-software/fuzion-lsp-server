@@ -44,7 +44,7 @@ import test.flang.lsp.server.ExtendedBaseTest;
 public class InlayHintTest extends ExtendedBaseTest
 {
 
-  @Test @Disabled // failing
+  @Test
   public void InlayHintsComposedArg()
   {
     SourceText.setText(uri1, Mandelbrot);
@@ -52,15 +52,15 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    assertEquals(1, inlayHints.size());
+    assertEquals(20, inlayHints.size());
 
-    assertEquals("maxEscapeIterations:", inlayHints.get(0).getLabel().getLeft());
-    assertEquals(2, inlayHints.get(0).getPosition().getLine());
-    assertEquals(66, inlayHints.get(0).getPosition().getCharacter());
+    assertEquals("maxEscapeIterations:", inlayHints.get(6).getLabel().getLeft());
+    assertEquals(2, inlayHints.get(6).getPosition().getLine());
+    assertEquals(66, inlayHints.get(6).getPosition().getCharacter());
   }
 
 
-  @Test @Disabled // failing
+  @Test
   public void InlayHintsChainedCall()
   {
     SourceText.setText(uri1, """
