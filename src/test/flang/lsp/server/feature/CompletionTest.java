@@ -122,6 +122,21 @@ public class CompletionTest extends ExtendedBaseTest
     assertEquals("b ( (${10001:i32} -> ${10002:i32}) ->  (${10001:i32} -> ${10002:i32}))", actual);
   }
 
+  @Test @Disabled // failing
+  public void CompletionInChainedCalls()
+  {
+    var sourceText = """
+      example =>
+        envir.args.drop(2).first.parse_i32.val
+            """;
+
+    SourceText.setText(uri1, sourceText);
+    var actual = Completion.getCompletions(params(uri1, 1, 27, Completion.TriggerCharacters.Dot))
+      .getLeft();
+
+    assertTrue(actual.stream().anyMatch(ci -> ci.getInsertText().equals("parse_i32")));
+  }
+
 
   @Test
   public void ListCompletions()
