@@ -372,7 +372,7 @@ public class QueryASTTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 26));
-    assertEquals("x", calledFeature.get().featureName().baseName());
+    assertEquals("i32", calledFeature.get().featureName().baseName());
   }
 
 

@@ -77,11 +77,26 @@ public class QueryAST extends ANY
         && PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
       .map(entry -> (AbstractCall) entry.getKey())
-      .filter(c -> LSP4jUtils.ComparePosition(Bridge.ToPosition(CallTool.endOfCall(c)), params.getPosition()) <= 0)
+      .filter(ac -> LSP4jUtils.ComparePosition(Bridge.ToPosition(CallTool.endOfCall(ac)), params.getPosition()) <= 0)
       .sorted(CompareBySourcePosition.reversed())
-      .filter(c -> c.calledFeature() != null)
+      .filter(ac -> ac.calledFeature() != null)
       .filter(CallTool.CalledFeatureNotInternal)
-      .map(c -> c.calledFeature())
+      .map(ac -> {
+        if (ac.typeForGenericsTypeInfereing() != null && !ac.typeForGenericsTypeInfereing().containsError())
+          {
+            return ac.typeForGenericsTypeInfereing();
+          }
+        return ac
+          .calledFeature()
+          .resultType();
+      })
+      .map(at -> {
+        if (at.isGenericArgument() && !at.genericArgument().constraint().equals(Types.resolved.t_object))
+          {
+            return at.genericArgument().constraint().featureOfType();
+          }
+        return at.featureOfType();
+      })
       .filter(f -> !FeatureTool.IsInternal(f))
       .findFirst()
       .or(() -> Constant(params));
@@ -104,18 +119,6 @@ public class QueryAST extends ANY
   public static Stream<AbstractFeature> CallCompletionsAt(TextDocumentPositionParams params)
   {
     return CalledFeature(params)
-      .map(x -> x.resultType())
-      .flatMap(x -> {
-        if (!x.isGenericArgument())
-          {
-            return Optional.of(x.featureOfType());
-          }
-        if (x.isGenericArgument() && !x.genericArgument().constraint().equals(Types.resolved.t_object))
-          {
-            return Optional.of(x.genericArgument().constraint().featureOfType());
-          }
-        return Optional.empty();
-      })
       .map(feature -> {
         var declaredFeaturesOfInheritedFeatures =
           InheritedRecursive(feature).flatMap(c -> ParserTool.DeclaredFeatures(c.calledFeature()));
@@ -140,18 +143,6 @@ public class QueryAST extends ANY
   public static Stream<AbstractFeature> InfixPostfixCompletionsAt(TextDocumentPositionParams params)
   {
     return CalledFeature(params)
-      .map(x -> x.resultType())
-      .flatMap(x -> {
-        if (!x.isGenericArgument())
-          {
-            return Optional.of(x.featureOfType());
-          }
-        if (x.isGenericArgument() && !x.genericArgument().constraint().equals(Types.resolved.t_object))
-          {
-            return Optional.of(x.genericArgument().constraint().featureOfType());
-          }
-        return Optional.empty();
-      })
       .map(feature -> {
         var declaredFeaturesOfInheritedFeatures =
           InheritedRecursive(feature).flatMap(c -> ParserTool.DeclaredFeatures(c.calledFeature()));

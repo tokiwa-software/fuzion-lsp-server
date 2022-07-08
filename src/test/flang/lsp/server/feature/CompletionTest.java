@@ -122,7 +122,7 @@ public class CompletionTest extends ExtendedBaseTest
     assertEquals("b ( (${10001:i32} -> ${10002:i32}) ->  (${10001:i32} -> ${10002:i32}))", actual);
   }
 
-  @Test @Disabled // failing
+  @Test
   public void CompletionInChainedCalls()
   {
     var sourceText = """
