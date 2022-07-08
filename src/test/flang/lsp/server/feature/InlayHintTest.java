@@ -29,7 +29,9 @@ package test.flang.lsp.server.feature;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
@@ -54,14 +56,15 @@ public class InlayHintTest extends ExtendedBaseTest
 
     assertEquals(20, inlayHints.size());
 
-    assertEquals("maxEscapeIterations:", inlayHints.get(6).getLabel().getLeft());
-    assertEquals(2, inlayHints.get(6).getPosition().getLine());
-    assertEquals(66, inlayHints.get(6).getPosition().getCharacter());
+    InlayHint maxEscapeIter = inlayHints.stream().filter(x -> x.getPosition().getLine() == 2).findFirst().get();
+    assertEquals("maxEscapeIterations:", maxEscapeIter.getLabel().getLeft());
+    assertEquals(2, maxEscapeIter.getPosition().getLine());
+    assertEquals(66, maxEscapeIter.getPosition().getCharacter());
   }
 
 
   @Test
-  public void InlayHintsChainedCall()
+  public void InlayHintsChainedCallSimple()
   {
     SourceText.setText(uri1, """
       ex =>
@@ -81,6 +84,48 @@ public class InlayHintTest extends ExtendedBaseTest
     assertEquals("arg:", inlayHints.get(0).getLabel().getLeft());
     assertEquals(7, inlayHints.get(0).getPosition().getLine());
     assertEquals(9, inlayHints.get(0).getPosition().getCharacter());
+  }
+
+
+  @Test
+  public void InlayHintsChainedCallComplex()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        my_say(arg string) is
+          say arg
+
+        get_strings(cond bool) =>
+          ["a string"]
+
+        arr := ["a string"]
+
+        my_say (arr.filter ((x) -> true)).first
+        my_say (["a string"]
+          .filter ((x) -> true )).first
+        my_say ((get_strings true).filter ((x) -> true)).first
+                    """);
+
+    var inlayHints = InlayHints
+      .getInlayHints(Params())
+      .stream()
+      .filter(x -> x.getLabel().getLeft().equals("arg:"))
+      .sorted((a, b) -> a.getPosition().getLine() - b.getPosition().getLine())
+      .collect(Collectors.toList());
+
+    assertEquals(3, inlayHints.size());
+
+    assertEquals("arg:", inlayHints.get(0).getLabel().getLeft());
+    assertEquals(9, inlayHints.get(0).getPosition().getLine());
+    assertEquals(9, inlayHints.get(0).getPosition().getCharacter());
+
+    assertEquals("arg:", inlayHints.get(1).getLabel().getLeft());
+    assertEquals(10, inlayHints.get(1).getPosition().getLine());
+    assertEquals(9, inlayHints.get(1).getPosition().getCharacter());
+
+    assertEquals("arg:", inlayHints.get(2).getLabel().getLeft());
+    assertEquals(12, inlayHints.get(2).getPosition().getLine());
+    assertEquals(9, inlayHints.get(2).getPosition().getCharacter());
   }
 
 

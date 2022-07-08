@@ -122,7 +122,7 @@ public class LexerTool extends ANY
    */
   public static Tokens TokensAt(SourcePosition params)
   {
-    var tokens = Stream.concat(TokensFrom(GoBackInLine(params, 1))
+    var tokens = Stream.concat(TokensFrom(GoLeft(params))
       .limit(2), Stream.of(EOFTokenInfo(params)))
       .collect(Collectors.toList());
 
@@ -185,17 +185,17 @@ public class LexerTool extends ANY
   }
 
   /**
+   * Move cursor one left. If at start of line same position.
    * @param p
-   * @param n number of columns to go back
    * @return
    */
-  public static SourcePosition GoBackInLine(SourcePosition p, int n)
+  public static SourcePosition GoLeft(SourcePosition p)
   {
-    if (p._column - n < 1)
+    if (p._column == 1)
       {
-        return new SourcePosition(p._sourceFile, p._line, 1);
+        return p;
       }
-    return new SourcePosition(p._sourceFile, p._line, p._column - n);
+    return new SourcePosition(p._sourceFile, p._line, p._column - 1);
   }
 
   /**

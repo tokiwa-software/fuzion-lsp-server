@@ -28,12 +28,32 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.util;
 
 import java.util.Comparator;
+import java.util.function.Predicate;
 
+import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.AbstractCurrent;
+import dev.flang.ast.Expr;
+import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.LexerTool;
+import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
-public class CallTool
+public class CallTool extends ANY
 {
+
+  public static final Predicate<? super AbstractCall> CalledFeatureNotInternal = (c) -> {
+    return !c.calledFeature().isUniverse()
+      && !c.calledFeature().isBuiltInPrimitive()
+      && !c.calledFeature().isTypeParameter()
+      && !c.calledFeature().qualifiedName().equals("fuzion")
+      && !c.calledFeature().qualifiedName().equals("fuzion.sys")
+      && !c.calledFeature().qualifiedName().equals("fuzion.sys.array")
+      && !c.calledFeature().qualifiedName().equals("fuzion.sys.array.index [ ] =")
+      && !c.calledFeature().qualifiedName().equals("unit");
+  };
+
   /**
    * tries to figure out the end of a call in terms of a sourceposition
    * @param call
@@ -65,5 +85,49 @@ public class CallTool
     return c.calledFeature().featureName().baseName().contains(" ");
   }
 
+  /**
+  * for call of c in  a.b.c return pos of:
+  * ------------------^
+  * @param expr
+  * @return
+  */
+  public static SourcePosition StartOfExpr(Expr expr)
+  {
+    return AdjustForOpeningParens(TraverseChainedCalls(expr).pos());
+  }
+
+  /*
+   * if pos is at opening parens, braces, crochets,
+   * return the start of the parens, crochets
+   */
+  private static SourcePosition AdjustForOpeningParens(SourcePosition pos)
+  {
+    var leftToken = LexerTool.TokensAt(pos).left().token();
+    if (leftToken == Token.t_lparen
+      || leftToken == Token.t_lbrace
+      || leftToken == Token.t_lcrochet)
+      {
+        return AdjustForOpeningParens(LexerTool.GoLeft(pos));
+      }
+    return pos;
+  }
+
+  /*
+   * If we have something like
+   * a.b.c and expr is to Call to c this should return a
+   * as the origin of the chained calls
+   */
+  private static Expr TraverseChainedCalls(Expr expr)
+  {
+    if (expr instanceof AbstractCall ac
+      && (ac.target() instanceof AbstractBlock
+        || ac.target() instanceof AbstractCurrent
+        || ac.target() instanceof AbstractConstant
+        || ac.target() instanceof AbstractCall))
+      {
+        return TraverseChainedCalls(ac.target());
+      }
+    return expr;
+  }
 
 }

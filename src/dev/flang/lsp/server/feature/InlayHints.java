@@ -38,9 +38,6 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractCurrent;
-import dev.flang.ast.Expr;
-import dev.flang.ast.Stmnt;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.CallTool;
 import dev.flang.lsp.server.util.LSP4jUtils;
@@ -66,6 +63,7 @@ public class InlayHints extends ANY
       .filter(c -> IsInRange(params.getRange(), c.pos()))
       .filter(c -> !CallTool.IsFixLikeCall(c))
       .filter(c -> !FeatureTool.IsInternal(c.calledFeature()))
+      .filter(CallTool.CalledFeatureNotInternal)
       .flatMap(c -> {
         if (c.actuals().size() == c.calledFeature().valueArguments().size())
           {
@@ -73,7 +71,7 @@ public class InlayHints extends ANY
               .filter(idx -> Util.CharCount(
                 c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
               .mapToObj(idx -> {
-                var inlayHint = new InlayHint(Bridge.ToPosition(GoToOriginOfCall(c.actuals().get(idx)).pos()),
+                var inlayHint = new InlayHint(Bridge.ToPosition(CallTool.StartOfExpr(c.actuals().get(idx))),
                   Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));
                 inlayHint.setKind(InlayHintKind.Parameter);
                 inlayHint.setPaddingLeft(true);
@@ -88,25 +86,6 @@ public class InlayHints extends ANY
           }
       })
       .collect(Collectors.toList());
-  }
-
-  /**
-   * for call of c in  a.b.c return pos of:
-   * ------------------^
-   * @param expr
-   * @return
-   */
-  private static Stmnt GoToOriginOfCall(Expr expr)
-  {
-    if (expr instanceof AbstractCurrent)
-      {
-        return expr;
-      }
-    if (expr instanceof AbstractCall ac)
-      {
-        return GoToOriginOfCall(ac.target());
-      }
-    return expr;
   }
 
   private static boolean IsInRange(Range range, SourcePosition pos)

@@ -111,7 +111,7 @@ public class Completion
       {
         // not offering completion for number
         if (LexerTool
-          .TokensAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 1))
+          .TokensAt(LexerTool.GoLeft(Bridge.ToSourcePosition(params)))
           .left()
           .token() == Token.t_numliteral)
           {
@@ -123,7 +123,7 @@ public class Completion
       {
         var tokenBeforeTriggerCharacter =
           LexerTool.TokensAt(LexerTool
-            .GoBackInLine(Bridge.ToSourcePosition(params), 1))
+            .GoLeft(Bridge.ToSourcePosition(params)))
             .left()
             .token();
         if (tokenBeforeTriggerCharacter.equals(Token.t_for))
