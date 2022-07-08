@@ -31,13 +31,11 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Timeout;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.shared.IO;
@@ -47,7 +45,9 @@ import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 // NYI all tests should not need more than 100ms, currently 500
-@Nested @Timeout(value = 500, unit = TimeUnit.MILLISECONDS)
+// Timeout Disabled because it is too flakey. First test frequently fails even though it then
+// only takes way less than 500ms.
+@Nested // @Timeout(value = 500, unit = TimeUnit.MILLISECONDS)
 public abstract class BaseTest extends Assertions
 {
   protected static final URI uri1 = IO.writeToTempFile("").toURI();
@@ -65,7 +65,7 @@ public abstract class BaseTest extends Assertions
 
   protected static final String ManOrBoy = Read("test_data/man_or_boy.fz");
 
-  protected static final String Faulhaber =  Read("test_data/faulhaber.fz");
+  protected static final String Faulhaber = Read("test_data/faulhaber.fz");
 
   protected static final String Mandelbrot = Read("test_data/mandelbrot.fz");
 
