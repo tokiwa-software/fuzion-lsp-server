@@ -39,9 +39,9 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.CallTool;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.ASTWalker;
+import dev.flang.shared.CallTool;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;

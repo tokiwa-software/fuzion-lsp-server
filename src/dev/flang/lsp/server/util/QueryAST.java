@@ -39,11 +39,15 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.Expr;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
+import dev.flang.shared.CallTool;
 import dev.flang.shared.ErrorHandling;
+import dev.flang.shared.ExprTool;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
@@ -77,21 +81,23 @@ public class QueryAST extends ANY
         && PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
       .filter(entry -> PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
       .map(entry -> (AbstractCall) entry.getKey())
-      .filter(ac -> LSP4jUtils.ComparePosition(Bridge.ToPosition(CallTool.endOfCall(ac)), params.getPosition()) <= 0)
-      .sorted(CompareBySourcePosition.reversed())
+      .filter(ac -> LSP4jUtils.ComparePosition(Bridge.ToPosition(ExprTool.EndOfExpr(ac)), params.getPosition()) <= 0)
+      .sorted(CompareByEndOfExpr.reversed())
       .filter(ac -> ac.calledFeature() != null)
       .filter(CallTool.CalledFeatureNotInternal)
       .map(ac -> {
+        // try use infered type
         if (ac.typeForGenericsTypeInfereing() != null && !ac.typeForGenericsTypeInfereing().containsError())
           {
             return ac.typeForGenericsTypeInfereing();
           }
+        // fall back to result type
         return ac
           .calledFeature()
           .resultType();
       })
       .map(at -> {
-        if (at.isGenericArgument() && !at.genericArgument().constraint().equals(Types.resolved.t_object))
+        if (HasConstraint(at))
           {
             return at.genericArgument().constraint().featureOfType();
           }
@@ -100,6 +106,11 @@ public class QueryAST extends ANY
       .filter(f -> !FeatureTool.IsInternal(f))
       .findFirst()
       .or(() -> Constant(params));
+  }
+
+  private static boolean HasConstraint(AbstractType at)
+  {
+    return at.isGenericArgument() && !at.genericArgument().constraint().equals(Types.resolved.t_object);
   }
 
   private static Optional<? extends AbstractFeature> Constant(TextDocumentPositionParams params)
@@ -256,6 +267,11 @@ public class QueryAST extends ANY
 
   private static Comparator<? super HasSourcePosition> CompareBySourcePosition =
     Comparator.comparing(obj -> obj.pos(), (sourcePosition1, sourcePosition2) -> {
+      return sourcePosition1.compareTo(sourcePosition2);
+    });
+
+  private static Comparator<? super Expr> CompareByEndOfExpr =
+    Comparator.comparing(expr -> ExprTool.EndOfExpr(expr), (sourcePosition1, sourcePosition2) -> {
       return sourcePosition1.compareTo(sourcePosition2);
     });
 

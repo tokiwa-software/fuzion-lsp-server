@@ -25,9 +25,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
-import java.util.Comparator;
 import java.util.function.Predicate;
 
 import dev.flang.ast.AbstractBlock;
@@ -36,7 +35,6 @@ import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.Expr;
 import dev.flang.parser.Lexer.Token;
-import dev.flang.shared.LexerTool;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
@@ -53,27 +51,6 @@ public class CallTool extends ANY
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.array.index [ ] =")
       && !c.calledFeature().qualifiedName().equals("unit");
   };
-
-  /**
-   * tries to figure out the end of a call in terms of a sourceposition
-   * @param call
-   * @return
-  */
-  // NYI test this, use parser to figure out end of call
-  public static SourcePosition endOfCall(AbstractCall call)
-  {
-    var result = call.actuals()
-      .stream()
-      .map(expression -> expression.pos())
-      .sorted(Comparator.reverseOrder())
-      .findFirst();
-    if (result.isEmpty())
-      {
-        return call.pos();
-      }
-
-    return new SourcePosition(result.get()._sourceFile, result.get()._line, result.get()._column + 1);
-  }
 
   /**
    * Is prefix/infix/postfix call

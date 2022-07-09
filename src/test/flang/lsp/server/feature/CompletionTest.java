@@ -34,12 +34,12 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
@@ -49,9 +49,9 @@ public class CompletionTest extends ExtendedBaseTest
   public void getIntervallCompletions()
   {
     var sourceText = """
-        example =>
-          (1..2).
-      """;
+      example =>
+        (1..2).
+            """;
 
     SourceText.setText(uri1, sourceText);
     var expected = """
@@ -355,7 +355,7 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix +")));
   }
 
-  @Test @Disabled // failing
+  @Test
   public void CompletionInfix()
   {
     var sourceText = """
