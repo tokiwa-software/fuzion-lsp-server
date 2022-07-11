@@ -62,7 +62,6 @@ public class InlayHints extends ANY
       .map(e -> (AbstractCall) e.getKey())
       .filter(c -> IsInRange(params.getRange(), c.pos()))
       .filter(c -> !CallTool.IsFixLikeCall(c))
-      .filter(c -> !FeatureTool.IsInternal(c.calledFeature()))
       .filter(CallTool.CalledFeatureNotInternal)
       .flatMap(c -> {
         if (c.actuals().size() == c.calledFeature().valueArguments().size())
@@ -70,6 +69,10 @@ public class InlayHints extends ANY
             return IntStream.range(0, c.actuals().size())
               .filter(idx -> Util.CharCount(
                 c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
+              // this is the case e.g. for _ args
+              .filter(idx -> !FeatureTool.IsInternal(c.calledFeature().valueArguments().get(idx)))
+              // for array initialization via [] syntax, don't show inlay hint
+              .filter(idx -> !c.calledFeature().valueArguments().get(idx).qualifiedName().equals("array.internalArray"))
               .mapToObj(idx -> {
                 var inlayHint = new InlayHint(Bridge.ToPosition(CallTool.StartOfExpr(c.actuals().get(idx))),
                   Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));

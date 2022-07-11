@@ -88,6 +88,25 @@ public class InlayHintTest extends ExtendedBaseTest
 
 
   @Test
+  public void InlayHintsArrayParam()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        my_feat (list_arg list string) is
+        my_feat ["hello"].asList
+              """);
+
+    var inlayHints = InlayHints
+      .getInlayHints(Params());
+
+    assertEquals(1, inlayHints.size());
+    assertEquals("list_arg:", inlayHints.get(0).getLabel().getLeft());
+    assertEquals(2, inlayHints.get(0).getPosition().getLine());
+    assertEquals(10, inlayHints.get(0).getPosition().getCharacter());
+  }
+
+
+  @Test
   public void InlayHintsChainedCallComplex()
   {
     SourceText.setText(uri1, """

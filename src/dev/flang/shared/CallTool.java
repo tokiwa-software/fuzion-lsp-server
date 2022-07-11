@@ -49,7 +49,8 @@ public class CallTool extends ANY
       && !c.calledFeature().qualifiedName().equals("fuzion.sys")
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.array")
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.array.index [ ] =")
-      && !c.calledFeature().qualifiedName().equals("unit");
+      && !c.calledFeature().qualifiedName().equals("unit")
+      && !FeatureTool.IsInternal(c.calledFeature());
   };
 
   /**

@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
