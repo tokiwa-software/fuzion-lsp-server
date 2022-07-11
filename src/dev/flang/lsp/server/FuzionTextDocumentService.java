@@ -28,7 +28,6 @@ package dev.flang.lsp.server;
 
 import java.net.URI;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 

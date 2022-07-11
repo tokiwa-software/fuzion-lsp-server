@@ -20,50 +20,49 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class CallTool
+ * Source of class ExprTool
  *
  *---------------------------------------------------------------------*/
 
 
-package dev.flang.lsp.server.util;
+package dev.flang.shared;
 
 import java.util.Comparator;
 
+import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.Expr;
 import dev.flang.util.SourcePosition;
 
-public class CallTool
+public class ExprTool
 {
-  /**
-   * tries to figure out the end of a call in terms of a sourceposition
-   * @param call
-   * @return
-  */
-  // NYI test this, use parser to figure out end of call
-  public static SourcePosition endOfCall(AbstractCall call)
+
+  public static SourcePosition EndOfExpr(Expr expr)
   {
-    var result = call.actuals()
-      .stream()
-      .map(expression -> expression.pos())
-      .sorted(Comparator.reverseOrder())
-      .findFirst();
-    if (result.isEmpty())
+    var lastPos = expr.pos();
+    if (expr instanceof AbstractBlock ab)
       {
-        return call.pos();
+        Expr resExpr = ab.resultExpression();
+        if (resExpr != null)
+          {
+            lastPos = resExpr.pos();
+          }
       }
-
-    return new SourcePosition(result.get()._sourceFile, result.get()._line, result.get()._column + 1);
+    if (expr instanceof AbstractCall ac)
+      {
+        lastPos = ac.actuals()
+          .stream()
+          .map(expression -> EndOfExpr(expression))
+          .sorted(Comparator.reverseOrder())
+          // filter e.g. numeric literals
+          .filter(x -> !x.isBuiltIn())
+          .findFirst()
+          .orElse(ac.pos());
+      }
+    return lastPos.isBuiltIn()
+                               ? lastPos: LexerTool.TokensAt(lastPos)
+                                 .right()
+                                 .end();
   }
-
-  /**
-   * Is prefix/infix/postfix call
-   * @param c
-   * @return
-   */
-  public static boolean IsFixLikeCall(AbstractCall c)
-  {
-    return c.calledFeature().featureName().baseName().contains(" ");
-  }
-
 
 }

@@ -39,9 +39,9 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.CallTool;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.ASTWalker;
+import dev.flang.shared.CallTool;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
@@ -63,6 +63,7 @@ public class InlayHints extends ANY
       .filter(c -> IsInRange(params.getRange(), c.pos()))
       .filter(c -> !CallTool.IsFixLikeCall(c))
       .filter(c -> !FeatureTool.IsInternal(c.calledFeature()))
+      .filter(CallTool.CalledFeatureNotInternal)
       .flatMap(c -> {
         if (c.actuals().size() == c.calledFeature().valueArguments().size())
           {
@@ -70,7 +71,7 @@ public class InlayHints extends ANY
               .filter(idx -> Util.CharCount(
                 c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
               .mapToObj(idx -> {
-                var inlayHint = new InlayHint(Bridge.ToPosition(c.actuals().get(idx).pos()),
+                var inlayHint = new InlayHint(Bridge.ToPosition(CallTool.StartOfExpr(c.actuals().get(idx))),
                   Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));
                 inlayHint.setKind(InlayHintKind.Parameter);
                 inlayHint.setPaddingLeft(true);

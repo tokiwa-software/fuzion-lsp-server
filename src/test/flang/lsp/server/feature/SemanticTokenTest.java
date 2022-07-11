@@ -380,7 +380,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
 
   private SemanticTokensParams Params(URI uri)
   {
-    return new SemanticTokensParams(Cursor(uri, 0, 0).getTextDocument());
+    return new SemanticTokensParams(TextDocument(Cursor(uri, 0, 0)));
   }
 
   @SuppressWarnings("unused")

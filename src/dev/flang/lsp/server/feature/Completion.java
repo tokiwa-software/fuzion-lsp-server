@@ -44,10 +44,10 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
+import dev.flang.shared.QueryAST;
 import dev.flang.shared.Util;
 
 /**
@@ -56,6 +56,25 @@ import dev.flang.shared.Util;
  */
 public class Completion
 {
+  public enum TriggerCharacters
+  {
+    Dot("."), // calls
+    Space(" "), // infix, postfix, types
+    LessThan("<"); // types NYI
+
+    private final String triggerChar;
+
+    private TriggerCharacters(String s)
+    {
+      triggerChar = s;
+    }
+
+    public String toString()
+    {
+      return this.triggerChar;
+    }
+  }
+
   private static final Either<List<CompletionItem>, CompletionList> NoCompletions = Either.forLeft(List.of());
 
   private static CompletionItem buildCompletionItem(String label, String insertText,
@@ -81,7 +100,8 @@ public class Completion
 
   public static Either<List<CompletionItem>, CompletionList> getCompletions(CompletionParams params)
   {
-    if (QueryAST.InString(params))
+    var pos = Bridge.ToSourcePosition(params);
+    if (QueryAST.InString(pos))
       {
         return NoCompletions;
       }
@@ -92,19 +112,19 @@ public class Completion
       {
         // not offering completion for number
         if (LexerTool
-          .TokensAt(LexerTool.GoBackInLine(Bridge.ToSourcePosition(params), 1))
+          .TokensAt(LexerTool.GoLeft(pos))
           .left()
           .token() == Token.t_numliteral)
           {
             return NoCompletions;
           }
-        return completions(QueryAST.CallCompletionsAt(params));
+        return completions(QueryAST.CallCompletionsAt(pos));
       }
     if (" ".equals(triggerCharacter))
       {
         var tokenBeforeTriggerCharacter =
           LexerTool.TokensAt(LexerTool
-            .GoBackInLine(Bridge.ToSourcePosition(params), 1))
+            .GoLeft(pos))
             .left()
             .token();
         if (tokenBeforeTriggerCharacter.equals(Token.t_for))
@@ -135,7 +155,7 @@ public class Completion
         var set = Util.ArrayToSet(validTokens);
         if (set.contains(tokenBeforeTriggerCharacter))
           {
-            return completions(QueryAST.InfixPostfixCompletionsAt(params));
+            return completions(QueryAST.InfixPostfixCompletionsAt(pos));
           }
       }
 
@@ -143,7 +163,7 @@ public class Completion
     if (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked)
       && params.getContext().getTriggerCharacter() == null)
       {
-        return completions(QueryAST.CompletionsAt(params));
+        return completions(QueryAST.CompletionsAt(pos));
       }
     return NoCompletions;
   }

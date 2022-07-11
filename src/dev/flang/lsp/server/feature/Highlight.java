@@ -33,8 +33,8 @@ import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.QueryAST;
 
 /**
  * return document hightlights for calls to feature
@@ -44,7 +44,8 @@ public class Highlight
 {
   public static List<? extends DocumentHighlight> getHightlights(DocumentHighlightParams params)
   {
-    var feature = QueryAST.FeatureAt(params);
+    var pos = Bridge.ToSourcePosition(params);
+    var feature = QueryAST.FeatureAt(pos);
     return feature
       .map(f -> {
         return FeatureTool.CallsTo(f)

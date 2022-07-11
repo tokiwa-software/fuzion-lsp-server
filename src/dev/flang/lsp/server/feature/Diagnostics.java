@@ -44,11 +44,11 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.QueryAST;
 import dev.flang.shared.Util;
 
 /**

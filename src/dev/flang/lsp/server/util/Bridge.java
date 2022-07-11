@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.shared.ExprTool;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
@@ -137,7 +138,7 @@ public class Bridge extends ANY
 
   private static Range ToRange(AbstractCall call)
   {
-    return new Range(ToPosition(call.pos()), ToPosition(CallTool.endOfCall(call)));
+    return new Range(ToPosition(call.pos()), ToPosition(ExprTool.EndOfExpr(call)));
   }
 
   public static Location ToLocation(AbstractFeature af)

@@ -42,7 +42,7 @@ public class HighlightTest extends ExtendedBaseTest
     SourceText.setText(uri1, Read("fuzion/tests/rosettacode_primes/primes.fz"));
     var c = Cursor(uri1, 54, 15);
     assertDoesNotThrow(
-      () -> Highlight.getHightlights(new DocumentHighlightParams(c.getTextDocument(), c.getPosition())));
+      () -> Highlight.getHightlights(new DocumentHighlightParams(TextDocument(c), Position(c))));
 
   }
 }

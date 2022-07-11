@@ -31,8 +31,8 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.QueryAST;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
@@ -372,7 +372,7 @@ public class QueryASTTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 26));
-    assertEquals("x", calledFeature.get().featureName().baseName());
+    assertEquals("i32", calledFeature.get().featureName().baseName());
   }
 
 

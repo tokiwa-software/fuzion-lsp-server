@@ -30,6 +30,7 @@ import java.net.URI;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelpParams;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.SignatureHelper;
@@ -50,6 +51,17 @@ public class SignatureHelperTest extends BaseTest
     SourceText.setText(uri1, HelloWorld);
     assertEquals("say() => unit : Object", LabelAt(uri1, new Position(1, 3), 0));
     assertEquals("say(s Object) => unit : Object", LabelAt(uri1, new Position(1, 3), 1));
+  }
+
+  @Test
+  public void getSignatureHelpSimpleExample()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        say
+          """ + " ");
+    assertEquals("say() => unit : Object", LabelAt(uri1, new Position(1, 6), 0));
+    assertEquals("say(s Object) => unit : Object", LabelAt(uri1, new Position(1, 6), 1));
   }
 
   @Test

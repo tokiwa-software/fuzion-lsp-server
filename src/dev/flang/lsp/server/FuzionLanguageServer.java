@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -48,9 +47,10 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
-import dev.flang.lsp.server.enums.TriggerCharacters;
 import dev.flang.lsp.server.feature.Commands;
+import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.SemanticToken;
+import dev.flang.lsp.server.feature.SignatureHelper;
 
 /**
  * does the initialization of language server features
@@ -104,7 +104,7 @@ public class FuzionLanguageServer implements LanguageServer
 
   private void initializeSignatureHelp(ServerCapabilities capabilities)
   {
-    capabilities.setSignatureHelpProvider(new SignatureHelpOptions(List.of(" ", "(", ",")));
+    capabilities.setSignatureHelpProvider(new SignatureHelpOptions(Arrays.asList(SignatureHelper.TriggerCharacters.values()).stream().map(x -> x.toString()).collect(Collectors.toList())));
   }
 
   private void initializeCodeLens(ServerCapabilities capabilities)
@@ -155,7 +155,7 @@ public class FuzionLanguageServer implements LanguageServer
     CompletionOptions completionOptions = new CompletionOptions();
     completionOptions.setResolveProvider(Boolean.FALSE);
     completionOptions.setTriggerCharacters(
-      Arrays.asList(TriggerCharacters.values()).stream().map(x -> x.toString()).collect(Collectors.toList()));
+      Arrays.asList(Completion.TriggerCharacters.values()).stream().map(x -> x.toString()).collect(Collectors.toList()));
     serverCapabilities.setCompletionProvider(completionOptions);
   }
 

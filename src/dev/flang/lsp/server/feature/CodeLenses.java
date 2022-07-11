@@ -39,8 +39,8 @@ import org.eclipse.lsp4j.Range;
 
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.QueryAST;
 
 public class CodeLenses
 {

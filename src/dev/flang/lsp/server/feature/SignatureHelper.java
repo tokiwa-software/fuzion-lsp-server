@@ -41,17 +41,43 @@ import org.eclipse.lsp4j.SignatureInformation;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.lsp.server.util.CallTool;
-import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.QueryAST;
+import dev.flang.util.ANY;
 
-public class SignatureHelper
+public class SignatureHelper extends ANY
 {
+
+  public enum TriggerCharacters
+  {
+    Comma(","),
+    Space(" "),
+    ParensLeft("(");
+
+    private final String triggerChar;
+
+    private TriggerCharacters(String s)
+    {
+      triggerChar = s;
+    }
+
+    public String toString()
+    {
+      return this.triggerChar;
+    }
+  }
 
   public static SignatureHelp getSignatureHelp(SignatureHelpParams params)
   {
-    Optional<AbstractCall> call = QueryAST.callAt(params);
+    if (PRECONDITIONS)
+      require(params.getPosition().getCharacter() > 0);
+
+    var pos = Bridge.ToSourcePosition(params);
+
+    Optional<AbstractCall> call = QueryAST.callAt(pos);
 
     if (call.isEmpty())
       {
@@ -61,7 +87,7 @@ public class SignatureHelper
     var featureOfCall =
       call.get().target() instanceof AbstractCall callTarget
                                                              ? Optional.of(callTarget.calledFeature())
-                                                             : QueryAST.FindFeatureByName(params);
+                                                             : QueryAST.FindFeatureByName(LexerTool.GoLeft(pos));
 
     if (featureOfCall.isEmpty())
       {

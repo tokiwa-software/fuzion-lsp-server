@@ -33,8 +33,8 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
 
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.QueryAST;
 
 /**
  * return list of references for feature at cursor position
@@ -45,7 +45,7 @@ public class References
 
   public static List<? extends Location> getReferences(ReferenceParams params)
   {
-    var feature = QueryAST.FeatureAt(params);
+    var feature = QueryAST.FeatureAt(Bridge.ToSourcePosition(params));
     if (feature.isEmpty())
       {
         return List.of();

@@ -37,7 +37,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.Bridge;
-import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.shared.QueryAST;
 
 /**
  * tries to provide the definition of a call
@@ -48,7 +48,8 @@ public class Definition
   public static Either<List<? extends Location>, List<? extends LocationLink>> getDefinitionLocation(
     DefinitionParams params)
   {
-    var feature = QueryAST.FeatureAt(params);
+
+    var feature = QueryAST.FeatureAt(Bridge.ToSourcePosition(params));
     if (feature.isEmpty())
       {
         return null;

@@ -28,24 +28,29 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server;
 
-import java.net.URI;
-
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.util.SourcePosition;
 import test.flang.shared.BaseTest;
 
-public abstract class ExtendedBaseTest extends BaseTest {
+public abstract class ExtendedBaseTest extends BaseTest
+{
 
-  /**
-   * @param uri
-   * @param line (zero based)
-   * @param character (zero based)
-   * @return
-   */
-  protected static TextDocumentPositionParams Cursor(URI uri, int line, int character)
+  protected static TextDocumentIdentifier TextDocument(SourcePosition pos)
   {
-    return LSP4jUtils.TextDocumentPositionParams(uri, line, character);
+    return new TextDocumentIdentifier(pos._sourceFile._fileName.toUri().toString());
+  }
+
+  protected static Position Position(SourcePosition pos)
+  {
+    return new Position(pos._line - 1, pos._column - 1);
+  }
+
+  protected static TextDocumentPositionParams TextDocumentPosition(SourcePosition pos)
+  {
+    return new TextDocumentPositionParams(TextDocument(pos), Position(pos));
   }
 
 }
