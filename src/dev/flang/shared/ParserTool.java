@@ -45,7 +45,6 @@ import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
 import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
-import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -202,6 +201,10 @@ public class ParserTool extends ANY
 
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
+    if (f.thisType().containsError())
+      {
+        return Stream.empty();
+      }
     return parserCache.SourceModule(f)
       .declaredOrInheritedFeatures(f)
       .values()
@@ -210,6 +213,10 @@ public class ParserTool extends ANY
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
   {
+    if (f.thisType().containsError())
+      {
+        return Stream.empty();
+      }
     return parserCache.SourceModule(f)
       .declaredFeatures(f)
       .values()

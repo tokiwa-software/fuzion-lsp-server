@@ -73,6 +73,8 @@ public class ParserCache extends ANY
    */
   public SourceModule SourceModule(AbstractFeature f)
   {
+    if(PRECONDITIONS)
+      require(!f.thisType().containsError());
     return universe2FrontEndMap.get(f.universe()).module();
   }
 }
