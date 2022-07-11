@@ -44,12 +44,12 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
+import dev.flang.shared.QueryAST;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
@@ -83,7 +83,9 @@ public class Rename extends ANY
         return Either.forRight(new ResponseErrorException(responseError));
       }
 
-    var feature = QueryAST.FeatureAt(params);
+    var pos = Bridge.ToSourcePosition(params);
+
+    var feature = QueryAST.FeatureAt(pos);
     if (feature.isEmpty())
       {
         var responseError = new ResponseError(ResponseErrorCode.InvalidRequest, "nothing found for renaming.", null);
@@ -192,8 +194,8 @@ public class Rename extends ANY
       .TokensFrom(new SourcePosition(f.pos()._sourceFile, 1, 1))
       .filter(token -> name.equals(token.text()))
       .filter(token -> {
-        return token.start()
-          .compareTo(new SourcePosition(token.start()._sourceFile, f.pos()._line, f.pos()._column)) > 0;
+        return LexerTool.Compare(
+          token.start(), new SourcePosition(token.start()._sourceFile, f.pos()._line, f.pos()._column)) > 0;
       })
       .findFirst()
       .get()
@@ -210,13 +212,14 @@ public class Rename extends ANY
   // NYI disallow renaming of stdlib
   public static PrepareRenameResult getPrepareRenameResult(TextDocumentPositionParams params)
   {
-    var featureAt = QueryAST.FeatureAt(params);
+    var pos = Bridge.ToSourcePosition(params);
+    var featureAt = QueryAST.FeatureAt(pos);
     if (featureAt.isEmpty())
       {
         return new PrepareRenameResult();
       }
 
-    return LexerTool.IdentOrOperatorTokenAt(Bridge.ToSourcePosition(params))
+    return LexerTool.IdentOrOperatorTokenAt(pos)
       .map(token -> {
         return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
       })

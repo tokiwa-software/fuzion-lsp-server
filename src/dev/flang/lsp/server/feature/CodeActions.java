@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.feature;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,13 +38,14 @@ import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.Converter;
+import dev.flang.shared.QueryAST;
 import dev.flang.shared.Util;
+import dev.flang.util.SourceFile;
+import dev.flang.util.SourcePosition;
 
 public class CodeActions
 {
@@ -87,10 +89,9 @@ public class CodeActions
    */
   private static CodeAction CodeActionForNameingIssue(URI uri, Diagnostic d, Function<String, String> convertIdentifier)
   {
-    var textDocumentPosition =
-      new TextDocumentPositionParams(LSP4jUtils.TextDocumentIdentifier(uri), d.getRange().getStart());
     var oldName = QueryAST
-      .FeatureAt(textDocumentPosition)
+      .FeatureAt(new SourcePosition(new SourceFile(Path.of(uri)), d.getRange().getStart().getLine() + 1,
+        d.getRange().getStart().getCharacter() + 1))
       .get()
       .featureName()
       .baseName();

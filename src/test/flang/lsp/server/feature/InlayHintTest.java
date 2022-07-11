@@ -132,7 +132,7 @@ public class InlayHintTest extends ExtendedBaseTest
   private InlayHintParams Params()
   {
     var cursor = Cursor(uri1, 1, 1);
-    return new InlayHintParams(cursor.getTextDocument(), new Range(new Position(0, 0), new Position(100, 0)));
+    return new InlayHintParams(TextDocument(cursor), new Range(new Position(0, 0), new Position(100, 0)));
   }
 
   @Test @Timeout(value = 60, unit = TimeUnit.SECONDS) @Disabled // too slow

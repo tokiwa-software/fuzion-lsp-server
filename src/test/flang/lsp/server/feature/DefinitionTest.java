@@ -45,7 +45,7 @@ public class DefinitionTest extends ExtendedBaseTest
         var cursor = Cursor(uri1, 1, 3);
 
         var sayLocation =
-            Definition.getDefinitionLocation(new DefinitionParams(cursor.getTextDocument(), cursor.getPosition()))
+            Definition.getDefinitionLocation(new DefinitionParams(TextDocument(cursor), Position(cursor)))
                 .getLeft()
                 .get(0);
         var sayUri = sayLocation.getUri();
@@ -83,11 +83,11 @@ public class DefinitionTest extends ExtendedBaseTest
         var cursor = Cursor(uri1, 3, 2);
 
         var definitions = Definition
-            .getDefinitionLocation(new DefinitionParams(cursor.getTextDocument(), cursor.getPosition()))
+            .getDefinitionLocation(new DefinitionParams(TextDocument(cursor), Position(cursor)))
             .getLeft();
 
         assertEquals(1, definitions.size());
-        assertTrue(definitions.get(0).getUri().startsWith("file:/tmp/fuzion-lsp-server"));
+        assertTrue(definitions.get(0).getUri().startsWith("file:///tmp/fuzion-lsp-server"));
         assertEquals(1, definitions.get(0).getRange().getStart().getLine());
         assertEquals(2, definitions.get(0).getRange().getStart().getCharacter());
     }
@@ -103,7 +103,7 @@ public class DefinitionTest extends ExtendedBaseTest
         var cursor = Cursor(uri, 60, 47);
 
         var definitions = Definition
-            .getDefinitionLocation(new DefinitionParams(cursor.getTextDocument(), cursor.getPosition()))
+            .getDefinitionLocation(new DefinitionParams(TextDocument(cursor), Position(cursor)))
             .getLeft();
 
         assertEquals(1, definitions.size());

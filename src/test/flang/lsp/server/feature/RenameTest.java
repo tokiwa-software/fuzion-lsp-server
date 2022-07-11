@@ -43,7 +43,7 @@ public class RenameTest extends ExtendedBaseTest
   public static RenameParams Params(URI uri, int line, int character, String newName)
   {
     var cursor = Cursor(uri, line, character);
-    return new RenameParams(cursor.getTextDocument(), cursor.getPosition(), "h");
+    return new RenameParams(TextDocument(cursor), Position(cursor), "h");
   }
 
   @Test
@@ -58,10 +58,10 @@ public class RenameTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
 
-    assertEquals("print", Rename.getPrepareRenameResult(Cursor(uri1, 1, 2)).getPlaceholder());
-    assertEquals("print", Rename.getPrepareRenameResult(Cursor(uri1, 3, 16)).getPlaceholder());
-    assertEquals("print", Rename.getPrepareRenameResult(Cursor(uri1, 1, 7)).getPlaceholder());
-    assertEquals("i", Rename.getPrepareRenameResult(Cursor(uri1, 1, 8)).getPlaceholder());
+    assertEquals("print", Rename.getPrepareRenameResult(TextDocumentPosition(Cursor(uri1, 1, 2))).getPlaceholder());
+    assertEquals("print", Rename.getPrepareRenameResult(TextDocumentPosition(Cursor(uri1, 3, 16))).getPlaceholder());
+    assertEquals("print", Rename.getPrepareRenameResult(TextDocumentPosition(Cursor(uri1, 1, 7))).getPlaceholder());
+    assertEquals("i", Rename.getPrepareRenameResult(    TextDocumentPosition(Cursor(uri1, 1, 8))).getPlaceholder());
   }
 
   @Test

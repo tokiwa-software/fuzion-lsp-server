@@ -237,4 +237,18 @@ public class LexerTool extends ANY
     return Optional.empty();
   }
 
+
+  /**
+   * compare by line and column only. not the source file
+   */
+  public static int Compare(SourcePosition a, SourcePosition b)
+  {
+    var result = a._line < b._line ? -1: a._line > b._line ? +1: 0;
+    if (result == 0)
+      {
+        result = a._column < b._column ? -1: a._column > b._column ? +1: 0;
+      }
+    return result;
+  }
+
 }

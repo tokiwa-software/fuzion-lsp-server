@@ -33,10 +33,10 @@ import org.eclipse.lsp4j.MarkupKind;
 
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.MarkdownTool;
+import dev.flang.shared.QueryAST;
 
 /**
  * on hover returns signature of call
@@ -47,11 +47,12 @@ public class Hovering
 
   public static Hover getHover(HoverParams params)
   {
-    return LexerTool.IdentTokenAt(Bridge.ToSourcePosition(params))
+    var pos = Bridge.ToSourcePosition(params);
+    return LexerTool.IdentTokenAt(pos)
       .flatMap(identToken -> {
         var range = LSP4jUtils.Range(identToken);
         return QueryAST
-          .FeatureAt(params)
+          .FeatureAt(pos)
           .map(f -> {
             var hoverInfo = FeatureTool.CommentOfInMarkdown(f) + System.lineSeparator()
               + System.lineSeparator()

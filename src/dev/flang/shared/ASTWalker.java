@@ -56,6 +56,7 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
 import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourcePosition;
 
 public class ASTWalker
 {
@@ -69,6 +70,11 @@ public class ASTWalker
   public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(AbstractFeature start)
   {
     return Traverse(start, true);
+  }
+
+  public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(SourcePosition pos)
+  {
+    return Traverse(SourceText.UriOf(pos));
   }
 
   public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(URI uri)

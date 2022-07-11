@@ -56,7 +56,7 @@ public class DocumentHighlightTest extends ExtendedBaseTest
 
         var cursor = Cursor(uri1, currentLine, currentColumn);
         assertDoesNotThrow(
-          () -> Highlight.getHightlights(new DocumentHighlightParams(cursor.getTextDocument(), cursor.getPosition())),
+          () -> Highlight.getHightlights(new DocumentHighlightParams(TextDocument(cursor), Position(cursor))),
           "line " + currentLine + " column " + currentColumn);
       });
 

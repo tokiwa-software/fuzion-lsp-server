@@ -31,8 +31,8 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.lsp.server.util.QueryAST;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.QueryAST;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 

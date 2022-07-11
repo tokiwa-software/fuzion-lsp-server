@@ -34,18 +34,18 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.ParameterInformation;
-import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SignatureInformation;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
-import dev.flang.lsp.server.util.QueryAST;
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.QueryAST;
 import dev.flang.util.ANY;
 
 public class SignatureHelper extends ANY
@@ -75,20 +75,19 @@ public class SignatureHelper extends ANY
     if (PRECONDITIONS)
       require(params.getPosition().getCharacter() > 0);
 
-    Optional<AbstractCall> call = QueryAST.callAt(params);
+    var pos = Bridge.ToSourcePosition(params);
+
+    Optional<AbstractCall> call = QueryAST.callAt(pos);
 
     if (call.isEmpty())
       {
         return new SignatureHelp();
       }
 
-    var previousPosition = new TextDocumentPositionParams(params.getTextDocument(),
-      new Position(params.getPosition().getLine(), params.getPosition().getCharacter() - 1));
-
     var featureOfCall =
       call.get().target() instanceof AbstractCall callTarget
                                                              ? Optional.of(callTarget.calledFeature())
-                                                             : QueryAST.FindFeatureByName(previousPosition);
+                                                             : QueryAST.FindFeatureByName(LexerTool.GoLeft(pos));
 
     if (featureOfCall.isEmpty())
       {
