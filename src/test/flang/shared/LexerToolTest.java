@@ -45,7 +45,7 @@ public class LexerToolTest extends BaseTest
     SourceText.setText(uri1, ManOrBoy);
 
     var nextToken =
-      LexerTool.TokensAt(CursorPosition(uri1, 3, 3))
+      LexerTool.TokensAt(Cursor(uri1, 2, 2))
         .right();
     assertEquals("a", nextToken.text());
     assertEquals(4, nextToken.end()._column);
@@ -56,7 +56,7 @@ public class LexerToolTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var tokens = LexerTool.TokensAt(CursorPosition(uri1, 7, 8));
+    var tokens = LexerTool.TokensAt(Cursor(uri1, 6, 7));
     assertTrue(tokens.right().equals(tokens.left()));
     var nextToken = tokens.right();
     assertEquals("i32", nextToken.text());
@@ -99,16 +99,16 @@ public class LexerToolTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var beforeSay = CursorPosition(uri1, 10, 4);
+    var beforeSay = Cursor(uri1, 9, 3);
     assertEquals("\n    ", LexerTool.TokensFrom(beforeSay).findFirst().get().text());
-    var atSayStart = CursorPosition(uri1, 10, 5);
+    var atSayStart = Cursor(uri1, 9, 4);
     assertEquals("say", LexerTool.TokensFrom(atSayStart).findFirst().get().text());
-    var atSayMiddle = CursorPosition(uri1, 10, 7);
+    var atSayMiddle = Cursor(uri1, 9, 6);
     assertEquals("say", LexerTool.TokensFrom(atSayMiddle).findFirst().get().text());
-    var atSayEnd = CursorPosition(uri1, 10, 8);
+    var atSayEnd = Cursor(uri1, 9, 7);
     assertEquals(" ", LexerTool.TokensFrom(atSayEnd).findFirst().get().text());
 
-    var start = CursorPosition(uri1, 1, 1);
+    var start = Cursor(uri1, 0, 0);
     assertTrue(LexerTool.TokensFrom(start).count() > 10);
     assertTrue(LexerTool.TokensFrom(start).count() > 10);
     assertTrue(LexerTool.TokensFrom(start).anyMatch(t -> t.text().equals("i32")));
