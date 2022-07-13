@@ -38,7 +38,6 @@ import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
-import dev.flang.shared.IO;
 import dev.flang.shared.QueryAST;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
@@ -191,8 +190,15 @@ public class CompletionTest extends ExtendedBaseTest
 
   private CompletionParams params(URI uri, int line, int character, Completion.TriggerCharacters triggerCharacter)
   {
-    return new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri), new Position(line, character),
-      new CompletionContext(CompletionTriggerKind.TriggerCharacter, triggerCharacter.toString()));
+    var result = new CompletionParams(
+      LSP4jUtils.TextDocumentIdentifier(uri),
+      new Position(line, character),
+      new CompletionContext(CompletionTriggerKind.Invoked));
+    if (triggerCharacter != null)
+      {
+        result.setContext(new CompletionContext(CompletionTriggerKind.TriggerCharacter, triggerCharacter.toString()));
+      }
+    return result;
   }
 
   @Test
@@ -331,11 +337,12 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
 
-    // NYI this should eventually offer suitable types
     var completions = Completion.getCompletions(params(uri1, 1, 12, Completion.TriggerCharacters.Space));
-    assertTrue(completions.getLeft().isEmpty());
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("i32")));
+    // analysis does not define a type
+    assertFalse(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("analysis")));
 
-    completions = Completion.getCompletions(params(uri1, 1, 16, Completion.TriggerCharacters.Space));
+    completions = Completion.getCompletions(params(uri1, 1, 16, null));
     assertTrue(completions.getLeft().isEmpty());
 
     completions = Completion.getCompletions(params(uri1, 1, 17, Completion.TriggerCharacters.Space));

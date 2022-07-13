@@ -421,7 +421,8 @@ public class QueryAST extends ANY
           .filter(f -> !f.thisType().containsError())
           .flatMap(f -> {
             return ParserTool.DeclaredFeatures(f);
-          });
+          })
+          .distinct();
       })
       .orElse(Stream.empty());
   }

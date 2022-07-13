@@ -36,7 +36,6 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
-import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -47,6 +46,7 @@ import dev.flang.lsp.server.util.Bridge;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.QueryAST;
 import dev.flang.shared.Util;
 
@@ -155,16 +155,39 @@ public class Completion
         var set = Util.ArrayToSet(validTokens);
         if (set.contains(tokenBeforeTriggerCharacter))
           {
-            return completions(QueryAST.InfixPostfixCompletionsAt(pos));
+            // NYI better heuristic to check if we should offer infix/postfix
+            // completion or types or keywords or nothing
+            var result = NoCompletions;
+            // no errors in line before pos?
+            if (!ParserTool.Errors(ParserTool.getUri(pos))
+              .anyMatch(x -> x.pos._line == pos._line && x.pos._column <= pos._column))
+              {
+                result = completions(QueryAST
+                  .InfixPostfixCompletionsAt(
+                    pos));
+              }
+            if (result.getLeft().isEmpty() && tokenBeforeTriggerCharacter.equals(Token.t_ident))
+              {
+                result = Either.forLeft(QueryAST
+                  .FeaturesInScope(pos)
+                  .filter(af -> af.isConstructor() || af.isChoice())
+                  .filter(af -> !af.featureName().baseName().contains(" "))
+                  // NYI consider generics
+                  .map(af -> af.thisType().name())
+                  .distinct()
+                  .map(name -> buildCompletionItem(name, name, CompletionItemKind.TypeParameter))
+                  .collect(Collectors.toList()));
+              }
+            return result;
           }
       }
 
-    // Invoked: ctrl+space
-    if (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked)
-      && params.getContext().getTriggerCharacter() == null)
-      {
-        return completions(QueryAST.CompletionsAt(pos));
-      }
+    // // Invoked: ctrl+space
+    // if (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked)
+    // && params.getContext().getTriggerCharacter() == null)
+    // {
+    // return completions(QueryAST.CompletionsAt(pos));
+    // }
     return NoCompletions;
   }
 
