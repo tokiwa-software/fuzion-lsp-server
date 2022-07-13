@@ -173,20 +173,18 @@ public class QueryAST extends ANY
   public static Stream<AbstractFeature> CompletionsAt(SourcePosition params)
   {
     var tokens = LexerTool.TokensAt(params);
-    return InFeature(params)
-      .map(feature -> FeatureTool.FeaturesInScope(feature)
-        .filter(f -> {
-          if (tokens.left().token().equals(Token.t_ws))
-            {
-              return true;
-            }
-          if (tokens.left().token().equals(Token.t_ident))
-            {
-              return f.featureName().baseName().startsWith(tokens.left().text());
-            }
-          return false;
-        }))
-      .orElse(Stream.empty());
+    return QueryAST.FeaturesInScope(params)
+      .filter(f -> {
+        if (tokens.left().token().equals(Token.t_ws))
+          {
+            return true;
+          }
+        if (tokens.left().token().equals(Token.t_ident))
+          {
+            return f.featureName().baseName().startsWith(tokens.left().text());
+          }
+        return false;
+      });
   }
 
   /**
@@ -357,17 +355,11 @@ public class QueryAST extends ANY
   private static Optional<AbstractFeature> FeatureAtFuzzy(SourcePosition params)
   {
     return LexerTool.IdentOrOperatorTokenAt(params)
-      .flatMap(token -> {
-        return QueryAST.InFeature(params)
-          .map(contextFeature -> {
-            return FeatureTool.FeaturesInScope(contextFeature)
-              .filter(f -> f.featureName().baseName().equals(token.text()))
-              // NYI we could be better here if we considered approximate
-              // argcount
-              .findFirst()
-              .orElse(null);
-          });
-      });
+      .flatMap(token -> QueryAST.FeaturesInScope(params)
+        .filter(f -> f.featureName().baseName().equals(token.text()))
+        // NYI we could be better here if we considered approximate
+        // argcount
+        .findFirst());
   }
 
   /**
@@ -412,6 +404,26 @@ public class QueryAST extends ANY
         return start < params._column
           && params._column <= end;
       });
+  }
+
+  /**
+   * @param feature
+   * @return all features which are accessible (callable) at pos
+   */
+  public static Stream<AbstractFeature> FeaturesInScope(SourcePosition pos)
+  {
+    return InFeature(pos)
+      .map(feature -> {
+        return Util.ConcatStreams(
+          Stream.of(feature),
+          FeatureTool.outerFeatures(feature),
+          feature.inherits().stream().map(c -> c.calledFeature()))
+          .filter(f -> !f.thisType().containsError())
+          .flatMap(f -> {
+            return ParserTool.DeclaredFeatures(f);
+          });
+      })
+      .orElse(Stream.empty());
   }
 
 }

@@ -290,22 +290,6 @@ public class FeatureTool extends ANY
   }
 
   /**
-   * @param feature
-   * @return all features which are accessible (callable) when inside of feature
-   */
-  public static Stream<AbstractFeature> FeaturesInScope(AbstractFeature feature)
-  {
-    return Util.ConcatStreams(
-      Stream.of(feature),
-      outerFeatures(feature),
-      feature.inherits().stream().map(c -> c.calledFeature()))
-      .filter(f -> !f.thisType().containsError())
-      .flatMap(f -> {
-        return ParserTool.DeclaredFeatures(f);
-      });
-  }
-
-  /**
    *
    * @param feature
    * @return true iff there are no other features at same or lesser level after given feature
