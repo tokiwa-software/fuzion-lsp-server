@@ -202,7 +202,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
         return Optional.of(TokenType.Operator);
       case t_ident :
         return GetItem(pos2Item)
-          .map(TokenInfo::ItemToToken)
+          .map(TokenInfo::TokenType)
           // NYI check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
       case t_error :
@@ -226,7 +226,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
       }
   }
 
-  private static Optional<TokenType> ItemToToken(HasSourcePosition item)
+  private static Optional<TokenType> TokenType(HasSourcePosition item)
   {
     if (item instanceof AbstractFeature af)
       {
@@ -286,7 +286,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
         return Optional.of(TokenType.Operator);
       }
     // "normal" call
-    return ItemToToken(ac.calledFeature());
+    return TokenType(ac.calledFeature());
   }
 
   private Optional<HasSourcePosition> GetItem(Map<Integer, HasSourcePosition> pos2Item)
