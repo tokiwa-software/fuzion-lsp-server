@@ -316,7 +316,7 @@ public class QueryAST extends ANY
           .findFirst()
           // NYI workaround for not having positions of all types in
           // the AST currently
-          .or(() -> FindFeatureByName(params));
+          .or(() -> FeatureAtFuzzy(params));
       });
   }
 
@@ -349,7 +349,12 @@ public class QueryAST extends ANY
       .findAny();
   }
 
-  public static Optional<AbstractFeature> FindFeatureByName(SourcePosition params)
+  /**
+   * Try to find feature by matching the ident token text at given position.
+   * @param params
+   * @return
+   */
+  private static Optional<AbstractFeature> FeatureAtFuzzy(SourcePosition params)
   {
     return LexerTool.IdentOrOperatorTokenAt(params)
       .flatMap(token -> {

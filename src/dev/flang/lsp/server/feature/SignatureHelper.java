@@ -87,7 +87,7 @@ public class SignatureHelper extends ANY
     var featureOfCall =
       call.get().target() instanceof AbstractCall callTarget
                                                              ? Optional.of(callTarget.calledFeature())
-                                                             : QueryAST.FindFeatureByName(LexerTool.GoLeft(pos));
+                                                             : QueryAST.FeatureAt(LexerTool.GoLeft(pos));
 
     if (featureOfCall.isEmpty())
       {
