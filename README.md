@@ -7,9 +7,12 @@
 
 ## Build
 - run `make jar` which should produce an **out.jar** file
+- run the artifact via `java out.jar [options]`
+
 ### Transport socket
 - run `./bin/fuzion_language_server -tcp`
 - connect the client to the (random) port the server prints to stdout.
+
 ### Transport stdio
 - run `./bin/fuzion_language_server`
 
@@ -19,10 +22,10 @@
 ## Test
 - `make run_tests`
 
-## Profile
+## Profiling
 - clone https://github.com/jvm-profiling-tools/async-profiler
 - add the profiler.sh script to PATH
-- while the language server is running: `make profile`
+- `make profile/tests` or `profile/tagged_tests`
 
 ## Clients
 |Client|Repository|
