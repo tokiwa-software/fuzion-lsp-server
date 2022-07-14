@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SemanticTokensServerFull;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
@@ -51,6 +52,7 @@ import dev.flang.lsp.server.feature.Commands;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.SemanticToken;
 import dev.flang.lsp.server.feature.SignatureHelper;
+import dev.flang.lsp.server.util.Log;
 
 /**
  * does the initialization of language server features
@@ -62,9 +64,17 @@ public class FuzionLanguageServer implements LanguageServer
   public CompletableFuture<InitializeResult> initialize(InitializeParams params)
   {
     Config.setClientCapabilities(params.getCapabilities());
-    final InitializeResult res = new InitializeResult(new ServerCapabilities());
-    var capabilities = res.getCapabilities();
 
+    Log.message("[client capabilites] " + Config.getClientCapabilities().toString(), MessageType.Log);
+
+    final InitializeResult res = new InitializeResult(getServerCapabilities());
+
+    return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  private ServerCapabilities getServerCapabilities()
+  {
+    var capabilities = new ServerCapabilities();
     initializeInlayHints(capabilities);
     initializeCompletion(capabilities);
     initializeHover(capabilities);
@@ -78,16 +88,16 @@ public class FuzionLanguageServer implements LanguageServer
     initializeCodeLens(capabilities);
     initializeSignatureHelp(capabilities);
     initializeSemanticTokens(capabilities);
-
     capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
-    return CompletableFuture.supplyAsync(() -> res);
+    return capabilities;
   }
 
   private void initializeSemanticTokens(ServerCapabilities capabilities)
   {
     // NYI support delta
     // NYI support range
-    capabilities.setSemanticTokensProvider(new SemanticTokensWithRegistrationOptions(SemanticToken.Legend, new SemanticTokensServerFull(false), false));
+    capabilities.setSemanticTokensProvider(
+      new SemanticTokensWithRegistrationOptions(SemanticToken.Legend, new SemanticTokensServerFull(false), false));
   }
 
   private void initializeCommandExecutions(ServerCapabilities capabilities)
@@ -105,7 +115,11 @@ public class FuzionLanguageServer implements LanguageServer
 
   private void initializeSignatureHelp(ServerCapabilities capabilities)
   {
-    capabilities.setSignatureHelpProvider(new SignatureHelpOptions(Arrays.asList(SignatureHelper.TriggerCharacters.values()).stream().map(x -> x.toString()).collect(Collectors.toList())));
+    capabilities
+      .setSignatureHelpProvider(new SignatureHelpOptions(Arrays.asList(SignatureHelper.TriggerCharacters.values())
+        .stream()
+        .map(x -> x.toString())
+        .collect(Collectors.toList())));
   }
 
   private void initializeCodeLens(ServerCapabilities capabilities)
@@ -156,7 +170,10 @@ public class FuzionLanguageServer implements LanguageServer
     CompletionOptions completionOptions = new CompletionOptions();
     completionOptions.setResolveProvider(Boolean.FALSE);
     completionOptions.setTriggerCharacters(
-      Arrays.asList(Completion.TriggerCharacters.values()).stream().map(x -> x.toString()).collect(Collectors.toList()));
+      Arrays.asList(Completion.TriggerCharacters.values())
+        .stream()
+        .map(x -> x.toString())
+        .collect(Collectors.toList()));
     serverCapabilities.setCompletionProvider(completionOptions);
   }
 
