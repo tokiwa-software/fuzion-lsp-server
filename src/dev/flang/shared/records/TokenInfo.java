@@ -106,6 +106,8 @@ public record TokenInfo(SourcePosition start, String text, Token token)
     if (ANY.CHECKS)
       ANY.check(relativeLine != 0 || relativeChar >= previousToken.length());
 
+    // NYI handle multiline (comments)
+
     return Stream.of(
       relativeLine,
       relativeChar,
