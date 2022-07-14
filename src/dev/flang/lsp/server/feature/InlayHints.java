@@ -26,7 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -34,15 +36,21 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintKind;
 import org.eclipse.lsp4j.InlayHintParams;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Expr;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
+import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.CallTool;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.LexerTool;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
@@ -57,7 +65,7 @@ public class InlayHints extends ANY
 
   public static List<InlayHint> getInlayHints(InlayHintParams params)
   {
-    return ASTWalker.Traverse(LSP4jUtils.getUri(params.getTextDocument()))
+    var inlayHintsActuals = ASTWalker.Traverse(LSP4jUtils.getUri(params.getTextDocument()))
       .filter(e -> e.getKey() instanceof AbstractCall)
       .map(e -> (AbstractCall) e.getKey())
       .filter(c -> IsInRange(params.getRange(), c.pos()))
@@ -72,7 +80,10 @@ public class InlayHints extends ANY
               // this is the case e.g. for _ args
               .filter(idx -> !FeatureTool.IsInternal(c.calledFeature().valueArguments().get(idx)))
               // omit inlay hint if actual is call of same name as arg
-              .filter(idx -> !(c.actuals().get(idx) instanceof AbstractCall ac && ac.calledFeature().featureName().baseName().equals(c.calledFeature().valueArguments().get(idx).featureName().baseName())))
+              .filter(idx -> !(c.actuals().get(idx) instanceof AbstractCall ac && ac.calledFeature()
+                .featureName()
+                .baseName()
+                .equals(c.calledFeature().valueArguments().get(idx).featureName().baseName())))
               // for array initialization via [] syntax, don't show inlay hint
               .filter(idx -> !c.calledFeature().valueArguments().get(idx).qualifiedName().equals("array.internalArray"))
               .mapToObj(idx -> {
@@ -89,8 +100,85 @@ public class InlayHints extends ANY
           {
             return Stream.empty();
           }
-      })
-      .collect(Collectors.toList());
+      });
+
+    var inlayHintsResultTypes = ASTWalker
+      .Features(LSP4jUtils.getUri(params.getTextDocument()))
+      // NYI filter duplicate loop variable
+      .filter(af -> !FeatureTool.IsInternal(af))
+      .filter(af -> !FeatureTool.IsArgument(af))
+      .filter(af -> !(af.isField() && IsConstant(af.initialValue())))
+      .filter(af -> !(af.isField() && TypeIsExplicitlyStated(af)))
+      .flatMap(af -> PositionOfOperator(af)
+        .map(pos -> {
+          var ih = new InlayHint(pos, Either.forLeft(af.resultType().name()));
+          ih.setKind(InlayHintKind.Type);
+          ih.setPaddingLeft(true);
+          ih.setPaddingRight(true);
+          return Stream.of(ih);
+        })
+        .orElse(Stream.empty()));
+
+    return Stream.concat(inlayHintsActuals, inlayHintsResultTypes).collect(Collectors.toList());
+  }
+
+  private static boolean IsConstant(Expr code)
+  {
+    return code instanceof AbstractConstant;
+  }
+
+  static HashSet<Token> AllowedTokensBeforeOp = new HashSet<>(List.of(
+    Token.t_ws,
+    Token.t_op,
+    Token.t_comma,
+    Token.t_lparen,
+    Token.t_rparen,
+    Token.t_lbrace,
+    Token.t_rbrace,
+    Token.t_lcrochet,
+    Token.t_rcrochet,
+    Token.t_ident,
+    Token.t_in,
+    Token.t_ref,
+    Token.t_lazy,
+    Token.t_synchronized,
+    Token.t_redef,
+    Token.t_redefine,
+    Token.t_const,
+    Token.t_leaf,
+    Token.t_infix,
+    Token.t_prefix,
+    Token.t_postfix,
+    Token.t_ternary,
+    Token.t_index,
+    Token.t_set,
+    Token.t_export,
+    Token.t_private,
+    Token.t_protected,
+    Token.t_public,
+    Token.t_type));
+
+
+  private static boolean TypeIsExplicitlyStated(AbstractFeature af)
+  {
+    return LexerTool
+      .TokensFrom(af.pos())
+      .takeWhile(x -> AllowedTokensBeforeOp.contains(x.token()) && !x.text().equals(":="))
+      .filter(x -> x.token().equals(Token.t_ident))
+      .count() > 1;
+  }
+
+  /*
+   * Position of `=>` or `:=` belonging to this feature
+   */
+  private static Optional<Position> PositionOfOperator(AbstractFeature af)
+  {
+    return LexerTool
+      .TokensFrom(af.pos())
+      .takeWhile(x -> AllowedTokensBeforeOp.contains(x.token()))
+      .dropWhile(x -> !(x.text().equals("=>") || x.text().equals(":=")))
+      .map(x -> Bridge.ToPosition(x.start()))
+      .findFirst();
   }
 
   private static boolean IsInRange(Range range, SourcePosition pos)

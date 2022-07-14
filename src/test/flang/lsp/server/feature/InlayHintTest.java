@@ -54,7 +54,8 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    assertEquals(20, inlayHints.size());
+    // 20 actuals, 2 result types
+    assertEquals(20 + 2, inlayHints.size());
 
     InlayHint maxEscapeIter = inlayHints.stream().filter(x -> x.getPosition().getLine() == 2).findFirst().get();
     assertEquals("maxEscapeIterations:", maxEscapeIter.getLabel().getLeft());
@@ -80,7 +81,7 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    assertEquals(1, inlayHints.size());
+    assertEquals(2, inlayHints.size());
     assertEquals("arg:", inlayHints.get(0).getLabel().getLeft());
     assertEquals(7, inlayHints.get(0).getPosition().getLine());
     assertEquals(9, inlayHints.get(0).getPosition().getCharacter());
@@ -99,7 +100,7 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    assertEquals(1, inlayHints.size());
+    assertEquals(2, inlayHints.size());
     assertEquals("list_arg:", inlayHints.get(0).getLabel().getLeft());
     assertEquals(2, inlayHints.get(0).getPosition().getLine());
     assertEquals(10, inlayHints.get(0).getPosition().getCharacter());
@@ -126,25 +127,38 @@ public class InlayHintTest extends ExtendedBaseTest
                     """);
 
     var inlayHints = InlayHints
-      .getInlayHints(Params())
+      .getInlayHints(Params());
+
+    var inlayHintsArray = inlayHints
+      .stream()
+      .filter(x -> x.getLabel().getLeft().equals("array"))
+      .sorted((a, b) -> a.getPosition().getLine() - b.getPosition().getLine())
+      .collect(Collectors.toList());
+
+    assertEquals(2, inlayHintsArray.size());
+    assertEquals(7, inlayHintsArray.get(1).getPosition().getLine());
+    assertEquals(6, inlayHintsArray.get(1).getPosition().getCharacter());
+
+    var inlayHintsArg = inlayHints
       .stream()
       .filter(x -> x.getLabel().getLeft().equals("arg:"))
       .sorted((a, b) -> a.getPosition().getLine() - b.getPosition().getLine())
       .collect(Collectors.toList());
 
-    assertEquals(3, inlayHints.size());
 
-    assertEquals("arg:", inlayHints.get(0).getLabel().getLeft());
-    assertEquals(9, inlayHints.get(0).getPosition().getLine());
-    assertEquals(9, inlayHints.get(0).getPosition().getCharacter());
+    assertEquals(3, inlayHintsArg.size());
 
-    assertEquals("arg:", inlayHints.get(1).getLabel().getLeft());
-    assertEquals(10, inlayHints.get(1).getPosition().getLine());
-    assertEquals(9, inlayHints.get(1).getPosition().getCharacter());
+    assertEquals("arg:", inlayHintsArg.get(0).getLabel().getLeft());
+    assertEquals(9, inlayHintsArg.get(0).getPosition().getLine());
+    assertEquals(9, inlayHintsArg.get(0).getPosition().getCharacter());
 
-    assertEquals("arg:", inlayHints.get(2).getLabel().getLeft());
-    assertEquals(12, inlayHints.get(2).getPosition().getLine());
-    assertEquals(9, inlayHints.get(2).getPosition().getCharacter());
+    assertEquals("arg:", inlayHintsArg.get(1).getLabel().getLeft());
+    assertEquals(10, inlayHintsArg.get(1).getPosition().getLine());
+    assertEquals(9, inlayHintsArg.get(1).getPosition().getCharacter());
+
+    assertEquals("arg:", inlayHintsArg.get(2).getLabel().getLeft());
+    assertEquals(12, inlayHintsArg.get(2).getPosition().getLine());
+    assertEquals(9, inlayHintsArg.get(2).getPosition().getCharacter());
   }
 
 
