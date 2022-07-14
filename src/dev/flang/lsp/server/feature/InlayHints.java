@@ -71,6 +71,8 @@ public class InlayHints extends ANY
                 c.calledFeature().valueArguments().get(idx).featureName().baseName()) >= MIN_PARAM_NAME_LENGTH)
               // this is the case e.g. for _ args
               .filter(idx -> !FeatureTool.IsInternal(c.calledFeature().valueArguments().get(idx)))
+              // omit inlay hint if actual is call of same name as arg
+              .filter(idx -> !(c.actuals().get(idx) instanceof AbstractCall ac && ac.calledFeature().featureName().baseName().equals(c.calledFeature().valueArguments().get(idx).featureName().baseName())))
               // for array initialization via [] syntax, don't show inlay hint
               .filter(idx -> !c.calledFeature().valueArguments().get(idx).qualifiedName().equals("array.internalArray"))
               .mapToObj(idx -> {
