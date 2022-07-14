@@ -61,6 +61,7 @@ public class FuzionLanguageServer implements LanguageServer
   @Override
   public CompletableFuture<InitializeResult> initialize(InitializeParams params)
   {
+    Config.setClientCapabilities(params.getCapabilities());
     final InitializeResult res = new InitializeResult(new ServerCapabilities());
     var capabilities = res.getCapabilities();
 

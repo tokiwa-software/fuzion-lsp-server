@@ -29,6 +29,7 @@ package dev.flang.lsp.server;
 import java.util.List;
 import java.util.concurrent.Future;
 
+import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import com.google.gson.JsonObject;
@@ -44,6 +45,7 @@ public class Config
   private static Future<List<Object>> _configuration;
   private static LanguageClient _languageClient;
   private static Transport _transport = Transport.stdio;
+  private static ClientCapabilities _capabilities;
 
   // can be "messages", "off", "verbose"
   private static String _trace = "off";
@@ -112,6 +114,16 @@ public class Config
   public static String getTrace()
   {
     return _trace;
+  }
+
+  public static void setClientCapabilities(ClientCapabilities capabilities)
+  {
+    _capabilities = capabilities;
+  }
+
+  public static ClientCapabilities getClientCapabilities()
+  {
+    return _capabilities;
   }
 
 
