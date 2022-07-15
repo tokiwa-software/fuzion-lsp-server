@@ -147,6 +147,7 @@ public class Main
       .setRemoteInterface(LanguageClient.class)
       .setInput(in)
       .setOutput(out)
+      .setExecutorService(Concurrency.MainExecutor)
       .setExceptionHandler((e) -> {
         ErrorHandling.WriteStackTrace(e);
         return null;

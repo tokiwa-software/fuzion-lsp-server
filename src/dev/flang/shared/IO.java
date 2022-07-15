@@ -160,7 +160,7 @@ public class IO
         var inputStream = new PipedInputStream();
         var reader = new BufferedReader(new InputStreamReader(inputStream));
         var result = new PrintStream(new PipedOutputStream(inputStream));
-        Concurrency.RunInBackground(
+        Concurrency.MainExecutor.submit(
           () -> {
             try
               {

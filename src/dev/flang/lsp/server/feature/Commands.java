@@ -85,18 +85,18 @@ public enum Commands
       {
 
       case showSyntaxTree :
-        Concurrency.RunInBackground(() -> showSyntaxTree(Util.toURI(uri)));
+        Concurrency.MainExecutor.submit(() -> showSyntaxTree(Util.toURI(uri)));
         return completedFuture;
 
 
       case run :
-        Concurrency.RunInBackground(() -> evaluate(Util.toURI(uri)));
+        Concurrency.MainExecutor.submit(() -> evaluate(Util.toURI(uri)));
         return completedFuture;
 
 
       case callGraph :
         var arg1 = getArgAsString(params, 1);
-        Concurrency.RunInBackground(() -> CallGraph(uri, arg1));
+        Concurrency.MainExecutor.submit(() -> CallGraph(uri, arg1));
         return completedFuture;
 
 

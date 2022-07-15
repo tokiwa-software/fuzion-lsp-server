@@ -42,19 +42,11 @@ public class Concurrency
 {
 
   // NYI for now we have to run most things more or less sequentially
-  private static ExecutorService executor = Executors.newSingleThreadExecutor();
-  private static ExecutorService cachedThreadPoolExecutor = Executors.newCachedThreadPool();
+  private static ExecutorService executor = Executors.newSingleThreadExecutor(Executors.defaultThreadFactory());
 
 
-  public static void RunInBackground(Runnable runnable)
-  {
-    cachedThreadPoolExecutor.submit(runnable);
-  }
+  public final static ExecutorService MainExecutor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
 
-  public static <T> Future<T> RunInBackground(Callable<T> callable)
-  {
-    return cachedThreadPoolExecutor.submit(callable);
-  }
 
   /**
    * run callable on single thread executor.
