@@ -31,20 +31,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.ServerSocket;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.lsp4j.ConfigurationItem;
-import org.eclipse.lsp4j.ConfigurationParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.lsp.server.enums.Transport;
-import dev.flang.lsp.server.util.Log;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.IO;
@@ -88,30 +83,8 @@ public class Main
 
     Config.setLanguageClient(languageClient);
 
-    Config.setConfiguration(
-      Concurrency.RunInBackground(() -> {
-        try
-          {
-            // NYI why can't we get configuration immediately?
-            Thread.sleep(250);
-            return languageClient.configuration(configurationRequestParams()).get();
-          }
-        catch (Exception e)
-          {
-            Log.message("failed getting configuration from client", MessageType.Warning);
-            return new ArrayList<Object>();
-          }
-      }));
-
   }
 
-  private static ConfigurationParams configurationRequestParams()
-  {
-    var configItem = new ConfigurationItem();
-    configItem.setSection("fuzion");
-    var configParams = new ConfigurationParams(List.of(configItem));
-    return configParams;
-  }
 
   private static boolean HasArg(String string)
   {

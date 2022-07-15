@@ -27,15 +27,19 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
+import org.eclipse.lsp4j.ConfigurationItem;
+import org.eclipse.lsp4j.ConfigurationParams;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SemanticTokensServerFull;
@@ -44,6 +48,7 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SetTraceParams;
 import org.eclipse.lsp4j.SignatureHelpOptions;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.WorkDoneProgressCancelParams;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
@@ -53,6 +58,7 @@ import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.SemanticToken;
 import dev.flang.lsp.server.feature.SignatureHelper;
 import dev.flang.lsp.server.util.Log;
+import dev.flang.shared.Concurrency;
 
 /**
  * does the initialization of language server features
@@ -70,6 +76,36 @@ public class FuzionLanguageServer implements LanguageServer
     final InitializeResult res = new InitializeResult(getServerCapabilities());
 
     return CompletableFuture.supplyAsync(() -> res);
+  }
+
+  @Override
+  public void cancelProgress(WorkDoneProgressCancelParams params)
+  {
+    // TODO Auto-generated method stub
+    LanguageServer.super.cancelProgress(params);
+  }
+
+  private static ConfigurationParams configurationRequestParams()
+  {
+    var configItem = new ConfigurationItem();
+    configItem.setSection("fuzion");
+    var configParams = new ConfigurationParams(List.of(configItem));
+    return configParams;
+  }
+
+  @Override
+  public void initialized(InitializedParams params)
+  {
+    Concurrency.MainExecutor.submit(() -> {
+      try
+        {
+          Config.languageClient().configuration(configurationRequestParams()).get();
+        }
+      catch (Exception e)
+        {
+          Log.message("failed getting configuration from client", MessageType.Warning);
+        }
+    });
   }
 
   private ServerCapabilities getServerCapabilities()
