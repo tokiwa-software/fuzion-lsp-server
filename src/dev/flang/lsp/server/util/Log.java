@@ -26,9 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
-import java.time.Duration;
-import java.util.concurrent.Callable;
-
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 
@@ -46,36 +43,5 @@ public class Log extends ANY
   {
     Config.languageClient().logMessage(new MessageParams(messageType, str));
   }
-
-  /**
-   * Log if computation of task takes longer than maxTime
-   * @param <T>
-   * @param c
-   * @param maxTime
-   * @param taskDescription
-   * @return
-   */
-  public static <T> T taskExceedsMaxTime(Callable<T> c, Duration maxTime, String taskDescription)
-  {
-    long startTime = System.nanoTime();
-    try
-      {
-        var result = c.call();
-        long stopTime = System.nanoTime();
-        var elapsedTime = Duration.ofNanos(Math.round((stopTime - startTime) / 1E6));
-        if (maxTime.minus(elapsedTime).isNegative())
-          {
-            message(taskDescription + " took " + elapsedTime + "ms", MessageType.Warning);
-          }
-        return result;
-      }
-    catch (Exception e)
-      {
-        // c must not throw exception
-        check(false);
-        return null;
-      }
-  }
-
 
 }

@@ -100,7 +100,7 @@ public class ParserTool extends ANY
   private synchronized static ParserCacheRecord getParserCacheRecord(URI uri)
   {
     var sourceText = SourceText.getText(uri);
-    var result = parserCache.computeIfAbsent(uri + sourceText, key -> createParserCacheRecord(uri));
+    var result = parserCache.computeIfAbsent(uri, sourceText, key -> createParserCacheRecord(uri));
     // NYI hack! Without this the test RegressionRenameMandelbrotImage fails
     // when running all tests
     Types.resolved = result.resolved();

@@ -52,13 +52,19 @@ public class Computation
     return result.completeAsync(() -> {
       try
         {
-          return Concurrency.RunWithPeriodicCancelCheck(callable, () -> {
+
+          var res =  Concurrency.RunWithPeriodicCancelCheck(callable, () -> {
             if (result.isCancelled())
               {
                 throw new CancellationException();
               }
           }, INTERVALL_CHECK_CANCELLED_MS,
-            maxTimeInMs).result();
+            maxTimeInMs);
+
+          var ms = res.nanoSeconds() / 1_000_000;
+          Log.message("[" + callee + "] finished in " + ms + "ms", MessageType.Log);
+
+          return res.result();
         }
       catch (ExecutionException e)
         {

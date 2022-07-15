@@ -26,10 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
-import java.time.Duration;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.eclipse.lsp4j.MessageType; // NYI remove dependency
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.fe.FrontEnd;
@@ -54,13 +56,22 @@ public class ParserCache extends ANY
       check(frontEnd != null, universe2FrontEndMap.size() <= PARSER_CACHE_MAX_SIZE);
     });
 
-  public ParserCacheRecord computeIfAbsent(String sourceText, Function<String, ParserCacheRecord> mappingFunction)
+  public ParserCacheRecord computeIfAbsent(URI uri, String sourceText,
+    Function<String, ParserCacheRecord> mappingFunction)
   {
-    return Log.taskExceedsMaxTime(() -> {
-      var result = sourceText2ParserCache.computeIfAbsent(sourceText, mappingFunction);
-      universe2FrontEndMap.put(result.mir().universe(), result.frontEnd());
-      return result;
-    }, Duration.ofSeconds(1), "parse: " + sourceText);
+    var key = uri + sourceText;
+    return sourceText2ParserCache.computeIfAbsent(key, (str) -> {
+      long startTime = System.nanoTime();
+
+      var parserCacheRecord = mappingFunction.apply(str);
+      universe2FrontEndMap.put(parserCacheRecord.mir().universe(), parserCacheRecord.frontEnd());
+
+      long stopTime = System.nanoTime();
+      var elapsedTime = (int) ((stopTime - startTime) / 1E6);
+      Log.message("[Parsing] finished in " + elapsedTime + "ms: " + uri, MessageType.Log);
+
+      return parserCacheRecord;
+    });
   }
 
 
@@ -71,7 +82,7 @@ public class ParserCache extends ANY
    */
   public SourceModule SourceModule(AbstractFeature f)
   {
-    if(PRECONDITIONS)
+    if (PRECONDITIONS)
       require(!f.thisType().containsError());
     return universe2FrontEndMap.get(f.universe()).module();
   }
