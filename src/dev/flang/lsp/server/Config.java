@@ -27,22 +27,24 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server;
 
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import com.google.gson.JsonObject;
 
 import dev.flang.lsp.server.enums.Transport;
+import dev.flang.lsp.server.util.Log;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.Util;
 
 public class Config
 {
 
   public static final boolean ComputeAsync = true;
   public static final long DIAGNOSTICS_DEBOUNCE_DELAY_MS = 1000;
-  private static Future<List<Object>> _configuration;
   private static LanguageClient _languageClient;
   private static Transport _transport = Transport.stdio;
   private static ClientCapabilities _capabilities;
@@ -80,28 +82,30 @@ public class Config
     return debug.toLowerCase().equals("true");
   }
 
-  public static void setConfiguration(Future<List<Object>> configuration)
+  public static void setConfiguration(List<Object> configuration)
   {
-    _configuration = configuration;
-    ParserTool.SetJavaModules(Config.JavaModules());
+    ParserTool.SetJavaModules(Config.JavaModules(configuration));
   }
 
-  private static List<String> JavaModules()
+  private static List<String> JavaModules(List<Object> configuration)
   {
     try
       {
-        var modules = ((JsonObject) _configuration.get().get(0))
-          .getAsJsonObject()
+        var modules = ((JsonObject) configuration.get(0))
           .getAsJsonObject("java")
           .getAsJsonArray("modules");
-        var result = List.<String>of();
-        modules.forEach(jsonElement -> {
-          result.add(jsonElement.getAsString());
-        });
+
+        var result = Util.StreamOf(modules.iterator())
+          .map(x -> x.getAsString())
+          .collect(Collectors.toUnmodifiableList());
+
+        Log.message("[Config] received java modules: " + result.stream().collect(Collectors.joining(", ")),
+          MessageType.Log);
         return result;
       }
     catch (Exception e)
       {
+        Log.message("[Config] parsing of config failed.", MessageType.Error);
         return List.of();
       }
   }

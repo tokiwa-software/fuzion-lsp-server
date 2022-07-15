@@ -31,12 +31,15 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * utils which are independent of fuzion
@@ -61,6 +64,12 @@ public class Util
   public static <T> Set<T> ArrayToSet(T[] arr)
   {
     return Arrays.stream(arr).collect(Collectors.toSet());
+  }
+
+  public static <T> Stream<T> StreamOf(Iterator<T> iterator)
+  {
+    return StreamSupport.stream(Spliterators
+      .spliteratorUnknownSize(iterator, 0), false);
   }
 
   public static String ShortName(Class<?> clazz)

@@ -29,6 +29,7 @@ package dev.flang.lsp.server;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeLensOptions;
@@ -41,6 +42,8 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.Registration;
+import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.RenameOptions;
 import org.eclipse.lsp4j.SemanticTokensServerFull;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
@@ -96,10 +99,45 @@ public class FuzionLanguageServer implements LanguageServer
   @Override
   public void initialized(InitializedParams params)
   {
+    Log.message("[Client] initialized", MessageType.Log);
+    RefetchClientConfig();
+    RegisterChangeConfiguration();
+  }
+
+  private void RegisterChangeConfiguration()
+  {
+    Concurrency.MainExecutor.submit(() -> {
+      if (!Config.getClientCapabilities().getWorkspace().getDidChangeConfiguration().getDynamicRegistration())
+        {
+          Log.message("[Config] Client does not support dynamic registration of `did change configuration`.", MessageType.Log);
+          return;
+        }
+      try
+        {
+          Config.languageClient()
+            .registerCapability(new RegistrationParams(
+              List.of(new Registration("698a8988-ecb4-46bc-a910-a78c60fdfadb", "workspace/didChangeConfiguration"))))
+            .get(10, TimeUnit.SECONDS);
+        }
+      catch (Exception e)
+        {
+          Log.message("[Config] failed registering workspace/didChangeConfiguration.", MessageType.Error);
+        }
+      Log.message("[Config] registered workspace/didChangeConfiguration.", MessageType.Log);
+    });
+  }
+
+  public static void RefetchClientConfig()
+  {
     Concurrency.MainExecutor.submit(() -> {
       try
         {
-          Config.languageClient().configuration(configurationRequestParams()).get();
+          if (Config.getClientCapabilities().getWorkspace().getConfiguration())
+            {
+              var config =
+                Config.languageClient().configuration(configurationRequestParams()).get(10, TimeUnit.SECONDS);
+              Config.setConfiguration(config);
+            }
         }
       catch (Exception e)
         {

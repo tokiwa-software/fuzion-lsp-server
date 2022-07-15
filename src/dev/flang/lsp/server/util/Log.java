@@ -41,6 +41,10 @@ public class Log extends ANY
 
   public static void message(String str, MessageType messageType)
   {
+    if (Config.languageClient() == null)
+      {
+        return;
+      }
     Config.languageClient().logMessage(new MessageParams(messageType, str));
   }
 
