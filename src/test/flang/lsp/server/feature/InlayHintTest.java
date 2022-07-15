@@ -108,6 +108,28 @@ public class InlayHintTest extends ExtendedBaseTest
 
 
   @Test
+  public void InlayHintsLambdaArg()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        feat(mylmbd (i32) -> bool) is
+        feat (i -> false)
+              """);
+
+    var inlayHints = InlayHints
+      .getInlayHints(Params())
+      .stream()
+      .sorted((a, b) -> a.getPosition().getLine() - b.getPosition().getLine())
+      .collect(Collectors.toList());
+
+    assertEquals(2, inlayHints.size());
+    assertEquals("mylmbd:", inlayHints.get(1).getLabel().getLeft());
+    assertEquals(2, inlayHints.get(1).getPosition().getLine());
+    assertEquals(7, inlayHints.get(1).getPosition().getCharacter());
+  }
+
+
+  @Test
   public void InlayHintsChainedCallComplex()
   {
     SourceText.setText(uri1, """

@@ -27,14 +27,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.Expr;
+import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
-public class ExprTool
+public class ExprTool extends ANY
 {
 
   public static SourcePosition EndOfExpr(Expr expr)
@@ -63,6 +69,41 @@ public class ExprTool
                                ? lastPos: LexerTool.TokensAt(lastPos)
                                  .right()
                                  .end();
+  }
+
+  public static boolean IsLamdaCall(Expr expr)
+  {
+    return expr instanceof AbstractCall ac
+      && ac.calledFeature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
+  }
+
+  static Optional<SourcePosition> LambdaOpeningBracePosition(Expr expr)
+  {
+    if (PRECONDITIONS)
+      require(IsLamdaCall(expr));
+
+    var tokens = LexerTool.TokensFrom(new SourcePosition(expr.pos()._sourceFile, expr.pos()._line, 1))
+      .takeWhile(x -> x.start().compareTo(expr.pos()) <= 0)
+      .collect(Collectors.toList());
+
+    var count = new AtomicInteger(1);
+    Collections.reverse(tokens);
+    return tokens
+      .stream()
+      .dropWhile(x -> {
+        if (LexerTool.LeftBrackets.contains(x.token()))
+          {
+            count.decrementAndGet();
+          }
+        if (LexerTool.RightBrackets.contains(x.token()))
+          {
+            count.incrementAndGet();
+          }
+
+        return count.get() != 0;
+      })
+      .findFirst()
+      .map(x -> x.start());
   }
 
 }

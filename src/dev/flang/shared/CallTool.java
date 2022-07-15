@@ -71,6 +71,11 @@ public class CallTool extends ANY
   */
   public static SourcePosition StartOfExpr(Expr expr)
   {
+    if (ExprTool.IsLamdaCall(expr))
+      {
+        return ExprTool.LambdaOpeningBracePosition(expr)
+          .orElse(expr.pos());
+      }
     return AdjustForOpeningParens(TraverseChainedCalls(expr).pos());
   }
 
