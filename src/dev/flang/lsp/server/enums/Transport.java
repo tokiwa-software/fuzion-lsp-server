@@ -28,5 +28,8 @@ package dev.flang.lsp.server.enums;
 
 public enum Transport
 {
-  stdio, tcp
+  stdio,
+  pipe,
+  socket,
+  nodeIpc
 }

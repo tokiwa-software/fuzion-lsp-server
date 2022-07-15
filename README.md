@@ -10,11 +10,11 @@
 - run the artifact via `java out.jar [options]`
 
 ### Transport socket
-- run `./bin/fuzion_language_server -tcp`
+- run `./bin/fuzion_language_server -socket --port=3000`
 - connect the client to the (random) port the server prints to stdout.
 
 ### Transport stdio
-- run `./bin/fuzion_language_server`
+- run `./bin/fuzion_language_server -stdio`
 
 ## Debug
 - `make debug`
@@ -60,6 +60,7 @@
             "languageserver": {
               "fuzion": {
                 "command": "fuzion_language_server",
+                "args" : ["-stdio"],
                 "filetypes": [
                   "fz",
                   "fuzion"
@@ -120,7 +121,7 @@
   :link '(url-link ""))
 
 (lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection "fuzion_language_server")
+ (make-lsp-client :new-connection (lsp-stdio-connection "fuzion_language_server -stdio")
                   :major-modes '(fuzion-mode)
                   :priority -1
                   :server-id 'fuzionls))

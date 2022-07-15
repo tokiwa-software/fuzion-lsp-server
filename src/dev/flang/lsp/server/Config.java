@@ -46,11 +46,28 @@ public class Config
   public static final boolean ComputeAsync = true;
   public static final long DIAGNOSTICS_DEBOUNCE_DELAY_MS = 1000;
   private static LanguageClient _languageClient;
-  private static Transport _transport = Transport.stdio;
+  private static Transport _transport;
   private static ClientCapabilities _capabilities;
 
   // can be "messages", "off", "verbose"
   private static String _trace = "off";
+  private static int serverPort;
+
+  /**
+   * @return the serverPort
+   */
+  public static int getServerPort()
+  {
+    return serverPort;
+  }
+
+  /**
+   * @param serverPort the serverPort to set
+   */
+  public static void setServerPort(int serverPort)
+  {
+    Config.serverPort = serverPort;
+  }
 
   public static LanguageClient languageClient()
   {
@@ -129,6 +146,5 @@ public class Config
   {
     return _capabilities;
   }
-
 
 }

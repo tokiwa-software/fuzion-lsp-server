@@ -35,6 +35,7 @@ CONDITIONS = PRECONDITIONS=true POSTCONDITIONS=true
 JAVA_ARGS = -Dfuzion.home=$(FUZION_HOME) -Dfile.encoding=UTF-8 -Xss$(JAVA_STACKSIZE)m
 JUNIT_ARGS = --fail-if-no-tests --disable-banner --details=verbose -cp $(CLASSPATH) -p test.flang
 JUNIT_ARGS_PARALLEL = --config=junit.jupiter.execution.parallel.enabled=true --config=junit.jupiter.execution.parallel.mode.default=concurrent
+LANGUAGE_SERVER_PORT ?= 3000
 
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.14.0.jar:jars/org.eclipse.lsp4j.generator-0.14.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.14.0.jar:jars/gson-2.9.0.jar:jars/junit-platform-console-standalone-1.8.2.jar:jars/junit-jupiter-api-5.8.2.jar:jars/org.eclipse.xtext.xbase.lib-2.27.0.jar:jars/guava-31.1-jre.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
@@ -49,10 +50,10 @@ else
 endif
 
 all: classes
-	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
+	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
-tcp: classes
-	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
+socket: classes
+	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
 classes: $(JARS) build_fuzion
 	rm -Rf $@
@@ -60,17 +61,17 @@ classes: $(JARS) build_fuzion
 	$(JAVAC) -classpath $(CLASSPATH) -d $@ $(JAVA_FILES)
 
 stdio: classes
-	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main
+	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -stdio
 
 .PHONY: debug
 debug: NOOP = $(shell lsof -i:8000 | tail -n 1 | awk -F ' ' '{print $$2}' | xargs kill)
 debug: classes
 	mkdir -p runDir
-	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
+	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
 debug_supended: classes
 	mkdir -p runDir
-	java $(DEBUGGER_SUSPENDED) -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -tcp
+	java $(DEBUGGER_SUSPENDED) -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
 jars/org.eclipse.lsp4j-0.14.0.jar:
 	mkdir -p $(@D)

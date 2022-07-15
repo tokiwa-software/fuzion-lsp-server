@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.ServerSocket;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.MessageParams;
@@ -67,7 +68,42 @@ public class Main
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
 
-    Config.setTransport(HasArg("-tcp") ? Transport.tcp: Transport.stdio);
+    /*
+    Servers usually support different communication channels (e.g. stdio, pipes, …). To ease the usage of servers in different clients it is highly recommended that a server implementation supports the following command line arguments to pick the communication channel:
+
+    stdio: uses stdio as the communication channel.
+    pipe: use pipes (Windows) or socket files (Linux, Mac) as the communication channel. The pipe / socket file name is passed as the next arg or with --pipe=.
+    socket: uses a socket as the communication channel. The port is passed as next arg or with --port=.
+    node-ipc: use node IPC communication between the client and the server. This is only support if both client and server run under node.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#implementationConsiderations
+     */
+
+    if (HasArg("-stdio"))
+      {
+
+      }
+    else if (HasArg("-pipe"))
+      {
+        // NYI
+        PrintUsageAndExit();
+      }
+    else if (HasArg("-socket"))
+      {
+        Config.setTransport(Transport.socket);
+        var port = GetArg("--port");
+        if (port.isEmpty())
+          {
+            PrintUsageAndExit();
+            return;
+          }
+        Config.setServerPort(Integer.parseInt(port.get()));
+      }
+    else
+      {
+        PrintUsageAndExit();
+      }
+
 
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
       @Override
@@ -85,10 +121,24 @@ public class Main
 
   }
 
+  private static void PrintUsageAndExit()
+  {
+    IO.SYS_ERR.println("usage: [-stdio,-socket --port=]");
+    System.exit(1);
+  }
 
   private static boolean HasArg(String string)
   {
-    return Arrays.stream(arguments).map(arg -> arg.trim().toLowerCase()).anyMatch("-tcp"::equals);
+    return Arrays.stream(arguments).map(arg -> arg.trim()).anyMatch(string::equals);
+  }
+
+  private static Optional<String> GetArg(String string)
+  {
+    return Arrays.stream(arguments)
+      .map(arg -> arg.trim())
+      .filter(arg -> arg.startsWith(string))
+      .findAny()
+      .map(x -> x.split("=")[1]);
   }
 
   private static Launcher<LanguageClient> getLauncher() throws InterruptedException, ExecutionException, IOException
@@ -98,8 +148,8 @@ public class Main
       {
       case stdio :
         return createLauncher(server, IO.SYS_IN, IO.SYS_OUT);
-      case tcp :
-        try (var serverSocket = new ServerSocket(0))
+      case socket :
+        try (var serverSocket = new ServerSocket(Config.getServerPort()))
           {
             IO.SYS_OUT.println("Property os.name: " + System.getProperty("os.name"));
             IO.SYS_OUT.println("socket opened on port: " + serverSocket.getLocalPort());
