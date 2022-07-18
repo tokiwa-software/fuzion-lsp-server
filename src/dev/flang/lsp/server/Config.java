@@ -30,13 +30,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.ClientCapabilities;
-import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import com.google.gson.JsonObject;
 
 import dev.flang.lsp.server.enums.Transport;
-import dev.flang.lsp.server.util.Log;
+import dev.flang.shared.Context;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
 
@@ -116,13 +115,12 @@ public class Config
           .map(x -> x.getAsString())
           .collect(Collectors.toUnmodifiableList());
 
-        Log.message("[Config] received java modules: " + result.stream().collect(Collectors.joining(", ")),
-          MessageType.Log);
+        Context.Logger.Log("[Config] received java modules: " + result.stream().collect(Collectors.joining(", ")));
         return result;
       }
     catch (Exception e)
       {
-        Log.message("[Config] parsing of config failed.", MessageType.Error);
+        Context.Logger.Error("[Config] parsing of config failed.");
         return List.of();
       }
   }

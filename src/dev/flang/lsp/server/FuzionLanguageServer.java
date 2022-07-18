@@ -41,7 +41,6 @@ import org.eclipse.lsp4j.HoverOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
-import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.RenameOptions;
@@ -60,8 +59,8 @@ import dev.flang.lsp.server.feature.Commands;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.SemanticToken;
 import dev.flang.lsp.server.feature.SignatureHelper;
-import dev.flang.lsp.server.util.Log;
 import dev.flang.shared.Concurrency;
+import dev.flang.shared.Context;
 
 /**
  * does the initialization of language server features
@@ -74,7 +73,7 @@ public class FuzionLanguageServer implements LanguageServer
   {
     Config.setClientCapabilities(params.getCapabilities());
 
-    Log.message("[client capabilites] " + Config.getClientCapabilities().toString(), MessageType.Log);
+    Context.Logger.Log("[client capabilites] " + Config.getClientCapabilities().toString());
 
     final InitializeResult res = new InitializeResult(getServerCapabilities());
 
@@ -99,7 +98,7 @@ public class FuzionLanguageServer implements LanguageServer
   @Override
   public void initialized(InitializedParams params)
   {
-    Log.message("[Client] initialized", MessageType.Log);
+    Context.Logger.Log("[Client] initialized");
     RefetchClientConfig();
     RegisterChangeConfiguration();
   }
@@ -109,7 +108,7 @@ public class FuzionLanguageServer implements LanguageServer
     Concurrency.MainExecutor.submit(() -> {
       if (!Config.getClientCapabilities().getWorkspace().getDidChangeConfiguration().getDynamicRegistration())
         {
-          Log.message("[Config] Client does not support dynamic registration of `did change configuration`.", MessageType.Log);
+          Context.Logger.Log("[Config] Client does not support dynamic registration of `did change configuration`.");
           return;
         }
       try
@@ -121,9 +120,9 @@ public class FuzionLanguageServer implements LanguageServer
         }
       catch (Exception e)
         {
-          Log.message("[Config] failed registering workspace/didChangeConfiguration.", MessageType.Error);
+          Context.Logger.Error("[Config] failed registering workspace/didChangeConfiguration.");
         }
-      Log.message("[Config] registered workspace/didChangeConfiguration.", MessageType.Log);
+        Context.Logger.Log("[Config] registered workspace/didChangeConfiguration.");
     });
   }
 
@@ -141,7 +140,7 @@ public class FuzionLanguageServer implements LanguageServer
         }
       catch (Exception e)
         {
-          Log.message("failed getting configuration from client", MessageType.Warning);
+          Context.Logger.Warning("failed getting configuration from client");
         }
     });
   }

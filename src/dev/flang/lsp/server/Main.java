@@ -41,7 +41,9 @@ import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import dev.flang.lsp.server.enums.Transport;
+import dev.flang.lsp.server.util.LSP4jLogger;
 import dev.flang.shared.Concurrency;
+import dev.flang.shared.Context;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.IO;
 import dev.flang.util.Errors;
@@ -64,6 +66,8 @@ public class Main
       if (Config.languageClient() != null)
         Config.languageClient().logMessage(new MessageParams(MessageType.Error, "err: " + line));
     });
+
+    Context.Logger = new LSP4jLogger();
 
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;

@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Log
+ * Source of class LSP4jLogger
  *
  *---------------------------------------------------------------------*/
 
@@ -30,22 +30,42 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 
 import dev.flang.lsp.server.Config;
+import dev.flang.shared.Logger;
 import dev.flang.util.ANY;
 
-public class Log extends ANY
+public class LSP4jLogger extends ANY implements Logger
 {
-  public static void message(String str)
-  {
-    message(str, MessageType.Log);
-  }
-
-  public static void message(String str, MessageType messageType)
+  private void message(String str, MessageType messageType)
   {
     if (Config.languageClient() == null)
       {
         return;
       }
     Config.languageClient().logMessage(new MessageParams(messageType, str));
+  }
+
+  @Override
+  public void Error(String str)
+  {
+    message(str, MessageType.Error);
+  }
+
+  @Override
+  public void Warning(String str)
+  {
+    message(str, MessageType.Warning);
+  }
+
+  @Override
+  public void Info(String str)
+  {
+    message(str, MessageType.Info);
+  }
+
+  @Override
+  public void Log(String str)
+  {
+    message(str, MessageType.Log);
   }
 
 }

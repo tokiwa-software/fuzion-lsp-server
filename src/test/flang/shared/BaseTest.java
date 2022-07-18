@@ -38,6 +38,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.shared.Context;
 import dev.flang.shared.IO;
 import dev.flang.shared.ParserTool;
 import dev.flang.util.Errors;
@@ -114,6 +115,7 @@ public abstract class BaseTest extends Assertions
     IO.Init((line) -> {
     }, (line) -> {
     });
+    Context.Logger = new DummyLogger();
   }
 
   protected static String Read(String path)

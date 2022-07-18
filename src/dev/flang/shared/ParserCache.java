@@ -31,12 +31,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.eclipse.lsp4j.MessageType; // NYI remove dependency
-
 import dev.flang.ast.AbstractFeature;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.SourceModule;
-import dev.flang.lsp.server.util.Log;
 import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 
@@ -68,7 +65,7 @@ public class ParserCache extends ANY
 
       long stopTime = System.nanoTime();
       var elapsedTime = (int) ((stopTime - startTime) / 1E6);
-      Log.message("[Parsing] finished in " + elapsedTime + "ms: " + uri, MessageType.Log);
+      Context.Logger.Log("[Parsing] finished in " + elapsedTime + "ms: " + uri);
 
       return parserCacheRecord;
     });

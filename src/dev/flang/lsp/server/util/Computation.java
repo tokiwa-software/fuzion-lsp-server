@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.MessageType;
 
 import dev.flang.lsp.server.Config;
 import dev.flang.shared.Concurrency;
+import dev.flang.shared.Context;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
 
 public class Computation
@@ -46,7 +47,7 @@ public class Computation
 
   public static <T> CompletableFuture<T> CancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
   {
-    Log.message("[" + callee + "] started computing.", MessageType.Log);
+    Context.Logger.Log("[" + callee + "] started computing.");
 
     var result = new CompletableFuture<T>();
     return result.completeAsync(() -> {
@@ -62,26 +63,26 @@ public class Computation
             maxTimeInMs);
 
           var ms = res.nanoSeconds() / 1_000_000;
-          Log.message("[" + callee + "] finished in " + ms + "ms", MessageType.Log);
+          Context.Logger.Log("[" + callee + "] finished in " + ms + "ms");
 
           return res.result();
         }
       catch (ExecutionException e)
         {
-          Log.message("[" + callee + "] An excecution exception occurred: " + e, MessageType.Error);
+          Context.Logger.Error("[" + callee + "] An excecution exception occurred: " + e);
           NotifyUser();
         }
       catch (MaxExecutionTimeExceededException e)
         {
-          Log.message("[" + callee + "] Max excecution time exceeded: " + e, MessageType.Warning);
+          Context.Logger.Warning("[" + callee + "] Max excecution time exceeded: " + e);
         }
       catch (CancellationException e)
         {
-          Log.message("[" + callee + "] was cancelled.", MessageType.Info);
+          Context.Logger.Info("[" + callee + "] was cancelled.");
         }
       catch (Throwable th)
         {
-          Log.message("[" + callee + "] An unexpected error occurred: " + th, MessageType.Error);
+          Context.Logger.Error("[" + callee + "] An unexpected error occurred: " + th);
           NotifyUser();
         }
       return null;
