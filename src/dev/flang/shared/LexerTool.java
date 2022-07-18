@@ -51,11 +51,19 @@ public class LexerTool extends ANY
   final static Set<Token> RightBrackets =
     List.of(Token.t_rbrace, Token.t_rcrochet, Token.t_rparen).stream().collect(Collectors.toUnmodifiableSet());
 
-  public static Boolean IsValidIdentifier(String str)
+  /**
+   * Is str a valid identifier?
+   * @param str
+   * @return
+   */
+  public static boolean IsValidIdentifier(String str)
   {
     var isIdentifier = IO.WithTextInputStream(str, () -> {
       var lexer = NewLexerStdIn();
-      return lexer.current() == Token.t_ident;
+      var startsWithIdent = lexer.current() == Token.t_ident;
+      lexer.nextRaw();
+      return startsWithIdent &&
+        lexer.sourcePos()._column - 1 == Util.CodepointCount(str);
     });
     return isIdentifier;
   }
