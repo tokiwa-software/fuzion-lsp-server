@@ -35,8 +35,8 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Feature;
 import dev.flang.ast.Feature.State;
-import dev.flang.lsp.server.enums.TokenModifier;
-import dev.flang.lsp.server.enums.TokenType;
+import dev.flang.lsp.server.enums.TokenModifier; // NYI remove dependency
+import dev.flang.lsp.server.enums.TokenType; // NYI remove dependency
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.CallTool;
 import dev.flang.shared.FeatureTool;
