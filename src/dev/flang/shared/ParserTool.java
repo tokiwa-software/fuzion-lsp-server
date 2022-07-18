@@ -49,7 +49,6 @@ import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.FuzionOptions;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -282,8 +281,7 @@ public class ParserTool extends ANY
 
   private static Optional<Interpreter> Interpreter(URI uri)
   {
-    // NYI get fuzionoptions from client
-    return ParserTool.FUIR(uri).map(f -> new Interpreter(new FuzionOptions(0, 0, false), f));
+    return ParserTool.FUIR(uri).map(f -> new Interpreter(Context.FuzionOptions, f));
   }
 
   public static String Run(URI uri)

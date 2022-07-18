@@ -36,8 +36,10 @@ import com.google.gson.JsonObject;
 
 import dev.flang.lsp.server.enums.Transport;
 import dev.flang.shared.Context;
+import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
+import dev.flang.util.FuzionOptions;
 
 public class Config
 {
@@ -101,6 +103,28 @@ public class Config
   public static void setConfiguration(List<Object> configuration)
   {
     ParserTool.SetJavaModules(Config.JavaModules(configuration));
+    SetFuzionOptions(configuration);
+  }
+
+  private static void SetFuzionOptions(List<Object> configuration)
+  {
+    try
+      {
+        var options = ((JsonObject) configuration.get(0))
+          .getAsJsonObject("options");
+
+        Context.FuzionOptions = new FuzionOptions(
+          ErrorHandling.ResultOrDefault(() -> options.get("verbosity").getAsInt(), 0),
+          ErrorHandling.ResultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
+          ErrorHandling.ResultOrDefault(() -> options.get("safety").getAsBoolean(), true));
+
+        Context.Logger.Log("[Config] FuzionOptions: verbosity(" + Context.FuzionOptions.verbose() + "), debugLevel("
+          + Context.FuzionOptions.fuzionDebugLevel() + "), safety(" + Context.FuzionOptions.fuzionSafety() + ").");
+      }
+    catch (Exception e)
+      {
+        Context.Logger.Error("[Config] parsing of fuzion options failed.");
+      }
   }
 
   private static List<String> JavaModules(List<Object> configuration)
@@ -115,12 +139,12 @@ public class Config
           .map(x -> x.getAsString())
           .collect(Collectors.toUnmodifiableList());
 
-        Context.Logger.Log("[Config] received java modules: " + result.stream().collect(Collectors.joining(", ")));
+        Context.Logger.Log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
         return result;
       }
     catch (Exception e)
       {
-        Context.Logger.Error("[Config] parsing of config failed.");
+        Context.Logger.Error("[Config] parsing of java modules failed.");
         return List.of();
       }
   }

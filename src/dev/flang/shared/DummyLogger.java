@@ -24,9 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package test.flang.shared;
-
-import dev.flang.shared.Logger;
+package dev.flang.shared;
 
 class DummyLogger implements Logger
 {

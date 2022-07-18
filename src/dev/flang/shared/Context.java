@@ -27,7 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
+import dev.flang.util.FuzionOptions;
+
 public class Context
 {
-  public static Logger Logger;
+  public static FuzionOptions FuzionOptions = new FuzionOptions(0, 0, false);
+  public static Logger Logger = new DummyLogger();
 }

@@ -115,7 +115,6 @@ public abstract class BaseTest extends Assertions
     IO.Init((line) -> {
     }, (line) -> {
     });
-    Context.Logger = new DummyLogger();
   }
 
   protected static String Read(String path)
