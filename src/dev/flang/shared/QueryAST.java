@@ -416,7 +416,7 @@ public class QueryAST extends ANY
       .map(feature -> {
         return Util.ConcatStreams(
           Stream.of(feature),
-          FeatureTool.outerFeatures(feature),
+          FeatureTool.OuterFeatures(feature),
           feature.inherits().stream().map(c -> c.calledFeature()))
           .filter(f -> !f.thisType().containsError())
           .flatMap(f -> {

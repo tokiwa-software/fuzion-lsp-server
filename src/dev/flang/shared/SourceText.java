@@ -92,6 +92,18 @@ public class SourceText extends ANY
 
   private static final Pattern DotAtEOL = Pattern.compile("(^.+\\.)(\\s*$)", Pattern.MULTILINE);
 
+  /**
+   * The character `.` has two meanings in Fuzion.
+   * One it can be a fullstop to end i.e. a choice of and
+   * two it can be part of a chained call.
+   * For incomplete source text this creates a problem because the
+   * parser then assumes the wrong for some dots. We try to work
+   * around this by adding some magic string to the end of dots
+   * we believe to be of a call chain. This should make completion
+   * work most of the time.
+   * @param text
+   * @return
+   */
   private static String AddReplacementCharacterAfterNoneFullStopDots(String text)
   {
     return DotAtEOL

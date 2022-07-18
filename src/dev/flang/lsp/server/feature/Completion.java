@@ -202,7 +202,7 @@ public class Completion
         index -> {
           var feature = collectedFeatures.get(index);
           return buildCompletionItem(
-            FeatureTool.ToLabel(feature),
+            FeatureTool.Label(feature),
             getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
         });
 

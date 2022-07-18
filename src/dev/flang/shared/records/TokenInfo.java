@@ -271,7 +271,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
               {
                 return Optional.of(TokenType.Class);
               }
-            if (FeatureTool.outerFeatures(af).allMatch(x -> x.valueArguments().size() == 0))
+            if (FeatureTool.OuterFeatures(af).allMatch(x -> x.valueArguments().size() == 0))
               {
                 return Optional.of(TokenType.Function);
               }

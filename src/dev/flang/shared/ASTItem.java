@@ -64,7 +64,7 @@ public class ASTItem
           }
         if (item instanceof AbstractFeature af)
           {
-            return FeatureTool.ToLabel(af);
+            return FeatureTool.Label(af);
           }
         return item.toString();
       }

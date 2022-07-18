@@ -101,7 +101,7 @@ public class SignatureHelper extends ANY
   {
     var consideredCallTargets_declaredOrInherited = ParserTool.DeclaredOrInheritedFeatures(featureOfCall);
     var consideredCallTargets_outerFeatures =
-      FeatureTool.outerFeatures(featureOfCall).flatMap(f -> ParserTool.DeclaredFeatures(f));
+      FeatureTool.OuterFeatures(featureOfCall).flatMap(f -> ParserTool.DeclaredFeatures(f));
 
     var consideredFeatures =
       Stream.concat(consideredCallTargets_declaredOrInherited, consideredCallTargets_outerFeatures);
@@ -116,7 +116,7 @@ public class SignatureHelper extends ANY
   private static SignatureInformation SignatureInformation(AbstractFeature feature)
   {
     var description = new MarkupContent(MarkupKind.MARKDOWN, FeatureTool.CommentOfInMarkdown(feature));
-    return new SignatureInformation(FeatureTool.ToLabel(feature), description,
+    return new SignatureInformation(FeatureTool.Label(feature), description,
       ParameterInfo(feature));
   }
 

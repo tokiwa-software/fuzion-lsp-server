@@ -77,6 +77,7 @@ public class ExprTool extends ANY
       && ac.calledFeature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
   }
 
+  // NYI parser should give us this info
   static Optional<SourcePosition> LambdaOpeningBracePosition(Expr expr)
   {
     if (PRECONDITIONS)

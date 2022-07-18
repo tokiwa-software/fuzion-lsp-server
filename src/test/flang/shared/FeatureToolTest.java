@@ -112,7 +112,7 @@ public class FeatureToolTest extends BaseTest
     var array = DeclaredInUniverse("array", 5);
     assertEquals(
       "array<T>(T Object, internalArray fuzion.sys.array<array.T>, _ unit, _ unit, _ unit) => array<array.T> : Sequence<T>",
-      FeatureTool.ToLabel(array));
+      FeatureTool.Label(array));
   }
 
   @Test

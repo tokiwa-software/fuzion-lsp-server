@@ -42,6 +42,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Consts;
 import dev.flang.ast.Feature;
 import dev.flang.ast.Feature.State;
+import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -50,21 +51,43 @@ import dev.flang.util.SourcePosition;
 
 public class FeatureTool extends ANY
 {
-  public static Stream<AbstractFeature> outerFeatures(AbstractFeature feature)
+  /**
+   * For feature a.b.c.d return the outer features a,b,c and universe
+   * @param feature
+   * @return
+   */
+  public static Stream<AbstractFeature> OuterFeatures(AbstractFeature feature)
   {
     if (feature.outer() == null)
       {
         return Stream.empty();
       }
-    return Stream.concat(Stream.of(feature.outer()), outerFeatures(feature.outer()));
+    return Stream.concat(Stream.of(feature.outer()), OuterFeatures(feature.outer()));
   }
 
+  /**
+   * All inner features of given feature.
+   * given feature `a` returns:
+   * a.b
+   * a.c
+   * a.b.d
+   * ...
+   *
+   * @param feature
+   * @return
+   */
   public static Stream<AbstractFeature> SelfAndDescendants(AbstractFeature feature)
   {
     return Stream.concat(Stream.of(feature),
       ParserTool.DeclaredFeatures(feature).flatMap(f -> SelfAndDescendants(f)));
   }
 
+  /**
+   * Extract the comment that belongs to some feature
+   * from the corresponding source text file.
+   * @param feature
+   * @return
+   */
   public static String CommentOf(AbstractFeature feature)
   {
     var line = feature.pos()._line - 1;
@@ -97,6 +120,11 @@ public class FeatureTool extends ANY
       + commentsOfRedefinedFeatures;
   }
 
+  /**
+   * Text representation of an (incomplete) AST for uri.
+   * @param uri
+   * @return
+   */
   public static String AST(URI uri)
   {
     var ast = ASTWalker.Traverse(uri)
@@ -182,6 +210,11 @@ public class FeatureTool extends ANY
     return f.featureName().baseName();
   }
 
+  /**
+   * Is the feature an argument of some feature?
+   * @param feature
+   * @return
+   */
   public static boolean IsArgument(AbstractFeature feature)
   {
     if (feature.outer() == null)
@@ -194,6 +227,11 @@ public class FeatureTool extends ANY
       .anyMatch(f -> f.equals(feature));
   }
 
+  /**
+   * Is the feature an 'internal' feature?
+   * @param af
+   * @return
+   */
   public static boolean IsInternal(AbstractFeature af)
   {
     // NYI this is a hack!
@@ -214,6 +252,11 @@ public class FeatureTool extends ANY
       || af.featureName().baseName().equals(Errors.ERROR_STRING);
   }
 
+  /**
+   *
+   * @param f
+   * @return
+   */
   static Optional<AbstractFeature> TopLevelFeature(AbstractFeature f)
   {
     if (f.isUniverse() || f.outer() == Types.f_ERROR)
@@ -236,7 +279,7 @@ public class FeatureTool extends ANY
    * @param feature
    * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
    */
-  public static String ToLabel(AbstractFeature feature)
+  public static String Label(AbstractFeature feature)
   {
     if (feature.isField())
       {
@@ -255,12 +298,30 @@ public class FeatureTool extends ANY
             return a.featureName().baseName() + " " + Label(a.resultType());
           })
           .collect(Collectors.joining(", ")) + ")";
-        return feature.featureName().baseName() + feature.generics() + arguments + " => " + Label(feature.resultType())
+        return feature.featureName().baseName() + Label(feature.generics(), false) + arguments + " => "
+          + Label(feature.resultType())
           + LabelInherited(feature);
       }
     return feature.featureName().baseName() + LabelInherited(feature);
   }
 
+
+  private static String Label(FormalGenerics generics, boolean brief)
+  {
+    if (brief)
+      {
+        return "<>";
+      }
+    return generics.toString();
+  }
+
+  /**
+   * Text representation of the inherited features including
+   * inheritance operator ':'
+   *
+   * @param feature
+   * @return
+   */
   public static String LabelInherited(AbstractFeature feature)
   {
     if (feature.inherits().isEmpty())
@@ -270,7 +331,8 @@ public class FeatureTool extends ANY
     return " : " + feature.inherits()
       .stream()
       .map(c -> c.calledFeature())
-      .map(f -> f.featureName().baseName() + f.generics())
+      // NYI use brief=true
+      .map(f -> f.featureName().baseName() + Label(f.generics(), false))
       .collect(Collectors.joining(", "));
   }
 
