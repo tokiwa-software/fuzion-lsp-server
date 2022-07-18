@@ -129,7 +129,7 @@ public class FeatureTool extends ANY
   {
     var ast = ASTWalker.Traverse(uri)
       .map(x -> x.getKey())
-      .sorted(ASTItem.CompareByLineThenByColumn())
+      .sorted(HasSourcePositionTool.CompareByLineThenByColumn())
       .reduce("", (a, item) -> {
         var position = item.pos();
         // NYI
@@ -140,7 +140,7 @@ public class FeatureTool extends ANY
           }
         return a + System.lineSeparator()
           + " ".repeat(indent * 2) + position._line + ":" + position._column + ":"
-          + Util.ShortName(item.getClass()) + ":" + ASTItem.ToLabel(item);
+          + Util.ShortName(item.getClass()) + ":" + HasSourcePositionTool.ToLabel(item);
       }, String::concat);
     return ast;
   }

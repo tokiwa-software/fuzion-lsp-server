@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class ASTItem
+ * Source of class HasSourcepositionTool
  *
  *---------------------------------------------------------------------*/
 
@@ -39,7 +39,7 @@ import dev.flang.ast.If;
 import dev.flang.ast.Types;
 import dev.flang.util.HasSourcePosition;
 
-public class ASTItem
+public class HasSourcePositionTool
 {
 
   public static String ToLabel(HasSourcePosition item)

@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
-import java.net.URI;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -121,6 +119,14 @@ public class LexerTool extends ANY
       }
   }
 
+  /**
+   * Next token from start that matches one of tokens
+   * or EOF.
+   *
+   * @param start
+   * @param tokens
+   * @return
+   */
   public static TokenInfo NextTokenOfType(SourcePosition start, Set<Token> tokens)
   {
     return TokensFrom(start)
@@ -167,6 +173,11 @@ public class LexerTool extends ANY
     return new TokenInfo(start, tokenString, lexer.current());
   }
 
+  /**
+   * Is this line a comment?
+   * @param params
+   * @return
+   */
   public static boolean isCommentLine(SourcePosition params)
   {
     return TokensFrom(params)
@@ -177,24 +188,14 @@ public class LexerTool extends ANY
       .orElse(false);
   }
 
-  public static SourcePosition EndOfToken(SourcePosition start)
+  /**
+   * End of the token to the right of the given pos
+   */
+  public static SourcePosition EndOfToken(SourcePosition pos)
   {
-    return TokensAt(start)
+    return TokensAt(pos)
       .right()
       .end();
-  }
-
-  public static SourceFile ToSourceFile(URI uri)
-  {
-    if (PRECONDITIONS)
-      require(!uri.equals(SourceFile.STDIN.toUri()));
-
-    var filePath = Path.of(uri);
-    if (filePath.equals(SourcePosition.builtIn._sourceFile._fileName))
-      {
-        return SourcePosition.builtIn._sourceFile;
-      }
-    return new SourceFile(filePath);
   }
 
   /**
@@ -236,6 +237,11 @@ public class LexerTool extends ANY
       });
   }
 
+  /**
+   * Ident token right or left of pos or empty.
+   * @param pos
+   * @return
+   */
   public static Optional<TokenInfo> IdentTokenAt(SourcePosition pos)
   {
     var tokens = TokensAt(pos);

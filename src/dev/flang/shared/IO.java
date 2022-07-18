@@ -99,6 +99,13 @@ public class IO
       }
   }
 
+  /**
+   * Feed text to stdin then execute the callable.
+   * @param <T>
+   * @param text
+   * @param callable
+   * @return
+   */
   public synchronized static <T> T WithTextInputStream(String text, Callable<T> callable)
   {
     byte[] byteArray = getBytes(text);

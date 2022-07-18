@@ -264,7 +264,7 @@ public class ParserTool extends ANY
       var uri = getUri(f.pos());
       var result = ASTWalker.Traverse(f)
         .filter(entry -> entry.getValue() != null)
-        .filter(ASTItem.IsItemInFile(uri))
+        .filter(HasSourcePositionTool.IsItemInFile(uri))
         .filter(entry -> entry.getValue().compareTo(f) == 0)
         .map(entry -> entry.getKey().pos())
         .filter(sourcePositionOption -> !sourcePositionOption.isBuiltIn())

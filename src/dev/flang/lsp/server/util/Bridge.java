@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.util;
 
+import java.net.URI;
+import java.nio.file.Path;
+
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentHighlightKind;
 import org.eclipse.lsp4j.DocumentSymbol;
@@ -39,10 +42,10 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.shared.ExprTool;
 import dev.flang.shared.FeatureTool;
-import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
+import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -124,7 +127,7 @@ public class Bridge extends ANY
 
   public static SourcePosition ToSourcePosition(TextDocumentPositionParams params)
   {
-    return new SourcePosition(LexerTool.ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
+    return new SourcePosition(ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
       params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
   }
 
@@ -153,5 +156,21 @@ public class Bridge extends ANY
   {
     // NYI set correct DocumentHighlightKind
     return new DocumentHighlight(ToRange(c), DocumentHighlightKind.Read);
+  }
+
+  /**
+   * The source file of an URI
+   */
+  private static SourceFile ToSourceFile(URI uri)
+  {
+    if (PRECONDITIONS)
+      require(!uri.equals(SourceFile.STDIN.toUri()));
+
+    var filePath = Path.of(uri);
+    if (filePath.equals(SourcePosition.builtIn._sourceFile._fileName))
+      {
+        return SourcePosition.builtIn._sourceFile;
+      }
+    return new SourceFile(filePath);
   }
 }
