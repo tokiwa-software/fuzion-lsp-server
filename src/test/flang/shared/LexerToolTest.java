@@ -100,7 +100,7 @@ public class LexerToolTest extends BaseTest
     SourceText.setText(uri1, ManOrBoy);
 
     var beforeSay = Cursor(uri1, 9, 3);
-    assertEquals("\n    ", LexerTool.TokensFrom(beforeSay).findFirst().get().text());
+    assertEquals("    ", LexerTool.TokensFrom(beforeSay).findFirst().get().text());
     var atSayStart = Cursor(uri1, 9, 4);
     assertEquals("say", LexerTool.TokensFrom(atSayStart).findFirst().get().text());
     var atSayMiddle = Cursor(uri1, 9, 6);

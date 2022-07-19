@@ -38,7 +38,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.shared.Context;
 import dev.flang.shared.IO;
 import dev.flang.shared.ParserTool;
 import dev.flang.util.Errors;

@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.parser.Lexer;
@@ -79,19 +80,18 @@ public class LexerTool extends ANY
 
   private static Map<String, List<TokenInfo>> tokenCache =
     Util.ThreadSafeLRUMap(10, (removed) -> {
-
     });
 
-  private static Stream<TokenInfo> Tokenize(SourcePosition start)
+  private static Stream<TokenInfo> Tokenize(SourcePosition pos)
   {
-    return IO.WithTextInputStream(SourceText.getText(start), () -> {
+    return IO.WithTextInputStream(SourceText.getText(pos), () -> {
       var lexer = NewLexerStdIn();
-      var eof = Stream.of(EOFTokenInfo(start));
+      var eof = Stream.of(EOFTokenInfo(pos));
       return Stream.concat(Stream.generate(() -> {
-        var result = tokenInfo(lexer, start._sourceFile);
+        var result = tokenInfo(lexer, pos._sourceFile);
         advance(lexer);
         return result;
-      }).takeWhile(tokenInfo -> tokenInfo.token() != Token.t_eof), eof);
+      }).flatMap(x -> x).takeWhile(tokenInfo -> tokenInfo.token() != Token.t_eof), eof);
     });
   }
 
@@ -154,6 +154,9 @@ public class LexerTool extends ANY
     return new Tokens(tokens.get(0), tokens.get(0));
   }
 
+  /*
+   * creates and initializes a lexer that reads from stdin
+   */
   private static Lexer NewLexerStdIn()
   {
     var lexer = new Lexer(SourceFile.STDIN);
@@ -164,13 +167,30 @@ public class LexerTool extends ANY
     return lexer;
   }
 
-  private static TokenInfo tokenInfo(Lexer lexer, SourceFile sf)
+  /**
+   * creates a token info from the current lexer, multiple if
+   * token comprises of more than one line.
+   *
+   * @param lexer
+   * @param sf
+   * @return
+   *
+   */
+  private static Stream<TokenInfo> tokenInfo(Lexer lexer, SourceFile sf)
   {
     var lexerSourcePosition = lexer.sourcePos(lexer.pos());
     var start =
       new SourcePosition(sf, lexerSourcePosition._line, lexerSourcePosition._column);
     var tokenString = lexer.asString(lexer.pos(), lexer.bytePos());
-    return new TokenInfo(start, tokenString, lexer.current());
+    var token = lexer.current();
+
+    var lines = tokenString
+      .split("\\r?\\n");
+
+    return IntStream.range(0, (int) lines.length)
+      .mapToObj(
+        idx -> new TokenInfo(new SourcePosition(start._sourceFile, start._line + idx, idx == 0 ? start._column: 1),
+          lines[idx], token));
   }
 
   /**

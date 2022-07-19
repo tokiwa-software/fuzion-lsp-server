@@ -94,19 +94,12 @@ public record TokenInfo(SourcePosition start, String text, Token token)
     Map<Integer, HasSourcePosition> pos2Item)
   {
     var tokenType = TokenType(pos2Item);
-    if (length() < 1)
-      {
-        return Stream.empty();
-      }
-
     int relativeLine = line() - previousToken.line();
     int relativeChar = startChar() - (IsSameLine(previousToken) ? previousToken.startChar(): 0);
     Integer tokenTypeNum = tokenType.get().num;
 
     if (ANY.CHECKS)
       ANY.check(relativeLine != 0 || relativeChar >= previousToken.length());
-
-    // NYI handle multiline (comments)
 
     return Stream.of(
       relativeLine,

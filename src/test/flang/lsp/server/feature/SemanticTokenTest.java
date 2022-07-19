@@ -314,7 +314,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
     AssertBasicDataSanity(semanticTokens);
 
     // Comment
-    assertEquals(semanticTokens, 0, 0, 0, Util.CharCount("# comment\n"), TokenType.Comment, 0);
+    assertEquals(semanticTokens, 0, 0, 0, Util.CharCount("# comment"), TokenType.Comment, 0);
 
     // Feature
     assertEquals(semanticTokens, 1, 1, 0, 7, TokenType.Namespace, 0);
