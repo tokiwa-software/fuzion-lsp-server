@@ -85,13 +85,13 @@ public class ConcurrencyTest extends ExtendedBaseTest
 
   }
 
-  private Thread createRequest(final ArrayList<Object> results, int index, int maxExcecutionTime)
+  private Thread createRequest(final ArrayList<Object> results, int index, int maxExecutionTime)
   {
     results.add(index, null);
     return new Thread(() -> {
       try
         {
-          results.set(index, getCompletion(maxExcecutionTime));
+          results.set(index, getCompletion(maxExecutionTime));
         }
       catch (Exception e)
         {
@@ -100,7 +100,7 @@ public class ConcurrencyTest extends ExtendedBaseTest
     });
   }
 
-  private Object getCompletion(int maxExcecutionTime)
+  private Object getCompletion(int maxExecutionTime)
     throws InterruptedException, ExecutionException, CancellationException, TimeoutException,
     MaxExecutionTimeExceededException
   {
@@ -111,7 +111,7 @@ public class ConcurrencyTest extends ExtendedBaseTest
       () -> Completion.getCompletions(completionParams),
       () -> {
       },
-      5, maxExcecutionTime);
+      5, maxExecutionTime);
   }
 
   @Test

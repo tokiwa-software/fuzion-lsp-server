@@ -69,12 +69,12 @@ public class Computation
         }
       catch (ExecutionException e)
         {
-          Context.Logger.Error("[" + callee + "] An excecution exception occurred: " + e);
+          Context.Logger.Error("[" + callee + "] An execution exception occurred: " + e);
           NotifyUser();
         }
       catch (MaxExecutionTimeExceededException e)
         {
-          Context.Logger.Warning("[" + callee + "] Max excecution time exceeded: " + e);
+          Context.Logger.Warning("[" + callee + "] Max execution time exceeded: " + e);
         }
       catch (CancellationException e)
         {
