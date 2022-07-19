@@ -61,8 +61,7 @@ public class LexerTool extends ANY
       var lexer = NewLexerStdIn();
       var startsWithIdent = lexer.current() == Token.t_ident;
       lexer.nextRaw();
-      return startsWithIdent &&
-        lexer.sourcePos()._column - 1 == Util.CodepointCount(str);
+      return startsWithIdent && lexer.current().equals(Token.t_eof);
     });
     return isIdentifier;
   }
