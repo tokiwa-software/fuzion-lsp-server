@@ -140,13 +140,20 @@ public class Rename extends ANY
     var typePositions = FeatureTool.SelfAndDescendants(featureToRename.universe())
       .filter(f -> !f.equals(featureToRename) && !f.resultType().isGenericArgument()
         && f.resultType().featureOfType().equals(featureToRename))
-      .map(f -> {
-        // NYI we need correct position of type here
-        var whitespace = LexerTool.TokensAt(LexerTool.EndOfToken(f.pos())).right();
+      .flatMap(f -> {
+        var tokens = LexerTool.TokensFrom(f.pos()).skip(1).collect(Collectors.toList());
+        var whitespace = tokens.get(0);
+
         if (CHECKS)
           check(whitespace.token() == Token.t_ws);
-        return new SourcePosition(f.pos()._sourceFile, f.pos()._line,
-          f.pos()._column + Util.CharCount(f.featureName().baseName()) + Util.CodepointCount(whitespace.text()));
+
+        if (!tokens.get(1).text().equals(FeatureTool.BareName(featureToRename)))
+          {
+            return Stream.empty();
+          }
+
+        return Stream.of(new SourcePosition(f.pos()._sourceFile, f.pos()._line,
+          f.pos()._column + Util.CharCount(f.featureName().baseName()) + Util.CodepointCount(whitespace.text())));
       });
 
 

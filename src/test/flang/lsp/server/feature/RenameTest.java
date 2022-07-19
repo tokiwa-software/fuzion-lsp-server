@@ -238,7 +238,15 @@ public class RenameTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, Mandelbrot);
     var atMandelbrotImage = Params(uri1, 7, 10, "mandelbrot_image");
-    assertTrue(Rename.getWorkspaceEdit(atMandelbrotImage).getChanges().size() > 0);
+    assertEquals(2, Rename.getWorkspaceEdit(atMandelbrotImage).getChanges().values().stream().findFirst().get().size());
+  }
+
+  @Test
+  public void RegressionRenameBounce()
+  {
+    SourceText.setText(uri1, Read("test_data/bounce.fz"));
+    var atMandelbrotImage = Params(uri1, 2, 4, "rand");
+    assertEquals(3, Rename.getWorkspaceEdit(atMandelbrotImage).getChanges().values().stream().findFirst().get().size());
   }
 
   @Test

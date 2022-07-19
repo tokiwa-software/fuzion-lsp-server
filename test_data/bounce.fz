@@ -1,0 +1,44 @@
+bounce =>
+
+  Rand is
+   seed := mut 74755
+   next =>
+     seed <- (((seed.get * 1309) + 13849) & 65535)
+     seed.get
+
+  ball(r Rand) is
+    x    := mut ( r.next % 500)
+    y    := mut ( r.next % 500)
+    x_vel := mut ((r.next % 300) - 150)
+    y_vel := mut ((r.next % 300) - 150)
+
+    bounce =>
+      x_limit := mut 500
+      y_limit := mut 500
+      bounced := mut false
+
+      x <- x.get + x_vel.get
+      y <- y.get + y_vel.get
+      if x.get > x_limit.get
+        x <- x_limit.get; x_vel <- 0 - x_vel.get.abs; bounced <- true
+      if x.get < 0
+        x <- 0; x_vel <- x_vel.get.abs; bounced <- true
+      if y.get > y_limit.get
+        y <- y_limit.get; y_vel <- 0 - y_vel.get.abs; bounced <- true
+      if y.get < 0
+        y <- 0; y_vel <- y_vel.get.abs; bounced <- true
+      bounced.get
+
+  ball_count := 100
+  bounces:= mut 0
+  r := Rand
+  balls := array ball_count (v -> ball r)
+
+  for i in 0..49 do
+    for b in balls do
+      if b.bounce
+        bounces <- bounces.get + 1
+
+
+  say bounces.get # expect 1331
+
