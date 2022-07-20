@@ -108,6 +108,21 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  @Disabled // failing
+  public void TopLevelFeatureWithDots()
+  {
+    SourceText.setText(uri1, """
+      fuzion.std.ex =>
+        a := mut 0
+                  """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params(uri1));
+    AssertBasicDataSanity(semanticTokens);
+    // mut
+    assertEquals(semanticTokens, 8, 0, 3, 3, TokenType.Function, 0);
+  }
+
+  @Test
   public void GetSemanticTokensString()
   {
     SourceText.setText(uri1, """
