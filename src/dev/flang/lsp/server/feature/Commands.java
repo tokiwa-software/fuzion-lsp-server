@@ -192,7 +192,7 @@ public enum Commands
         var file = IO.writeToTempFile(result, String.valueOf(System.currentTimeMillis()), ".result");
         Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
       }
-    catch (Exception e)
+    catch (Throwable e)
       {
         var message = e.getMessage();
         if (message != null)

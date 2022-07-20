@@ -30,10 +30,10 @@ import java.time.LocalDateTime;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 
 import dev.flang.lsp.server.Config;
 import dev.flang.shared.Concurrency;
@@ -54,7 +54,7 @@ public class Computation
       try
         {
 
-          var res =  Concurrency.RunWithPeriodicCancelCheck(callable, () -> {
+          var res = Concurrency.RunWithPeriodicCancelCheck(callable, () -> {
             if (result.isCancelled())
               {
                 throw new CancellationException();
@@ -67,10 +67,10 @@ public class Computation
 
           return res.result();
         }
-      catch (ExecutionException e)
+      // this exception is an error response in LSP, so we rethrow
+      catch (ResponseErrorException e)
         {
-          Context.Logger.Error("[" + callee + "] An execution exception occurred: " + e);
-          NotifyUser();
+          throw e;
         }
       catch (MaxExecutionTimeExceededException e)
         {

@@ -285,13 +285,13 @@ public class ParserTool extends ANY
   }
 
   public static String Run(URI uri)
-    throws Exception
+    throws Throwable
   {
     return Run(uri, 10000);
   }
 
   public synchronized static String Run(URI uri, int timeout)
-    throws Exception
+    throws Throwable
   {
     var result = Concurrency.RunWithPeriodicCancelCheck(IO.WithCapturedStdOutErr(() -> {
       var interpreter = ParserTool.Interpreter(uri);

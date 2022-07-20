@@ -330,7 +330,7 @@ public class QueryASTTest extends ExtendedBaseTest
   public void RunBrokenSource()
   {
     SourceText.setText(uri1, UnknownCall);
-    assertThrows(ExecutionException.class, () -> ParserTool.Run(uri1, 10000));
+    assertThrows(RuntimeException.class, () -> ParserTool.Run(uri1, 10000));
     assertEquals(1, QueryAST.SelfAndDescendants(uri1).count());
   }
 

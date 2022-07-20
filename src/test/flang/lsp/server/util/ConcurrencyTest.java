@@ -28,9 +28,7 @@ package test.flang.lsp.server.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 import org.eclipse.lsp4j.CompletionContext;
@@ -93,7 +91,7 @@ public class ConcurrencyTest extends ExtendedBaseTest
         {
           results.set(index, getCompletion(maxExecutionTime));
         }
-      catch (Exception e)
+      catch (Throwable e)
         {
           results.set(index, e);
         }
@@ -101,8 +99,7 @@ public class ConcurrencyTest extends ExtendedBaseTest
   }
 
   private Object getCompletion(int maxExecutionTime)
-    throws InterruptedException, ExecutionException, CancellationException, TimeoutException,
-    MaxExecutionTimeExceededException
+    throws Throwable
   {
     var completionParams =
       new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),

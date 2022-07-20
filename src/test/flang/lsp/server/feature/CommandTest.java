@@ -46,7 +46,7 @@ public class CommandTest extends BaseTest
    */
   @Test
   @Disabled // too slow
-  public void RunMultiple() throws Exception
+  public void RunMultiple() throws Throwable
   {
     SourceText.setText(uri1, HelloWorld);
     SourceText.setText(uri2, PythagoreanTriple);
@@ -60,7 +60,7 @@ public class CommandTest extends BaseTest
 
   @Test
   @Disabled // too slow
-  public void RunSuccessfulAfterRunWithTimeoutException() throws Exception
+  public void RunSuccessfulAfterRunWithTimeoutException() throws Throwable
   {
     SourceText.setText(uri1, ManOrBoy);
     SourceText.setText(uri2, HelloWorld);

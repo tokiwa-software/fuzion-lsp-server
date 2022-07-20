@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,16 +58,11 @@ public class Concurrency
    * @param intervallCancelledCheckInMs
    * @param maxExecutionTimeInMs
    * @return
-   * @throws InterruptedException
-   * @throws ExecutionException
-   * @throws TimeoutException
-   * @throws MaxExecutionTimeExceededException
-   * @throws CancellationException
+   * @throws Throwable
    */
   public static <T> ComputationPerformance<T> RunWithPeriodicCancelCheck(
     Callable<T> callable, Runnable checkCancelled, int intervallCancelledCheckInMs, int maxExecutionTimeInMs)
-    throws InterruptedException, ExecutionException, TimeoutException, MaxExecutionTimeExceededException,
-    CancellationException
+    throws Throwable
   {
 
     Future<ComputationPerformance<T>> future = executor.submit(() -> {
@@ -102,6 +96,11 @@ public class Concurrency
                   }
               }
           }
+      }
+    // unwrap any execution exception
+    catch (ExecutionException e)
+      {
+        throw e.getCause();
       } finally
       {
         if (!future.isCancelled() || !future.isDone())
