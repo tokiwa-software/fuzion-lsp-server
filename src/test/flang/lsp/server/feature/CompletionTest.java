@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
@@ -234,6 +235,25 @@ public class CompletionTest extends ExtendedBaseTest
       QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("sizeOption")));
 
     assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 15)).anyMatch(x -> x.featureName().baseName().equals("max")));
+  }
+
+  @Test
+  @Disabled // failing
+  public void CompletionOfLoopVariable()
+  {
+    var sourceText = """
+      ex =>
+        ball is
+          color is
+
+        balls := array 10 (i -> ball)
+
+        for b in balls do
+          b.
+      """;
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 7, 6, Completion.TriggerCharacters.Dot));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("color")));
   }
 
   @Test
