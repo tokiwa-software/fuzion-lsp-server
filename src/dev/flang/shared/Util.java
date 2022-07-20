@@ -145,4 +145,13 @@ public class Util
     return text.codePoints().map(cp -> Character.charCount(cp)).sum();
   }
 
+  public static String AddParens(String str)
+  {
+    if (str.contains(" "))
+      {
+        return "(" + str + ")";
+      }
+    return str;
+  }
+
 }

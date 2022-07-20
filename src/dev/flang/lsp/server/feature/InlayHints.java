@@ -51,6 +51,7 @@ import dev.flang.shared.ASTWalker;
 import dev.flang.shared.CallTool;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
+import dev.flang.shared.TypeTool;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
@@ -111,7 +112,7 @@ public class InlayHints extends ANY
       .filter(af -> !(af.isField() && TypeIsExplicitlyStated(af)))
       .flatMap(af -> PositionOfOperator(af)
         .map(pos -> {
-          var ih = new InlayHint(pos, Either.forLeft(af.resultType().name()));
+          var ih = new InlayHint(pos, Either.forLeft(TypeTool.Label(af.resultType())));
           ih.setKind(InlayHintKind.Type);
           ih.setPaddingLeft(true);
           ih.setPaddingRight(true);

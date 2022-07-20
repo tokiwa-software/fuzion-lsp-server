@@ -153,7 +153,7 @@ public class InlayHintTest extends ExtendedBaseTest
 
     var inlayHintsArray = inlayHints
       .stream()
-      .filter(x -> x.getLabel().getLeft().equals("array"))
+      .filter(x -> x.getLabel().getLeft().contains("array"))
       .sorted((a, b) -> a.getPosition().getLine() - b.getPosition().getLine())
       .collect(Collectors.toList());
 

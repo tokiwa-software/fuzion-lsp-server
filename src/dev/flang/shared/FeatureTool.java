@@ -283,7 +283,7 @@ public class FeatureTool extends ANY
   {
     if (feature.isField())
       {
-        return feature.featureName().baseName() + " " + Label(feature.resultType());
+        return feature.featureName().baseName() + " " + Util.AddParens(TypeTool.Label(feature.resultType()));
       }
     if (feature.isRoutine())
       {
@@ -291,29 +291,21 @@ public class FeatureTool extends ANY
         var arguments = "(" + feature.arguments()
           .stream()
           .map(a -> {
+            var type = a.isTypeParameter() ? "type": Util.AddParens(TypeTool.Label(a.resultType()));
             if (IsInternal(a))
               {
-                return "_" + " " + Label(a.resultType());
+                return "_" + " " + type;
               }
-            return a.featureName().baseName() + " " + Label(a.resultType());
+            return a.featureName().baseName() + " " + type;
           })
           .collect(Collectors.joining(", ")) + ")";
-        return feature.featureName().baseName() + Label(feature.generics(), false) + arguments + " => "
-          + Label(feature.resultType())
+        return feature.featureName().baseName() + arguments + " => "
+          + Util.AddParens(TypeTool.Label(feature.resultType()))
           + LabelInherited(feature);
       }
     return feature.featureName().baseName() + LabelInherited(feature);
   }
 
-
-  private static String Label(FormalGenerics generics, boolean brief)
-  {
-    if (brief)
-      {
-        return "<>";
-      }
-    return generics.toString();
-  }
 
   /**
    * Text representation of the inherited features including
@@ -331,19 +323,8 @@ public class FeatureTool extends ANY
     return " : " + feature.inherits()
       .stream()
       .map(c -> c.calledFeature())
-      // NYI use brief=true
-      .map(f -> f.featureName().baseName() + Label(f.generics(), false))
+      .map(f -> f.featureName().baseName() + TypeTool.Label(f.generics(), true))
       .collect(Collectors.joining(", "));
-  }
-
-  // NYI move to TypeTool?
-  private static String Label(AbstractType type)
-  {
-    if (type.isChoice() && type.choiceGenerics() == null)
-      {
-        return "choice<?>";
-      }
-    return type.toString();
   }
 
   public static String CommentOfInMarkdown(AbstractFeature f)
