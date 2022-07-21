@@ -97,20 +97,14 @@ public record TokenInfo(SourcePosition start, String text, Token token)
     int relativeLine = line() - previousToken.line();
     int relativeChar = startChar() - (IsSameLine(previousToken) ? previousToken.startChar(): 0);
     Integer tokenTypeNum = tokenType.get().num;
-    var length = length();
 
     if (ANY.CHECKS)
       ANY.check(relativeLine != 0 || relativeChar >= previousToken.length());
 
-    if (length == 0)
-      {
-        return Stream.empty();
-      }
-
     return Stream.of(
       relativeLine,
       relativeChar,
-      length,
+      length(),
       tokenTypeNum,
       Modifiers(pos2Item));
   }

@@ -312,19 +312,22 @@ public class SemanticTokenTest extends ExtendedBaseTest
     assertTrue(st.getData().size() % 5 == 0);
   }
 
-  private static void AssertLengthsGreaterZero(SemanticTokens st)
+  /**
+   * empty lines can have length=0
+   */
+  private static void AssertLengthsZeroOrGreater(SemanticTokens st)
   {
     assertTrue(IntStream
       .range(0, st.getData().size() + 0)
       .filter(x -> x % 5 == 2)
-      .allMatch(x -> st.getData().get(x) > 0));
+      .allMatch(x -> st.getData().get(x) >= 0));
   }
 
   private static void AssertBasicDataSanity(SemanticTokens st)
   {
     AssertMultipleOfFive(st);
     AssertNoNegative(st);
-    AssertLengthsGreaterZero(st);
+    AssertLengthsZeroOrGreater(st);
   }
 
   @Test
