@@ -87,8 +87,16 @@ public class ParserTool extends ANY
    */
   public static Stream<AbstractFeature> TopLevelFeatures(URI uri)
   {
-    return DeclaredFeatures(Universe(uri))
-      .filter(f -> getUri(f.pos()).equals(uri));
+    return DeclaredFeaturesAndChildren(Universe(uri))
+      // feature is in file
+      .filter(f -> getUri(f.pos()).equals(uri))
+      // outer is not in file
+      .filter(f -> !getUri(f.outer().pos()).equals(uri));
+  }
+
+  private static Stream<AbstractFeature> DeclaredFeaturesAndChildren(AbstractFeature f)
+  {
+    return DeclaredFeatures(f).flatMap(af -> Stream.concat(Stream.of(af), DeclaredFeaturesAndChildren(af)));
   }
 
   /**

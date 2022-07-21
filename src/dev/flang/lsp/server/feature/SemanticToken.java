@@ -168,7 +168,7 @@ public class SemanticToken extends ANY
       })
       .map(item -> new EntryEqualByKey<Integer, HasSourcePosition>(
         TokenInfo.KeyOf(item instanceof AbstractFeature af ? FeatureTool.BareNamePosition(af): item.pos()), item))
-      // NYI which are the duplicates here? Can we do better in selecting the 'right' ones?
+        // NYI which are the duplicates here? Can we do better in selecting the 'right' ones?
       .distinct()
       .collect(Collectors.toUnmodifiableMap(e -> e.getKey(), e -> e.getValue()));
   }

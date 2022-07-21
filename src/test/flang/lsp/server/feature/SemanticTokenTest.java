@@ -108,7 +108,6 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
-  @Disabled // failing
   public void TopLevelFeatureWithDots()
   {
     SourceText.setText(uri1, """
@@ -117,7 +116,11 @@ public class SemanticTokenTest extends ExtendedBaseTest
                   """);
     var semanticTokens =
       SemanticToken.getSemanticTokens(Params(uri1));
+
+    assertEquals(10, semanticTokens.getData().size() / 5);
+
     AssertBasicDataSanity(semanticTokens);
+
     // mut
     assertEquals(semanticTokens, 8, 0, 3, 3, TokenType.Function, 0);
   }
