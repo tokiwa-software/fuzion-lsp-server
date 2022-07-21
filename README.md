@@ -23,8 +23,6 @@
 - `make run_tests`
 
 ## Profiling
-- clone https://github.com/jvm-profiling-tools/async-profiler
-- add the profiler.sh script to PATH
 - `make profile/tests` or `profile/tagged_tests`
 
 ## Clients
