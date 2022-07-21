@@ -320,7 +320,15 @@ public class SemanticTokenTest extends ExtendedBaseTest
     assertTrue(IntStream
       .range(0, st.getData().size() + 0)
       .filter(x -> x % 5 == 2)
-      .allMatch(x -> st.getData().get(x) >= 0));
+      .allMatch(x ->
+      // greater zero
+      st.getData().get(x) > 0
+        // or zero when empty line
+        || (
+        // check that column is 0
+        st.getData().get(x - 1) == 0
+          // and length is 0
+          && st.getData().get(x) == 0)));
   }
 
   private static void AssertBasicDataSanity(SemanticTokens st)
