@@ -28,9 +28,11 @@ package dev.flang.shared.records;
 
 import java.util.TreeSet;
 
+import dev.flang.air.AIR;
 import dev.flang.ast.Types.Resolved;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+import dev.flang.me.MiddleEnd;
 import dev.flang.mir.MIR;
 import dev.flang.util.Errors;
 
@@ -40,5 +42,10 @@ import dev.flang.util.Errors;
 public record ParserCacheRecord(MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
   TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings, Resolved resolved)
 {
+  public AIR air()
+  {
+    return new MiddleEnd(frontEndOptions, mir, frontEnd.module())
+      .air();
+  }
 
 }

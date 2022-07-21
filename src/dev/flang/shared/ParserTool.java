@@ -139,12 +139,8 @@ public class ParserTool extends ANY
         return Optional.empty();
       }
 
-    var air =
-      new MiddleEnd(parserCacheRecord.frontEndOptions(), parserCacheRecord.mir(),
-        parserCacheRecord.frontEnd().module())
-          .air();
-
-    var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), air).fuir();
+    var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), parserCacheRecord.air())
+      .fuir();
     return Optional.of(fuir);
   }
 
