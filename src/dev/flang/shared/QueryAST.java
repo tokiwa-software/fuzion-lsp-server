@@ -287,35 +287,38 @@ public class QueryAST extends ANY
   public static Optional<AbstractFeature> FeatureAt(SourcePosition params)
   {
     return FeatureDefinedAt(params)
-      .or(() -> {
-        var token = LexerTool.IdentOrOperatorTokenAt(params);
-        return ASTItemsBeforeOrAtCursor(params)
-          .map(astItem -> {
-            if (astItem instanceof AbstractFeature f
-              && token.<Boolean>map(x -> x.text().equals(f.featureName().baseName())).orElse(false))
-              {
-                return f;
-              }
-            if (astItem instanceof AbstractCall c)
-              {
-                return ErrorHandling.ResultOrDefault(() -> {
-                  if (token.map(t -> c.pos()._column + Util.CodepointCount(t.text()) >= params._column)
-                    .orElse(false)
-                    && !c.calledFeature().equals(Types.f_ERROR))
-                    {
-                      return c.calledFeature();
-                    }
-                  return null;
-                }, null);
-              }
-            return null;
-          })
-          .filter(f -> f != null)
-          .findFirst()
-          // NYI workaround for not having positions of all types in
-          // the AST currently
-          .or(() -> FeatureAtFuzzy(params));
-      });
+      .or(() -> FindFeatureInAST(params))
+      // NYI workaround for not having positions of all types in
+      // the AST currently
+      .or(() -> FeatureAtFuzzy(params));
+  }
+
+  private static Optional<? extends AbstractFeature> FindFeatureInAST(SourcePosition params)
+  {
+    var token = LexerTool.IdentOrOperatorTokenAt(params);
+    return ASTItemsBeforeOrAtCursor(params)
+      .map(astItem -> {
+        if (astItem instanceof AbstractFeature f
+          && token.<Boolean>map(x -> x.text().equals(f.featureName().baseName())).orElse(false))
+          {
+            return f;
+          }
+        if (astItem instanceof AbstractCall c)
+          {
+            return ErrorHandling.ResultOrDefault(() -> {
+              if (token.map(t -> c.pos()._column + Util.CodepointCount(t.text()) >= params._column)
+                .orElse(false)
+                && !c.calledFeature().equals(Types.f_ERROR))
+                {
+                  return c.calledFeature();
+                }
+              return null;
+            }, null);
+          }
+        return null;
+      })
+      .filter(f -> f != null)
+      .findFirst();
   }
 
   /**
