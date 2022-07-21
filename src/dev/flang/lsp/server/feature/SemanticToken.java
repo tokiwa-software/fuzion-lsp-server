@@ -27,10 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.lsp.server.feature;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -65,40 +63,8 @@ public class SemanticToken extends ANY
 
   public static SemanticTokens getSemanticTokens(SemanticTokensParams params)
   {
-    var pos2Item = Pos2Items(params)
-      .entrySet()
-      .stream()
-      .map(e -> {
+    var pos2Item = Pos2Items(params);
 
-        // try to filter all generated features/calls
-        var tmp = e.getValue().stream().filter(x -> {
-          if (x instanceof AbstractFeature af)
-            {
-              return LexerTool
-                .TokensAt(FeatureTool.BareNamePosition(af))
-                .right()
-                .text()
-                .equals(FeatureTool.BareName(af));
-            }
-          var c = (AbstractCall) x;
-          return LexerTool
-            .TokensAt(c.pos())
-            .right()
-            .text()
-            .equals(FeatureTool.BareName(c.calledFeature()));
-        }).collect(Collectors.toList());
-
-
-        // happens for e.g. syntax sugar for tuples
-        if (tmp.isEmpty())
-          {
-            return null;
-          }
-
-        return new SimpleEntry<Integer, HasSourcePosition>(e.getKey(), tmp.get(0));
-      })
-      .filter(x -> x != null)
-      .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
     return new SemanticTokens(SemanticTokenData(LexerTokens(params, pos2Item), pos2Item));
   }
 
@@ -149,23 +115,62 @@ public class SemanticToken extends ANY
       .collect(Collectors.toList());
   }
 
-  private static Map<Integer, HashSet<HasSourcePosition>> Pos2Items(SemanticTokensParams params)
+  /**
+   * A simple entry whose equality is decided by comparing its key only.
+   */
+  private static class EntryEqualByKey<T1, T2> extends SimpleEntry<T1, T2>
   {
-    var result = new TreeMap<Integer, HashSet<HasSourcePosition>>();
+    public EntryEqualByKey(T1 key, T2 value)
+    {
+      super(key, value);
+    }
 
-    ASTWalker
+    @Override
+    public boolean equals(Object arg0)
+    {
+      var other = (EntryEqualByKey<T1, T2>) arg0;
+      return (this.getKey() == null ? other.getKey() == null: this.getKey().equals(other.getKey()));
+    }
+
+    @Override
+    public int hashCode()
+    {
+      return this.getKey().hashCode();
+    }
+  }
+
+  /*
+   * returns a map of: position -> call/feature
+   * remark: position is encoded by integer index via function TokenInfo.KeyOf()
+   */
+  private static Map<Integer, HasSourcePosition> Pos2Items(SemanticTokensParams params)
+  {
+    return ASTWalker
       .Traverse(LSP4jUtils.getUri(params.getTextDocument()))
       .map(e -> e.getKey())
       .filter(x -> x instanceof AbstractFeature || x instanceof AbstractCall)
-      .forEach(x -> {
-        var key = TokenInfo.KeyOf(x instanceof AbstractFeature af ? FeatureTool.BareNamePosition(af): x.pos());
-        result.computeIfAbsent(key, (k) -> new HashSet<HasSourcePosition>());
-        result.computeIfPresent(key, (k, v) -> {
-          v.add(x);
-          return v;
-        });
-      });
-    return result;
+      // try to filter all generated features/calls
+      .filter(x -> {
+        if (x instanceof AbstractFeature af)
+          {
+            return LexerTool
+              .TokensAt(FeatureTool.BareNamePosition(af))
+              .right()
+              .text()
+              .equals(FeatureTool.BareName(af));
+          }
+        var c = (AbstractCall) x;
+        return LexerTool
+          .TokensAt(c.pos())
+          .right()
+          .text()
+          .equals(FeatureTool.BareName(c.calledFeature()));
+      })
+      .map(item -> new EntryEqualByKey<Integer, HasSourcePosition>(
+        TokenInfo.KeyOf(item instanceof AbstractFeature af ? FeatureTool.BareNamePosition(af): item.pos()), item))
+      // NYI which are the duplicates here? Can we do better in selecting the 'right' ones?
+      .distinct()
+      .collect(Collectors.toUnmodifiableMap(e -> e.getKey(), e -> e.getValue()));
   }
 
   private static List<Integer> SemanticTokenData(List<TokenInfo> lexerTokens,
