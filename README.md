@@ -148,7 +148,6 @@
 |---|---|
 |diagnostics|☑|
 |completion|☑|
-|completion resolve|☐|
 |hover|☑|
 |signatureHelp|☑|
 |declaration|☐|
@@ -159,12 +158,8 @@
 |documentHighlight|☐|
 |documentSymbol|☑|
 |codeAction|☐|
-|codeAction resolve|☐|
 |codeLens|☐|
-|codeLens resolve|☐|
-|codeLens refresh|☐|
 |documentLink|☐|
-|documentLink resolve|☐|
 |documentColor|☐|
 |colorPresentation|☐|
 |formatting|☐|
@@ -177,9 +172,10 @@
 |prepareCallHierarchy|☐|
 |callHierarchy incoming|☐|
 |callHierarchy outgoing|☐|
-|semantic tokens|☐|
+|semantic tokens|☑|
 |linkedEditingRange|☐|
 |moniker|☐|
 |inlayHints|☑|
 |inlineValue|☐|
 |type hierarchy|☐|
+|notebook document support|☐|
