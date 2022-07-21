@@ -242,7 +242,6 @@ public class FeatureTool extends ANY
         .baseName()
         .contains(FuzionConstants.INTERNAL_NAME_PREFIX) // Confusingly # is not
                                                         // just used as prefix
-      || af.visibility().toString().contains(Consts.VISIBILITY_INVISIBLE.toString())
       || (af.featureName().baseName().equals("call") && IsInternal(af.outer())) // lambda
       // NYI hack
       || (af.featureName().baseName().matches("a\\d+")
