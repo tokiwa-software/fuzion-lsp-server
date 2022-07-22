@@ -29,8 +29,11 @@ package dev.flang.lsp.server.feature;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.Command;
@@ -38,25 +41,36 @@ import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ShowDocumentParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.WorkspaceEdit;
 
 import com.google.gson.JsonPrimitive;
 
+import dev.flang.ast.AbstractMatch;
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.FuzionLanguageClient;
+import dev.flang.lsp.server.util.Bridge;
+import dev.flang.lsp.server.util.Computation;
+import dev.flang.shared.ASTWalker;
 import dev.flang.shared.Concurrency;
+import dev.flang.shared.Converter;
 import dev.flang.shared.ErrorHandling;
+import dev.flang.shared.ExprTool;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.HasSourcePositionTool;
 import dev.flang.shared.IO;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.TypeTool;
 import dev.flang.shared.Util;
 
 public enum Commands
 {
   showSyntaxTree,
-  run, callGraph, codeActionFixIdentifier;
+  run, callGraph, codeActionFixIdentifier, codeActionGenerateMatchCases;
 
   public String toString()
   {
@@ -69,13 +83,15 @@ public enum Commands
       case callGraph :
         return "Show call graph";
       case codeActionFixIdentifier :
-        return "Apply code action";
+        return "Fix identifier";
+      case codeActionGenerateMatchCases :
+        return "Generate match cases";
       default:
         return "not implemented";
       }
   }
 
-  private static CompletableFuture<Object> completedFuture = CompletableFuture.completedFuture(null);
+  private final static CompletableFuture<Object> completedFuture = CompletableFuture.completedFuture(null);
 
   public static CompletableFuture<Object> Execute(ExecuteCommandParams params)
   {
@@ -85,44 +101,106 @@ public enum Commands
       {
 
       case showSyntaxTree :
-        Concurrency.MainExecutor.submit(() -> showSyntaxTree(Util.toURI(uri)));
-        return completedFuture;
+        return showSyntaxTree(uri);
 
 
       case run :
-        Concurrency.MainExecutor.submit(() -> evaluate(Util.toURI(uri)));
-        return completedFuture;
+        return run(uri);
 
 
       case callGraph :
-        var arg1 = getArgAsString(params, 1);
-        Concurrency.MainExecutor.submit(() -> CallGraph(uri, arg1));
-        return completedFuture;
+        return callGraph(params, uri);
 
 
       case codeActionFixIdentifier :
+        return codeActionFixIdentifier(params, uri);
 
-        var line = getArgAsInt(params, 1);
-        var character = getArgAsInt(params, 2);
-        var newName = getArgAsString(params, 3);
+      case codeActionGenerateMatchCases :
+        return codeActionGenerateMatchCases(params, uri);
 
-        return Rename
-          .getWorkspaceEditsOrError(
-            new TextDocumentPositionParams(new TextDocumentIdentifier(uri), new Position(line, character)), newName)
-          .map(
-            edit -> {
-              Config.languageClient().applyEdit(new ApplyWorkspaceEditParams(edit));
-              return completedFuture;
-            },
-            error -> {
-              Config.languageClient().showMessage(new MessageParams(MessageType.Error, error.getMessage()));
-              return completedFuture;
-            });
 
       default:
         ErrorHandling.WriteStackTrace(new Exception("not implemented"));
         return completedFuture;
       }
+  }
+
+  private static CompletableFuture<Object> codeActionGenerateMatchCases(ExecuteCommandParams params, String uri)
+  {
+    return Computation.CancellableComputation(() -> {
+
+      var matchPos = new Position(getArgAsInt(params, 1), getArgAsInt(params, 2));
+
+      return ASTWalker
+        .Traverse(Util.toURI(uri))
+        .filter(x -> x.getKey() instanceof AbstractMatch)
+        .map(x -> (AbstractMatch) x.getKey())
+        .filter(x -> x.pos()._line < (matchPos.getLine() + 1)
+          || (x.pos()._line == (matchPos.getLine() + 1) && x.pos()._column <= (matchPos.getCharacter() + 1)))
+        .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
+        .findFirst()
+        .map(m -> {
+          // NYI support indent different from two spaces
+          var indent = IntStream.range(0, m.pos()._column + 1).mapToObj(x -> " ").collect(Collectors.joining());
+
+          // NYI do not create already existing subjects
+          var text = System.lineSeparator()
+            + m.subject()
+              .type()
+              .choiceGenerics()
+              .stream()
+              .map(t -> indent + Converter.ToSnakeCase(t.name()) + " " + TypeTool.Label(t) + " =>")
+              .collect(Collectors.joining(System.lineSeparator()))
+            + System.lineSeparator();
+
+          var endOfSubPos = Bridge.ToPosition(ExprTool.EndOfExpr(m.subject()));
+
+          var edit = new WorkspaceEdit(Map.of(
+            uri,
+            Stream.of(new TextEdit(new Range(endOfSubPos, endOfSubPos), text)).toList()));
+          Config.languageClient().applyEdit(new ApplyWorkspaceEditParams(edit));
+          return edit;
+        }).orElse(null);
+    }, "codeActionGenerateMatchCases", 1000);
+  }
+
+  private static CompletableFuture<Object> showSyntaxTree(String uri)
+  {
+    Concurrency.MainExecutor.submit(() -> showSyntaxTree(Util.toURI(uri)));
+    return completedFuture;
+  }
+
+  private static CompletableFuture<Object> run(String uri)
+  {
+    Concurrency.MainExecutor.submit(() -> evaluate(Util.toURI(uri)));
+    return completedFuture;
+  }
+
+  private static CompletableFuture<Object> callGraph(ExecuteCommandParams params, String uri)
+  {
+    var arg1 = getArgAsString(params, 1);
+    Concurrency.MainExecutor.submit(() -> CallGraph(uri, arg1));
+    return completedFuture;
+  }
+
+  private static CompletableFuture<Object> codeActionFixIdentifier(ExecuteCommandParams params, String uri)
+  {
+    var line = getArgAsInt(params, 1);
+    var character = getArgAsInt(params, 2);
+    var newName = getArgAsString(params, 3);
+
+    return Rename
+      .getWorkspaceEditsOrError(
+        new TextDocumentPositionParams(new TextDocumentIdentifier(uri), new Position(line, character)), newName)
+      .map(
+        edit -> {
+          Config.languageClient().applyEdit(new ApplyWorkspaceEditParams(edit));
+          return completedFuture;
+        },
+        error -> {
+          Config.languageClient().showMessage(new MessageParams(MessageType.Error, error.getMessage()));
+          return completedFuture;
+        });
   }
 
   private static String getArgAsString(ExecuteCommandParams params, int index)

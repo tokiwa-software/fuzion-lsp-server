@@ -31,13 +31,22 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
+import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
+import org.eclipse.lsp4j.MessageActionItem;
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.ShowMessageRequestParams;
+import org.eclipse.lsp4j.services.LanguageClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.lsp.server.Config;
 import dev.flang.shared.IO;
 import dev.flang.shared.ParserTool;
 import dev.flang.util.Errors;
@@ -111,7 +120,57 @@ public abstract class BaseTest extends Assertions
   public static void setup()
   {
     System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
+
+    // set dummy client
+    Config.setLanguageClient(new LanguageClient() {
+
+      @Override
+      public void telemetryEvent(Object object)
+      {
+        // TODO Auto-generated method stub
+
+      }
+
+      @Override
+      public void publishDiagnostics(PublishDiagnosticsParams diagnostics)
+      {
+        // TODO Auto-generated method stub
+
+      }
+
+      @Override
+      public void showMessage(MessageParams messageParams)
+      {
+        // TODO Auto-generated method stub
+
+      }
+
+      @Override
+      public CompletableFuture<MessageActionItem> showMessageRequest(ShowMessageRequestParams requestParams)
+      {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public void logMessage(MessageParams message)
+      {
+        // TODO Auto-generated method stub
+      }
+
+      @Override
+      public CompletableFuture<ApplyWorkspaceEditResponse> applyEdit(ApplyWorkspaceEditParams params)
+      {
+        // short circuit this
+        return CompletableFuture.completedFuture(null);
+      }
+
+    });
+
+    // we want to allow more than the default of 20 errors
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
+
+    // surpress any output to stdout, stderr
     IO.Init((line) -> {
     }, (line) -> {
     });

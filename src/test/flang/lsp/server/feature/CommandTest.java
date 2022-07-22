@@ -27,9 +27,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.feature;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
+import java.util.List;
 
+import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.eclipse.lsp4j.WorkspaceEdit;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import com.google.gson.JsonPrimitive;
+
+import dev.flang.lsp.server.feature.Commands;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
@@ -44,8 +51,7 @@ public class CommandTest extends BaseTest
    * get in the way.
    * @throws Exception
    */
-  @Test
-  @Disabled // too slow
+  @Test @Disabled // too slow
   public void RunMultiple() throws Throwable
   {
     SourceText.setText(uri1, HelloWorld);
@@ -58,8 +64,7 @@ public class CommandTest extends BaseTest
     assertEquals("Hello World!" + "\n", message);
   }
 
-  @Test
-  @Disabled // too slow
+  @Test @Disabled // too slow
   public void RunSuccessfulAfterRunWithTimeoutException() throws Throwable
   {
     SourceText.setText(uri1, ManOrBoy);
@@ -71,6 +76,33 @@ public class CommandTest extends BaseTest
     assertThrows(MaxExecutionTimeExceededException.class, () -> ParserTool.Run(uri3, 50));
 
     assertEquals("Hello World!" + "\n", ParserTool.Run(uri2));
+  }
+
+  @Test
+  public void GenerateMatchCases() throws Throwable
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        a is
+          b choice string bool i32 i64 is
+            "string"
+        match a.b
+        """);
+
+    var result = (WorkspaceEdit) Commands
+      .Execute(
+        new ExecuteCommandParams("codeActionGenerateMatchCases",
+          List.of(new JsonPrimitive(uri1.toString()), new JsonPrimitive(4), new JsonPrimitive(3))))
+      .get();
+
+    assertEquals(
+      System.lineSeparator() +
+        "    string string =>" + System.lineSeparator() +
+        "    bool bool =>" + System.lineSeparator() +
+        "    i32 i32 =>" + System.lineSeparator() +
+        "    i64 i64 =>" + System.lineSeparator(),
+      result.getChanges().values().stream().findFirst().get().get(0).getNewText());
+
   }
 
 }

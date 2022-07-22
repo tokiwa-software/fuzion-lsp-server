@@ -210,6 +210,8 @@ public class ASTWalker
       }
     if (expr instanceof AbstractMatch m)
       {
+        // used for generating match cases
+        callback.apply(m, outer);
         TraverseExpression(m.subject(), outer, callback);
         m.cases().forEach(c -> TraverseCase(c, outer, callback));
         return;

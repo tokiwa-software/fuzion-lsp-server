@@ -55,8 +55,29 @@ public class CodeActions
     return Util.ConcatStreams(
       NameingFixes(params, Diagnostics.nameingFeatures, oldName -> Converter.ToSnakeCase(oldName)),
       NameingFixes(params, Diagnostics.nameingRefs, oldName -> Converter.ToSnakePascalCase(oldName)),
-      NameingFixes(params, Diagnostics.nameingTypeParams, oldName -> oldName.toUpperCase()))
+      NameingFixes(params, Diagnostics.nameingTypeParams, oldName -> oldName.toUpperCase()),
+      GenerateMatchCases(params))
       .collect(Collectors.toList());
+  }
+
+  private static Stream<Either<Command, CodeAction>> GenerateMatchCases(CodeActionParams params)
+  {
+    var uri = LSP4jUtils.getUri(params.getTextDocument());
+    return params
+      .getContext()
+      .getDiagnostics()
+      .stream()
+      .filter(x -> x.getMessage().startsWith("'match' statement does not cover all of the subject's types"))
+      .map(x -> {
+        var res = new CodeAction();
+        res.setTitle(Commands.codeActionGenerateMatchCases.toString());
+        res.setKind(CodeActionKind.QuickFix);
+        res.setDiagnostics(List.of(x));
+        res.setCommand(
+          Commands.Create(Commands.codeActionGenerateMatchCases, uri,
+            List.of(x.getRange().getStart().getLine(), x.getRange().getStart().getCharacter())));
+        return Either.forRight(res);
+      });
   }
 
   private static Stream<Diagnostic> getDiagnostics(CodeActionParams params, Diagnostics diag)
@@ -97,7 +118,7 @@ public class CodeActions
       .baseName();
 
     var res = new CodeAction();
-    res.setTitle("fix identifier");
+    res.setTitle(Commands.codeActionFixIdentifier.toString());
     res.setKind(CodeActionKind.QuickFix);
     res.setDiagnostics(List.of(d));
     res.setCommand(Commands.Create(Commands.codeActionFixIdentifier, uri,
