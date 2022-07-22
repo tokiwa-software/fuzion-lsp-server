@@ -55,9 +55,17 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   // NYI this is too expensive
   public SourcePosition end()
   {
-    var lines = (int) text.lines().count();
-    return new SourcePosition(start._sourceFile, start._line + lines - 1,
-      lines == 1 ? start._column + length(): Util.CharCount(Util.LastOrDefault(text.lines(), "")) + 1);
+    return new SourcePosition(start._sourceFile, start._line + lineCount() - 1,
+      lineCount() == 1 ? start._column + length(): Util.CharCount(Util.LastOrDefault(text.lines(), "")) + 1);
+  }
+
+  private int lineCount()
+  {
+    if (text.isEmpty())
+      {
+        return 1;
+      }
+    return (int) text.lines().count();
   }
 
   /*
