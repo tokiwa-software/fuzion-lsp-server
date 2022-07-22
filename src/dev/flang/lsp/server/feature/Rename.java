@@ -50,6 +50,7 @@ import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.QueryAST;
+import dev.flang.shared.SourcePositionTool;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
@@ -201,7 +202,7 @@ public class Rename extends ANY
       .TokensFrom(new SourcePosition(f.pos()._sourceFile, 1, 1))
       .filter(token -> name.equals(token.text()))
       .filter(token -> {
-        return LexerTool.Compare(
+        return SourcePositionTool.Compare(
           token.start(), new SourcePosition(token.start()._sourceFile, f.pos()._line, f.pos()._column)) > 0;
       })
       .findFirst()

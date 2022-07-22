@@ -38,6 +38,7 @@ import dev.flang.ast.Block;
 import dev.flang.ast.If;
 import dev.flang.ast.Types;
 import dev.flang.util.HasSourcePosition;
+import dev.flang.util.SourcePosition;
 
 public class HasSourcePositionTool
 {
@@ -104,6 +105,53 @@ public class HasSourcePositionTool
           return position1._column - position2._column;
         }
       return position1._line - position2._line;
+    };
+  }
+
+  public static Predicate<HasSourcePosition> IsItemOnSameLineAsCursor(
+    SourcePosition params)
+  {
+    return (astItem) -> {
+      return params._line == astItem.pos()._line;
+    };
+  }
+
+  public static Predicate<HasSourcePosition> IsItemNotBuiltIn(SourcePosition params)
+  {
+    return (astItem) -> {
+      var sourcePositionOption = astItem.pos();
+      return !sourcePositionOption.isBuiltIn();
+    };
+  }
+
+  public final static Comparator<? super HasSourcePosition> CompareBySourcePosition =
+    Comparator.comparing(obj -> obj.pos(), (sourcePosition1, sourcePosition2) -> {
+      return SourcePositionTool.Compare(sourcePosition1, sourcePosition2);
+    });
+
+  /**
+   * tries figuring out if an item is "reachable" from a given textdocumentposition
+   * @param params
+   * @return
+   */
+  public static Predicate<? super Entry<HasSourcePosition, AbstractFeature>> IsItemInScope(
+    SourcePosition params)
+  {
+    return (entry) -> {
+      var astItem = entry.getKey();
+      var outer = entry.getValue();
+      var sourcePositionOption = astItem.pos();
+      if (sourcePositionOption.isBuiltIn())
+        {
+          return false;
+        }
+
+      boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
+        || SourcePositionTool.Compare(params, ParserTool.endOfFeature(outer)) <= 0;
+      boolean ItemPositionIsBeforeOrAtCursorPosition =
+        SourcePositionTool.Compare(params, sourcePositionOption) >= 0;
+
+      return ItemPositionIsBeforeOrAtCursorPosition && BuiltInOrEndAfterCursor;
     };
   }
 }

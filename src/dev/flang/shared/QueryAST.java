@@ -27,10 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared;
 
 import java.net.URI;
-import java.util.Comparator;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +35,6 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Expr;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
 import dev.flang.parser.Lexer.Token;
@@ -48,16 +44,6 @@ import dev.flang.util.SourcePosition;
 
 public class QueryAST extends ANY
 {
-  private static boolean PositionIsAfterOrAtCursor(SourcePosition params, SourcePosition sourcePosition)
-  {
-    return LexerTool.Compare(params, sourcePosition) <= 0;
-  }
-
-  private static boolean PositionIsBeforeCursor(SourcePosition params, SourcePosition sourcePosition)
-  {
-    return LexerTool.Compare(params, sourcePosition) > 0;
-  }
-
   public static Optional<AbstractFeature> CalledFeature(SourcePosition params)
   {
     if (PRECONDITIONS)
@@ -67,11 +53,11 @@ public class QueryAST extends ANY
       .Traverse(params)
       .filter(entry -> entry.getKey() instanceof AbstractCall)
       .filter(entry -> !entry.getValue().pos().isBuiltIn()
-        && PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
-      .filter(entry -> PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
+        && SourcePositionTool.PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
+      .filter(entry -> SourcePositionTool.PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
       .map(entry -> (AbstractCall) entry.getKey())
-      .filter(ac -> LexerTool.Compare(ExprTool.EndOfExpr(ac), params) <= 0)
-      .sorted(CompareByEndOfExpr.reversed())
+      .filter(ac -> SourcePositionTool.Compare(ExprTool.EndOfExpr(ac), params) <= 0)
+      .sorted(ExprTool.CompareByEndOfExpr.reversed())
       .filter(ac -> ac.calledFeature() != null)
       .filter(CallTool.CalledFeatureNotInternal)
       .map(ac -> {
@@ -107,11 +93,11 @@ public class QueryAST extends ANY
     return ASTWalker.Traverse(params)
       .filter(entry -> entry.getKey() instanceof AbstractConstant)
       .filter(entry -> !entry.getValue().pos().isBuiltIn()
-        && PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
-      .filter(entry -> PositionIsBeforeCursor(params, ((AbstractConstant) entry.getKey()).pos()))
+        && SourcePositionTool.PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
+      .filter(entry -> SourcePositionTool.PositionIsBeforeCursor(params, ((AbstractConstant) entry.getKey()).pos()))
       .map(entry -> ((AbstractConstant) entry.getKey()))
-      .filter(IsItemOnSameLineAsCursor(params))
-      .sorted(CompareBySourcePosition.reversed())
+      .filter(HasSourcePositionTool.IsItemOnSameLineAsCursor(params))
+      .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
       .map(x -> x.type().featureOfType())
       .findFirst();
   }
@@ -197,65 +183,12 @@ public class QueryAST extends ANY
   private static Stream<HasSourcePosition> ASTItemsBeforeOrAtCursor(SourcePosition params)
   {
     return ASTWalker.Traverse(params)
-      .filter(IsItemInScope(params))
+      .filter(HasSourcePositionTool.IsItemInScope(params))
       .map(entry -> entry.getKey())
-      .filter(IsItemNotBuiltIn(params))
-      .filter(IsItemOnSameLineAsCursor(params))
-      .sorted(CompareBySourcePosition.reversed());
+      .filter(HasSourcePositionTool.IsItemNotBuiltIn(params))
+      .filter(HasSourcePositionTool.IsItemOnSameLineAsCursor(params))
+      .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed());
   }
-
-  private static Predicate<HasSourcePosition> IsItemNotBuiltIn(SourcePosition params)
-  {
-    return (astItem) -> {
-      var sourcePositionOption = astItem.pos();
-      return !sourcePositionOption.isBuiltIn();
-    };
-  }
-
-  private static Predicate<HasSourcePosition> IsItemOnSameLineAsCursor(
-    SourcePosition params)
-  {
-    return (astItem) -> {
-      return params._line == astItem.pos()._line;
-    };
-  }
-
-  /**
-   * tries figuring out if an item is "reachable" from a given textdocumentposition
-   * @param params
-   * @return
-   */
-  private static Predicate<? super Entry<HasSourcePosition, AbstractFeature>> IsItemInScope(
-    SourcePosition params)
-  {
-    return (entry) -> {
-      var astItem = entry.getKey();
-      var outer = entry.getValue();
-      var sourcePositionOption = astItem.pos();
-      if (sourcePositionOption.isBuiltIn())
-        {
-          return false;
-        }
-
-      boolean BuiltInOrEndAfterCursor = outer.pos().isBuiltIn()
-        || LexerTool.Compare(params, ParserTool.endOfFeature(outer)) <= 0;
-      boolean ItemPositionIsBeforeOrAtCursorPosition =
-        LexerTool.Compare(params, sourcePositionOption) >= 0;
-
-      return ItemPositionIsBeforeOrAtCursorPosition && BuiltInOrEndAfterCursor;
-    };
-  }
-
-
-  private static Comparator<? super HasSourcePosition> CompareBySourcePosition =
-    Comparator.comparing(obj -> obj.pos(), (sourcePosition1, sourcePosition2) -> {
-      return LexerTool.Compare(sourcePosition1, sourcePosition2);
-    });
-
-  private static Comparator<? super Expr> CompareByEndOfExpr =
-    Comparator.comparing(expr -> ExprTool.EndOfExpr(expr), (sourcePosition1, sourcePosition2) -> {
-      return LexerTool.Compare(sourcePosition1, sourcePosition2);
-    });
 
   /**
    * returns all features declared in uri
@@ -375,11 +308,11 @@ public class QueryAST extends ANY
       .filter(f -> {
         var startOfFeature = f.pos();
         var endOfFeature = ParserTool.endOfFeature(f);
-        return LexerTool.Compare(params, endOfFeature) <= 0 &&
-          LexerTool.Compare(params, startOfFeature) > 0;
+        return SourcePositionTool.Compare(params, endOfFeature) <= 0 &&
+          SourcePositionTool.Compare(params, startOfFeature) > 0;
       })
       .filter(f -> f.pos()._column < params._column)
-      .sorted(CompareBySourcePosition.reversed())
+      .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
       .findFirst();
   }
 

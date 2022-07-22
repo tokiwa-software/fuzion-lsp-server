@@ -107,4 +107,9 @@ public class ExprTool extends ANY
       .map(x -> x.start());
   }
 
+  public final static Comparator<? super Expr> CompareByEndOfExpr =
+    Comparator.comparing(expr -> EndOfExpr(expr), (sourcePosition1, sourcePosition2) -> {
+      return SourcePositionTool.Compare(sourcePosition1, sourcePosition2);
+    });
+
 }
