@@ -110,6 +110,7 @@ public abstract class BaseTest extends Assertions
   @BeforeAll
   public static void setup()
   {
+    System.setProperty("FUZION_DISABLE_ANSI_ESCAPES", "true");
     Errors.MAX_ERROR_MESSAGES = Integer.MAX_VALUE;
     IO.Init((line) -> {
     }, (line) -> {
