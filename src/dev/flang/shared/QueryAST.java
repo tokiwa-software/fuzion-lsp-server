@@ -29,6 +29,7 @@ package dev.flang.shared;
 import java.net.URI;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractCall;
@@ -49,6 +50,60 @@ public class QueryAST extends ANY
     if (PRECONDITIONS)
       require(!Util.IsStdLib(SourceText.UriOf(params)));
 
+    return CalledFeatureInAST(params)
+      .or(() -> {
+        // NYI this is a (bad) hack to handle incomplete source code
+        // that contains something like `expr. ` where the parser than assumes
+        // the dot to be a full stop but is actually just incomplete source code
+        var tokens = LexerTool.TokensAt(params);
+        if (tokens.left().text().equals(".") && tokens.right().token().equals(Token.t_ws))
+          {
+            return CalledFeatureInASTDefusedFullStop(params);
+          }
+        return Optional.empty();
+      })
+      .or(() -> Constant(params));
+  }
+
+  /**
+   * try to find a called feature in AST
+   * but insert dummy character after dot first
+   * so parser does not parse it as full stop.
+   *
+   * @param params
+   * @return
+   */
+  private static Optional<? extends AbstractFeature> CalledFeatureInASTDefusedFullStop(SourcePosition params)
+  {
+    var uri = SourceText.UriOf(params);
+    var text = SourceText.getText(params);
+    SourceText.setText(uri, InsertDummyCharacter(text, params));
+    var result = CalledFeatureInAST(params);
+    SourceText.setText(uri, text);
+    return result;
+  }
+
+  /*
+   * insert dummy character � at pos
+   */
+  private static String InsertDummyCharacter(String text, SourcePosition pos)
+  {
+    var lines = text.lines().toList();
+    return IntStream
+      .range(0, (int) lines.size())
+      .mapToObj(x -> {
+        if (x + 1 != pos._line)
+          {
+            return lines.get(x);
+          }
+        return lines.get(x).substring(0, pos._column - 1) + "�"
+          + lines.get(x).substring(pos._column - 1, lines.get(x).length());
+      })
+      .collect(Collectors.joining(System.lineSeparator()));
+  }
+
+  private static Optional<AbstractFeature> CalledFeatureInAST(SourcePosition params)
+  {
     return ASTWalker
       .Traverse(params)
       .filter(entry -> entry.getKey() instanceof AbstractCall)
@@ -79,8 +134,7 @@ public class QueryAST extends ANY
         return at.featureOfType();
       })
       .filter(f -> !FeatureTool.IsInternal(f))
-      .findFirst()
-      .or(() -> Constant(params));
+      .findFirst();
   }
 
   private static boolean HasConstraint(AbstractType at)

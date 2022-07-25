@@ -34,7 +34,6 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
@@ -410,13 +409,13 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("next_f64")));
   }
 
-  @Test @Disabled //failing
+  @Test
   public void CompletionInActualArg()
   {
     var sourceText = """
       mapOf<K : ordered<K>,V> (kvs array (tuple K V)) map<K,V> is
         psMap kvs. kvs.length kvs.length+1
-              """;
+        """;
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 12, Completion.TriggerCharacters.Dot));

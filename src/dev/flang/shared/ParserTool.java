@@ -43,7 +43,6 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
-import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
 import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
