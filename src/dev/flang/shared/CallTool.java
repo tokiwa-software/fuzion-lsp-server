@@ -46,7 +46,6 @@ public class CallTool extends ANY
     return !c.calledFeature().isUniverse()
       && !c.calledFeature().isBuiltInPrimitive()
       && !c.calledFeature().isTypeParameter()
-      && !c.calledFeature().qualifiedName().equals("fuzion")
       && !c.calledFeature().qualifiedName().equals("fuzion.sys")
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.array")
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.array.index [ ] =")
