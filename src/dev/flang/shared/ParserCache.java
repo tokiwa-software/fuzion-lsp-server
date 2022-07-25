@@ -34,7 +34,6 @@ import java.util.function.Function;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.SourceModule;
-import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 
 public class ParserCache extends ANY
@@ -47,14 +46,14 @@ public class ParserCache extends ANY
   private HashMap<AbstractFeature, FrontEnd> universe2FrontEndMap = new HashMap<>();
 
   // LRU-Cache holding the most recent results of parser
-  private Map<String, ParserCacheRecord> sourceText2ParserCache =
+  private Map<String, ParserCacheItem> sourceText2ParserCache =
     Util.ThreadSafeLRUMap(PARSER_CACHE_MAX_SIZE, (removed) -> {
       var frontEnd = universe2FrontEndMap.remove(removed.getValue().mir().universe());
       check(frontEnd != null, universe2FrontEndMap.size() <= PARSER_CACHE_MAX_SIZE);
     });
 
-  public ParserCacheRecord computeIfAbsent(URI uri, String sourceText,
-    Function<String, ParserCacheRecord> mappingFunction)
+  public ParserCacheItem computeIfAbsent(URI uri, String sourceText,
+    Function<String, ParserCacheItem> mappingFunction)
   {
     var key = uri + sourceText;
     return sourceText2ParserCache.computeIfAbsent(key, (str) -> {

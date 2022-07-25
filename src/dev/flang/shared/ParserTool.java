@@ -44,7 +44,6 @@ import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
 import dev.flang.opt.Optimizer;
-import dev.flang.shared.records.ParserCacheRecord;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -81,29 +80,11 @@ public class ParserTool extends ANY
     Util.ThreadSafeLRUMap(END_OF_FEATURE_CACHE_MAX_SIZE, null);
 
   /**
-   * @param uri
-   * @return top level feature in source text
-   */
-  public static Stream<AbstractFeature> TopLevelFeatures(URI uri)
-  {
-    return DeclaredFeaturesAndChildren(Universe(uri))
-      // feature is in file
-      .filter(f -> getUri(f.pos()).equals(uri))
-      // outer is not in file
-      .filter(f -> !getUri(f.outer().pos()).equals(uri));
-  }
-
-  private static Stream<AbstractFeature> DeclaredFeaturesAndChildren(AbstractFeature f)
-  {
-    return DeclaredFeatures(f).flatMap(af -> Stream.concat(Stream.of(af), DeclaredFeaturesAndChildren(af)));
-  }
-
-  /**
    * NYI in the case of uri to stdlib  we need context
    * @param uri
    * @return ParserCacheRecord, empty if user starts in stdlib file and no record present yet.
    */
-  private synchronized static ParserCacheRecord getParserCacheRecord(URI uri)
+  private synchronized static ParserCacheItem getParserCacheRecord(URI uri)
   {
     var sourceText = SourceText.getText(uri);
     var result = parserCache.computeIfAbsent(uri, sourceText, key -> createParserCacheRecord(uri));
@@ -113,7 +94,7 @@ public class ParserTool extends ANY
     return result;
   }
 
-  private static ParserCacheRecord createParserCacheRecord(URI uri)
+  private static ParserCacheItem createParserCacheRecord(URI uri)
   {
     // NYI
     Clazzes.clear();
@@ -124,7 +105,7 @@ public class ParserTool extends ANY
     var errors = Errors.errors();
     var warnings = Errors.warnings();
 
-    return new ParserCacheRecord(mir, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
+    return new ParserCacheItem(uri, mir, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
   }
 
 
@@ -318,5 +299,9 @@ public class ParserTool extends ANY
     return getParserCacheRecord(uri).errors().stream();
   }
 
+  public static Stream<AbstractFeature> TopLevelFeatures(URI uri)
+  {
+    return getParserCacheRecord(uri).TopLevelFeatures();
+  }
 
 }
