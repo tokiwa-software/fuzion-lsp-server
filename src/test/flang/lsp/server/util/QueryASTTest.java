@@ -27,8 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.lsp.server.util;
 
-import java.util.concurrent.ExecutionException;
-
 import org.junit.jupiter.api.Test;
 
 import dev.flang.shared.ParserTool;
