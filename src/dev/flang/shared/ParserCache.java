@@ -59,14 +59,14 @@ public class ParserCache extends ANY
     return sourceText2ParserCache.computeIfAbsent(key, (str) -> {
       long startTime = System.nanoTime();
 
-      var parserCacheRecord = mappingFunction.apply(str);
-      universe2FrontEndMap.put(parserCacheRecord.mir().universe(), parserCacheRecord.frontEnd());
+      var parserCacheItem = mappingFunction.apply(str);
+      universe2FrontEndMap.put(parserCacheItem.mir().universe(), parserCacheItem.frontEnd());
 
       long stopTime = System.nanoTime();
       var elapsedTime = (int) ((stopTime - startTime) / 1E6);
       Context.Logger.Log("[Parsing] finished in " + elapsedTime + "ms: " + uri);
 
-      return parserCacheRecord;
+      return parserCacheItem;
     });
   }
 

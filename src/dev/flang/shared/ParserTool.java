@@ -82,19 +82,19 @@ public class ParserTool extends ANY
   /**
    * NYI in the case of uri to stdlib  we need context
    * @param uri
-   * @return ParserCacheRecord, empty if user starts in stdlib file and no record present yet.
+   * @return ParserCacheItem, empty if user starts in stdlib file and no record present yet.
    */
-  private synchronized static ParserCacheItem getParserCacheRecord(URI uri)
+  private synchronized static ParserCacheItem getParserCacheItem(URI uri)
   {
     var sourceText = SourceText.getText(uri);
-    var result = parserCache.computeIfAbsent(uri, sourceText, key -> createParserCacheRecord(uri));
+    var result = parserCache.computeIfAbsent(uri, sourceText, key -> createParserCacheItem(uri));
     // NYI hack! Without this the test RegressionRenameMandelbrotImage fails
     // when running all tests
     Types.resolved = result.resolved();
     return result;
   }
 
-  private static ParserCacheItem createParserCacheRecord(URI uri)
+  private static ParserCacheItem createParserCacheItem(URI uri)
   {
     // NYI
     Clazzes.clear();
@@ -112,14 +112,14 @@ public class ParserTool extends ANY
   private static Optional<FUIR> FUIR(URI uri)
   {
     // NYI remove recreation of MIR
-    var parserCacheRecord = createParserCacheRecord(uri);
+    var parserCacheItem = createParserCacheItem(uri);
 
     if (Errors.count() > 0)
       {
         return Optional.empty();
       }
 
-    var fuir = new Optimizer(parserCacheRecord.frontEndOptions(), parserCacheRecord.air())
+    var fuir = new Optimizer(parserCacheItem.frontEndOptions(), parserCacheItem.air())
       .fuir();
     return Optional.of(fuir);
   }
@@ -174,7 +174,7 @@ public class ParserTool extends ANY
 
   public static AbstractFeature Universe(URI uri)
   {
-    return getParserCacheRecord(uri).mir().universe();
+    return getParserCacheItem(uri).mir().universe();
   }
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
@@ -291,17 +291,17 @@ public class ParserTool extends ANY
 
   public static Stream<Errors.Error> Warnings(URI uri)
   {
-    return getParserCacheRecord(uri).warnings().stream();
+    return getParserCacheItem(uri).warnings().stream();
   }
 
   public static Stream<Errors.Error> Errors(URI uri)
   {
-    return getParserCacheRecord(uri).errors().stream();
+    return getParserCacheItem(uri).errors().stream();
   }
 
   public static Stream<AbstractFeature> TopLevelFeatures(URI uri)
   {
-    return getParserCacheRecord(uri).TopLevelFeatures();
+    return getParserCacheItem(uri).TopLevelFeatures();
   }
 
 }
