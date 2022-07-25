@@ -61,7 +61,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
 
   private int lineCount()
   {
-    if (text.isEmpty())
+    if (!token.equals(Token.t_eof) && text.isEmpty())
       {
         return 1;
       }
