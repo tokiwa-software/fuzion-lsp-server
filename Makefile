@@ -143,13 +143,13 @@ async-profiler/build/libasyncProfiler.so: async-profiler
 
 .PHONY: profile/tests
 profile/tests: DATE = $(shell date +%y%m%d-%H%M%S)
-profile/tests: async-profiler/build/libasyncProfiler.so
+profile/tests: classes async-profiler/build/libasyncProfiler.so
 	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS)
 	x-www-browser /tmp/$(DATE)_flamegraph.html
 
 .PHONY: profile/tagged_tests
 profile/tagged_tests: DATE = $(shell date +%y%m%d-%H%M%S)
-profile/tagged_tests: async-profiler/build/libasyncProfiler.so
+profile/tagged_tests: classes async-profiler/build/libasyncProfiler.so
 	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS) --include-tag=TAG
 	x-www-browser /tmp/$(DATE)_flamegraph.html
 
