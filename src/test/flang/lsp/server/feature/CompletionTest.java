@@ -34,6 +34,8 @@ import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
@@ -379,6 +381,51 @@ public class CompletionTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 4, Completion.TriggerCharacters.Space));
     assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix +")));
+  }
+
+
+  @Test
+  public void CompletionNoneExistant()
+  {
+    var sourceText = """
+      main =>
+        counts := mapOf string u64 [] []
+        stdin.""";
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 2, 8, Completion.TriggerCharacters.Dot));
+    assertEquals(0, completions.getLeft().size());
+  }
+
+  @Test
+  @Disabled // failing
+  public void CompletionTuple()
+  {
+    var sourceText = """
+      main =>
+        my_tupl := (1,2,3,4)
+        my_tupl.values.""";
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 2, 17, Completion.TriggerCharacters.Dot));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("3")));
+  }
+
+  @Test
+  public void CompletionTupleInBraces()
+  {
+    var sourceText = """
+      main : io.stdin is
+        my_tupl := (1,2,3,4)
+        say "{my_tupl.}
+
+        unit
+
+      """;
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 2, 16, Completion.TriggerCharacters.Dot));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("values")));
   }
 
   @Test

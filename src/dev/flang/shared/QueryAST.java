@@ -36,6 +36,7 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Call;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
 import dev.flang.parser.Lexer.Token;
@@ -104,6 +105,7 @@ public class QueryAST extends ANY
 
   private static Optional<AbstractFeature> CalledFeatureInAST(SourcePosition params)
   {
+    var leftToken = LexerTool.TokensAt(LexerTool.GoLeft(params)).left();
     return ASTWalker
       .Traverse(params)
       .filter(entry -> entry.getKey() instanceof AbstractCall)
@@ -115,6 +117,9 @@ public class QueryAST extends ANY
       .sorted(ExprTool.CompareByEndOfExpr.reversed())
       .filter(ac -> ac.calledFeature() != null)
       .filter(CallTool.CalledFeatureNotInternal)
+      // if left token is identifier, filter none matching calls by name
+      .filter(ac -> !leftToken.token().equals(Token.t_ident) || !(ac instanceof Call)
+        || leftToken.text().equals(((Call) ac).name))
       .map(ac -> {
         // try use infered type
         if (ac.typeForGenericsTypeInfereing() != null && !ac.typeForGenericsTypeInfereing().containsError())
