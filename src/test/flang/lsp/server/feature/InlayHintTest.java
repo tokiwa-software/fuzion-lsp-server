@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -126,6 +127,29 @@ public class InlayHintTest extends ExtendedBaseTest
     assertEquals("mylmbd:", inlayHints.get(1).getLabel().getLeft());
     assertEquals(2, inlayHints.get(1).getPosition().getLine());
     assertEquals(7, inlayHints.get(1).getPosition().getCharacter());
+  }
+
+  @Test
+  public void InlayHintsBoxedValue()
+  {
+    SourceText.setText(uri1, """
+      ex =>
+        tmp : string is
+          redef utf8 Sequence<u8> is
+            [u8 8]
+                                                                # asArray, since we don't want this to be lazy
+        strings.fromCodepoints (tmp.asCodepoints.asStream.take 1).asArray
+                    """);
+
+    var inlayHints = InlayHints
+      .getInlayHints(Params())
+      .stream()
+      .sorted((a, b) -> a.getPosition().getLine() - b.getPosition().getLine())
+      .collect(Collectors.toList());
+
+    assertEquals("codePoints:", inlayHints.get(1).getLabel().getLeft());
+    assertEquals(5, inlayHints.get(1).getPosition().getLine());
+    assertEquals(25, inlayHints.get(1).getPosition().getCharacter());
   }
 
 

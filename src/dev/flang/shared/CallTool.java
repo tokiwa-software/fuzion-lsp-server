@@ -33,6 +33,7 @@ import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractCurrent;
+import dev.flang.ast.Box;
 import dev.flang.ast.Expr;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.ANY;
@@ -102,6 +103,10 @@ public class CallTool extends ANY
    */
   private static Expr TraverseChainedCalls(Expr expr)
   {
+    if (expr instanceof Box b)
+      {
+        return TraverseChainedCalls(b._value);
+      }
     if (expr instanceof AbstractCall ac
       && (ac.target() instanceof AbstractBlock
         || ac.target() instanceof AbstractCurrent
