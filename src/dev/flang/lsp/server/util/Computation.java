@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
 import dev.flang.lsp.server.Config;
 import dev.flang.shared.Concurrency;
 import dev.flang.shared.Context;
+import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
 
 public class Computation
@@ -82,7 +83,8 @@ public class Computation
         }
       catch (Throwable th)
         {
-          Context.Logger.Error("[" + callee + "] An unexpected error occurred: " + th);
+          Context.Logger.Error("[" + callee + "] An unexpected error occurred: " + th + ":");
+          Context.Logger.Error(ErrorHandling.toString(th));
           NotifyUser();
         }
       return null;
