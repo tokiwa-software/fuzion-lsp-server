@@ -49,6 +49,7 @@ import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.CallTool;
+import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.TypeTool;
@@ -108,7 +109,8 @@ public class InlayHints extends ANY
       // NYI filter duplicate loop variable
       .filter(af -> !FeatureTool.IsInternal(af))
       .filter(af -> !FeatureTool.IsArgument(af))
-      .filter(af -> !(af.isField() && IsConstant(af.initialValue())))
+      // NYI workaround: initialValue sometimes throws an exception
+      .filter(af -> !(af.isField() && IsConstant(ErrorHandling.ResultOrDefault(() -> af.initialValue(), null))))
       .filter(af -> !(af.isField() && TypeIsExplicitlyStated(af)))
       .flatMap(af -> PositionOfOperator(af)
         .map(pos -> {
