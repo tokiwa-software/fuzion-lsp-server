@@ -73,8 +73,7 @@ public class ExprTool extends ANY
 
   public static boolean IsLamdaCall(Expr expr)
   {
-    return expr instanceof AbstractCall ac
-      && ac.calledFeature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
+    return LexerTool.TokensAt(expr.pos()).right().text().equals("->");
   }
 
   // NYI parser should give us this info
