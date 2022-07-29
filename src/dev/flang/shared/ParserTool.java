@@ -184,7 +184,7 @@ public class ParserTool extends ANY
 
   public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
   {
-    if (f.thisType().containsError())
+    if (TypeTool.ContainsError(f.thisType()))
       {
         return Stream.empty();
       }
@@ -196,7 +196,7 @@ public class ParserTool extends ANY
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
   {
-    if (f.thisType().containsError())
+    if (TypeTool.ContainsError(f.thisType()))
       {
         return Stream.empty();
       }

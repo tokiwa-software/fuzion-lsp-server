@@ -122,7 +122,7 @@ public class QueryAST extends ANY
         || leftToken.text().equals(((Call) ac).name))
       .map(ac -> {
         // try use infered type
-        if (ac.typeForGenericsTypeInfereing() != null && !ac.typeForGenericsTypeInfereing().containsError())
+        if (ac.typeForGenericsTypeInfereing() != null && !TypeTool.ContainsError(ac.typeForGenericsTypeInfereing()))
           {
             return ac.typeForGenericsTypeInfereing();
           }
@@ -413,7 +413,7 @@ public class QueryAST extends ANY
           Stream.of(feature),
           FeatureTool.OuterFeatures(feature),
           feature.inherits().stream().map(c -> c.calledFeature()))
-          .filter(f -> !f.thisType().containsError())
+          .filter(f -> !TypeTool.ContainsError(f.thisType()))
           .flatMap(f -> {
             return ParserTool.DeclaredFeatures(f);
           })

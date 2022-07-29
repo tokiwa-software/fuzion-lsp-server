@@ -39,7 +39,9 @@ public class TypeTool extends ANY
 {
   public static String Label(AbstractType type)
   {
-    if (type.containsError() || type.containsUndefined(false))
+
+    if (ContainsError(type)
+      || type.containsUndefined(false))
       {
         return type.name();
       }
@@ -49,6 +51,13 @@ public class TypeTool extends ANY
           + type.generics().stream().map(g -> Util.AddParens(Label(g))).collect(Collectors.joining(" "));
       }
     return LabelNoErrorOrUndefined(type);
+  }
+
+  // NYI DUCKTAPE! ensure condition sometimes fails on containsError()
+  // unable to reproduce unfortunately
+  public static boolean ContainsError(AbstractType type)
+  {
+    return ErrorHandling.ResultOrDefault(() -> type.containsError(), true);
   }
 
   public static String Label(FormalGenerics generics, boolean brief)
@@ -67,7 +76,7 @@ public class TypeTool extends ANY
   private static String LabelNoErrorOrUndefined(AbstractType type)
   {
     if (PRECONDITIONS)
-      require(!type.containsError(), !type.containsUndefined(false));
+      require(!ContainsError(type), !type.containsUndefined(false));
 
     if (type.isGenericArgument())
       {

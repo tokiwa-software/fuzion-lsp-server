@@ -46,6 +46,7 @@ import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.QueryAST;
+import dev.flang.shared.TypeTool;
 import dev.flang.util.ANY;
 
 public class SignatureHelper extends ANY
@@ -122,7 +123,7 @@ public class SignatureHelper extends ANY
 
   private static boolean featureNameMatchesCallName(AbstractFeature f, AbstractCall ac)
   {
-    if (!ac.type().containsError())
+    if (!TypeTool.ContainsError(ac.type()))
       {
         return f.featureName().baseName().equals(ac.calledFeature().featureName().baseName());
       }
