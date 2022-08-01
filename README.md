@@ -119,7 +119,9 @@
   :link '(url-link ""))
 
 (lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection "fuzion_language_server -stdio")
+ (make-lsp-client :new-connection (lsp-stdio-connection  (lambda ()
+                                                          `(,"fuzion_language_server"
+                                                            "-stdio")))
                   :major-modes '(fuzion-mode)
                   :priority -1
                   :server-id 'fuzionls))
