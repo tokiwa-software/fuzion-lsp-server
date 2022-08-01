@@ -61,6 +61,19 @@ public class SourceText extends ANY
     return textDocuments.computeIfAbsent(uri, u -> ReadFromDisk(u));
   }
 
+  /**
+   * convenience method to get source text by source position.
+   */
+  public static String getText(SourcePosition params)
+  {
+    return getText(UriOf(params));
+  }
+
+  /**
+   * For debugging!
+   * All fuzion source text documents that are currently int the cache.
+   * @return
+   */
   public static String allTexts()
   {
     return textDocuments
@@ -70,11 +83,11 @@ public class SourceText extends ANY
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
-  public static String getText(SourcePosition params)
-  {
-    return getText(UriOf(params));
-  }
-
+  /**
+   * Read UTF-8 encoded file at uri to string.
+   * @param uri
+   * @return
+   */
   private static String ReadFromDisk(URI uri)
   {
     var path = Path.of(uri);
@@ -125,16 +138,29 @@ public class SourceText extends ANY
       .replaceAll("MAGIC_STRING_DOLLAR", "\\$");
   }
 
-  public static String LineAt(SourcePosition param)
+  /**
+   * the complete line of given source position
+   * @param pos
+   * @return
+   */
+  public static String LineAt(SourcePosition pos)
   {
-    return SourceText.getText(param)
-      .split("\n")[param._line - 1];
+    return SourceText.getText(pos)
+      .split("\n")[pos._line - 1];
   }
 
+  /**
+   * utility function to get the uri of a sourceposition
+   *
+   * @param sourcePosition
+   * @return
+   */
   public static URI UriOf(SourcePosition sourcePosition)
   {
-    return Path.of(sourcePosition._sourceFile._fileName.toString()
-      .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), FuzionHome.toString())).toUri();
+    return Path.of(
+      sourcePosition._sourceFile._fileName.toString()
+        .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), FuzionHome.toString()))
+      .toUri();
   }
 
 }
