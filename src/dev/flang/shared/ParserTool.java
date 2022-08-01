@@ -240,7 +240,7 @@ public class ParserTool extends ANY
         }
       if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
         {
-          var sourceText = SourceText.getText(ParserTool.getUri(f.pos()));
+          var sourceText = SourceText.getText(f.pos());
           var lines = sourceText.split("\n").length;
           return new SourcePosition(f.pos()._sourceFile, lines + 1, 1);
         }
