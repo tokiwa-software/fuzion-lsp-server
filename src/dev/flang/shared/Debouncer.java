@@ -18,19 +18,20 @@ public class Debouncer
    */
   public void debounce(final Object key, final Runnable runnable, long delay, TimeUnit unit)
   {
-    final Future<?> prev = delayedMap.put(key, scheduler.schedule(new Runnable() {
-      @Override
-      public void run()
-      {
-        try
-          {
-            runnable.run();
-          } finally
-          {
-            delayedMap.remove(key);
-          }
-      }
-    }, delay, unit));
+    final Future<?> prev = delayedMap.put(key,
+      scheduler.schedule(new Runnable() {
+        @Override
+        public void run()
+        {
+          try
+            {
+              Concurrency.Submit(runnable);
+            } finally
+            {
+              delayedMap.remove(key);
+            }
+        }
+      }, delay, unit));
     if (prev != null)
       {
         prev.cancel(true);

@@ -111,4 +111,13 @@ public class Concurrency
     return future.get();
   }
 
+  /**
+   * Submit to queue
+   * @param runnable
+   */
+  public static void Submit(Runnable runnable)
+  {
+    executor.submit(runnable);
+  }
+
 }
