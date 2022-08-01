@@ -328,7 +328,7 @@ public class FeatureTool extends ANY
 
   public static String CommentOfInMarkdown(AbstractFeature f)
   {
-    return MarkdownTool.Italic(MarkdownTool.Escape(CommentOf(f)));
+    return MarkdownTool.Italic(CommentOf(f));
   }
 
   /**
@@ -362,9 +362,7 @@ public class FeatureTool extends ANY
       .collect(Collectors.toSet());
   }
 
-  // NYI add heuristic for depth of call graph and optionally go deeper than
-  // just one level
-  // NYI better filtering of callers and callees
+  // NYI use CFG
   public static String CallGraph(AbstractFeature f)
   {
     var sb = new StringBuilder("digraph {" + System.lineSeparator());

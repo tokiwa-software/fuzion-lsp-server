@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class MarkdownTool
 {
 
-  public static String Escape(String str)
+  private static String Escape(String str)
   {
     return Arrays.stream(new String[]
       {
@@ -48,7 +48,7 @@ public class MarkdownTool
     if(str.isBlank()){
       return "";
     }
-    return Arrays.stream(str.split(System.lineSeparator()))
+    return Arrays.stream(Escape(str).split(System.lineSeparator()))
       .map(l -> "*" + l + "*")
       .collect(Collectors.joining(System.lineSeparator()));
   }
@@ -58,7 +58,7 @@ public class MarkdownTool
     if(str.isBlank()){
       return "";
     }
-    return Arrays.stream(str.split(System.lineSeparator()))
+    return Arrays.stream(Escape(str).split(System.lineSeparator()))
       .map(l -> "> " + l)
       .collect(Collectors.joining(System.lineSeparator()));
   }
@@ -68,7 +68,7 @@ public class MarkdownTool
     if(str.isBlank()){
       return "";
     }
-    return Arrays.stream(str.split(System.lineSeparator()))
+    return Arrays.stream(Escape(str).split(System.lineSeparator()))
       .map(l -> "**" + l + "**")
       .collect(Collectors.joining(System.lineSeparator()));
   }
