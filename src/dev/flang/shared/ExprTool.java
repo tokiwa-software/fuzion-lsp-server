@@ -37,12 +37,17 @@ import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.Expr;
 import dev.flang.util.ANY;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 public class ExprTool extends ANY
 {
 
+  /**
+   * A heuristic to figure out where the given expr ends.
+   * NYI use Parser to figure out the end of expression.
+   * @param expr
+   * @return
+   */
   public static SourcePosition EndOfExpr(Expr expr)
   {
     var lastPos = expr.pos();
@@ -71,6 +76,11 @@ public class ExprTool extends ANY
                                  .end();
   }
 
+  /**
+   * Does this expression belong to lambda call?
+   * @param expr
+   * @return
+   */
   public static boolean IsLamdaCall(Expr expr)
   {
     return LexerTool.TokensAt(expr.pos()).right().text().equals("->");
@@ -106,6 +116,9 @@ public class ExprTool extends ANY
       .map(x -> x.start());
   }
 
+  /**
+   * Compare expressions by evaluating their end positions and comparing those.
+   */
   public final static Comparator<? super Expr> CompareByEndOfExpr =
     Comparator.comparing(expr -> EndOfExpr(expr), (sourcePosition1, sourcePosition2) -> {
       return SourcePositionTool.Compare(sourcePosition1, sourcePosition2);
