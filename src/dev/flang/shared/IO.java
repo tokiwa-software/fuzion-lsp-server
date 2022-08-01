@@ -163,7 +163,6 @@ public class IO
   {
     try
       {
-
         var inputStream = new PipedInputStream();
         var reader = new BufferedReader(new InputStreamReader(inputStream));
         var result = new PrintStream(new PipedOutputStream(inputStream));

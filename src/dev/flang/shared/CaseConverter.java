@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Converter
+ * Source of class CaseConverter
  *
  *---------------------------------------------------------------------*/
 
@@ -28,7 +28,7 @@ package dev.flang.shared;
 
 import java.util.stream.Collectors;
 
-public class Converter
+public class CaseConverter
 {
 
   /**

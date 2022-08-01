@@ -28,14 +28,14 @@ package test.flang.shared;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.shared.Converter;
+import dev.flang.shared.CaseConverter;
 
 public class ConverterTest extends BaseTest
 {
   @Test
   public void SnakePascalCase()
   {
-    assertEquals("Sn😀ke_P😀scal_C😀se", Converter.ToSnakePascalCase("sn😀keP😀scal_c😀se"));
+    assertEquals("Sn😀ke_P😀scal_C😀se", CaseConverter.ToSnakePascalCase("sn😀keP😀scal_c😀se"));
   }
 
 }

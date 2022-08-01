@@ -43,6 +43,11 @@ import dev.flang.util.SourcePosition;
 public class HasSourcePositionTool
 {
 
+  /**
+   * returns a human readable label for the given item.
+   * @param item
+   * @return
+   */
   public static String ToLabel(HasSourcePosition item)
   {
     try

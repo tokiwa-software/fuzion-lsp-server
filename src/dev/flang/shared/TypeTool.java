@@ -37,6 +37,11 @@ import dev.flang.util.ANY;
 
 public class TypeTool extends ANY
 {
+  /**
+   * human readalbe label for type
+   * @param type
+   * @return
+   */
   public static String Label(AbstractType type)
   {
 
@@ -60,6 +65,12 @@ public class TypeTool extends ANY
     return ErrorHandling.ResultOrDefault(() -> type.containsError(), true);
   }
 
+  /**
+   * human readable label for formal generics.
+   * @param generics
+   * @param brief
+   * @return
+   */
   public static String Label(FormalGenerics generics, boolean brief)
   {
     if (!generics.isOpen() && generics.list.isEmpty())

@@ -68,7 +68,6 @@ public class ParserCacheItem
     this.errors = errors;
     this.warnings = warnings;
     this.resolved = resolved;
-
   }
 
   public AIR air()

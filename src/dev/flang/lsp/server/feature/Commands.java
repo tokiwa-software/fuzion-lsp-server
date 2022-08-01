@@ -57,7 +57,7 @@ import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.Computation;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.Concurrency;
-import dev.flang.shared.Converter;
+import dev.flang.shared.CaseConverter;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.ExprTool;
 import dev.flang.shared.FeatureTool;
@@ -149,7 +149,7 @@ public enum Commands
               .type()
               .choiceGenerics()
               .stream()
-              .map(t -> indent + Converter.ToSnakeCase(t.name()) + " " + TypeTool.Label(t) + " =>")
+              .map(t -> indent + CaseConverter.ToSnakeCase(t.name()) + " " + TypeTool.Label(t) + " =>")
               .collect(Collectors.joining(System.lineSeparator()))
             + System.lineSeparator();
 
