@@ -85,7 +85,7 @@ public class Main
 
     if (HasArg("-stdio"))
       {
-
+        Config.setTransport(Transport.stdio);
       }
     else if (HasArg("-pipe"))
       {
