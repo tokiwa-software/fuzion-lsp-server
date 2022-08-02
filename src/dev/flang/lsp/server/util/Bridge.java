@@ -141,7 +141,9 @@ public class Bridge extends ANY
 
   private static Range ToRange(AbstractCall call)
   {
-    return new Range(ToPosition(call.pos()), ToPosition(ExprTool.EndOfExpr(call)));
+    var start = ToPosition(call.pos());
+    var nameLength = Util.CharCount(FeatureTool.BareName(call.calledFeature()));
+    return new Range(start, new Position(start.getLine(), start.getCharacter() + nameLength));
   }
 
   public static Location ToLocation(AbstractFeature af)
@@ -154,8 +156,12 @@ public class Bridge extends ANY
 
   public static DocumentHighlight ToHighlight(AbstractCall c)
   {
-    // NYI set correct DocumentHighlightKind
     return new DocumentHighlight(ToRange(c), DocumentHighlightKind.Read);
+  }
+
+  public static DocumentHighlight ToHighlight(AbstractFeature af)
+  {
+    return new DocumentHighlight(ToRangeBaseName(af), DocumentHighlightKind.Text);
   }
 
   /**

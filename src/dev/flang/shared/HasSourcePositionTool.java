@@ -80,10 +80,10 @@ public class HasSourcePositionTool
       }
   }
 
-  public static Predicate<? super Entry<HasSourcePosition, AbstractFeature>> IsItemInFile(URI uri)
+  public static Predicate<? super HasSourcePosition> IsItemInFile(URI uri)
   {
-    return (entry) -> {
-      var sourcePositionOption = entry.getKey().pos();
+    return (astItem) -> {
+      var sourcePositionOption = astItem.pos();
       if (sourcePositionOption.isBuiltIn())
         {
           return false;

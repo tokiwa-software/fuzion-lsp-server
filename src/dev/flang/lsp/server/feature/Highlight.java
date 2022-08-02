@@ -28,12 +28,15 @@ package dev.flang.lsp.server.feature;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 
 import dev.flang.lsp.server.util.Bridge;
+import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.HasSourcePositionTool;
 import dev.flang.shared.QueryAST;
 
 /**
@@ -48,9 +51,16 @@ public class Highlight
     var feature = QueryAST.FeatureAt(pos);
     return feature
       .map(f -> {
-        return FeatureTool.CallsTo(f)
-          .map(entry -> entry.getKey())
-          .map(c -> Bridge.ToHighlight(c))
+        return Stream.concat(
+          // the feature itself
+          Stream.of(f)
+            .filter(HasSourcePositionTool.IsItemInFile(LSP4jUtils.getUri(params)))
+            .map(af -> Bridge.ToHighlight(af)),
+          // the calls to the feature
+          FeatureTool.CallsTo(f)
+            .map(entry -> entry.getKey())
+            .filter(HasSourcePositionTool.IsItemInFile(LSP4jUtils.getUri(params)))
+            .map(c -> Bridge.ToHighlight(c)))
           .collect(Collectors.toList());
       })
       .orElse(List.of());
