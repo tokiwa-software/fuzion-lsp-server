@@ -33,9 +33,11 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import dev.flang.air.AIR;
+import dev.flang.air.Clazzes;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Types.Resolved;
+import dev.flang.be.effects.Effects;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
@@ -63,6 +65,7 @@ public class ParserCacheItem
 
   // cache for top level feature calculation
   private List<AbstractFeature> topLevelFeatures;
+  private Effects effects;
 
   public ParserCacheItem(URI uri, MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
     TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings, Resolved resolved)
@@ -143,6 +146,19 @@ public class ParserCacheItem
   public FrontEnd frontEnd()
   {
     return frontEnd;
+  }
+
+  public Optional<Stream<String>> effects(AbstractFeature af)
+  {
+    return fuir().map(f -> {
+      if (effects == null)
+        {
+          effects = new Effects(f);
+        }
+      return effects._effects.successors(Clazzes.clazz(af.thisType())._idInFUIR)
+        .stream()
+        .map(x -> f.clazzAsString(x));
+    });
   }
 
   public Optional<FUIR> fuir()

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.air.Clazzes;
@@ -286,5 +287,13 @@ public class ParserTool extends ANY
   {
     return getParserCacheItem(uri).TopLevelFeatures();
   }
+
+  public static Optional<String> Effects(AbstractFeature af)
+  {
+    return getParserCacheItem(getUri(af.pos()))
+      .effects(af)
+      .map(x -> x.collect(Collectors.joining(", ")));
+  }
+
 
 }

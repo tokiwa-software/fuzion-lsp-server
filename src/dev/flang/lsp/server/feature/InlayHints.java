@@ -52,6 +52,8 @@ import dev.flang.shared.CallTool;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
+import dev.flang.shared.ParserTool;
+import dev.flang.shared.SourceText;
 import dev.flang.shared.TypeTool;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
@@ -67,7 +69,9 @@ public class InlayHints extends ANY
 
   public static List<InlayHint> getInlayHints(InlayHintParams params)
   {
-    var inlayHintsActuals = ASTWalker.Traverse(LSP4jUtils.getUri(params.getTextDocument()))
+    var uri = LSP4jUtils.getUri(params.getTextDocument());
+
+    var inlayHintsActuals = ASTWalker.Traverse(uri)
       .filter(e -> e.getKey() instanceof AbstractCall)
       .map(e -> (AbstractCall) e.getKey())
       .filter(c -> IsInRange(params.getRange(), c.pos()))
@@ -122,7 +126,23 @@ public class InlayHints extends ANY
         })
         .orElse(Stream.empty()));
 
-    return Stream.concat(inlayHintsActuals, inlayHintsResultTypes).collect(Collectors.toList());
+    // NYI config option to disable this
+    var inlayHintsEffects = ParserTool
+      .TopLevelFeatures(uri)
+      .flatMap(af -> {
+        return ParserTool.Effects(af)
+          .map(e -> {
+            var endOfLine = SourceText.LineAt(af.pos()).length();
+            var ih = new InlayHint(new Position(af.pos()._line - 1, endOfLine), Either.forLeft("effects: " + e));
+            ih.setKind(InlayHintKind.Parameter);
+            ih.setPaddingLeft(true);
+            ih.setPaddingRight(true);
+            return ih;
+          })
+          .stream();
+      });
+
+    return Util.ConcatStreams(inlayHintsActuals, inlayHintsResultTypes, inlayHintsEffects).collect(Collectors.toList());
   }
 
   private static boolean IsConstant(Expr code)
