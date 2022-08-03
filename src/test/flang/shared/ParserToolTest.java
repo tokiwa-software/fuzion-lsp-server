@@ -28,8 +28,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.shared;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import java.nio.file.Path;
 import java.util.stream.Collectors;
 

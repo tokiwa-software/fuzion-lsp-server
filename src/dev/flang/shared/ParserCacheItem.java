@@ -28,16 +28,20 @@ package dev.flang.shared;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import dev.flang.air.AIR;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Types;
 import dev.flang.ast.Types.Resolved;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+import dev.flang.fuir.FUIR;
 import dev.flang.me.MiddleEnd;
 import dev.flang.mir.MIR;
+import dev.flang.opt.Optimizer;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 
@@ -54,6 +58,8 @@ public class ParserCacheItem
   private final TreeSet<Errors.Error> errors;
   private final TreeSet<Errors.Error> warnings;
   private final Resolved resolved;
+  private AIR air;
+  private FUIR fuir;
 
   // cache for top level feature calculation
   private List<AbstractFeature> topLevelFeatures;
@@ -72,8 +78,18 @@ public class ParserCacheItem
 
   public AIR air()
   {
-    return new MiddleEnd(frontEndOptions, mir, frontEnd.module())
-      .air();
+    if (air == null)
+      {
+        RestoreStaticArtifacts();
+        air = new MiddleEnd(frontEndOptions, mir, frontEnd.module())
+          .air();
+      }
+    return air;
+  }
+
+  private void RestoreStaticArtifacts()
+  {
+    Types.resolved = resolved();
   }
 
   /**
@@ -127,6 +143,21 @@ public class ParserCacheItem
   public FrontEnd frontEnd()
   {
     return frontEnd;
+  }
+
+  public Optional<FUIR> fuir()
+  {
+    if (errors().size() > 0)
+      {
+        return Optional.empty();
+      }
+
+    if (fuir == null)
+      {
+        fuir = new Optimizer(frontEndOptions, air())
+          .fuir();
+      }
+    return Optional.of(fuir);
   }
 
 }

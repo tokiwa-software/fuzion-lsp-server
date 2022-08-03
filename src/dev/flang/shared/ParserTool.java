@@ -42,8 +42,6 @@ import dev.flang.ast.Types;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
-import dev.flang.fuir.FUIR;
-import dev.flang.opt.Optimizer;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -106,22 +104,6 @@ public class ParserTool extends ANY
     var warnings = Errors.warnings();
 
     return new ParserCacheItem(uri, mir, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
-  }
-
-
-  private static Optional<FUIR> FUIR(URI uri)
-  {
-    // NYI remove recreation of MIR
-    var parserCacheItem = createParserCacheItem(uri);
-
-    if (Errors.count() > 0)
-      {
-        return Optional.empty();
-      }
-
-    var fuir = new Optimizer(parserCacheItem.frontEndOptions(), parserCacheItem.air())
-      .fuir();
-    return Optional.of(fuir);
   }
 
   private static FrontEndOptions FrontEndOptions(URI uri)
@@ -266,7 +248,7 @@ public class ParserTool extends ANY
 
   private static Optional<Interpreter> Interpreter(URI uri)
   {
-    return ParserTool.FUIR(uri).map(f -> new Interpreter(Context.FuzionOptions, f));
+    return getParserCacheItem(uri).fuir().map(f -> new Interpreter(Context.FuzionOptions, f));
   }
 
   public static String Run(URI uri)
@@ -278,8 +260,8 @@ public class ParserTool extends ANY
   public synchronized static String Run(URI uri, int timeout)
     throws Throwable
   {
+    var interpreter = ParserTool.Interpreter(uri);
     var result = Concurrency.RunWithPeriodicCancelCheck(IO.WithCapturedStdOutErr(() -> {
-      var interpreter = ParserTool.Interpreter(uri);
       interpreter.ifPresent(i -> i.run());
       if (interpreter.isEmpty())
         {
