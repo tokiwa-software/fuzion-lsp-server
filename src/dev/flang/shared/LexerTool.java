@@ -101,6 +101,11 @@ public class LexerTool extends ANY
    */
   public static Stream<TokenInfo> TokensFrom(SourcePosition start)
   {
+    if (PRECONDITIONS)
+      require(
+        start._line > SourceText.getText(start).lines().count()
+          || start._column - 1 <= Util.CodepointCount(SourceText.LineAt(start)));
+
     return tokenCache.computeIfAbsent(SourceText.getText(start),
       (k) -> Tokenize(start).collect(Collectors.toUnmodifiableList()))
       .stream()
