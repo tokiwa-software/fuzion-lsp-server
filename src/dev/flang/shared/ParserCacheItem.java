@@ -148,7 +148,7 @@ public class ParserCacheItem
     return frontEnd;
   }
 
-  public Optional<Stream<String>> effects(AbstractFeature af)
+  public Stream<String> effects(AbstractFeature af)
   {
     return fuir().map(f -> {
       if (effects == null)
@@ -158,7 +158,7 @@ public class ParserCacheItem
       return effects._effects.successors(Clazzes.clazz(af.thisType())._idInFUIR)
         .stream()
         .map(x -> f.clazzAsString(x));
-    });
+    }).orElse(Stream.empty());
   }
 
   public Optional<FUIR> fuir()

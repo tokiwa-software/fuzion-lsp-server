@@ -288,11 +288,11 @@ public class ParserTool extends ANY
     return getParserCacheItem(uri).TopLevelFeatures();
   }
 
-  public static Optional<String> Effects(AbstractFeature af)
+  public static String Effects(AbstractFeature af)
   {
     return getParserCacheItem(getUri(af.pos()))
       .effects(af)
-      .map(x -> x.collect(Collectors.joining(", ")));
+      .collect(Collectors.joining(", "));
   }
 
 

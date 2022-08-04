@@ -129,18 +129,20 @@ public class InlayHints extends ANY
     // NYI config option to disable this
     var inlayHintsEffects = ParserTool
       .TopLevelFeatures(uri)
-      .flatMap(af -> {
-        return ParserTool.Effects(af)
-          .map(e -> {
-            var endOfLine = SourceText.LineAt(af.pos()).length();
-            var ih = new InlayHint(new Position(af.pos()._line - 1, endOfLine), Either.forLeft("effects: " + e));
-            ih.setKind(InlayHintKind.Parameter);
-            ih.setPaddingLeft(true);
-            ih.setPaddingRight(true);
-            return ih;
-          })
-          .stream();
-      });
+      .map(af -> {
+        var effects = ParserTool.Effects(af);
+        if (effects.isBlank())
+          {
+            return Optional.<InlayHint>empty();
+          }
+        var endOfLine = SourceText.LineAt(af.pos()).length();
+        var ih = new InlayHint(new Position(af.pos()._line - 1, endOfLine), Either.forLeft("effects: " + effects));
+        ih.setKind(InlayHintKind.Parameter);
+        ih.setPaddingLeft(true);
+        ih.setPaddingRight(true);
+        return Optional.of(ih);
+      })
+      .flatMap(Optional::stream);
 
     return Util.ConcatStreams(inlayHintsActuals, inlayHintsResultTypes, inlayHintsEffects).collect(Collectors.toList());
   }

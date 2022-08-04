@@ -28,6 +28,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package test.flang.lsp.server.feature;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -36,11 +37,11 @@ import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import dev.flang.lsp.server.feature.InlayHints;
+import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
@@ -55,8 +56,8 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    // 20 actuals, 2 result types
-    assertEquals(20 + 2, inlayHints.size());
+    // 20 actuals, 2 result types, 1 effects
+    assertEquals(20 + 2 + 1, inlayHints.size());
 
     InlayHint maxEscapeIter = inlayHints.stream().filter(x -> x.getPosition().getLine() == 2).findFirst().get();
     assertEquals("maxEscapeIterations:", maxEscapeIter.getLabel().getLeft());
@@ -82,7 +83,7 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    assertEquals(2, inlayHints.size());
+    assertEquals(3, inlayHints.size());
     assertEquals("arg:", inlayHints.get(0).getLabel().getLeft());
     assertEquals(7, inlayHints.get(0).getPosition().getLine());
     assertEquals(9, inlayHints.get(0).getPosition().getCharacter());
@@ -105,6 +106,14 @@ public class InlayHintTest extends ExtendedBaseTest
     assertEquals("list_arg:", inlayHints.get(0).getLabel().getLeft());
     assertEquals(2, inlayHints.get(0).getPosition().getLine());
     assertEquals(10, inlayHints.get(0).getPosition().getCharacter());
+  }
+
+
+  private void PrintDebug(List<InlayHint> inlayHints)
+  {
+    inlayHints.stream().forEach(
+      x -> IO.SYS_OUT.println(x.getLabel()+  ":" +  x.getPosition())
+    );
   }
 
 
