@@ -54,7 +54,6 @@ import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
-import org.eclipse.lsp4j.PrepareRenameDefaultBehavior;
 import org.eclipse.lsp4j.PrepareRenameParams;
 import org.eclipse.lsp4j.PrepareRenameResult;
 import org.eclipse.lsp4j.Range;
@@ -67,7 +66,6 @@ import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.jsonrpc.messages.Either3;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import dev.flang.lsp.server.feature.CodeActions;
@@ -190,10 +188,9 @@ public class FuzionTextDocumentService implements TextDocumentService
   }
 
   @Override
-  public CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> prepareRename(
-    PrepareRenameParams params)
+  public CompletableFuture<Either<Range, PrepareRenameResult>> prepareRename(PrepareRenameParams params)
   {
-    return Computation.CancellableComputation(() -> Either3.forSecond(Rename.getPrepareRenameResult(params)),
+    return Computation.CancellableComputation(() -> Either.forRight(Rename.getPrepareRenameResult(params)),
       "prepare rename", 5000);
   }
 
