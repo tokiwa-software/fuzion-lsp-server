@@ -114,6 +114,7 @@ clean:
 	make -C fuzion clean
 	rm -fR classes
 	rm -f out.jar
+	rm -fR jars
 
 jar: clean classes
 	bash -c "cat Manifest.template | sed 's|JARS|$(JARS)|g' > Manifest.txt"
