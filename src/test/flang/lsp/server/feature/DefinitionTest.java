@@ -102,7 +102,7 @@ public class DefinitionTest extends ExtendedBaseTest
         var uri = ParserTool.getUri(effect.pos());
         // private abortable<T: Function<unit>>(f T) unit is intrinsic
         // --------------------------------------------^
-        var cursor = Cursor(uri, 61, 47);
+        var cursor = Cursor(uri, 61, 52);
 
         var definitions = Definition
             .getDefinitionLocation(new DefinitionParams(TextDocument(cursor), Position(cursor)))
