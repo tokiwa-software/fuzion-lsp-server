@@ -35,7 +35,6 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Completion;
@@ -149,7 +148,7 @@ public class CompletionTest extends ExtendedBaseTest
 
         randomFasta() =>
           (1..10)
-            .map<string>(_ -> selectRandom())
+            .map (_ -> selectRandom())
             .
           """;
 
@@ -163,7 +162,7 @@ public class CompletionTest extends ExtendedBaseTest
   {
     var sourceText = """
       a =>
-        b<T:float<T>>(c T) =>
+        b(T (float T).type,c T) =>
           c.
                 """;
 
@@ -460,7 +459,7 @@ public class CompletionTest extends ExtendedBaseTest
   public void CompletionInActualArg()
   {
     var sourceText = """
-      mapOf<K : ordered<K>,V> (kvs array (tuple K V)) map<K,V> is
+      mapOf(K (ordered K).type, V type, kvs array (tuple K V)) map K V is
         psMap kvs. kvs.length kvs.length+1
         """;
 

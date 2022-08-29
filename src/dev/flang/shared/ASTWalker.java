@@ -131,7 +131,6 @@ public class ASTWalker
 
     feature.contract().req.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
     feature.contract().ens.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
-    feature.contract().inv.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
 
     if (descend)
       {

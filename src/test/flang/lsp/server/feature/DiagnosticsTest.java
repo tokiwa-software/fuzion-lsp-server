@@ -72,7 +72,7 @@ public class DiagnosticsTest extends ExtendedBaseTest
   {
     var sourceText = """
       storage =>
-        store(data array<store>|array<nil>) is
+        store(data (array store)|(array nil)) is
         say "asdf"
                   """;
     SourceText.setText(uri1, sourceText);
@@ -145,9 +145,9 @@ public class DiagnosticsTest extends ExtendedBaseTest
     var sourceText = """
       a is
 
-        reducer<T,U>(t T, f U -> T) is
-        transducer<T,U,V,W,X: reducer<T,U>, Y: reducer<V,W>> (r X) Y is
-        filter<T,U,V,W,X: reducer<T,U>, Y: reducer<V,W>> (r X) Y is
+        reducer(T, U type, t T, f U -> T) is
+        transducer(T, U, V, W type, X (reducer T U).type, Y (reducer V W).type, r X) Y is
+        filter(T, U, V, W type, X (reducer T U).type, Y (reducer V W).type, r X) Y is
 
 
           """;

@@ -134,7 +134,7 @@ public class FeatureToolTest extends BaseTest
   public void BaseNamePositionTest()
   {
     var ex = """
-      i33(val i33) : wrappingInteger<i33>, hasInterval<i33>, i33s is
+      i33(val i33) : wrappingInteger i33, hasInterval i33, i33s is
         redef  prefix  -° i33 is intrinsic
         infix  ⋃ (other i33) is abstract
         private  div (other i33) i33 is intrinsic
@@ -144,7 +144,6 @@ public class FeatureToolTest extends BaseTest
 
       i33s is
         """;
-    ;
     SourceText.setText(uri1, ex);
 
     assertEquals(18, GetFeature("-°")._column);

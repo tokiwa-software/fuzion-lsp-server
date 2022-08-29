@@ -1,11 +1,11 @@
 # http://rosettacode.org/wiki/Faulhaber's_formula
 faulhaber_example is
 
-  bernoulli (n i32) fraction<i32>
+  bernoulli (n i32) fraction i32
     pre
       n >= 0
   is
-    a := array<fraction<i32>> (n+1) (i -> 1 ⁄ 1)
+    a := array (fraction i32) (n+1) (i -> 1 ⁄ 1)
     for
       m in 0..n
     do

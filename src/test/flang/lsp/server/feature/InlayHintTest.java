@@ -144,7 +144,7 @@ public class InlayHintTest extends ExtendedBaseTest
     SourceText.setText(uri1, """
       ex =>
         tmp : string is
-          redef utf8 Sequence<u8> is
+          redef utf8 Sequence u8 is
             [u8 8]
                                                                 # asArray, since we don't want this to be lazy
         strings.fromCodepoints (tmp.asCodepoints.asStream.take 1).asArray
