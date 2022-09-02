@@ -151,6 +151,10 @@ public class ParserCacheItem
   public Stream<String> effects(AbstractFeature af)
   {
     return fuir().map(f -> {
+      // reset errors, without this
+      // new Effects() might fail and System.exit(1) would be called
+      // which crashes the language server
+      Errors.reset();
       if (effects == null)
         {
           effects = new Effects(f);
