@@ -60,8 +60,6 @@ public class ParserCacheItem
   private final TreeSet<Errors.Error> errors;
   private final TreeSet<Errors.Error> warnings;
   private final Resolved resolved;
-  private AIR air;
-  private FUIR fuir;
 
   // cache for top level feature calculation
   private List<AbstractFeature> topLevelFeatures;
@@ -81,13 +79,9 @@ public class ParserCacheItem
 
   public AIR air()
   {
-    if (air == null)
-      {
-        RestoreStaticArtifacts();
-        air = new MiddleEnd(frontEndOptions, mir, frontEnd.module())
-          .air();
-      }
-    return air;
+    RestoreStaticArtifacts();
+    return new MiddleEnd(frontEndOptions, mir, frontEnd.module())
+      .air();
   }
 
   private void RestoreStaticArtifacts()
@@ -172,12 +166,8 @@ public class ParserCacheItem
         return Optional.empty();
       }
 
-    if (fuir == null)
-      {
-        fuir = new Optimizer(frontEndOptions, air())
-          .fuir();
-      }
-    return Optional.of(fuir);
+    return Optional.of(new Optimizer(frontEndOptions, air())
+      .fuir());
   }
 
 }

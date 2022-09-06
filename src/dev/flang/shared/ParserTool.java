@@ -61,7 +61,7 @@ public class ParserTool extends ANY
    */
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
 
-  private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 100;
+  private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 10;
 
   private static List<String> JavaModules = List.<String>of();
 

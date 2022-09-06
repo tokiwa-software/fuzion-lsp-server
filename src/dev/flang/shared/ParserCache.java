@@ -38,7 +38,7 @@ import dev.flang.util.ANY;
 
 public class ParserCache extends ANY
 {
-  private int PARSER_CACHE_MAX_SIZE = 10;
+  private int PARSER_CACHE_MAX_SIZE = 5;
 
   /*
    * this map is kept in sync with sourceText2ParserCache
