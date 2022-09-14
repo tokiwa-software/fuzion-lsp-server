@@ -163,18 +163,20 @@ public class ParserCacheItem
         {
           return Stream.of("error evaluating effects");
         }
-    }).orElse(Stream.empty());
+    }).orElse(Stream.of("error creating fuir"));
   }
 
   public Optional<FUIR> fuir()
   {
-    if (errors().size() > 0)
+    try
+      {
+        return Optional.of(new Optimizer(frontEndOptions, air())
+          .fuir());
+      }
+    catch (Exception e)
       {
         return Optional.empty();
       }
-
-    return Optional.of(new Optimizer(frontEndOptions, air())
-      .fuir());
   }
 
 }
