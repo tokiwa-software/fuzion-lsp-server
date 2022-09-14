@@ -149,13 +149,20 @@ public class ParserCacheItem
       // new Effects() might fail and System.exit(1) would be called
       // which crashes the language server
       Errors.reset();
-      if (effects == null)
+      try
         {
-          effects = new Effects(f);
+          if (effects == null)
+            {
+              effects = new Effects(f);
+            }
+          return effects._effects.successors(Clazzes.clazz(af.thisType())._idInFUIR)
+            .stream()
+            .map(x -> f.clazzAsString(x));
         }
-      return effects._effects.successors(Clazzes.clazz(af.thisType())._idInFUIR)
-        .stream()
-        .map(x -> f.clazzAsString(x));
+      catch (Exception e)
+        {
+          return Stream.of("error evaluating effects");
+        }
     }).orElse(Stream.empty());
   }
 
