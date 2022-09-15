@@ -390,7 +390,7 @@ public class QueryAST extends ANY
             return false;
           }
         var start = x.pos()._column;
-        var end = x.pos()._column + Util.CharCount(x.str);
+        var end = x.pos()._column + Util.CharCount(x._str);
         if (SourceText.LineAt(x.pos()).charAt(x.pos()._column - 1) == '\"')
           {
             return start < params._column
