@@ -116,7 +116,9 @@ public class Config
         Context.FuzionOptions = new FuzionOptions(
           ErrorHandling.ResultOrDefault(() -> options.get("verbosity").getAsInt(), 0),
           ErrorHandling.ResultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
-          ErrorHandling.ResultOrDefault(() -> options.get("safety").getAsBoolean(), true));
+          ErrorHandling.ResultOrDefault(() -> options.get("safety").getAsBoolean(), true),
+          ErrorHandling.ResultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true)
+          );
 
         Context.Logger.Log("[Config] FuzionOptions: verbosity(" + Context.FuzionOptions.verbose() + "), debugLevel("
           + Context.FuzionOptions.fuzionDebugLevel() + "), safety(" + Context.FuzionOptions.fuzionSafety() + ").");

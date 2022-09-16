@@ -117,10 +117,19 @@ public class ParserTool extends ANY
   private static FrontEndOptions FrontEndOptions(File tempFile)
   {
     var frontEndOptions =
-      new FrontEndOptions(0, SourceText.FuzionHome, null, true, new dev.flang.util.List<String>(JavaModules.iterator()),
+      new FrontEndOptions(
         0,
-        false, false,
-        tempFile.getAbsolutePath(), true);
+        SourceText.FuzionHome,
+        true,
+        true,
+        new dev.flang.util.List<String>(JavaModules.iterator()),
+        0,
+        true,
+        true,
+        new dev.flang.util.List<String>(),
+        false,
+        tempFile.getAbsolutePath(),
+        true);
     return frontEndOptions;
   }
 
