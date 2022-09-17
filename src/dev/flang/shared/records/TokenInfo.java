@@ -196,6 +196,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
           ANY.check(false);
         return Optional.empty();
       case t_op :
+      case t_question:
         if (text.equals("=>")
           || text.equals("->")
           || text.equals(":="))
