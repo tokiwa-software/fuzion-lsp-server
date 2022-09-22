@@ -59,6 +59,7 @@ public class ParserTool extends ANY
   /**
    * maps temporary files which are fed to the parser to their original uri.
    */
+  // NYI fix memory leak
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
 
   private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 10;
