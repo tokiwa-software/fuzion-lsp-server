@@ -63,7 +63,6 @@ public class ParserCacheItem
 
   // cache for top level feature calculation
   private List<AbstractFeature> topLevelFeatures;
-  private Effects effects;
 
   public ParserCacheItem(URI uri, MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
     TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings, Resolved resolved)
@@ -145,19 +144,21 @@ public class ParserCacheItem
   public Stream<String> effects(AbstractFeature af)
   {
     return fuir().map(f -> {
-      // reset errors, without this
-      // new Effects() might fail and System.exit(1) would be called
-      // which crashes the language server
-      Errors.reset();
       try
         {
-          if (effects == null)
-            {
-              effects = new Effects(f);
-            }
-          return effects._effects.successors(Clazzes.clazz(af.thisType())._idInFUIR)
+          return new Effects(f)._effects
+            .successors(Clazzes.clazz(af.thisType())._idInFUIR)
             .stream()
-            .map(x -> f.clazzAsString(x));
+            .map(x -> {
+              try
+                {
+                  return f.clazzAsString(x);
+                }
+              catch (Exception e)
+                {
+                  return "?";
+                }
+            });
         }
       catch (Exception e)
         {
