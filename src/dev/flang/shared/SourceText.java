@@ -160,7 +160,7 @@ public class SourceText extends ANY
   {
     return Path.of(
       sourcePosition._sourceFile._fileName.toString()
-        .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), FuzionHome.toString() + "/lib"))
+        .replace(FuzionConstants.SYMBOLIC_FUZION_HOME.toString(), FuzionHome.toString()))
       .toUri();
   }
 
