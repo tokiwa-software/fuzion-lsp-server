@@ -41,13 +41,21 @@ import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.QueryAST;
+import dev.flang.shared.Util;
 
 public class CodeLenses
 {
+  public static boolean CallGraphEnabled = false;
+  public static boolean SyntaxTreeEnabled = false;
+  public static boolean RunEnabled = false;
+
   public static List<CodeLens> getCodeLenses(CodeLensParams params)
   {
     var uri = LSP4jUtils.getUri(params.getTextDocument());
-    return Stream.concat(Stream.of(codeLensEvaluateFile(uri), codeLensShowSyntaxTree(uri)), codeLensesCallGraph(uri))
+    return Util.ConcatStreams(
+      CallGraphEnabled ? codeLensesCallGraph(uri): Stream.empty(),
+      SyntaxTreeEnabled ? Stream.of(codeLensShowSyntaxTree(uri)): Stream.empty(),
+      RunEnabled ? Stream.of(codeLensRun(uri)): Stream.empty())
       .collect(Collectors.toList());
   }
 
@@ -68,7 +76,7 @@ public class CodeLenses
     return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)), command, null);
   }
 
-  private static CodeLens codeLensEvaluateFile(URI uri)
+  private static CodeLens codeLensRun(URI uri)
   {
     Command command = Commands.Create(Commands.run, uri, List.of());
     return new CodeLens(new Range(new Position(0, 0), new Position(0, 1)),

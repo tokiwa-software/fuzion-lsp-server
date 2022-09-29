@@ -35,6 +35,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import com.google.gson.JsonObject;
 
 import dev.flang.lsp.server.enums.Transport;
+import dev.flang.lsp.server.feature.CodeLenses;
 import dev.flang.shared.Context;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.ParserTool;
@@ -104,6 +105,27 @@ public class Config
   {
     ParserTool.SetJavaModules(Config.JavaModules(configuration));
     SetFuzionOptions(configuration);
+    SetCodeLensOptions(configuration);
+  }
+
+  private static void SetCodeLensOptions(List<Object> configuration)
+  {
+    try
+      {
+        var codeLens = ((JsonObject) configuration.get(0))
+          .getAsJsonObject("code_lens");
+
+        CodeLenses.CallGraphEnabled =
+          ErrorHandling.ResultOrDefault(() -> codeLens.get("call_graph").getAsBoolean(), true);
+        CodeLenses.SyntaxTreeEnabled =
+          ErrorHandling.ResultOrDefault(() -> codeLens.get("syntax_tree").getAsBoolean(), true);
+        CodeLenses.RunEnabled = ErrorHandling.ResultOrDefault(() -> codeLens.get("run").getAsBoolean(), true);
+
+      }
+    catch (Exception e)
+      {
+        Context.Logger.Error("[Config] parsing of fuzion options failed.");
+      }
   }
 
   private static void SetFuzionOptions(List<Object> configuration)
@@ -117,8 +139,7 @@ public class Config
           ErrorHandling.ResultOrDefault(() -> options.get("verbosity").getAsInt(), 0),
           ErrorHandling.ResultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
           ErrorHandling.ResultOrDefault(() -> options.get("safety").getAsBoolean(), true),
-          ErrorHandling.ResultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true)
-          );
+          ErrorHandling.ResultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true));
 
         Context.Logger.Log("[Config] FuzionOptions: verbosity(" + Context.FuzionOptions.verbose() + "), debugLevel("
           + Context.FuzionOptions.fuzionDebugLevel() + "), safety(" + Context.FuzionOptions.fuzionSafety() + ").");
