@@ -56,8 +56,8 @@ import dev.flang.lsp.server.FuzionLanguageClient;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.Computation;
 import dev.flang.shared.ASTWalker;
-import dev.flang.shared.Concurrency;
 import dev.flang.shared.CaseConverter;
+import dev.flang.shared.Concurrency;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.ExprTool;
 import dev.flang.shared.FeatureTool;
@@ -160,7 +160,8 @@ public enum Commands
             Stream.of(new TextEdit(new Range(endOfSubPos, endOfSubPos), text)).toList()));
           Config.languageClient().applyEdit(new ApplyWorkspaceEditParams(edit));
           return edit;
-        }).orElse(null);
+        })
+        .orElse(null);
     }, "codeActionGenerateMatchCases", 1000);
   }
 
