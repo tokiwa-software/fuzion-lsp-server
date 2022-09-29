@@ -66,9 +66,24 @@ import dev.flang.util.SourcePosition;
 public class InlayHints extends ANY
 {
   private static final int MIN_PARAM_NAME_LENGTH = 2;
+  private static boolean isEnabled = true;
+
+  public static void Disable()
+  {
+    isEnabled = false;
+  }
+
+  public static void Enable()
+  {
+    isEnabled = true;
+  }
 
   public static List<InlayHint> getInlayHints(InlayHintParams params)
   {
+    if (!isEnabled)
+      {
+        return List.of();
+      }
     var uri = LSP4jUtils.getUri(params.getTextDocument());
 
     var inlayHintsActuals = ASTWalker.Traverse(uri)

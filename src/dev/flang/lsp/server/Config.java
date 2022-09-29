@@ -36,6 +36,7 @@ import com.google.gson.JsonObject;
 
 import dev.flang.lsp.server.enums.Transport;
 import dev.flang.lsp.server.feature.CodeLenses;
+import dev.flang.lsp.server.feature.InlayHints;
 import dev.flang.shared.Context;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.ParserTool;
@@ -106,6 +107,27 @@ public class Config
     ParserTool.SetJavaModules(Config.JavaModules(configuration));
     SetFuzionOptions(configuration);
     SetCodeLensOptions(configuration);
+    SetInlayHint(configuration);
+  }
+
+  private static void SetInlayHint(List<Object> configuration)
+  {
+    try
+      {
+        if (ErrorHandling.ResultOrDefault(() -> ((JsonObject) configuration.get(0)).get("inlay_hints").getAsBoolean(),
+          true))
+          {
+            InlayHints.Enable();
+          }
+        else
+          {
+            InlayHints.Disable();
+          }
+      }
+    catch (Exception e)
+      {
+        Context.Logger.Error("[Config] parsing of inlay hint options failed.");
+      }
   }
 
   private static void SetCodeLensOptions(List<Object> configuration)
@@ -124,7 +146,7 @@ public class Config
       }
     catch (Exception e)
       {
-        Context.Logger.Error("[Config] parsing of fuzion options failed.");
+        Context.Logger.Error("[Config] parsing of code lens options failed.");
       }
   }
 
