@@ -108,6 +108,12 @@ public class Config
     SetFuzionOptions(configuration);
     SetCodeLensOptions(configuration);
     SetInlayHint(configuration);
+    SetFuirEnabled(configuration);
+  }
+
+  private static void SetFuirEnabled(List<Object> configuration)
+  {
+    Context.MiddleEndEnabled = ErrorHandling.ResultOrDefault(() -> ((JsonObject) configuration.get(0)).get("middle_end_enabled").getAsBoolean(), false);
   }
 
   private static void SetInlayHint(List<Object> configuration)

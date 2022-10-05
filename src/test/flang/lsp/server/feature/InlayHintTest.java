@@ -36,17 +36,24 @@ import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import dev.flang.lsp.server.feature.InlayHints;
+import dev.flang.shared.Context;
 import dev.flang.shared.IO;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
 public class InlayHintTest extends ExtendedBaseTest
 {
+
+  @BeforeEach
+  public void Setup(){
+    Context.MiddleEndEnabled = true;
+  }
 
   @Test
   public void InlayHintsComposedArg()
