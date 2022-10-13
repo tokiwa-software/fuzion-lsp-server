@@ -28,9 +28,7 @@ package dev.flang.shared;
 
 import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractAssign;
@@ -46,8 +44,6 @@ import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
-import dev.flang.ast.Feature;
-import dev.flang.ast.Feature.State;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
 import dev.flang.ast.Nop;
@@ -58,19 +54,12 @@ import dev.flang.ast.Universe;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
+/**
+ * depth first traversal
+ * collects calls, features etc. (=key) as well as their outer features (=value).
+ */
 public class ASTWalker
 {
-
-  /**
-   * depth first traversal, starting at feature
-   * collects calls and features (=key) as well as their outer features (=value).
-   * @param start
-   * @return
-   */
-  public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(AbstractFeature start)
-  {
-    return Traverse(start, true);
-  }
 
   public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(SourcePosition pos)
   {
@@ -80,175 +69,133 @@ public class ASTWalker
   public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(URI uri)
   {
     return ParserTool.TopLevelFeatures(uri)
-      .flatMap(f -> Traverse(f, true));
+      .flatMap(f -> TraverseFeature(f, true));
   }
 
-  public static Stream<Entry<HasSourcePosition, AbstractFeature>> Traverse(AbstractFeature start, boolean descend)
-  {
-    var result = new HashMap<HasSourcePosition, AbstractFeature>();
-    TraverseFeature(start, (item, outer) -> {
-      if (item instanceof AbstractFeature af && FeatureTool.IsInternal(af))
-        {
-          return true;
-        }
-      if (item instanceof AbstractCall c
-        // include calls to "error features" in result
-        && !(c.calledFeature() instanceof Feature f && f.state() == State.ERROR)
-      // exclude calls to internal features
-        && FeatureTool.IsInternal(c.calledFeature()))
-        {
-          return true;
-        }
-      var isAlreadyPresent = result.containsKey(item);
-      result.put(item, outer);
-      return !isAlreadyPresent;
-    }, descend);
-    return result
-      .entrySet()
-      .stream();
-  }
-
-  private static void TraverseFeature(AbstractFeature feature,
-    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback,
+  public static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseFeature(AbstractFeature feature,
     boolean descend)
   {
-    if (!callback.apply(feature, feature.outer()))
-      {
-        return;
-      }
-    feature.arguments()
-      .stream()
-      .forEach(f -> TraverseFeature(f, callback, false));
+    return Util.ConcatStreams(
 
-    // feature.isRoutine() sometimes throws because it depends on
-    // statically held Types.resolved.f_choice which may have been cleared
-    // already.
-    // We may remove wrapper ResultOrDefault in the future if this changes.
-    if (ErrorHandling.ResultOrDefault(() -> feature.isRoutine(), true))
-      {
-        TraverseExpression(feature.code(), feature, callback);
-      }
+      FeatureTool.IsInternal(feature) ? Stream.empty(): AsStream(feature, feature.outer()),
 
-    feature.contract().req.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
-    feature.contract().ens.forEach(x -> TraverseExpression(x.cond, feature.outer(), callback));
+      feature.arguments()
+        .stream()
+        .flatMap(f -> TraverseFeature(f, false)),
 
-    if (descend)
-      {
-        ParserTool.DeclaredFeatures(feature, true)
-          .forEach(f -> TraverseFeature(f, callback, descend));
-      }
+      // feature.isRoutine() sometimes throws because it depends on
+      // statically held Types.resolved.f_choice which may have been cleared
+      // already.
+      // We may remove wrapper ResultOrDefault in the future if this changes.
+      ErrorHandling.ResultOrDefault(() -> feature.isRoutine(), true)
+                                                                     ? TraverseExpression(feature.code(), feature)
+                                                                     : Stream.empty(),
+
+      feature.contract().req.stream().flatMap(x -> TraverseExpression(x.cond, feature.outer())),
+      feature.contract().ens.stream().flatMap(x -> TraverseExpression(x.cond, feature.outer())),
+
+      descend
+              ? ParserTool.DeclaredFeatures(feature, true)
+                .flatMap(f -> TraverseFeature(f, descend))
+              : Stream.empty())
+      .distinct();
   }
 
-  private static void TraverseCase(AbstractCase c, AbstractFeature outer,
-    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
+  private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseCase(AbstractCase c, AbstractFeature outer)
   {
-    TraverseBlock(c.code(), outer, callback);
+    return TraverseBlock(c.code(), outer);
   }
 
-  private static void TraverseStatement(Stmnt s, AbstractFeature outer,
-    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
+  private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseStatement(Stmnt s, AbstractFeature outer)
   {
     if (s instanceof AbstractFeature)
       {
-        TraverseFeature((AbstractFeature) s, callback, false);
-        return;
+        return TraverseFeature((AbstractFeature) s, false);
       }
     if (s instanceof Expr expr)
       {
-        TraverseExpression(expr, outer, callback);
-        return;
+        return TraverseExpression(expr, outer);
       }
     if (s instanceof Nop)
       {
-        return;
+        return Stream.empty();
       }
     if (s instanceof AbstractAssign a)
       {
-        TraverseAssign(a, outer, callback);
-        return;
+        return TraverseAssign(a, outer);
       }
     if (s instanceof Check c)
       {
-        return;
+        return Stream.empty();
       }
 
     throw new RuntimeException("TraverseStatement not implemented for: " + s.getClass());
   }
 
-  private static void TraverseAssign(AbstractAssign a, AbstractFeature outer,
-    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
+  private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseAssign(AbstractAssign a,
+    AbstractFeature outer)
   {
-    if (!callback.apply(a, outer))
-      {
-        return;
-      }
-    TraverseExpression(a._value, outer, callback);
-    if (a._target != null)
-      {
-        TraverseExpression(a._target, outer, callback);
-      }
+    return Util.ConcatStreams(
+
+      AsStream(a, outer),
+
+      TraverseExpression(a._value, outer),
+      TraverseExpression(a._target, outer));
   }
 
-  private static void TraverseBlock(AbstractBlock b, AbstractFeature outer,
-    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
+  private static Stream<Entry<HasSourcePosition, AbstractFeature>> AsStream(HasSourcePosition item,
+    AbstractFeature outer)
   {
-    b.statements_.forEach(s -> TraverseStatement(s, outer, callback));
+    return Stream.of(new SimpleEntry<HasSourcePosition, AbstractFeature>(item, outer));
   }
 
-  private static void TraverseExpression(Expr expr, AbstractFeature outer,
-    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
+  private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseBlock(AbstractBlock b, AbstractFeature outer)
+  {
+    return b.statements_.stream().flatMap(s -> TraverseStatement(s, outer));
+  }
+
+  private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseExpression(Expr expr, AbstractFeature outer)
   {
     if (expr == null)
       {
-        return;
+        return Stream.empty();
       }
     if (expr instanceof AbstractBlock b)
       {
-        TraverseBlock(b, outer, callback);
-        return;
+        return TraverseBlock(b, outer);
       }
     if (expr instanceof AbstractMatch m)
       {
-        // used for generating match cases
-        callback.apply(m, outer);
-        TraverseExpression(m.subject(), outer, callback);
-        m.cases().forEach(c -> TraverseCase(c, outer, callback));
-        return;
+        return Util.ConcatStreams(
+          // used for generating match cases
+          AsStream(m, outer),
+          TraverseExpression(m.subject(), outer),
+          m.cases().stream().flatMap(c -> TraverseCase(c, outer)));
       }
     if (expr instanceof AbstractCall c)
       {
-        TraverseCall(c, outer, callback);
-        return;
+        return TraverseCall(c, outer);
       }
     if (expr instanceof Tag t)
       {
-        TraverseExpression(t._value, outer, callback);
-        return;
+        return TraverseExpression(t._value, outer);
       }
     if (expr instanceof Box b)
       {
-        TraverseExpression(b._value, outer, callback);
-        return;
+        return TraverseExpression(b._value, outer);
       }
     if (expr instanceof If i)
       {
-        TraverseExpression(i.cond, outer, callback);
-        TraverseBlock(i.block, outer, callback);
-        if (i.elseBlock != null)
-          {
-            TraverseBlock(i.elseBlock, outer, callback);
-          }
-        if (i.elseIf != null)
-          {
-            TraverseExpression(i.elseIf, outer, callback);
-          }
-        return;
+        return Util.ConcatStreams(
+          TraverseExpression(i.cond, outer),
+          TraverseBlock(i.block, outer),
+          i.elseBlock != null ? TraverseBlock(i.elseBlock, outer): Stream.empty(),
+          i.elseIf != null ? TraverseExpression(i.elseIf, outer): Stream.empty());
       }
     // for offering completions on constants
     if (expr instanceof Constant ac)
       {
-        callback.apply(ac, outer);
-        return;
+        return AsStream(ac, outer);
       }
     if (expr instanceof AbstractCurrent
       || expr instanceof Unbox
@@ -257,20 +204,19 @@ public class ASTWalker
       || expr instanceof Function
       || expr instanceof Env)
       {
-        return;
+        return Stream.empty();
       }
     throw new RuntimeException("TraverseExpression not implemented for: " + expr.getClass());
   }
 
-  private static void TraverseCall(AbstractCall c, AbstractFeature outer,
-    BiFunction<HasSourcePosition, AbstractFeature, Boolean> callback)
+  private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseCall(AbstractCall c, AbstractFeature outer)
   {
-    if (!callback.apply(c, outer))
-      {
-        return;
-      }
-    c.actuals().forEach(a -> TraverseExpression(a, outer, callback));
-    TraverseExpression(c.target(), outer, callback);
+    return Util.ConcatStreams(
+
+      AsStream(c, outer),
+
+      c.actuals().stream().flatMap(a -> TraverseExpression(a, outer)),
+      TraverseExpression(c.target(), outer));
   }
 
   /**
@@ -279,7 +225,7 @@ public class ASTWalker
    */
   public static Stream<SimpleEntry<AbstractCall, AbstractFeature>> Calls(AbstractFeature start)
   {
-    return Traverse(start)
+    return TraverseFeature(start, true)
       .filter(entry -> {
         return entry.getKey() instanceof AbstractCall;
       })
@@ -302,7 +248,7 @@ public class ASTWalker
   public static Stream<SimpleEntry<AbstractAssign, AbstractFeature>> Assignments(AbstractFeature start,
     AbstractFeature assignedFeature)
   {
-    return Traverse(start)
+    return TraverseFeature(start, true)
       .filter(entry -> {
         return AbstractAssign.class.isAssignableFrom(entry.getKey().getClass());
       })

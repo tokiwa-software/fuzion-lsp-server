@@ -239,7 +239,7 @@ public class ParserTool extends ANY
           return new SourcePosition(f.pos()._sourceFile, lines + 1, 1);
         }
       var uri = getUri(f.pos());
-      var result = ASTWalker.Traverse(f)
+      var result = ASTWalker.TraverseFeature(f, true)
         .filter(entry -> entry.getValue() != null)
         .filter(entry -> entry.getValue().compareTo(f) == 0)
         .map(e -> e.getKey())

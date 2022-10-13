@@ -39,10 +39,8 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Consts;
 import dev.flang.ast.Feature;
 import dev.flang.ast.Feature.State;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -355,7 +353,7 @@ public class FeatureTool extends ANY
 
   private static Set<AbstractFeature> Callees(AbstractFeature f)
   {
-    return ASTWalker.Traverse(f, false)
+    return ASTWalker.TraverseFeature(f, false)
       .map(e -> e.getKey())
       .filter(obj -> obj instanceof AbstractCall)
       .map(obj -> ((AbstractCall) obj).calledFeature())
