@@ -29,6 +29,7 @@ package dev.flang.lsp.server.feature;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -94,7 +95,7 @@ public class CodeActions
   {
     var uri = LSP4jUtils.getUri(params.getTextDocument());
     return getDiagnostics(params, diag)
-      .map(d -> CodeActionForNameingIssue(uri, d, fix))
+      .flatMap(d -> CodeActionForNameingIssue(uri, d, fix).stream())
       .<Either<Command, CodeAction>>map(
         ca -> Either.forRight(ca));
   }
@@ -108,7 +109,8 @@ public class CodeActions
    * @param convertIdentifier
    * @return
    */
-  private static CodeAction CodeActionForNameingIssue(URI uri, Diagnostic d, Function<String, String> convertIdentifier)
+  private static Optional<CodeAction> CodeActionForNameingIssue(URI uri, Diagnostic d,
+    Function<String, String> convertIdentifier)
   {
     var oldName = QueryAST
       .FeatureAt(new SourcePosition(new SourceFile(Path.of(uri)), d.getRange().getStart().getLine() + 1,
@@ -116,6 +118,11 @@ public class CodeActions
       .get()
       .featureName()
       .baseName();
+
+    if (oldName.length() > 1 && oldName.equals(oldName.toUpperCase()))
+      {
+        return Optional.empty();
+      }
 
     var res = new CodeAction();
     res.setTitle(Commands.codeActionFixIdentifier.toString());
@@ -125,7 +132,7 @@ public class CodeActions
       List.of(d.getRange().getStart().getLine(), d.getRange().getStart().getCharacter(),
         convertIdentifier.apply(oldName))));
 
-    return res;
+    return Optional.of(res);
   }
 
 }
