@@ -103,6 +103,7 @@ public class QueryAST extends ANY
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
+  // NYI motivate/explain this heuristic
   private static Optional<AbstractFeature> CalledFeatureInAST(SourcePosition params)
   {
     var leftToken = LexerTool.TokensAt(LexerTool.GoLeft(params)).left();
@@ -147,6 +148,7 @@ public class QueryAST extends ANY
     return at.isGenericArgument() && !at.genericArgument().constraint().equals(Types.resolved.t_object);
   }
 
+  // NYI motivate/explain this heuristic
   private static Optional<? extends AbstractFeature> Constant(SourcePosition params)
   {
     return ASTWalker.Traverse(params)
