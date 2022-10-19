@@ -91,6 +91,12 @@ public class ASTWalker
                                                                      ? TraverseExpression(feature.code(), feature)
                                                                      : Stream.empty(),
 
+      feature.inherits()
+        .stream()
+        // filter implicit inheritance of Object
+        .filter(x -> x.calledFeature().inherits().size() != 0)
+        .flatMap(x -> TraverseCall(x, feature)),
+
       feature.contract().req.stream().flatMap(x -> TraverseExpression(x.cond, feature.outer())),
       feature.contract().ens.stream().flatMap(x -> TraverseExpression(x.cond, feature.outer())),
 
