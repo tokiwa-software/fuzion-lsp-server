@@ -419,7 +419,10 @@ public class FeatureTool extends ANY
 
   public static boolean DoesInherit(AbstractFeature af)
   {
-    return af.inherits().stream().anyMatch(x -> !x.calledFeature().qualifiedName().equals("Object"));
+    return af.inherits()
+      .stream()
+      // filter implicit inheritance of `Object`
+      .anyMatch(x -> x.calledFeature().inherits().size() != 0);
   }
 
 
