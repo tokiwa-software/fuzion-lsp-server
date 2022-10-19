@@ -168,14 +168,18 @@ public class Completion
               }
             if (result.getLeft().isEmpty() && tokenBeforeTriggerCharacter.equals(Token.t_ident))
               {
-                result = Either.forLeft(QueryAST
+                var types = QueryAST
                   .FeaturesInScope(pos)
                   .filter(af -> af.isConstructor() || af.isChoice())
                   .filter(af -> !af.featureName().baseName().contains(" "))
                   // NYI consider generics
                   .map(af -> af.thisType().name())
                   .distinct()
-                  .map(name -> buildCompletionItem(name, name, CompletionItemKind.TypeParameter))
+                  .map(name -> buildCompletionItem(name, name, CompletionItemKind.TypeParameter));
+
+                var keywords = Stream.of(buildCompletionItem("is", "is", CompletionItemKind.Keyword));
+
+                result = Either.forLeft(Stream.concat(keywords, types)
                   .collect(Collectors.toList()));
               }
             return result;
@@ -183,7 +187,8 @@ public class Completion
       }
 
     // // Invoked: ctrl+space
-    // if (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked)
+    // if
+    // (params.getContext().getTriggerKind().equals(CompletionTriggerKind.Invoked)
     // && params.getContext().getTriggerCharacter() == null)
     // {
     // return completions(QueryAST.CompletionsAt(pos));
