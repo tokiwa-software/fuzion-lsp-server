@@ -7,7 +7,8 @@
 
 ## Build
 - run `make jar` which should produce an **out.jar** file
-- run the artifact via `java out.jar [options]`
+
+## Run
 
 ### Transport socket
 - run `./bin/fuzion_language_server -socket --port=3000`
