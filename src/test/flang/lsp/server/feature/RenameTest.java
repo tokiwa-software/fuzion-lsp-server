@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.RenameParams;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.Rename;
@@ -284,6 +285,51 @@ public class RenameTest extends ExtendedBaseTest
         && edit.getRange().getEnd().getLine() == 1
         && edit.getRange().getEnd().getCharacter() == 25;
     }));
+
+  }
+
+  @Test
+  @Disabled // failing
+  public void RenameLamdaType()
+  {
+    var sourceText = """
+      ex =>
+        a is
+        b(f a->a)is
+          """;
+    SourceText.setText(uri1, sourceText);
+
+    // rename `a`
+    var textEdits = Rename.getWorkspaceEdit(Params(uri1, 1, 2, "c"))
+      .getChanges()
+      .values()
+      .stream()
+      .findFirst()
+      .get();
+
+    assertEquals(3, textEdits.size());
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 1
+        && edit.getRange().getStart().getCharacter() == 2
+        && edit.getRange().getEnd().getLine() == 1
+        && edit.getRange().getEnd().getCharacter() == 3;
+    }));
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 2
+        && edit.getRange().getStart().getCharacter() == 6
+        && edit.getRange().getEnd().getLine() == 2
+        && edit.getRange().getEnd().getCharacter() == 7;
+    }));
+
+    assertTrue(textEdits.stream().anyMatch(edit -> {
+      return edit.getRange().getStart().getLine() == 2
+        && edit.getRange().getStart().getCharacter() == 9
+        && edit.getRange().getEnd().getLine() == 2
+        && edit.getRange().getEnd().getCharacter() == 10;
+    }));
+
 
   }
 
