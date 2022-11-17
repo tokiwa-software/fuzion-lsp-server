@@ -287,10 +287,7 @@ public enum Commands
 
   private static void showSyntaxTree(URI uri)
   {
-    var ast = ParserTool
-      .TopLevelFeatures(uri)
-      .map(f -> FeatureTool.AST(uri))
-      .collect(Collectors.joining(System.lineSeparator() + "===" + System.lineSeparator()));
+    var ast = FeatureTool.AST(uri);
     var file = IO.writeToTempFile(ast, String.valueOf(System.currentTimeMillis()), ".fuzion.ast");
     Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
   }
