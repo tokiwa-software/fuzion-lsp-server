@@ -84,7 +84,6 @@ public class CompletionTest extends ExtendedBaseTest
       splitAt ${1:at}
       concatSequences ${1:s}
       mapSequence (${101:T} -> ${102:B})
-      reduce ${1:init} (${201:R}, ${202:T} -> ${203:R})
       insert ${1:at} ${2:v}
       sort (${101:T}, ${102:T} -> ${103:bool})
       sortBy (${101:T} -> ${102:O})

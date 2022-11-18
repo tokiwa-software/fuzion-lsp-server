@@ -55,7 +55,7 @@ all: classes
 socket: classes
 	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
-classes: $(JARS) build_fuzion
+classes: $(JARS) build_fuzion_no_java
 	rm -Rf $@
 	mkdir -p $@
 	$(JAVAC) -classpath $(CLASSPATH) -d $@ $(JAVA_FILES)
@@ -107,6 +107,9 @@ jars/guava-31.1-jre.jar:
 	mkdir -p $(@D)
 	wget -O $@ https://repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/$(@F)
 
+build_fuzion_no_java:
+	make -s -C fuzion without-java-modules 2> /dev/null
+
 build_fuzion:
 	make -s -C fuzion 2> /dev/null
 
@@ -116,7 +119,7 @@ clean:
 	rm -f out.jar
 	rm -fR jars
 
-jar: clean classes
+jar: clean build_fuzion classes
 	bash -c "cat Manifest.template | sed 's|JARS|$(JARS)|g' > Manifest.txt"
 	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
 
@@ -160,9 +163,9 @@ release: jar
 	7z a -tzip fuzion_language_server_$(VERSION).zip out.jar README.md LICENSE bin/fuzion_language_server jars/*.jar fuzion/build/bin/ fuzion/build/lib/ fuzion/build/modules/
 
 .PHONY: lint/java
-lint/java: $(JARS) build_fuzion
+lint/java: $(JARS) build_fuzion_no_java
 	$(JAVAC) -Xlint -classpath $(CLASSPATH) -d classes $(JAVA_FILES)
 
 .PHONY: lint/javadoc
-lint/javadoc: $(JARS) build_fuzion
+lint/javadoc: $(JARS) build_fuzion_no_java
 	$(JAVAC) -Xdoclint -classpath $(CLASSPATH) -d classes $(JAVA_FILES)

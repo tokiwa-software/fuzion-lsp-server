@@ -129,7 +129,7 @@ public class SignatureHelper extends ANY
       }
     if (ac instanceof Call c)
       {
-        return f.featureName().baseName().equals(c.name);
+        return f.featureName().baseName().equals(c.name());
       }
     throw new RuntimeException("not implemented");
   }

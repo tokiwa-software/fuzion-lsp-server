@@ -157,7 +157,7 @@ public class ASTWalker
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseBlock(AbstractBlock b, AbstractFeature outer)
   {
-    return b.statements_.stream().flatMap(s -> TraverseStatement(s, outer));
+    return b._statements.stream().flatMap(s -> TraverseStatement(s, outer));
   }
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseExpression(Expr expr, AbstractFeature outer)

@@ -120,7 +120,7 @@ public class QueryAST extends ANY
       .filter(CallTool.CalledFeatureNotInternal)
       // if left token is identifier, filter none matching calls by name
       .filter(ac -> !leftToken.token().equals(Token.t_ident) || !(ac instanceof Call)
-        || leftToken.text().equals(((Call) ac).name))
+        || leftToken.text().equals(((Call) ac).name()))
       .map(ac -> {
         // try use infered type
         if (ac.typeForGenericsTypeInfereing() != null && !TypeTool.ContainsError(ac.typeForGenericsTypeInfereing()))
