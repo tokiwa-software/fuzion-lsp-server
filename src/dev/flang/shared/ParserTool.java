@@ -96,8 +96,7 @@ public class ParserTool extends ANY
 
   private static ParserCacheItem createParserCacheItem(URI uri)
   {
-    // NYI
-    Clazzes.clear();
+    Clazzes.reset();
 
     var frontEndOptions = FrontEndOptions(uri);
     var frontEnd = new FrontEnd(frontEndOptions);
