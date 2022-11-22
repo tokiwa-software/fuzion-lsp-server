@@ -104,23 +104,27 @@ public class Config
 
   public static void setConfiguration(List<Object> configuration)
   {
-    ParserTool.SetJavaModules(Config.JavaModules(configuration));
-    SetFuzionOptions(configuration);
-    SetCodeLensOptions(configuration);
-    SetInlayHint(configuration);
-    SetFuirEnabled(configuration);
+    var json = (JsonObject) configuration.get(0);
+
+    Context.Logger.Info("[Config] received: " + json);
+
+    SetJavaModules(json);
+    SetFuzionOptions(json);
+    SetCodeLensOptions(json);
+    SetInlayHint(json);
+    SetFuirEnabled(json);
   }
 
-  private static void SetFuirEnabled(List<Object> configuration)
+  private static void SetFuirEnabled(JsonObject json)
   {
-    Context.MiddleEndEnabled = ErrorHandling.ResultOrDefault(() -> ((JsonObject) configuration.get(0)).get("middle_end_enabled").getAsBoolean(), false);
+    Context.MiddleEndEnabled = ErrorHandling.ResultOrDefault(() -> json.get("middle_end_enabled").getAsBoolean(), false);
   }
 
-  private static void SetInlayHint(List<Object> configuration)
+  private static void SetInlayHint(JsonObject json)
   {
     try
       {
-        if (ErrorHandling.ResultOrDefault(() -> ((JsonObject) configuration.get(0)).get("inlay_hints").getAsBoolean(),
+        if (ErrorHandling.ResultOrDefault(() -> json.get("inlay_hints").getAsBoolean(),
           true))
           {
             InlayHints.Enable();
@@ -136,11 +140,11 @@ public class Config
       }
   }
 
-  private static void SetCodeLensOptions(List<Object> configuration)
+  private static void SetCodeLensOptions(JsonObject json)
   {
     try
       {
-        var codeLens = ((JsonObject) configuration.get(0))
+        var codeLens = json
           .getAsJsonObject("code_lens");
 
         CodeLenses.CallGraphEnabled =
@@ -156,11 +160,11 @@ public class Config
       }
   }
 
-  private static void SetFuzionOptions(List<Object> configuration)
+  private static void SetFuzionOptions(JsonObject json)
   {
     try
       {
-        var options = ((JsonObject) configuration.get(0))
+        var options = json
           .getAsJsonObject("options");
 
         Context.FuzionOptions = new FuzionOptions(
@@ -178,11 +182,11 @@ public class Config
       }
   }
 
-  private static List<String> JavaModules(List<Object> configuration)
+  private static void SetJavaModules(JsonObject json)
   {
     try
       {
-        var modules = ((JsonObject) configuration.get(0))
+        var modules = json
           .getAsJsonObject("java")
           .getAsJsonArray("modules");
 
@@ -191,12 +195,11 @@ public class Config
           .collect(Collectors.toUnmodifiableList());
 
         Context.Logger.Log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
-        return result;
+        ParserTool.SetJavaModules(result);
       }
     catch (Exception e)
       {
         Context.Logger.Error("[Config] parsing of java modules failed.");
-        return List.of();
       }
   }
 
