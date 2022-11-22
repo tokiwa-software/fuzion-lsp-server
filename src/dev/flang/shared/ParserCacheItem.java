@@ -37,7 +37,7 @@ import dev.flang.air.Clazzes;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Types.Resolved;
-import dev.flang.be.effects.Effects;
+import dev.flang.be.effects.LanguageServerEffects;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
@@ -146,7 +146,7 @@ public class ParserCacheItem
     return fuir().map(f -> {
       try
         {
-          return new Effects(f)._effects
+          return new LanguageServerEffects(f).effects()
             .successors(Clazzes.clazz(af.thisType())._idInFUIR)
             .stream()
             .map(x -> {

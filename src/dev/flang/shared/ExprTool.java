@@ -101,11 +101,11 @@ public class ExprTool extends ANY
     return tokens
       .stream()
       .dropWhile(x -> {
-        if (LexerTool.LeftBrackets.contains(x.token()))
+        if (x.IsLeftBracket())
           {
             count.decrementAndGet();
           }
-        if (LexerTool.RightBrackets.contains(x.token()))
+        if (x.IsRightBracket())
           {
             count.incrementAndGet();
           }

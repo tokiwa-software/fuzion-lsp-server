@@ -28,7 +28,6 @@ package dev.flang.shared;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,9 +36,30 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.air.Clazzes;
+import dev.flang.ast.AbstractAssign;
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractMatch;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.Block;
+import dev.flang.ast.Call;
+import dev.flang.ast.Cond;
+import dev.flang.ast.Destructure;
+import dev.flang.ast.DotType;
+import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
+import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Function;
+import dev.flang.ast.If;
+import dev.flang.ast.Impl;
+import dev.flang.ast.InlineArray;
+import dev.flang.ast.Match;
+import dev.flang.ast.Stmnt;
+import dev.flang.ast.Tag;
+import dev.flang.ast.This;
 import dev.flang.ast.Types;
+import dev.flang.ast.Unbox;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
@@ -202,7 +222,8 @@ public class ParserTool extends ANY
         || !FeatureTool.IsInternal(feat));
   }
 
-  /*
+  /**
+   * NYI explain which pos are we actually returning here?
    * @param feature
    * @return
    */
@@ -211,14 +232,6 @@ public class ParserTool extends ANY
     if (PRECONDITIONS)
       require(!feature.pos().isBuiltIn());
 
-    if (feature instanceof Feature f && !f.nextPos().equals(SourcePosition.notAvailable))
-      {
-        if (f.nextPos()._sourceFile.byteLength() <= f.nextPos().bytePos())
-          {
-            return new SourcePosition(f.nextPos()._sourceFile, f.nextPos()._sourceFile.byteLength());
-          }
-        return new SourcePosition(f.nextPos()._sourceFile, f.nextPos().bytePos() - 1);
-      }
     if (feature.featureName().baseName().equals(FuzionConstants.RESULT_NAME))
       {
         return endOfFeature(feature.outer());
@@ -238,18 +251,48 @@ public class ParserTool extends ANY
           var lines = sourceText.split("\n").length;
           return new SourcePosition(f.pos()._sourceFile, lines + 1, 1);
         }
-      var uri = getUri(f.pos());
-      var result = ASTWalker.TraverseFeature(f, true)
-        .filter(entry -> entry.getValue() != null)
-        .filter(entry -> entry.getValue().compareTo(f) == 0)
-        .map(e -> e.getKey())
-        .filter(HasSourcePositionTool.IsItemInFile(uri))
-        .map(entry -> entry.pos())
-        .filter(sourcePositionOption -> !sourcePositionOption.isBuiltIn())
-        .sorted((Comparator<SourcePosition>) Comparator.<SourcePosition>reverseOrder())
-        .map(position -> LexerTool.EndOfToken(position))
-        .findFirst()
-        .orElse(LexerTool.EndOfToken(f.pos()));
+
+      var visitor = new FeatureVisitor() {
+        public SourcePosition lastPos = SourcePosition.notAvailable;
+        private void FoundPos(SourcePosition visitedPos)
+        {
+          lastPos = SourcePositionTool.Compare(lastPos, visitedPos) >=0 ? lastPos : visitedPos;
+        }
+        public void         action      (Unbox          u, AbstractFeature outer) { FoundPos(u.pos()); }
+        public void         action      (AbstractAssign a, AbstractFeature outer) { FoundPos(a.pos()); }
+        public void         actionBefore(Block          b, AbstractFeature outer) { FoundPos(b.pos()); }
+        public void         actionAfter (Block          b, AbstractFeature outer) { FoundPos(b.pos()); }
+        public void         action      (AbstractCall   c                       ) { FoundPos(c.pos()); }
+        public Expr         action      (Call           c, AbstractFeature outer) { FoundPos(c.pos()); return c; }
+        public Expr         action      (DotType        d, AbstractFeature outer) { FoundPos(d.pos()); return d; }
+        public void         actionBefore(AbstractCase   c                       ) { FoundPos(c.pos()); }
+        public void         actionAfter (AbstractCase   c                       ) { FoundPos(c.pos()); }
+        public void         action      (Cond           c, AbstractFeature outer) { FoundPos(c.cond.pos()); }
+        public Stmnt        action      (Destructure    d, AbstractFeature outer) { FoundPos(d.pos()); return d; }
+        public Stmnt        action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
+        public Expr         action      (Function       f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
+        public void         action      (If             i, AbstractFeature outer) { FoundPos(i.pos()); }
+        public void         action      (Impl           i, AbstractFeature outer) { FoundPos(i.pos); }
+        public Expr         action      (InlineArray    i, AbstractFeature outer) { FoundPos(i.pos()); return i; }
+        public void         action      (AbstractMatch  m                       ) { FoundPos(m.pos()); }
+        public void         action      (Match          m, AbstractFeature outer) { FoundPos(m.pos()); }
+        public void         action      (Tag            b, AbstractFeature outer) { FoundPos(b.pos()); }
+        public Expr         action      (This           t, AbstractFeature outer) { FoundPos(t.pos()); return t; }
+        public AbstractType action      (AbstractType   t, AbstractFeature outer) { FoundPos(t.pos()); return t; }
+      };
+      f.visitCode(visitor);
+
+      var result = visitor.lastPos.equals(SourcePosition.notAvailable) ? f.pos() : visitor.lastPos;
+
+      result = (SourcePosition) LexerTool
+          .TokensFrom(result)
+          .skip(1)
+          // NYI do we need to sometimes consider right brackets as well?
+          .filter(t -> !(t.IsWhitespace()))
+          // t is the first token not belonging to feature
+          .map(t -> LexerTool.GoLeft(t.start()))
+          .findFirst()
+          .orElse(result);
 
       if (POSTCONDITIONS)
         ensure(f.pos()._line < result._line

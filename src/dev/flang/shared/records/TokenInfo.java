@@ -27,8 +27,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared.records;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractCall;
@@ -196,7 +199,7 @@ public record TokenInfo(SourcePosition start, String text, Token token)
           ANY.check(false);
         return Optional.empty();
       case t_op :
-      case t_question:
+      case t_question :
         if (text.equals("=>")
           || text.equals("->")
           || text.equals(":="))
@@ -309,6 +312,26 @@ public record TokenInfo(SourcePosition start, String text, Token token)
   {
     // NYI better key
     return pos._line * 1000 + pos._column;
+  }
+
+  public boolean IsWhitespace()
+  {
+    return token() == Token.t_ws;
+  }
+
+  private final static Set<Token> leftBrackets =
+    List.of(Token.t_lbrace, Token.t_lcrochet, Token.t_lparen).stream().collect(Collectors.toUnmodifiableSet());
+  private final static Set<Token> rightBrackets =
+    List.of(Token.t_rbrace, Token.t_rcrochet, Token.t_rparen).stream().collect(Collectors.toUnmodifiableSet());
+
+  public boolean IsLeftBracket()
+  {
+    return leftBrackets.contains(token());
+  }
+
+  public boolean IsRightBracket()
+  {
+    return rightBrackets.contains(token());
   }
 
 }

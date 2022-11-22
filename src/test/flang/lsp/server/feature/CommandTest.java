@@ -79,6 +79,7 @@ public class CommandTest extends BaseTest
   }
 
   @Test
+  @Disabled // NYI require-condition3 failed: dev.flang.ast.Match:<init>:96
   public void GenerateMatchCases() throws Throwable
   {
     SourceText.setText(uri1, """

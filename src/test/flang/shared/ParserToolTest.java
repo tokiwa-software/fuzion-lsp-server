@@ -51,8 +51,8 @@ public class ParserToolTest extends BaseTest
       + System.lineSeparator() + " ";
     SourceText.setText(uri1, sourceText);
     var endOfFeature = ParserTool.endOfFeature(ParserTool.TopLevelFeatures(uri1).findFirst().get());
-    assertEquals(3, endOfFeature._line);
-    assertEquals(2, endOfFeature._column);
+    assertEquals(4, endOfFeature._line);
+    assertEquals(1, endOfFeature._column);
   }
 
   @Test
@@ -107,8 +107,8 @@ public class ParserToolTest extends BaseTest
       .findFirst()
       .get();
 
-    assertEquals(5, ParserTool.endOfFeature(level2)._line);
-    assertEquals(5, ParserTool.endOfFeature(level2)._column);
+    assertEquals(6, ParserTool.endOfFeature(level2)._line);
+    assertEquals(1, ParserTool.endOfFeature(level2)._column);
   }
 
 

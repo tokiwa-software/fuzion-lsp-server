@@ -45,11 +45,6 @@ import dev.flang.util.SourcePosition;
 public class LexerTool extends ANY
 {
 
-  final static Set<Token> LeftBrackets =
-    List.of(Token.t_lbrace, Token.t_lcrochet, Token.t_lparen).stream().collect(Collectors.toUnmodifiableSet());
-  final static Set<Token> RightBrackets =
-    List.of(Token.t_rbrace, Token.t_rcrochet, Token.t_rparen).stream().collect(Collectors.toUnmodifiableSet());
-
   /**
    * Is str a valid identifier?
    * @param str
