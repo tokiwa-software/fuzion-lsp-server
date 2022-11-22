@@ -119,7 +119,7 @@ clean:
 	rm -f out.jar
 	rm -fR jars
 
-jar: clean build_fuzion classes
+jar: build_fuzion_no_java classes
 	bash -c "cat Manifest.template | sed 's|JARS|$(JARS)|g' > Manifest.txt"
 	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
 
@@ -157,7 +157,7 @@ profile/tagged_tests: classes async-profiler/build/libasyncProfiler.so
 	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS) --include-tag=TAG
 	x-www-browser /tmp/$(DATE)_flamegraph.html
 
-release: jar
+release: clean build_fuzion jar
 	echo "building fuzion_language_server_$(VERSION).zip"
 	rm -f fuzion_language_server_$(VERSION).zip
 	7z a -tzip fuzion_language_server_$(VERSION).zip out.jar README.md LICENSE bin/fuzion_language_server jars/*.jar fuzion/build/bin/ fuzion/build/lib/ fuzion/build/modules/
