@@ -68,7 +68,9 @@ public class CodeActions
       .getContext()
       .getDiagnostics()
       .stream()
-      .filter(x -> x.getMessage().startsWith("'match' statement does not cover all of the subject's types"))
+      // NYI replace string comparison by sth. more adequate
+      .filter(x -> x.getMessage().startsWith("'match' statement does not cover all of the subject's types") ||
+        x.getMessage().startsWith("'match' expression requires at least one case"))
       .map(x -> {
         var res = new CodeAction();
         res.setTitle(Commands.codeActionGenerateMatchCases.toString());
