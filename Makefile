@@ -55,6 +55,7 @@ all: classes
 socket: classes
 	java -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
+.SILENT:
 classes: $(JARS) build_fuzion_no_java
 	rm -Rf $@
 	mkdir -p $@
