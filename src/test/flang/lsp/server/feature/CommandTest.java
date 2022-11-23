@@ -100,7 +100,7 @@ public class CommandTest extends BaseTest
         "    string string =>" + System.lineSeparator() +
         "    bool bool =>" + System.lineSeparator() +
         "    i32 i32 =>" + System.lineSeparator() +
-        "    i64 i64 =>" + System.lineSeparator(),
+        "    i64 i64 =>",
       result.getChanges().values().stream().findFirst().get().get(0).getNewText());
 
   }
