@@ -75,6 +75,12 @@ public class ASTWalker
   public static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseFeature(AbstractFeature feature,
     boolean descend)
   {
+    // NYI heuristic to abort traverse
+    // if (feature.outer() != null
+    //   && feature.outer().pos()._sourceFile._fileName.startsWith(FuzionConstants.SYMBOLIC_FUZION_HOME.toString()))
+    //   {
+    //     return Stream.empty();
+    //   }
     return Util.ConcatStreams(
 
       FeatureTool.IsInternal(feature) ? Stream.empty(): AsStream(feature, feature.outer()),
