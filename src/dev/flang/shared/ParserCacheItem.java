@@ -94,21 +94,9 @@ public class ParserCacheItem
    */
   public Stream<AbstractFeature> TopLevelFeatures()
   {
-    if (topLevelFeatures == null)
-      {
-        topLevelFeatures = DeclaredFeaturesAndChildren(mir.universe())
-          // feature is in file
-          .filter(f -> ParserTool.getUri(f.pos()).equals(uri))
-          // outer is not in file
-          .filter(f -> !ParserTool.getUri(f.outer().pos()).equals(uri))
-          .toList();
-      }
-    return topLevelFeatures.stream();
-  }
-
-  private Stream<AbstractFeature> DeclaredFeaturesAndChildren(AbstractFeature f)
-  {
-    return ParserTool.DeclaredFeatures(f).flatMap(af -> Stream.concat(Stream.of(af), DeclaredFeaturesAndChildren(af)));
+    return ParserTool.DeclaredFeatures(mir.universe())
+      // feature is in file
+      .filter(f -> ParserTool.getUri(f.pos()).equals(uri));
   }
 
   public TreeSet<Errors.Error> warnings()
