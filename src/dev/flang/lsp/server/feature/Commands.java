@@ -143,15 +143,14 @@ public enum Commands
           // NYI support indent different from two spaces
           var indent = IntStream.range(0, m.pos()._column + 1).mapToObj(x -> " ").collect(Collectors.joining());
 
-          // NYI do not create already existing subjects
           var text = System.lineSeparator()
             + m.subject()
               .type()
               .choiceGenerics()
               .stream()
+              .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFrom(cg)))
               .map(t -> indent + CaseConverter.ToSnakeCase(t.name()) + " " + TypeTool.Label(t) + " =>")
-              .collect(Collectors.joining(System.lineSeparator()))
-            + System.lineSeparator();
+              .collect(Collectors.joining(System.lineSeparator()));
 
           var endOfSubPos = Bridge.ToPosition(ExprTool.EndOfExpr(m.subject()));
 
