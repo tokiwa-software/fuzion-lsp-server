@@ -138,6 +138,9 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public void didClose(DidCloseTextDocumentParams params)
   {
+    var textDocument = params.getTextDocument();
+    var uri = Util.toURI(textDocument.getUri());
+    SourceText.removeText(uri);
   }
 
   @Override

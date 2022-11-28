@@ -44,7 +44,6 @@ public class SourceText extends ANY
   /**
    * currently open text documents and their contents
    */
-  // NYI fix memory leak
   private static final TreeMap<URI, String> textDocuments = new TreeMap<URI, String>();
 
   public static final Path FuzionHome = Path.of(System.getProperty("fuzion.home"));
@@ -60,6 +59,11 @@ public class SourceText extends ANY
   public static String getText(URI uri)
   {
     return textDocuments.computeIfAbsent(uri, u -> ReadFromDisk(u));
+  }
+
+  public static void removeText(URI uri)
+  {
+    textDocuments.remove(uri);
   }
 
   /**
