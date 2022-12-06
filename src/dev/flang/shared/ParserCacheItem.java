@@ -61,9 +61,6 @@ public class ParserCacheItem
   private final TreeSet<Errors.Error> warnings;
   private final Resolved resolved;
 
-  // cache for top level feature calculation
-  private List<AbstractFeature> topLevelFeatures;
-
   public ParserCacheItem(URI uri, MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
     TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings, Resolved resolved)
   {
