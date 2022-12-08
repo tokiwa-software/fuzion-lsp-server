@@ -68,7 +68,7 @@ public class QueryASTTest extends ExtendedBaseTest
   {
     var sourceText = """
       ex is
-        (1..10).forAll(num -> say num)
+        (1..10).for_each(num -> say num)
                   """;
     SourceText.setText(uri1, sourceText);
 
@@ -77,22 +77,22 @@ public class QueryASTTest extends ExtendedBaseTest
       .featureName()
       .baseName());
 
-    assertEquals("forAll", QueryAST.FeatureAt(Cursor(uri1, 1, 10))
+    assertEquals("for_each", QueryAST.FeatureAt(Cursor(uri1, 1, 10))
       .get()
       .featureName()
       .baseName());
 
-    assertEquals("forAll", QueryAST.FeatureAt(Cursor(uri1, 1, 16))
-      .get()
-      .featureName()
-      .baseName());
-
-    assertEquals("say", QueryAST.FeatureAt(Cursor(uri1, 1, 24))
+    assertEquals("for_each", QueryAST.FeatureAt(Cursor(uri1, 1, 18))
       .get()
       .featureName()
       .baseName());
 
     assertEquals("say", QueryAST.FeatureAt(Cursor(uri1, 1, 26))
+      .get()
+      .featureName()
+      .baseName());
+
+    assertEquals("say", QueryAST.FeatureAt(Cursor(uri1, 1, 28))
       .get()
       .featureName()
       .baseName());

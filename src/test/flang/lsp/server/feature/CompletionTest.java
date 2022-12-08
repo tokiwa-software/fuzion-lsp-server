@@ -59,7 +59,7 @@ public class CompletionTest extends ExtendedBaseTest
       asString
       asList
       asStream
-      forAll (${101:H} -> ${102:unit})
+      for_each (${101:H} -> ${102:unit})
       contains ${1:e}
       size
       upper
@@ -437,7 +437,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 3, 52, Completion.TriggerCharacters.Space));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix ⋃")));
+    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix ∪")));
   }
 
   @Test
