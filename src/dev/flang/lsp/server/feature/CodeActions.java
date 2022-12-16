@@ -114,27 +114,27 @@ public class CodeActions
   private static Optional<CodeAction> CodeActionForNameingIssue(URI uri, Diagnostic d,
     Function<String, String> convertIdentifier)
   {
-    var oldName = QueryAST
+    return QueryAST
       .FeatureAt(new SourcePosition(new SourceFile(Path.of(uri)), d.getRange().getStart().getLine() + 1,
         d.getRange().getStart().getCharacter() + 1))
-      .get()
-      .featureName()
-      .baseName();
+      .map(f -> {
+        var oldName = f.featureName()
+          .baseName();
 
-    if (oldName.length() > 1 && oldName.equals(oldName.toUpperCase()))
-      {
-        return Optional.empty();
-      }
+        if (oldName.length() > 1 && oldName.equals(oldName.toUpperCase()))
+          {
+            return null;
+          }
 
-    var res = new CodeAction();
-    res.setTitle(Commands.codeActionFixIdentifier.toString());
-    res.setKind(CodeActionKind.QuickFix);
-    res.setDiagnostics(List.of(d));
-    res.setCommand(Commands.Create(Commands.codeActionFixIdentifier, uri,
-      List.of(d.getRange().getStart().getLine(), d.getRange().getStart().getCharacter(),
-        convertIdentifier.apply(oldName))));
-
-    return Optional.of(res);
+        var res = new CodeAction();
+        res.setTitle(Commands.codeActionFixIdentifier.toString());
+        res.setKind(CodeActionKind.QuickFix);
+        res.setDiagnostics(List.of(d));
+        res.setCommand(Commands.Create(Commands.codeActionFixIdentifier, uri,
+          List.of(d.getRange().getStart().getLine(), d.getRange().getStart().getCharacter(),
+            convertIdentifier.apply(oldName))));
+        return res;
+      });
   }
 
 }

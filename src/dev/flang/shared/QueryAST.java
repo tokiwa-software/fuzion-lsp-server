@@ -284,7 +284,11 @@ public class QueryAST extends ANY
       .or(() -> FindFeatureInAST(params))
       // NYI workaround for not having positions of all types in
       // the AST currently
-      .or(() -> FeatureAtFuzzy(params));
+      .or(() -> FeatureAtFuzzy(params))
+      .or(() -> {
+        Context.Logger.Warning("No feature found at: " + params);
+        return Optional.empty();
+      });
   }
 
   private static Optional<? extends AbstractFeature> FindFeatureInAST(SourcePosition params)
