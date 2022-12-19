@@ -76,7 +76,7 @@ import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Definition;
 import dev.flang.lsp.server.feature.Diagnostics;
 import dev.flang.lsp.server.feature.DocumentSymbols;
-import dev.flang.lsp.server.feature.Highlight;
+import dev.flang.lsp.server.feature.DocumentHighlights;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.InlayHints;
 import dev.flang.lsp.server.feature.References;
@@ -177,7 +177,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params)
   {
-    return Computation.CancellableComputation(() -> Highlight.getHightlights(params), "document highlight", 5000);
+    return Computation.CancellableComputation(() -> DocumentHighlights.getHightlights(params), "document highlight", 5000);
   }
 
   @Override

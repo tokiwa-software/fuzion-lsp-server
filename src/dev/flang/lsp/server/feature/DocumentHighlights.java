@@ -43,7 +43,7 @@ import dev.flang.shared.QueryAST;
  * return document hightlights for calls to feature
  * https://microsoft.github.io/language-server-protocol/specification#textDocument_documentHighlight
  */
-public class Highlight
+public class DocumentHighlights
 {
   public static List<? extends DocumentHighlight> getHightlights(DocumentHighlightParams params)
   {

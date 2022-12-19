@@ -33,12 +33,25 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import dev.flang.lsp.server.feature.Highlight;
+import dev.flang.lsp.server.feature.DocumentHighlights;
 import dev.flang.shared.SourceText;
 import test.flang.lsp.server.ExtendedBaseTest;
 
 public class DocumentHighlightTest extends ExtendedBaseTest
 {
+
+  @Test
+  public void Highlight()
+  {
+
+    SourceText.setText(uri1, Read("fuzion/tests/rosettacode_primes/primes.fz"));
+    var c = Cursor(uri1, 54, 15);
+    assertDoesNotThrow(
+      () -> DocumentHighlights.getHightlights(new DocumentHighlightParams(TextDocument(c), Position(c))));
+
+  }
+
+
   @Test @Timeout(value = 5000) @Disabled // too slow
   public void DocumentHighlight()
   {
@@ -56,11 +69,12 @@ public class DocumentHighlightTest extends ExtendedBaseTest
 
         var cursor = Cursor(uri1, currentLine, currentColumn);
         assertDoesNotThrow(
-          () -> Highlight.getHightlights(new DocumentHighlightParams(TextDocument(cursor), Position(cursor))),
+          () -> DocumentHighlights.getHightlights(new DocumentHighlightParams(TextDocument(cursor), Position(cursor))),
           "line " + currentLine + " column " + currentColumn);
       });
 
     });
-
   }
+
+
 }
