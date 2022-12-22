@@ -109,7 +109,7 @@ jars/guava-31.1-jre.jar:
 	wget -O $@ https://repo1.maven.org/maven2/com/google/guava/guava/31.1-jre/$(@F)
 
 build_fuzion_no_java:
-	make -s -C fuzion without-java-modules 2> /dev/null
+	make -s -C fuzion no-java 2> /dev/null
 
 build_fuzion:
 	make -s -C fuzion 2> /dev/null
