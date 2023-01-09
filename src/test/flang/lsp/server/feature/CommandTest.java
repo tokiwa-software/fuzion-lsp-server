@@ -84,7 +84,7 @@ public class CommandTest extends BaseTest
     SourceText.setText(uri1, """
       ex =>
         a is
-          b choice string bool i32 i64 is
+          b choice String bool i32 i64 is
             "string"
         match a.b
         """);
@@ -97,7 +97,7 @@ public class CommandTest extends BaseTest
 
     assertEquals(
       System.lineSeparator() +
-        "    string string =>" + System.lineSeparator() +
+        "    string String =>" + System.lineSeparator() +
         "    bool bool =>" + System.lineSeparator() +
         "    i32 i32 =>" + System.lineSeparator() +
         "    i64 i64 =>",

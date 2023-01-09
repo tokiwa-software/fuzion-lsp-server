@@ -146,8 +146,8 @@ public class DiagnosticsTest extends ExtendedBaseTest
       a is
 
         reducer(T, U type, t T, f U -> T) is
-        transducer(T, U, V, W type, X (reducer T U).type, Y (reducer V W).type, r X) Y is
-        filter(T, U, V, W type, X (reducer T U).type, Y (reducer V W).type, r X) Y is
+        transducer(T, U, V, W type, X type : reducer T U, Y type : reducer V W, r X) Y is
+        filter(T, U, V, W type, X type : reducer T U, Y type : reducer V W, r X) Y is
 
 
           """;

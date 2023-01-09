@@ -161,7 +161,7 @@ public class CompletionTest extends ExtendedBaseTest
   {
     var sourceText = """
       a =>
-        b(T (float T).type,c T) =>
+        b(T type : float T, c T) =>
           c.
                 """;
 
@@ -180,8 +180,8 @@ public class CompletionTest extends ExtendedBaseTest
 
         randomFasta() =>
           (1..10)
-            .map<string>(_ -> selectRandom())
-            .fold(strings.)
+            .map string (_ -> selectRandom())
+            .fold(Strings.)
           """;
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 7, 20, Completion.TriggerCharacters.Dot));
@@ -273,7 +273,7 @@ public class CompletionTest extends ExtendedBaseTest
     assertEquals("level2", completions.get(0).featureName().baseName());
     assertTrue(completions.stream()
       .allMatch(f -> f.outer().featureName().baseName().equals("level1")
-        || f.outer().featureName().baseName().equals("Object")));
+        || f.outer().featureName().baseName().equals("Any")));
   }
 
 
@@ -312,8 +312,8 @@ public class CompletionTest extends ExtendedBaseTest
           "outcome",
           "say",
           "stream",
-          "string",
-          "strings",
+          "String",
+          "Strings",
           "tuple",
       }).collect(Collectors.toSet());
 
@@ -458,7 +458,7 @@ public class CompletionTest extends ExtendedBaseTest
   public void CompletionInActualArg()
   {
     var sourceText = """
-      mapOf(K (ordered K).type, V type, kvs array (tuple K V)) map K V is
+      map_of(K type : ordered K, V type, kvs array (tuple K V)) map K V is
         psMap kvs. kvs.length kvs.length+1
         """;
 

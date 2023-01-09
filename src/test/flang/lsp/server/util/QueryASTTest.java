@@ -101,7 +101,7 @@ public class QueryASTTest extends ExtendedBaseTest
   @Test
   public void FeatureAtFixFeature()
   {
-    var sourceText = Read("fuzion/lib/string.fz");
+    var sourceText = Read("fuzion/lib/String.fz");
     SourceText.setText(uri1, sourceText);
 
     var atStartOfFeature = QueryAST.FeatureAt(Cursor(uri1, 56, 2)).get();
@@ -358,7 +358,7 @@ public class QueryASTTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 9));
-    assertEquals("string", calledFeature.get().qualifiedName());
+    assertEquals("String", calledFeature.get().qualifiedName());
   }
 
 

@@ -81,7 +81,7 @@ public class InlayHintTest extends ExtendedBaseTest
         a is
           b := "asdf"
 
-        my_say(arg string) is
+        my_say(arg String) is
           say arg
 
         my_say a.b
@@ -102,7 +102,7 @@ public class InlayHintTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, """
       ex =>
-        my_feat (list_arg list string) is
+        my_feat (list_arg list String) is
         my_feat ["hello"].asList
               """);
 
@@ -150,11 +150,11 @@ public class InlayHintTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, """
       ex =>
-        tmp : string is
+        tmp : String is
           redef utf8 Sequence u8 is
             [u8 8]
                                                                 # asArray, since we don't want this to be lazy
-        strings.fromCodepoints (tmp.asCodepoints.asStream.take 1).asArray
+        Strings.fromCodepoints (tmp.asCodepoints.asStream.take 1).asArray
                     """);
 
     var inlayHints = InlayHints
@@ -174,7 +174,7 @@ public class InlayHintTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, """
       ex =>
-        my_say(arg string) is
+        my_say(arg String) is
           say arg
 
         get_strings(cond bool) =>
