@@ -123,9 +123,9 @@ public class QueryAST extends ANY
         || leftToken.text().equals(((Call) ac).name()))
       .map(ac -> {
         // try use infered type
-        if (ac.typeForGenericsTypeInfereing() != null && !TypeTool.ContainsError(ac.typeForGenericsTypeInfereing()))
+        if (!TypeTool.ContainsError(ac.type()))
           {
-            return ac.typeForGenericsTypeInfereing();
+            return ac.type();
           }
         // fall back to result type
         return ac

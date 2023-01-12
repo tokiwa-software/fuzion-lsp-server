@@ -215,18 +215,18 @@ public class QueryASTTest extends ExtendedBaseTest
   @Test
   public void FeatureAtInheritanceDeclaration()
   {
-    var sourceText = "i33 : wrappingInteger<i33> is";
+    var sourceText = "i33 : wrapping_integer i33 is";
     SourceText.setText(uri1, sourceText);
     var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 6)).get();
-    assertEquals("wrappingInteger", wrappingInteger.featureName().baseName());
+    assertEquals("wrapping_integer", wrappingInteger.featureName().baseName());
   }
 
   @Test
   public void FeatureAtActualGenericOfInherited()
   {
-    var sourceText = "i33 : wrappingInteger<i33> is";
+    var sourceText = "i33 : wrapping_integer i33 is";
     SourceText.setText(uri1, sourceText);
-    var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 22)).get();
+    var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 24)).get();
     assertEquals("i33", wrappingInteger.featureName().baseName());
   }
 
