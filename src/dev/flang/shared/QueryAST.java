@@ -46,7 +46,14 @@ import dev.flang.util.SourcePosition;
 
 public class QueryAST extends ANY
 {
-  public static Optional<AbstractFeature> CalledFeature(SourcePosition params)
+  /**
+   * try find the target feature for a dot-, infix- or postfix-call
+   * at source position
+   *
+   * @param params
+   * @return
+   */
+  public static Optional<AbstractFeature> TargetFeature(SourcePosition params)
   {
     if (PRECONDITIONS)
       require(!Util.IsStdLib(SourceText.UriOf(params)));
@@ -139,7 +146,7 @@ public class QueryAST extends ANY
           }
         return at.featureOfType();
       })
-      .filter(f -> !FeatureTool.IsInternal(f))
+      .filter(f -> !FeatureTool.IsInternal(f) || f.featureName().baseName().endsWith("#type"))
       .findFirst();
   }
 
@@ -163,36 +170,56 @@ public class QueryAST extends ANY
       .findFirst();
   }
 
-  public static Stream<AbstractFeature> CallCompletionsAt(SourcePosition params)
+
+  /**
+   * get stream of possible features for dot-call at source position
+   */
+  public static Stream<AbstractFeature> DotCallCompletionsAt(SourcePosition params)
   {
-    return CalledFeature(params)
-      .map(feature -> {
-        var declaredFeaturesOfInheritedFeatures =
-          InheritedRecursive(feature).flatMap(c -> ParserTool.DeclaredFeatures(c.calledFeature()));
-
-        var declaredFeatures = Stream.concat(ParserTool
-          .DeclaredFeatures(feature), declaredFeaturesOfInheritedFeatures)
-          .collect(Collectors.toList());
-
-        var redefinedFeatures =
-          declaredFeatures.stream().flatMap(x -> x.redefines().stream()).collect(Collectors.toSet());
-
-        // subtract redefined features from result
-        return declaredFeatures
-          .stream()
-          // filter infix, prefix, postfix features
-          .filter(x -> !x.featureName().baseName().contains(" "))
-          .filter(x -> !redefinedFeatures.contains(x));
-      })
+    return TargetFeature(params)
+      .map(tf -> Candidates(tf)
+        // filter infix, prefix, postfix features
+        .filter(x -> !x.featureName().baseName().contains(" ")))
       .orElse(Stream.empty());
   }
 
+
+  /**
+   * find possible candidates for call on target feature
+   * @param targetFeature
+   * @return
+   */
+  private static Stream<AbstractFeature> Candidates(AbstractFeature targetFeature)
+  {
+    var declaredFeaturesOfInheritedFeatures =
+      InheritedRecursive(targetFeature).flatMap(af -> ParserTool.DeclaredFeatures(af));
+
+    var declaredFeatures = Stream.concat(ParserTool
+      .DeclaredFeatures(targetFeature), declaredFeaturesOfInheritedFeatures)
+      .collect(Collectors.toList());
+
+    var redefinedFeatures =
+      declaredFeatures.stream().flatMap(x -> x.redefines().stream()).collect(Collectors.toSet());
+
+    return declaredFeatures
+      .stream()
+      // subtract redefined features from result
+      .filter(x -> !redefinedFeatures.contains(x))
+      .filter(x -> !x.isTypeParameter());
+  }
+
+
+  /**
+   * possibly called features for infix/postfix call
+   * @param params
+   * @return
+   */
   public static Stream<AbstractFeature> InfixPostfixCompletionsAt(SourcePosition params)
   {
-    return CalledFeature(params)
+    return TargetFeature(params)
       .map(feature -> {
         var declaredFeaturesOfInheritedFeatures =
-          InheritedRecursive(feature).flatMap(c -> ParserTool.DeclaredFeatures(c.calledFeature()));
+          InheritedRecursive(feature).flatMap(af -> ParserTool.DeclaredFeatures(af));
 
         var declaredFeatures = Stream.concat(ParserTool
           .DeclaredFeatures(feature), declaredFeaturesOfInheritedFeatures)
@@ -211,28 +238,42 @@ public class QueryAST extends ANY
       .orElse(Stream.empty());
   }
 
-  private static Stream<AbstractCall> InheritedRecursive(AbstractFeature feature)
+
+  /**
+   * returns all directly and indirectly inherited features of af
+   * @param af
+   * @return
+   */
+  private static Stream<AbstractFeature> InheritedRecursive(AbstractFeature af)
   {
-    return Stream.concat(feature.inherits().stream(),
-      feature.inherits().stream().flatMap(c -> InheritedRecursive(c.calledFeature())));
+    return Stream.concat(af.inherits().stream().map(ac -> ac.calledFeature()),
+      af.inherits().stream().flatMap(c -> InheritedRecursive(c.calledFeature())));
   }
 
+
+  /**
+   * @param params
+   * @return
+   * NYI currently ununsed.
+   * Can we use this without beeing annoying?
+   */
   public static Stream<AbstractFeature> CompletionsAt(SourcePosition params)
   {
     var tokens = LexerTool.TokensAt(params);
-    return QueryAST.FeaturesInScope(params)
-      .filter(f -> {
-        if (tokens.left().token().equals(Token.t_ws))
-          {
-            return true;
-          }
-        if (tokens.left().token().equals(Token.t_ident))
-          {
+    if (tokens.left().token().equals(Token.t_ws))
+      {
+        return QueryAST.FeaturesInScope(params);
+      }
+    else if (tokens.left().token().equals(Token.t_ident))
+      {
+        return QueryAST.FeaturesInScope(params)
+          .filter(f -> {
             return f.featureName().baseName().startsWith(tokens.left().text());
-          }
-        return false;
-      });
+          });
+      }
+    return Stream.empty();
   }
+
 
   /**
    * given a TextDocumentPosition return all matching ASTItems

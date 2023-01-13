@@ -118,7 +118,7 @@ public class Completion
           {
             return NoCompletions;
           }
-        return completions(QueryAST.CallCompletionsAt(pos));
+        return completions(QueryAST.DotCallCompletionsAt(pos));
       }
     if (" ".equals(triggerCharacter))
       {
@@ -199,6 +199,7 @@ public class Completion
   private static Either<List<CompletionItem>, CompletionList> completions(Stream<AbstractFeature> features)
   {
     var collectedFeatures = features
+      .distinct()
       .collect(Collectors.toList());
 
     var completionItems = IntStream

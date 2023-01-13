@@ -252,7 +252,7 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
   @Test
-  public void CalledFeature()
+  public void TargetFeature()
   {
     var sourceText = """
       HelloWorld is
@@ -263,34 +263,34 @@ public class QueryASTTest extends ExtendedBaseTest
       """;
     SourceText.setText(uri1, sourceText);
     assertEquals("level1", QueryAST
-      .CalledFeature(Cursor(uri1, 4, 9))
+      .TargetFeature(Cursor(uri1, 4, 9))
       .get()
       .featureName()
       .baseName());
   }
 
   @Test
-  public void CalledFeatureArray()
+  public void TargetFeatureArray()
   {
     var sourceText = """
       ex =>
         [1].""";
     SourceText.setText(uri1, sourceText);
     assertEquals("array", QueryAST
-      .CalledFeature(Cursor(uri1, 1, 6))
+      .TargetFeature(Cursor(uri1, 1, 6))
       .get()
       .qualifiedName());
   }
 
   @Test
-  public void CalledFeatureTuple()
+  public void TargetFeatureTuple()
   {
     var sourceText = """
       ex =>
         (1,2).""";
     SourceText.setText(uri1, sourceText);
     assertEquals("tuple", QueryAST
-      .CalledFeature(Cursor(uri1, 1, 8))
+      .TargetFeature(Cursor(uri1, 1, 8))
       .get()
       .qualifiedName());
   }
@@ -336,7 +336,7 @@ public class QueryASTTest extends ExtendedBaseTest
 
 
   @Test
-  public void CalledNumLiteral()
+  public void TargetNumLiteral()
   {
     var sourceText = """
       ex =>
@@ -344,12 +344,12 @@ public class QueryASTTest extends ExtendedBaseTest
         """;
 
     SourceText.setText(uri1, sourceText);
-    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 8));
+    var calledFeature = QueryAST.TargetFeature(Cursor(uri1, 1, 8));
     assertEquals("f64", calledFeature.get().qualifiedName());
   }
 
   @Test
-  public void CalledString()
+  public void TargetString()
   {
     var sourceText = """
       ex =>
@@ -357,13 +357,13 @@ public class QueryASTTest extends ExtendedBaseTest
         """;
 
     SourceText.setText(uri1, sourceText);
-    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 9));
+    var calledFeature = QueryAST.TargetFeature(Cursor(uri1, 1, 9));
     assertEquals("String", calledFeature.get().qualifiedName());
   }
 
 
   @Test
-  public void CalledLambdaArgument()
+  public void TargetLambdaArgument()
   {
     var sourceText = """
       ex=>
@@ -371,7 +371,7 @@ public class QueryASTTest extends ExtendedBaseTest
               """;
 
     SourceText.setText(uri1, sourceText);
-    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 1, 26));
+    var calledFeature = QueryAST.TargetFeature(Cursor(uri1, 1, 26));
     assertEquals("i32", calledFeature.get().featureName().baseName());
   }
 
@@ -420,14 +420,14 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
   @Test
-  public void CalledFeatureNone()
+  public void TargetFeatureNone()
   {
     var sourceText = """
       ex =>
         a := "first"
         b""" + " ";
     SourceText.setText(uri1, sourceText);
-    var calledFeature = QueryAST.CalledFeature(Cursor(uri1, 2, 4));
+    var calledFeature = QueryAST.TargetFeature(Cursor(uri1, 2, 4));
     assertTrue(calledFeature.isEmpty());
   }
 

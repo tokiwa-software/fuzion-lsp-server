@@ -171,7 +171,6 @@ public class CompletionTest extends ExtendedBaseTest
   }
 
   @Test
-  @Disabled // failing, .type. completion NYI
   public void getFeatureCallCompletions()
   {
     var sourceText = """
@@ -181,7 +180,7 @@ public class CompletionTest extends ExtendedBaseTest
 
         randomFasta() =>
           (1..10)
-            .map string (_ -> selectRandom())
+            .map String (_ -> selectRandom())
             .fold(String.type.)
           """;
     SourceText.setText(uri1, sourceText);
@@ -218,7 +217,7 @@ public class CompletionTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 22)).get().featureName().baseName());
     var completions = Completion.getCompletions(params(uri1, 7, 23, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().size() > 100);
+    assertTrue(completions.getLeft().size() > 10);
   }
 
   @Test
@@ -230,11 +229,11 @@ public class CompletionTest extends ExtendedBaseTest
         (1..10).size.
       """;
     SourceText.setText(uri1, sourceText);
-    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).count() > 0);
+    assertTrue(QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 10)).count() > 0);
     assertTrue(
-      QueryAST.CallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("sizeOption")));
+      QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("sizeOption")));
 
-    assertTrue(QueryAST.CallCompletionsAt(Cursor(uri1, 2, 15)).anyMatch(x -> x.featureName().baseName().equals("max")));
+    assertTrue(QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 15)).anyMatch(x -> x.featureName().baseName().equals("max")));
   }
 
   @Test
@@ -268,7 +267,7 @@ public class CompletionTest extends ExtendedBaseTest
       """;
     SourceText.setText(uri1, sourceText);
     var completions = QueryAST
-      .CallCompletionsAt(Cursor(uri1, 4, 9))
+      .DotCallCompletionsAt(Cursor(uri1, 4, 9))
       .collect(Collectors.toList());
 
     assertEquals("level2", completions.get(0).featureName().baseName());
