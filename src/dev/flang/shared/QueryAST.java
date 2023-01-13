@@ -58,7 +58,7 @@ public class QueryAST extends ANY
     if (PRECONDITIONS)
       require(!Util.IsStdLib(SourceText.UriOf(params)));
 
-    return CalledFeatureInAST(params)
+    return FindTargetFeatureInAST(params)
       .or(() -> {
         // NYI this is a (bad) hack to handle incomplete source code
         // that contains something like `expr. ` where the parser than assumes
@@ -66,7 +66,7 @@ public class QueryAST extends ANY
         var tokens = LexerTool.TokensAt(params);
         if (tokens.left().text().equals(".") && tokens.right().token().equals(Token.t_ws))
           {
-            return CalledFeatureInASTDefusedFullStop(params);
+            return FindTargetFeatureInASTDefusedFullStop(params);
           }
         return Optional.empty();
       })
@@ -81,12 +81,12 @@ public class QueryAST extends ANY
    * @param params
    * @return
    */
-  private static Optional<? extends AbstractFeature> CalledFeatureInASTDefusedFullStop(SourcePosition params)
+  private static Optional<? extends AbstractFeature> FindTargetFeatureInASTDefusedFullStop(SourcePosition params)
   {
     var uri = SourceText.UriOf(params);
     var text = SourceText.getText(params);
     SourceText.setText(uri, InsertDummyCharacter(text, params));
-    var result = CalledFeatureInAST(params);
+    var result = FindTargetFeatureInAST(params);
     SourceText.setText(uri, text);
     return result;
   }
@@ -111,7 +111,7 @@ public class QueryAST extends ANY
   }
 
   // NYI motivate/explain this heuristic
-  private static Optional<AbstractFeature> CalledFeatureInAST(SourcePosition params)
+  private static Optional<AbstractFeature> FindTargetFeatureInAST(SourcePosition params)
   {
     var leftToken = LexerTool.TokensAt(LexerTool.GoLeft(params)).left();
     return ASTWalker
@@ -121,6 +121,8 @@ public class QueryAST extends ANY
         && SourcePositionTool.PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
       .filter(entry -> SourcePositionTool.PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
       .map(entry -> (AbstractCall) entry.getKey())
+      // filter generated call to "Types", see DotType.resolveTypes()
+      .filter(ac -> ac.calledFeature() != Types.resolved.f_Types || LexerTool.TokensAt(ac.pos()).right().text().equals("Types"))
       .filter(ac -> SourcePositionTool.Compare(ExprTool.EndOfExpr(ac), params) <= 0)
       .sorted(ExprTool.CompareByEndOfExpr.reversed())
       .filter(ac -> ac.calledFeature() != null)

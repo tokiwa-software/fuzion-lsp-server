@@ -212,9 +212,12 @@ public class LexerTool extends ANY
    */
   public static SourcePosition EndOfToken(SourcePosition pos)
   {
-    return TokensAt(pos)
-      .right()
-      .end();
+
+    return pos.isBuiltIn()
+                           ? pos
+                           : TokensAt(pos)
+                             .right()
+                             .end();
   }
 
   /**

@@ -224,9 +224,7 @@ public class ASTWalker
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseCall(AbstractCall c, AbstractFeature outer)
   {
     return Util.ConcatStreams(
-
       AsStream(c, outer),
-
       c.actuals().stream().flatMap(a -> TraverseExpression(a, outer)),
       TraverseExpression(c.target(), outer));
   }

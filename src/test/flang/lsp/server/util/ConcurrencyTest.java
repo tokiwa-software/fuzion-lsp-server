@@ -29,15 +29,14 @@ package test.flang.lsp.server.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.Test;
 
 // NYI remove dependency of dev.flang.lsp and move to dev.flang.shared
@@ -77,8 +76,7 @@ public class ConcurrencyTest extends ExtendedBaseTest
     request2.join();
 
     assertTrue(results.get(0) instanceof MaxExecutionTimeExceededException);
-    assertTrue(((ComputationPerformance<Either<List<CompletionItem>, CompletionList>>) results.get(1)).result()
-      .getLeft()
+    assertTrue(((ComputationPerformance<List<CompletionItem>>) results.get(1)).result()
       .size() > 10);
 
   }
@@ -105,7 +103,7 @@ public class ConcurrencyTest extends ExtendedBaseTest
       new CompletionParams(LSP4jUtils.TextDocumentIdentifier(uri1), new Position(1, 11),
         new CompletionContext(CompletionTriggerKind.TriggerCharacter, "."));
     return Concurrency.RunWithPeriodicCancelCheck(
-      () -> Completion.getCompletions(completionParams),
+      () -> Completion.getCompletions(completionParams).collect(Collectors.toList()),
       () -> {
       },
       5, maxExecutionTime);

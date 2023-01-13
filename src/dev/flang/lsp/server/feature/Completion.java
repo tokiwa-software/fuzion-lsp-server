@@ -34,11 +34,9 @@ import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -74,8 +72,6 @@ public class Completion
     }
   }
 
-  private static final Either<List<CompletionItem>, CompletionList> NoCompletions = Either.forLeft(List.of());
-
   private static CompletionItem buildCompletionItem(String label, String insertText,
     CompletionItemKind completionItemKind)
   {
@@ -97,27 +93,38 @@ public class Completion
     return item;
   }
 
-  public static Either<List<CompletionItem>, CompletionList> getCompletions(CompletionParams params)
+  public static Stream<CompletionItem> getCompletions(CompletionParams params)
   {
     var pos = Bridge.ToSourcePosition(params);
     if (QueryAST.InString(pos))
       {
-        return NoCompletions;
+        return Stream.empty();
       }
 
     var triggerCharacter = params.getContext().getTriggerCharacter();
 
+    // dot-call
     if (".".equals(triggerCharacter))
       {
-        // not offering completion for number
-        if (LexerTool
+        var tokenBeforeDot = LexerTool
           .TokensAt(LexerTool.GoLeft(pos))
           .left()
-          .token() == Token.t_numliteral)
+          .token();
+        // do not offer completion for number
+        if (tokenBeforeDot == Token.t_numliteral)
           {
-            return NoCompletions;
+            return Stream.empty();
           }
-        return completions(QueryAST.DotCallCompletionsAt(pos));
+        // do not include `type` in completions
+        if (tokenBeforeDot == Token.t_type)
+          {
+            return completions(QueryAST
+              .DotCallCompletionsAt(pos));
+          }
+        return Stream.concat(
+          completions(QueryAST
+            .DotCallCompletionsAt(pos)),
+          CompletionItemType());
       }
     if (" ".equals(triggerCharacter))
       {
@@ -128,15 +135,7 @@ public class Completion
             .token();
         if (tokenBeforeTriggerCharacter.equals(Token.t_for))
           {
-            return Either.forLeft(Arrays.asList(
-              buildCompletionItem("for in", "${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Keyword),
-              buildCompletionItem("for in while", "${1:i} in ${2:0}..${3:10} while ${4:} do",
-                CompletionItemKind.Keyword),
-              buildCompletionItem("for while", "i:=0, i+1 while ${4:} do", CompletionItemKind.Keyword),
-              buildCompletionItem("for until else", "${1:i} in ${2:0}..${3:10} do"
-                + System.lineSeparator() + "until ${4:}"
-                + System.lineSeparator() + "else ${4:}",
-                CompletionItemKind.Keyword)));
+            return ForLoopCompletions();
           }
 
 
@@ -156,16 +155,17 @@ public class Completion
           {
             // NYI better heuristic to check if we should offer infix/postfix
             // completion or types or keywords or nothing
-            var result = NoCompletions;
+
             // no errors in line before pos?
             if (!ParserTool.Errors(ParserTool.getUri(pos))
-              .anyMatch(x -> x.pos._line == pos._line && x.pos._column <= pos._column))
+              .anyMatch(x -> x.pos._line == pos._line && x.pos._column <= pos._column)
+              && QueryAST.InfixPostfixCompletionsAt(pos).count() > 0)
               {
-                result = completions(QueryAST
-                  .InfixPostfixCompletionsAt(
-                    pos));
+                return completions(
+                  QueryAST
+                    .InfixPostfixCompletionsAt(pos));
               }
-            if (result.getLeft().isEmpty() && tokenBeforeTriggerCharacter.equals(Token.t_ident))
+            if (tokenBeforeTriggerCharacter.equals(Token.t_ident))
               {
                 var types = QueryAST
                   .FeaturesInScope(pos)
@@ -178,10 +178,8 @@ public class Completion
 
                 var keywords = Stream.of(buildCompletionItem("is", "is", CompletionItemKind.Keyword));
 
-                result = Either.forLeft(Stream.concat(keywords, types)
-                  .collect(Collectors.toList()));
+                return Stream.concat(keywords, types);
               }
-            return result;
           }
       }
 
@@ -192,10 +190,35 @@ public class Completion
     // {
     // return completions(QueryAST.CompletionsAt(pos));
     // }
-    return NoCompletions;
+    return Stream.empty();
   }
 
-  private static Either<List<CompletionItem>, CompletionList> completions(Stream<AbstractFeature> features)
+
+  /**
+   * completion item for keyword `type`
+   * @return
+   */
+  private static Stream<CompletionItem> CompletionItemType()
+  {
+    return Stream.of(buildCompletionItem("type", "type", CompletionItemKind.Keyword));
+  }
+
+
+  private static Stream<CompletionItem> ForLoopCompletions()
+  {
+    return Arrays.asList(
+      buildCompletionItem("for in", "${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Keyword),
+      buildCompletionItem("for in while", "${1:i} in ${2:0}..${3:10} while ${4:} do",
+        CompletionItemKind.Keyword),
+      buildCompletionItem("for while", "i:=0, i+1 while ${4:} do", CompletionItemKind.Keyword),
+      buildCompletionItem("for until else", "${1:i} in ${2:0}..${3:10} do"
+        + System.lineSeparator() + "until ${4:}"
+        + System.lineSeparator() + "else ${4:}",
+        CompletionItemKind.Keyword))
+      .stream();
+  }
+
+  private static Stream<CompletionItem> completions(Stream<AbstractFeature> features)
   {
     var collectedFeatures = features
       .distinct()
@@ -211,7 +234,7 @@ public class Completion
             getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
         });
 
-    return Either.forLeft(completionItems.collect(Collectors.toList()));
+    return completionItems;
   }
 
   /**

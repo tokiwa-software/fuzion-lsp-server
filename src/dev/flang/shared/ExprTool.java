@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.Expr;
+import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
@@ -50,31 +51,29 @@ public class ExprTool extends ANY
    */
   public static SourcePosition EndOfExpr(Expr expr)
   {
-    var lastPos = expr.pos();
-    if (expr instanceof AbstractBlock ab)
+    if (expr instanceof AbstractBlock ab && ab.resultExpression() != null)
       {
-        Expr resExpr = ab.resultExpression();
-        if (resExpr != null)
-          {
-            lastPos = resExpr.pos();
-          }
+        return EndOfExpr(ab.resultExpression());
       }
     if (expr instanceof AbstractCall ac)
       {
-        lastPos = ac.actuals()
+        // .type expression, using ac.pos()
+        if (ac.calledFeature() == Types.resolved.f_Types_get)
+          {
+            return ac.pos();
+          }
+        // using pos of last actual argument
+        // or the position of the call itself
+        return LexerTool.EndOfToken(ac.actuals()
           .stream()
           .map(expression -> EndOfExpr(expression))
           .sorted(Comparator.reverseOrder())
-          // filter e.g. numeric literals
-          .filter(x -> !x.isBuiltIn())
           .findFirst()
-          .orElse(ac.pos());
+          .orElse(ac.pos()));
       }
-    return lastPos.isBuiltIn()
-                               ? lastPos: LexerTool.TokensAt(lastPos)
-                                 .right()
-                                 .end();
+    return LexerTool.EndOfToken(expr.pos());
   }
+
 
   /**
    * Does this expression belong to lambda call?
@@ -85,6 +84,7 @@ public class ExprTool extends ANY
   {
     return LexerTool.TokensAt(expr.pos()).right().text().equals("->");
   }
+
 
   // NYI parser should give us this info
   static Optional<SourcePosition> LambdaOpeningBracePosition(Expr expr)

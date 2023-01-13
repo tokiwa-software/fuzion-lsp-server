@@ -90,8 +90,6 @@ public class CompletionTest extends ExtendedBaseTest
       zip ${1:b} (${201:T}, ${202:U} -> ${203:V})
       hashCode""";
     var actual = Completion.getCompletions(params(uri1, 1, 9, Completion.TriggerCharacters.Dot))
-      .getLeft()
-      .stream()
       .map(x -> x.getInsertText())
       .collect(Collectors.toList());
 
@@ -114,8 +112,8 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var actual = Completion.getCompletions(params(uri1, 3, 4, Completion.TriggerCharacters.Dot))
-      .getLeft()
-      .get(0)
+      .findFirst()
+      .get()
       .getInsertText();
 
     assertEquals("b ( (${10001:i32} -> ${10002:i32}) ->  (${10001:i32} -> ${10002:i32}))", actual);
@@ -130,10 +128,9 @@ public class CompletionTest extends ExtendedBaseTest
             """;
 
     SourceText.setText(uri1, sourceText);
-    var actual = Completion.getCompletions(params(uri1, 1, 27, Completion.TriggerCharacters.Dot))
-      .getLeft();
+    var actual = Completion.getCompletions(params(uri1, 1, 27, Completion.TriggerCharacters.Dot));
 
-    assertTrue(actual.stream().anyMatch(ci -> ci.getInsertText().equals("parse_i32")));
+    assertTrue(actual.anyMatch(ci -> ci.getInsertText().equals("parse_i32")));
   }
 
 
@@ -153,7 +150,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 7, 7, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("fold")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("fold")));
   }
 
   @Test
@@ -167,7 +164,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 2, 6, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("bytes")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("bytes")));
   }
 
   @Test
@@ -185,7 +182,7 @@ public class CompletionTest extends ExtendedBaseTest
           """;
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 7, 24, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("concat")));
+    assertTrue(completions.anyMatch(x -> x.getInsertText().equals("concat")));
   }
 
   private CompletionParams params(URI uri, int line, int character, Completion.TriggerCharacters triggerCharacter)
@@ -217,7 +214,7 @@ public class CompletionTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 22)).get().featureName().baseName());
     var completions = Completion.getCompletions(params(uri1, 7, 23, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().size() > 10);
+    assertTrue(completions.count() > 10);
   }
 
   @Test
@@ -252,7 +249,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 7, 6, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("color")));
+    assertTrue(completions.anyMatch(x -> x.getInsertText().equals("color")));
   }
 
   @Test
@@ -329,7 +326,20 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 4, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().isEmpty());
+    assertTrue(completions.count() == 0);
+  }
+
+  @Test
+  public void DotTypeCompletions()
+  {
+    var sourceText = """
+      ex =>
+        String.type.
+        """;
+
+    SourceText.setText(uri1, sourceText);
+    var completions = Completion.getCompletions(params(uri1, 1, 14, Completion.TriggerCharacters.Dot));
+    assertTrue(completions.anyMatch(x -> x.getInsertText().equals("concat")));
   }
 
   @Test
@@ -342,7 +352,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 9, Completion.TriggerCharacters.Space));
-    assertTrue(completions.getLeft().isEmpty());
+    assertTrue(completions.count() == 0);
   }
 
   @Test
@@ -356,15 +366,16 @@ public class CompletionTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
 
     var completions = Completion.getCompletions(params(uri1, 1, 12, Completion.TriggerCharacters.Space));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("i32")));
+    assertTrue(completions.anyMatch(x -> x.getInsertText().equals("i32")));
+    completions = Completion.getCompletions(params(uri1, 1, 12, Completion.TriggerCharacters.Space));
     // analysis does not define a type
-    assertFalse(completions.getLeft().stream().anyMatch(x -> x.getInsertText().equals("analysis")));
+    assertFalse(completions.anyMatch(x -> x.getInsertText().equals("analysis")));
 
     completions = Completion.getCompletions(params(uri1, 1, 16, null));
-    assertTrue(completions.getLeft().isEmpty());
+    assertTrue(completions.count() == 0);
 
     completions = Completion.getCompletions(params(uri1, 1, 17, Completion.TriggerCharacters.Space));
-    assertTrue(completions.getLeft().isEmpty());
+    assertTrue(completions.count() == 0);
   }
 
 
@@ -377,7 +388,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 4, Completion.TriggerCharacters.Space));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix +")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("infix +")));
   }
 
 
@@ -391,7 +402,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 2, 8, Completion.TriggerCharacters.Dot));
-    assertEquals(0, completions.getLeft().size());
+    assertEquals(1, completions.count());
   }
 
   @Test
@@ -405,7 +416,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 2, 17, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("3")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("3")));
   }
 
   @Test
@@ -422,7 +433,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 2, 16, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("values")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("values")));
   }
 
   @Test
@@ -436,7 +447,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 3, 53, Completion.TriggerCharacters.Space));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("infix ∪")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("infix ∪")));
   }
 
   @Test
@@ -450,7 +461,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 30, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("next_f64")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("next_f64")));
   }
 
   @Test
@@ -463,8 +474,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 12, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.getLeft().size() > 0, "completions are offered");
-    assertTrue(completions.getLeft().stream().anyMatch(x -> x.getLabel().startsWith("internalArray")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("internalArray")));
   }
 
 }

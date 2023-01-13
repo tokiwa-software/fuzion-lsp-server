@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
@@ -75,8 +76,8 @@ import dev.flang.lsp.server.feature.CodeLenses;
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.feature.Definition;
 import dev.flang.lsp.server.feature.Diagnostics;
-import dev.flang.lsp.server.feature.DocumentSymbols;
 import dev.flang.lsp.server.feature.DocumentHighlights;
+import dev.flang.lsp.server.feature.DocumentSymbols;
 import dev.flang.lsp.server.feature.Hovering;
 import dev.flang.lsp.server.feature.InlayHints;
 import dev.flang.lsp.server.feature.References;
@@ -152,7 +153,7 @@ public class FuzionTextDocumentService implements TextDocumentService
   @Override
   public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position)
   {
-    return Computation.CancellableComputation(() -> Completion.getCompletions(position), "completion", 5000);
+    return Computation.CancellableComputation(() -> Either.forLeft(Completion.getCompletions(position).collect(Collectors.toList())), "completion", 5000);
   }
 
   @Override
