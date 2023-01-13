@@ -59,8 +59,7 @@ public class Completion
   public enum TriggerCharacters
   {
     Dot("."), // calls
-    Space(" "), // infix, postfix, types
-    LessThan("<"); // types NYI
+    Space(" "); // infix, postfix, types
 
     private final String triggerChar;
 
