@@ -56,9 +56,9 @@ public class CompletionTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     var expected = """
       map (${101:H} -> ${102:B})
-      asString
-      asList
-      asStream
+      as_string
+      as_list
+      as_stream
       for_each (${101:H} -> ${102:unit})
       contains ${1:e}
       size
@@ -66,27 +66,27 @@ public class CompletionTest extends ExtendedBaseTest
       lower
       sizeOption
       add
-      asString ${1:sep}
-      asArray
+      as_string ${1:sep}
+      as_array
       slice ${1:from} ${2:to}
       fold ${1:m}
-      isEmpty
+      is_empty
       count
       take ${1:n}
       drop ${1:n}
-      takeWhile (${101:T} -> ${102:bool})
-      dropWhile (${101:T} -> ${102:bool})
+      take_while (${101:T} -> ${102:bool})
+      drop_while (${101:T} -> ${102:bool})
       cycle
       tails
-      forWhile (${101:T} -> ${102:bool})
+      for_while (${101:T} -> ${102:bool})
       before (${101:T} -> ${102:bool})
       filter (${101:T} -> ${102:bool})
-      splitAt ${1:at}
-      concatSequences ${1:s}
+      split_at ${1:at}
+      concat_sequences ${1:s}
       mapSequence (${101:T} -> ${102:B})
       insert ${1:at} ${2:v}
       sort (${101:T}, ${102:T} -> ${103:bool})
-      sortBy (${101:T} -> ${102:O})
+      sort_by (${101:T} -> ${102:O})
       zip ${1:b} (${201:T}, ${202:U} -> ${203:V})
       hashCode""";
     var actual = Completion.getCompletions(params(uri1, 1, 9, Completion.TriggerCharacters.Dot))

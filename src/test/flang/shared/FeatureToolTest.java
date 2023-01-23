@@ -92,7 +92,7 @@ public class FeatureToolTest extends BaseTest
   {
     var psSet = DeclaredInUniverse("ps_set", 3);
     var psSetasArray = ParserTool.DeclaredFeatures(psSet)
-      .filter(f -> f.featureName().baseName().equals("asArray"))
+      .filter(f -> f.featureName().baseName().equals("as_array"))
       .findFirst()
       .get();
     var actual = FeatureTool.CommentOf(psSetasArray);
@@ -101,7 +101,7 @@ public class FeatureToolTest extends BaseTest
       """
         create a sorted array from the elements of this set
 
-        redefines Sequence.asArray:
+        redefines Sequence.as_array:
         collect the contents of this Sequence into an array""" + System.lineSeparator(),
       actual);
   }

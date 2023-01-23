@@ -37,6 +37,7 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Expr;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 public class CallTool extends ANY
@@ -49,7 +50,7 @@ public class CallTool extends ANY
       && !c.calledFeature().isTypeParameter()
       && !c.calledFeature().qualifiedName().equals("fuzion.sys")
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array")
-      && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array.index [ ] =")
+      && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array." + FuzionConstants.FEATURE_NAME_INDEX_ASSIGN)
       && !c.calledFeature().qualifiedName().equals("unit")
       && !FeatureTool.IsInternal(c.calledFeature());
   };
