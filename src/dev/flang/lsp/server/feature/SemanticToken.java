@@ -65,10 +65,10 @@ public class SemanticToken extends ANY
   {
     var pos2Item = Pos2Items(params);
 
-    return new SemanticTokens(SemanticTokenData(LexerTokens(params, pos2Item), pos2Item));
+    return new SemanticTokens(SemanticTokenData(LexerTokens(params), pos2Item));
   }
 
-  private static List<TokenInfo> LexerTokens(SemanticTokensParams params, Map<Integer, HasSourcePosition> pos2Item)
+  private static List<TokenInfo> LexerTokens(SemanticTokensParams params)
   {
     return LexerTool
       .TokensFrom(
