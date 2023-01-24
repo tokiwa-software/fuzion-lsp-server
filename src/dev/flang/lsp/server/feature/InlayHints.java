@@ -141,25 +141,26 @@ public class InlayHints extends ANY
         })
         .orElse(Stream.empty()));
 
-    // NYI config option to disable this
-    var inlayHintsEffects = ParserTool
-      .TopLevelFeatures(uri)
-      .map(af -> {
-        var effects = ParserTool.Effects(af);
-        if (effects.isBlank())
-          {
-            return Optional.<InlayHint>empty();
-          }
-        var endOfLine = SourceText.LineAt(af.pos()).length();
-        var ih = new InlayHint(new Position(af.pos()._line - 1, endOfLine), Either.forLeft("effects: " + effects));
-        ih.setKind(InlayHintKind.Parameter);
-        ih.setPaddingLeft(true);
-        ih.setPaddingRight(true);
-        return Optional.of(ih);
-      })
-      .flatMap(Optional::stream);
+    // // NYI this is too slow since FUIR is needed for
+    // // evaluating needed effects
+    // var inlayHintsEffects = ParserTool
+    //   .TopLevelFeatures(uri)
+    //   .map(af -> {
+    //     var effects = ParserTool.Effects(af);
+    //     if (effects.isBlank())
+    //       {
+    //         return Optional.<InlayHint>empty();
+    //       }
+    //     var endOfLine = SourceText.LineAt(af.pos()).length();
+    //     var ih = new InlayHint(new Position(af.pos()._line - 1, endOfLine), Either.forLeft("effects: " + effects));
+    //     ih.setKind(InlayHintKind.Parameter);
+    //     ih.setPaddingLeft(true);
+    //     ih.setPaddingRight(true);
+    //     return Optional.of(ih);
+    //   })
+    //   .flatMap(Optional::stream);
 
-    return Util.ConcatStreams(inlayHintsActuals, inlayHintsResultTypes, inlayHintsEffects).collect(Collectors.toList());
+    return Util.ConcatStreams(inlayHintsActuals, inlayHintsResultTypes).collect(Collectors.toList());
   }
 
   private static boolean IsConstant(Expr code)

@@ -63,8 +63,8 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    // 20 actuals, 2 result types, 1 effects
-    assertEquals(20 + 2 + 1, inlayHints.size());
+    // 20 actuals, 2 result types
+    assertEquals(20 + 2, inlayHints.size());
 
     InlayHint maxEscapeIter = inlayHints.stream().filter(x -> x.getPosition().getLine() == 2).findFirst().get();
     assertEquals("maxEscapeIterations:", maxEscapeIter.getLabel().getLeft());
@@ -90,7 +90,7 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    assertEquals(3, inlayHints.size());
+    assertEquals(2, inlayHints.size());
     assertEquals("arg:", inlayHints.get(0).getLabel().getLeft());
     assertEquals(7, inlayHints.get(0).getPosition().getLine());
     assertEquals(9, inlayHints.get(0).getPosition().getCharacter());
