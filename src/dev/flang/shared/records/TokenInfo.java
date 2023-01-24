@@ -53,24 +53,8 @@ import dev.flang.util.SourcePosition;
 /**
  * holds text of lexer token and the start position of the token
  */
-public record TokenInfo(SourcePosition start, String text, Token token)
+public record TokenInfo(SourcePosition start, SourcePosition end, String text, Token token)
 {
-  // NYI this is too expensive
-  public SourcePosition end()
-  {
-    return new SourcePosition(start._sourceFile, start._line + lineCount() - 1,
-      lineCount() == 1 ? start._column + length(): Util.CharCount(Util.LastOrDefault(text.lines(), "")) + 1);
-  }
-
-  private int lineCount()
-  {
-    if (!token.equals(Token.t_eof) && text.isEmpty())
-      {
-        return 1;
-      }
-    return (int) text.lines().count();
-  }
-
   /*
    * starting line of token, zero based
    */

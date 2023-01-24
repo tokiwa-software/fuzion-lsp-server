@@ -74,39 +74,60 @@ public class SemanticToken extends ANY
       .TokensFrom(
         Bridge.ToSourcePosition(
           new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))))
-
-      // map all special strings to normal strings plus operator(s)
+      // - map all special strings to normal strings plus operator(s)
+      // - split mulitline comment
       .flatMap(t -> {
+        var startPlusOne = new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + 1);
         switch (t.token())
           {
           case t_stringBQ :    // '}+-*"' in "abc{x}+-*"
             return Stream.of(
-              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column),
+              new TokenInfo(t.start(),
+                startPlusOne,
                 t.text().substring(0, 1), Token.t_op),
-              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + 1),
+              new TokenInfo(startPlusOne,
+                t.end(),
                 t.text().substring(1), Token.t_stringQQ));
           case t_stringQD :    // '"x is $' in "x is $x.".
           case t_StringDD :    // '+-*$' in "abc$x+-*$x.".
           case t_stringQB :    // '"a+b is {' in "a+b is {a+b}."
           case t_StringDB :    // '+-*{' in "abc$x+-*{a+b}."
             return Stream.of(
-              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column),
+              new TokenInfo(t.start(),
+                new SourcePosition(t.start()._sourceFile, t.start()._line,
+                  t.start()._column + Util.CodepointCount(t.text()) - 1),
                 t.text().substring(0, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
                 new SourcePosition(t.start()._sourceFile, t.start()._line,
                   t.start()._column + Util.CodepointCount(t.text()) - 1),
+                t.end(),
                 t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
           case t_stringBD :    // '}+-*$' in "abc{x}+-*$x.".
           case t_stringBB :    // '}+-*{' in "abc{x}+-*{a+b}."
             return Stream.of(
-              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column), "}",
+              new TokenInfo(t.start(), startPlusOne, "}",
                 Token.t_op),
-              new TokenInfo(new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + 1),
+              new TokenInfo(startPlusOne,
+                new SourcePosition(t.start()._sourceFile, t.start()._line,
+                  t.start()._column + Util.CodepointCount(t.text()) - 1),
                 t.text().substring(1, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
                 new SourcePosition(t.start()._sourceFile, t.start()._line,
                   t.start()._column + Util.CodepointCount(t.text()) - 1),
+                t.end(),
                 t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
+          case t_comment :
+            var lines = t.text()
+              .split("\\r?\\n");
+            return IntStream.range(0, (int) lines.length)
+              .mapToObj(
+                idx -> {
+                  return new TokenInfo(
+                    new SourcePosition(t.start()._sourceFile, t.start()._line + idx, idx == 0 ? t.start()._column: 1),
+                    new SourcePosition(t.start()._sourceFile, t.start()._line + idx, Util.CharCount(lines[idx])),
+                    lines[idx],
+                    Token.t_comment);
+                });
           default:
             return Stream.of(t);
           }
@@ -168,7 +189,8 @@ public class SemanticToken extends ANY
       })
       .map(item -> new EntryEqualByKey<Integer, HasSourcePosition>(
         TokenInfo.KeyOf(item instanceof AbstractFeature af ? FeatureTool.BareNamePosition(af): item.pos()), item))
-        // NYI which are the duplicates here? Can we do better in selecting the 'right' ones?
+      // NYI which are the duplicates here? Can we do better in selecting the
+      // 'right' ones?
       .distinct()
       .collect(Collectors.toUnmodifiableMap(e -> e.getKey(), e -> e.getValue()));
   }
@@ -180,7 +202,8 @@ public class SemanticToken extends ANY
       .range(0, lexerTokens.size())
       .mapToObj(x -> {
         var beginningOfFileToken =
-          new TokenInfo(SourcePosition.notAvailable, "", Token.t_undefined);
+          new TokenInfo(SourcePosition.notAvailable, new SourcePosition(lexerTokens.get(x).start()._sourceFile, 1, 1),
+            "", Token.t_undefined);
         var previousToken = x == 0 ? beginningOfFileToken: lexerTokens.get(x - 1);
         return lexerTokens.get(x).SemanticTokenData(previousToken, pos2Item);
       })

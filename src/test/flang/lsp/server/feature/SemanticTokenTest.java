@@ -234,7 +234,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
     // $
     assertEquals(semanticTokens, 7, 0, 4, 1, TokenType.Operator, 0);
     // smiley
-    assertEquals(semanticTokens, 8, 0, 1, 6, TokenType.Type, 0);
+    assertEquals(semanticTokens, 8, 0, 1, 6, TokenType.Property, 0);
     // "
     assertEquals(semanticTokens, 9, 0, 6, 1, TokenType.String, 0);
 

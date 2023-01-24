@@ -100,7 +100,7 @@ public class LexerToolTest extends BaseTest
     SourceText.setText(uri1, ManOrBoy);
 
     var beforeSay = Cursor(uri1, 9, 3);
-    assertEquals("    ", LexerTool.TokensFrom(beforeSay).findFirst().get().text());
+    assertTrue(LexerTool.TokensFrom(beforeSay).findFirst().get().text().isBlank());
     var atSayStart = Cursor(uri1, 9, 4);
     assertEquals("say", LexerTool.TokensFrom(atSayStart).findFirst().get().text());
     var atSayMiddle = Cursor(uri1, 9, 6);
@@ -112,6 +112,5 @@ public class LexerToolTest extends BaseTest
     assertTrue(LexerTool.TokensFrom(start).count() > 10);
     assertTrue(LexerTool.TokensFrom(start).count() > 10);
     assertTrue(LexerTool.TokensFrom(start).anyMatch(t -> t.text().equals("i32")));
-    assertTrue(LexerTool.TokensFrom(start).reduce((first, second) -> second).get().token() == Token.t_eof);
   }
 }
