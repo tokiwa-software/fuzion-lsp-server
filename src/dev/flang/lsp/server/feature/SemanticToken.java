@@ -128,11 +128,29 @@ public class SemanticToken extends ANY
                     lines[idx],
                     Token.t_comment);
                 });
+          // discard these tokens
+          case t_error :
+          case t_ws :
+          case t_comma :
+          case t_lparen :
+          case t_rparen :
+          case t_lbrace :
+          case t_rbrace :
+          case t_lcrochet :
+          case t_rcrochet :
+          case t_semicolon :
+          case t_eof :
+          case t_barLimit :
+          case t_colonLimit :
+          case t_indentationLimit :
+          case t_lineLimit :
+          case t_spaceLimit :
+          case t_undefined :
+            return Stream.empty();
           default:
             return Stream.of(t);
           }
       })
-      .filter(x -> x.IsSemanticToken(pos2Item))
       .collect(Collectors.toList());
   }
 

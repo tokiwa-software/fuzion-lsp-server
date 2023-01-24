@@ -136,11 +136,6 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
       }
   }
 
-  public boolean IsSemanticToken(Map<Integer, HasSourcePosition> pos2Item)
-  {
-    return TokenType(pos2Item).isPresent();
-  }
-
   private Optional<TokenType> TokenType(Map<Integer, HasSourcePosition> pos2Item)
   {
     if (token.isKeyword())
