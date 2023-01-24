@@ -40,7 +40,6 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.shared.ExprTool;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
