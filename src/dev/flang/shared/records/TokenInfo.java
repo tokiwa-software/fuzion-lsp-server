@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared.records;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +42,10 @@ import dev.flang.ast.Feature.State;
 import dev.flang.lsp.server.enums.TokenModifier; // NYI remove dependency
 import dev.flang.lsp.server.enums.TokenType; // NYI remove dependency
 import dev.flang.parser.Lexer.Token;
+import dev.flang.shared.ASTWalker;
 import dev.flang.shared.CallTool;
 import dev.flang.shared.FeatureTool;
+import dev.flang.shared.LexerTool;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
@@ -85,10 +88,79 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
     return Util.CharCount(text());
   }
 
-  public Stream<Integer> SemanticTokenData(TokenInfo previousToken,
-    Map<Integer, HasSourcePosition> pos2Item)
+
+  /**
+   * A simple entry whose equality is decided by comparing its key only.
+   */
+  private static class EntryEqualByKey<T1, T2> extends SimpleEntry<T1, T2>
   {
-    var tokenType = TokenType(pos2Item);
+    public EntryEqualByKey(T1 key, T2 value)
+    {
+      super(key, value);
+    }
+
+    @Override
+    public boolean equals(Object arg0)
+    {
+      var other = (EntryEqualByKey<T1, T2>) arg0;
+      return (this.getKey() == null ? other.getKey() == null: this.getKey().equals(other.getKey()));
+    }
+
+    @Override
+    public int hashCode()
+    {
+      return this.getKey().hashCode();
+    }
+  }
+
+  /*
+   * returns a map of: position -> call/feature
+   * remark: position is encoded by integer index via function TokenInfo.KeyOf()
+   * this is used to map an ident token to the appropriate feature/call
+   */
+  private static Map<Integer, HasSourcePosition> Pos2Items(SourcePosition pos)
+  {
+    return ASTWalker
+      .Traverse(pos)
+      .map(e -> e.getKey())
+      .filter(x -> x instanceof AbstractFeature || x instanceof AbstractCall)
+      // try to filter all generated features/calls
+      .filter(x -> {
+        if (x instanceof AbstractFeature af)
+          {
+            return LexerTool
+              .TokensAt(FeatureTool.BareNamePosition(af))
+              .right()
+              .text()
+              .equals(FeatureTool.BareName(af));
+          }
+        var c = (AbstractCall) x;
+        return LexerTool
+          .TokensAt(c.pos())
+          .right()
+          .text()
+          .equals(FeatureTool.BareName(c.calledFeature()));
+      })
+      .map(item -> new EntryEqualByKey<Integer, HasSourcePosition>(
+        TokenInfo.KeyOf(item instanceof AbstractFeature af ? FeatureTool.BareNamePosition(af): item.pos()), item))
+      // NYI which are the duplicates here? Can we do better in selecting the
+      // 'right' ones?
+      .distinct()
+      .collect(Collectors.toUnmodifiableMap(e -> e.getKey(), e -> e.getValue()));
+  }
+
+
+  private static final Map<String, Map<Integer, HasSourcePosition>> Pos2ItemsCache = Util.ThreadSafeLRUMap(3, null);
+
+
+  private Map<Integer, HasSourcePosition> Pos2Items()
+  {
+    return Pos2ItemsCache.computeIfAbsent(SourceText.getText(start), (key) -> Pos2Items(start));
+  }
+
+  public Stream<Integer> SemanticTokenData(TokenInfo previousToken)
+  {
+    var tokenType = TokenType();
     int relativeLine = line() - previousToken.line();
     int relativeChar = startChar() - (IsSameLine(previousToken) ? previousToken.startChar(): 0);
     Integer tokenTypeNum = tokenType.get().num;
@@ -101,7 +173,7 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
       relativeChar,
       length(),
       tokenTypeNum,
-      Modifiers(pos2Item));
+      Modifiers());
   }
 
   private boolean IsSameLine(TokenInfo previousToken)
@@ -110,13 +182,13 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
   }
 
   // NYI
-  private Integer Modifiers(Map<Integer, HasSourcePosition> pos2Item)
+  private Integer Modifiers()
   {
     switch (token)
       {
       case t_ident :
         var modifiers = new HashSet<TokenModifier>();
-        GetItem(pos2Item)
+        GetItem()
           .ifPresent(item -> {
             if (item instanceof AbstractFeature af)
               {
@@ -136,7 +208,7 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
       }
   }
 
-  private Optional<TokenType> TokenType(Map<Integer, HasSourcePosition> pos2Item)
+  private Optional<TokenType> TokenType()
   {
     if (token.isKeyword())
       {
@@ -187,7 +259,7 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
           }
         return Optional.of(TokenType.Operator);
       case t_ident :
-        return GetItem(pos2Item)
+        return GetItem()
           .map(TokenInfo::TokenType)
           // NYI check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
@@ -275,14 +347,16 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
     return TokenType(ac.calledFeature());
   }
 
-  private Optional<HasSourcePosition> GetItem(Map<Integer, HasSourcePosition> pos2Item)
+  // NYI this should be done differently
+  // how can we find the feature/call of an ident token more quickly?
+  private Optional<HasSourcePosition> GetItem()
   {
     var key = KeyOf(start);
-    if (!pos2Item.containsKey(key))
+    if (!Pos2Items().containsKey(key))
       {
         return Optional.empty();
       }
-    return Optional.of(pos2Item
+    return Optional.of(Pos2Items()
       .get(key));
   }
 
