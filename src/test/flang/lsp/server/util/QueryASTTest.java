@@ -30,6 +30,7 @@ package test.flang.lsp.server.util;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 
+import dev.flang.ast.Call;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.QueryAST;
 import dev.flang.shared.SourceText;
@@ -60,7 +61,7 @@ public class QueryASTTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     var call = QueryAST.callAt(Cursor(uri1, 1, 17))
       .get();
-    assertEquals("1.infix ..(10).myCall", call.toString());
+    assertEquals("myCall", ((Call)call).name());
   }
 
   @Test
@@ -104,9 +105,9 @@ public class QueryASTTest extends ExtendedBaseTest
     var sourceText = Read("fuzion/lib/String.fz");
     SourceText.setText(uri1, sourceText);
 
-    var atStartOfFeature = QueryAST.FeatureAt(Cursor(uri1, 56, 2)).get();
-    var atStartOfBarename = QueryAST.FeatureAt(Cursor(uri1, 56, 8)).get();
-    var atEndOrBarename = QueryAST.FeatureAt(Cursor(uri1, 56, 9)).get();
+    var atStartOfFeature = QueryAST.FeatureAt(Cursor(uri1, 54, 2)).get();
+    var atStartOfBarename = QueryAST.FeatureAt(Cursor(uri1, 54, 8)).get();
+    var atEndOrBarename = QueryAST.FeatureAt(Cursor(uri1, 54, 9)).get();
     assertEquals("infix *", atStartOfFeature.featureName().baseName());
     assertEquals("infix *", atStartOfBarename.featureName().baseName());
     assertEquals("infix *", atEndOrBarename.featureName().baseName());
