@@ -249,11 +249,13 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
         if (ANY.PRECONDITIONS)
           ANY.check(false);
         return Optional.empty();
-      case t_op :
       case t_question :
+        return Optional.of(TokenType.Keyword);
+      case t_op :
         if (text.equals("=>")
           || text.equals("->")
-          || text.equals(":="))
+          || text.equals(":=")
+          || text.equals("|"))
           {
             return Optional.of(TokenType.Keyword);
           }
