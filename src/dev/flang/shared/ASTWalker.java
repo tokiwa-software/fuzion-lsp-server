@@ -209,7 +209,8 @@ public class ASTWalker
       {
         return AsStream(ac, outer);
       }
-    if (expr instanceof AbstractCurrent
+    if ( expr == Expr.ERROR_VALUE
+      || expr instanceof AbstractCurrent
       || expr instanceof Unbox
       || expr instanceof AbstractConstant
       || expr instanceof Universe
