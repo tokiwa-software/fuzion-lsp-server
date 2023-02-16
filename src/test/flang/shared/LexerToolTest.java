@@ -31,11 +31,10 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.LexerTool;
+import dev.flang.shared.SourcePositionTool;
 import dev.flang.shared.SourceText;
 import dev.flang.util.SourceFile;
-import dev.flang.util.SourcePosition;
 
 public class LexerToolTest extends BaseTest
 {
@@ -48,7 +47,7 @@ public class LexerToolTest extends BaseTest
       LexerTool.TokensAt(Cursor(uri1, 2, 2))
         .right();
     assertEquals("a", nextToken.text());
-    assertEquals(4, nextToken.end()._column);
+    assertEquals(4, nextToken.end().column());
   }
 
   @Test
@@ -60,7 +59,7 @@ public class LexerToolTest extends BaseTest
     assertTrue(tokens.right().equals(tokens.left()));
     var nextToken = tokens.right();
     assertEquals("i32", nextToken.text());
-    assertEquals(10, nextToken.end()._column);
+    assertEquals(10, nextToken.end().column());
   }
 
   @Test
@@ -68,9 +67,9 @@ public class LexerToolTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = LexerTool.EndOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 1, 1));
-    assertEquals(11, endOfToken._column);
-    assertEquals(1, endOfToken._line);
+    var endOfToken = LexerTool.EndOfToken(Cursor(uri1, 0, 0));
+    assertEquals(11, endOfToken.column());
+    assertEquals(1, endOfToken.line());
 
   }
 
@@ -79,9 +78,9 @@ public class LexerToolTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = LexerTool.EndOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 3, 7));
-    assertEquals(10, endOfToken._column);
-    assertEquals(3, endOfToken._line);
+    var endOfToken = LexerTool.EndOfToken(Cursor(uri1, 2, 6));
+    assertEquals(10, endOfToken.column());
+    assertEquals(3, endOfToken.line());
   }
 
   @Test
@@ -89,9 +88,9 @@ public class LexerToolTest extends BaseTest
   {
     SourceText.setText(uri1, ManOrBoy);
 
-    var endOfToken = LexerTool.EndOfToken(new SourcePosition(new SourceFile(Path.of(uri1)), 3, 4));
-    assertEquals(5, endOfToken._column);
-    assertEquals(3, endOfToken._line);
+    var endOfToken = LexerTool.EndOfToken(Cursor(uri1, 2, 3));
+    assertEquals(5, endOfToken.column());
+    assertEquals(3, endOfToken.line());
   }
 
   @Test

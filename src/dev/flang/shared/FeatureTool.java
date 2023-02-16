@@ -40,7 +40,7 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
-import dev.flang.ast.Feature.State;
+import dev.flang.ast.AbstractFeature.State;
 import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -88,11 +88,11 @@ public class FeatureTool extends ANY
    */
   public static String CommentOf(AbstractFeature feature)
   {
-    var line = feature.pos()._line - 1;
+    var line = feature.pos().line() - 1;
     var commentLines = new ArrayList<String>();
     while (true)
       {
-        var pos = new SourcePosition(feature.pos()._sourceFile, line, 0);
+        var pos = SourcePositionTool.ByLine(feature.pos()._sourceFile, line);
         if (line < 1 || !LexerTool.isCommentLine(pos))
           {
             break;
@@ -137,7 +137,7 @@ public class FeatureTool extends ANY
             return a;
           }
         return a + System.lineSeparator()
-          + " ".repeat(indent * 2) + position._line + ":" + position._column + ":"
+          + " ".repeat(indent * 2) + position.line() + ":" + position.column() + ":"
           + Util.ShortName(item.getClass()) + ":" + HasSourcePositionTool.ToLabel(item);
       }, String::concat);
     return ast;
@@ -183,7 +183,7 @@ public class FeatureTool extends ANY
     // NYI HACK start lexing at start of line since
     // pos of lambda arg is the pos of the lambda arrow (->).
     // and destructed pos is pos of caching operator :=
-                     new SourcePosition(feature.pos()._sourceFile, feature.pos()._line, 1)
+                     SourcePositionTool.ByLine(feature.pos()._sourceFile, feature.pos().line())
                      : feature.pos();
 
     return LexerTool
@@ -337,8 +337,8 @@ public class FeatureTool extends ANY
   static boolean IsOfLastFeature(AbstractFeature feature)
   {
     return !IsFunctionCall(feature) && SelfAndDescendants(TopLevelFeature(feature).get())
-      .noneMatch(f -> f.pos()._line > feature.pos()._line
-        && f.pos()._column <= feature.pos()._column);
+      .noneMatch(f -> f.pos().line() > feature.pos().line()
+        && f.pos().column() <= feature.pos().column());
   }
 
   private static boolean IsFunctionCall(AbstractFeature f)

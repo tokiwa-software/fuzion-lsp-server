@@ -26,9 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
+import java.nio.file.Files;
+
+import dev.flang.util.ANY;
+import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
-public class SourcePositionTool
+public class SourcePositionTool extends ANY
 {
   static boolean PositionIsAfterOrAtCursor(SourcePosition params, SourcePosition sourcePosition)
   {
@@ -45,11 +49,36 @@ public class SourcePositionTool
    */
   public static int Compare(SourcePosition a, SourcePosition b)
   {
-    var result = a._line < b._line ? -1: a._line > b._line ? +1: 0;
+    var result = a.line() < b.line() ? -1: a.line() > b.line() ? +1: 0;
     if (result == 0)
       {
-        result = a._column < b._column ? -1: a._column > b._column ? +1: 0;
+        result = a.column() < b.column() ? -1: a.column() > b.column() ? +1: 0;
       }
     return result;
+  }
+
+  public static SourcePosition ByLineColumn(SourceFile sf, int line, int column)
+  {
+    // lineStartPos throws in case of empty file
+    if(line == 1 && column == 1)
+    {
+      return new SourcePosition(sf, 0);
+    }
+    var bytePos = sf.lineStartPos(line);
+    while (sf.codePointInLine(bytePos) < column && bytePos < sf.byteLength())
+      {
+        bytePos++;
+      }
+    return new SourcePosition(sf, bytePos);
+  }
+
+  public static SourcePosition ByLine(SourceFile sf, int line)
+  {
+    // lineStartPos throws in case of empty file
+    if(line == 1)
+    {
+      return new SourcePosition(sf, 0);
+    }
+    return new SourcePosition(sf, sf.lineStartPos(line));
   }
 }

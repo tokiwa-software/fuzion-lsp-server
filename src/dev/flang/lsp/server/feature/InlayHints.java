@@ -152,7 +152,7 @@ public class InlayHints extends ANY
     //         return Optional.<InlayHint>empty();
     //       }
     //     var endOfLine = SourceText.LineAt(af.pos()).length();
-    //     var ih = new InlayHint(new Position(af.pos()._line - 1, endOfLine), Either.forLeft("effects: " + effects));
+    //     var ih = new InlayHint(new Position(af.pos().line() - 1, endOfLine), Either.forLeft("effects: " + effects));
     //     ih.setKind(InlayHintKind.Parameter);
     //     ih.setPaddingLeft(true);
     //     ih.setPaddingRight(true);

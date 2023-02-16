@@ -39,12 +39,17 @@ import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
+import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.CaseConverter;
 import dev.flang.shared.QueryAST;
 import dev.flang.shared.Util;
+import dev.flang.shared.SourceText;
+import dev.flang.shared.SourcePositionTool;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -95,9 +100,8 @@ public class CodeActions
   private static Stream<Either<Command, CodeAction>> NameingFixes(CodeActionParams params, Diagnostics diag,
     Function<String, String> fix)
   {
-    var uri = LSP4jUtils.getUri(params.getTextDocument());
     return getDiagnostics(params, diag)
-      .flatMap(d -> CodeActionForNameingIssue(uri, d, fix).stream())
+      .flatMap(d -> CodeActionForNameingIssue(params.getTextDocument(), d, fix).stream())
       .<Either<Command, CodeAction>>map(
         ca -> Either.forRight(ca));
   }
@@ -106,17 +110,17 @@ public class CodeActions
    * if renameing of identifier is possible
    * return code action for fixing identifier name
    *
-   * @param uri
+   * @param tdi
    * @param d
    * @param convertIdentifier
    * @return
    */
-  private static Optional<CodeAction> CodeActionForNameingIssue(URI uri, Diagnostic d,
+  private static Optional<CodeAction> CodeActionForNameingIssue(TextDocumentIdentifier tdi, Diagnostic d,
     Function<String, String> convertIdentifier)
   {
+    var uri = LSP4jUtils.getUri(tdi);
     return QueryAST
-      .FeatureAt(new SourcePosition(new SourceFile(Path.of(uri)), d.getRange().getStart().getLine() + 1,
-        d.getRange().getStart().getCharacter() + 1))
+      .FeatureAt(Bridge.ToSourcePosition(new TextDocumentPositionParams(tdi, d.getRange().getStart())))
       .map(f -> {
         var oldName = f.featureName()
           .baseName();

@@ -135,13 +135,13 @@ public enum Commands
         .Traverse(Util.toURI(uri))
         .filter(x -> x.getKey() instanceof AbstractMatch)
         .map(x -> (AbstractMatch) x.getKey())
-        .filter(x -> x.pos()._line < (matchPos.getLine() + 1)
-          || (x.pos()._line == (matchPos.getLine() + 1) && x.pos()._column <= (matchPos.getCharacter() + 1)))
+        .filter(x -> x.pos().line() < (matchPos.getLine() + 1)
+          || (x.pos().line() == (matchPos.getLine() + 1) && x.pos().column() <= (matchPos.getCharacter() + 1)))
         .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
         .findFirst()
         .map(m -> {
           // NYI support indent different from two spaces
-          var indent = IntStream.range(0, m.pos()._column + 1).mapToObj(x -> " ").collect(Collectors.joining());
+          var indent = IntStream.range(0, m.pos().column() + 1).mapToObj(x -> " ").collect(Collectors.joining());
 
           var text = System.lineSeparator()
             + m.subject()

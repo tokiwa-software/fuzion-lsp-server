@@ -146,14 +146,14 @@ public class FeatureToolTest extends BaseTest
         """;
     SourceText.setText(uri1, ex);
 
-    assertEquals(18, GetFeature("-°")._column);
-    assertEquals(10, GetFeature("⋃")._column);
-    assertEquals(12, GetFeature("div")._column);
-    assertEquals(34, GetFeature("first_lamdba_arg")._column);
-    assertEquals(52, GetFeature("second_lambda_arg")._column);
-    assertEquals(9, GetFeature("arg_one")._column);
-    assertEquals(18, GetFeature("arg_two")._column);
-    assertEquals(9, GetFeature("max")._column);
+    assertEquals(18, GetFeature("-°").column());
+    assertEquals(10, GetFeature("⋃").column());
+    assertEquals(12, GetFeature("div").column());
+    assertEquals(34, GetFeature("first_lamdba_arg").column());
+    assertEquals(52, GetFeature("second_lambda_arg").column());
+    assertEquals(9, GetFeature("arg_one").column());
+    assertEquals(18, GetFeature("arg_two").column());
+    assertEquals(9, GetFeature("max").column());
   }
 
   private SourcePosition GetFeature(String name)

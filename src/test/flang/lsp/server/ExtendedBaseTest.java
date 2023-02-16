@@ -45,7 +45,7 @@ public abstract class ExtendedBaseTest extends BaseTest
 
   protected static Position Position(SourcePosition pos)
   {
-    return new Position(pos._line - 1, pos._column - 1);
+    return new Position(pos.line() - 1, pos.column() - 1);
   }
 
   protected static TextDocumentPositionParams TextDocumentPosition(SourcePosition pos)

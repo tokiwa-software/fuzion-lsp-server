@@ -43,6 +43,7 @@ import dev.flang.lsp.server.util.Bridge;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.LexerTool;
 import dev.flang.shared.Util;
+import dev.flang.shared.SourcePositionTool;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
@@ -67,15 +68,14 @@ public class SemanticToken extends ANY
       // - map all special strings to normal strings plus operator(s)
       // - split mulitline comment
       .flatMap(t -> {
-        var startPlusOne = new SourcePosition(t.start()._sourceFile, t.start()._line, t.start()._column + 1);
         switch (t.token())
           {
           case t_stringBQ :    // '}+-*"' in "abc{x}+-*"
             return Stream.of(
               new TokenInfo(t.start(),
-                startPlusOne,
+                LexerTool.GoRight(t.start()),
                 t.text().substring(0, 1), Token.t_op),
-              new TokenInfo(startPlusOne,
+              new TokenInfo(LexerTool.GoRight(t.start()),
                 t.end(),
                 t.text().substring(1), Token.t_stringQQ));
           case t_stringQD :    // '"x is $' in "x is $x.".
@@ -84,26 +84,26 @@ public class SemanticToken extends ANY
           case t_StringDB :    // '+-*{' in "abc$x+-*{a+b}."
             return Stream.of(
               new TokenInfo(t.start(),
-                new SourcePosition(t.start()._sourceFile, t.start()._line,
-                  t.start()._column + Util.CodepointCount(t.text()) - 1),
+                SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line(),
+                  t.start().column() + Util.CodepointCount(t.text()) - 1),
                 t.text().substring(0, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
-                new SourcePosition(t.start()._sourceFile, t.start()._line,
-                  t.start()._column + Util.CodepointCount(t.text()) - 1),
+                SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line(),
+                  t.start().column() + Util.CodepointCount(t.text()) - 1),
                 t.end(),
                 t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
           case t_stringBD :    // '}+-*$' in "abc{x}+-*$x.".
           case t_stringBB :    // '}+-*{' in "abc{x}+-*{a+b}."
             return Stream.of(
-              new TokenInfo(t.start(), startPlusOne, "}",
+              new TokenInfo(t.start(), LexerTool.GoRight(t.start()), "}",
                 Token.t_op),
-              new TokenInfo(startPlusOne,
-                new SourcePosition(t.start()._sourceFile, t.start()._line,
-                  t.start()._column + Util.CodepointCount(t.text()) - 1),
+              new TokenInfo(LexerTool.GoRight(t.start()),
+                SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line(),
+                  t.start().column() + Util.CodepointCount(t.text()) - 1),
                 t.text().substring(1, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
-                new SourcePosition(t.start()._sourceFile, t.start()._line,
-                  t.start()._column + Util.CodepointCount(t.text()) - 1),
+                SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line(),
+                  t.start().column() + Util.CodepointCount(t.text()) - 1),
                 t.end(),
                 t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
           case t_comment :
@@ -113,8 +113,8 @@ public class SemanticToken extends ANY
               .mapToObj(
                 idx -> {
                   return new TokenInfo(
-                    new SourcePosition(t.start()._sourceFile, t.start()._line + idx, idx == 0 ? t.start()._column: 1),
-                    new SourcePosition(t.start()._sourceFile, t.start()._line + idx, Util.CharCount(lines[idx])),
+                    SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line() + idx, idx == 0 ? t.start().column(): 1),
+                    SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line() + idx, Util.CharCount(lines[idx])),
                     lines[idx],
                     Token.t_comment);
                 });
@@ -152,7 +152,7 @@ public class SemanticToken extends ANY
         var beginningOfFileToken =
           new TokenInfo(
             SourcePosition.notAvailable,
-            new SourcePosition(lexerTokens.get(x).start()._sourceFile, 1, 1),
+            new SourcePosition(lexerTokens.get(x).start()._sourceFile, 0),
             "",
             Token.t_undefined);
         var previousToken = x == 0 ? beginningOfFileToken: lexerTokens.get(x - 1);

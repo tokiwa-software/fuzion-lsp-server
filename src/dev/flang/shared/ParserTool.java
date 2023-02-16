@@ -247,9 +247,7 @@ public class ParserTool extends ANY
         }
       if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
         {
-          var sourceText = SourceText.getText(f.pos());
-          var lines = sourceText.split("\n").length;
-          return new SourcePosition(f.pos()._sourceFile, lines + 1, 1);
+          return new SourcePosition(f.pos()._sourceFile, f.pos()._sourceFile.byteLength());
         }
 
       var visitor = new FeatureVisitor() {
@@ -295,8 +293,8 @@ public class ParserTool extends ANY
           .orElse(result);
 
       if (POSTCONDITIONS)
-        ensure(f.pos()._line < result._line
-          || (f.pos()._line == result._line && f.pos()._column < result._column));
+        ensure(f.pos().line() < result.line()
+          || (f.pos().line() == result.line() && f.pos().column() < result.column()));
       return result;
     });
   }

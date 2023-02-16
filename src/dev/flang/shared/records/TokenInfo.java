@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Feature;
-import dev.flang.ast.Feature.State;
+import dev.flang.ast.AbstractFeature.State;
 import dev.flang.lsp.server.enums.TokenModifier; // NYI remove dependency
 import dev.flang.lsp.server.enums.TokenType; // NYI remove dependency
 import dev.flang.parser.Lexer.Token;
@@ -63,7 +63,7 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
    */
   private Integer line()
   {
-    return start._line == 0 ? 0: start._line - 1;
+    return start.line() == 0 ? 0: start.line() - 1;
   }
 
   /*
@@ -71,14 +71,14 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
   */
   private Integer startChar()
   {
-    if (start._column == 0)
+    if (start.column() == 0)
       {
         return 0;
       }
     return SourceText
       .LineAt(start)
       .codePoints()
-      .limit(start._column - 1)
+      .limit(start.column() - 1)
       .map(cp -> Character.charCount(cp))
       .sum();
   }
@@ -366,7 +366,7 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
   public static Integer KeyOf(SourcePosition pos)
   {
     // NYI better key
-    return pos._line * 1000 + pos._column;
+    return pos.line() * 1000 + pos.column();
   }
 
   public boolean IsWhitespace()

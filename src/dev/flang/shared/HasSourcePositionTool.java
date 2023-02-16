@@ -105,11 +105,11 @@ public class HasSourcePositionTool
         {
           return +1;
         }
-      if (position1._line == position2._line)
+      if (position1.line() == position2.line())
         {
-          return position1._column - position2._column;
+          return position1.column() - position2.column();
         }
-      return position1._line - position2._line;
+      return position1.line() - position2.line();
     };
   }
 
@@ -117,7 +117,7 @@ public class HasSourcePositionTool
     SourcePosition params)
   {
     return (astItem) -> {
-      return params._line == astItem.pos()._line;
+      return params.line() == astItem.pos().line();
     };
   }
 

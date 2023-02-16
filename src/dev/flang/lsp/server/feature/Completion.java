@@ -158,7 +158,7 @@ public class Completion
 
             // no errors in line before pos?
             if (!ParserTool.Errors(ParserTool.getUri(pos))
-              .anyMatch(x -> x.pos._line == pos._line && x.pos._column <= pos._column)
+              .anyMatch(x -> x.pos.line() == pos.line() && x.pos.column() <= pos.column())
               && QueryAST.InfixPostfixCompletionsAt(pos).count() > 0)
               {
                 return completions(

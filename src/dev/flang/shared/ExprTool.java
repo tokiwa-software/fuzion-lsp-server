@@ -39,6 +39,7 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
+import dev.flang.shared.HasSourcePositionTool;
 
 public class ExprTool extends ANY
 {
@@ -92,7 +93,7 @@ public class ExprTool extends ANY
     if (PRECONDITIONS)
       require(IsLamdaCall(expr));
 
-    var tokens = LexerTool.TokensFrom(new SourcePosition(expr.pos()._sourceFile, expr.pos()._line, 1))
+    var tokens = LexerTool.TokensFrom(SourcePositionTool.ByLine(expr.pos()._sourceFile, expr.pos().line()))
       .takeWhile(x -> x.start().compareTo(expr.pos()) <= 0)
       .collect(Collectors.toList());
 

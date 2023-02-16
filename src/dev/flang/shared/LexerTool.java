@@ -37,6 +37,7 @@ import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.shared.records.Tokens;
+import dev.flang.shared.SourcePositionTool;
 import dev.flang.util.ANY;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -69,7 +70,9 @@ public class LexerTool extends ANY
     return IO.WithTextInputStream(SourceText.getText(pos), () -> {
       var lexer = NewLexerStdIn();
       return Stream.generate(() -> {
-        var result = tokenInfo(lexer, pos._sourceFile);
+        // lexer has path stdin, so we pass sourcefile with original path
+        // and the bytes of the current lexer.
+        var result = tokenInfo(lexer, new SourceFile(pos._sourceFile._fileName, lexer.bytes()));
         advance(lexer);
         return result;
       }).takeWhile(tokenInfo -> tokenInfo.token() != Token.t_eof);
@@ -84,15 +87,12 @@ public class LexerTool extends ANY
   public static Stream<TokenInfo> TokensFrom(SourcePosition start)
   {
     if (PRECONDITIONS)
-      require(
-        start._line > SourceText.getText(start).lines().count()
-          || start._column - 1 <= Util.CodepointCount(SourceText.LineAt(start)));
+      require(start.bytePos() <= SourceText.getText(start).getBytes().length);
 
     return tokenCache.computeIfAbsent(SourceText.getText(start),
       (k) -> Tokenize(start).collect(Collectors.toUnmodifiableList()))
       .stream()
-      .dropWhile(x -> x.end()._line < start._line
-        || (x.end()._line == start._line && x.end()._column <= start._column));
+      .dropWhile(x -> start.bytePos() >= x.end().bytePos());
   }
 
   private static void advance(Lexer lexer)
@@ -131,10 +131,8 @@ public class LexerTool extends ANY
       .limit(2)
       .collect(Collectors.toList());
 
-    var eofPos = new SourcePosition(
-      params._sourceFile,
-      (int) SourceText.getText(params).lines().count() + 1,
-      1);
+    var eofPos = new SourcePosition(params._sourceFile,
+      params._sourceFile.byteLength() - 1);
 
     var eof = new TokenInfo(eofPos, eofPos, null, Token.t_eof);
 
@@ -142,8 +140,8 @@ public class LexerTool extends ANY
     var token2 = tokens.size() > 1 ? tokens.get(1): eof;
 
     // between two tokens
-    if (token1.end()._line == params._line
-      && token1.end()._column == params._column)
+    if (token1.end().line() == params.line()
+      && token1.end().column() == params.column())
       {
         return new Tokens(token1, token2);
       }
@@ -174,9 +172,9 @@ public class LexerTool extends ANY
   private static TokenInfo tokenInfo(Lexer lexer, SourceFile sf)
   {
     var startPos = lexer.sourcePos(lexer.pos());
-    var start = new SourcePosition(sf, startPos._line, startPos._column);
+    var start = new SourcePosition(sf, startPos.bytePos());
     var endPos = lexer.sourcePos(lexer.bytePos());
-    var end = new SourcePosition(sf, endPos._line, endPos._column);
+    var end = new SourcePosition(sf, endPos.bytePos());
     var tokenText = lexer.asString(lexer.pos(), lexer.bytePos());
     var token = lexer.current();
     return new TokenInfo(start, end, tokenText, token);
@@ -190,7 +188,7 @@ public class LexerTool extends ANY
   public static boolean isCommentLine(SourcePosition params)
   {
     return TokensFrom(params)
-      .filter(x -> x.start()._line == params._line)
+      .filter(x -> x.start().line() == params.line())
       .dropWhile(x -> x.token() == Token.t_ws)
       .findFirst()
       .map(x -> x.token() == Token.t_comment)
@@ -217,11 +215,21 @@ public class LexerTool extends ANY
    */
   public static SourcePosition GoLeft(SourcePosition p)
   {
-    if (p._column == 1)
+    if (p.column() == 1)
       {
         return p;
       }
-    return new SourcePosition(p._sourceFile, p._line, p._column - 1);
+    return SourcePositionTool.ByLineColumn(p._sourceFile, p.line(), p.column() - 1);
+  }
+
+  /**
+   * Move cursor one right. If at end of line same position.
+   * @param p
+   * @return
+   */
+  public static SourcePosition GoRight(SourcePosition p)
+  {
+    return SourcePositionTool.ByLineColumn(p._sourceFile, p.line(), p.column() + 1);
   }
 
   /**

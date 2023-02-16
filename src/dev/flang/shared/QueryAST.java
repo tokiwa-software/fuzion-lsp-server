@@ -100,12 +100,12 @@ public class QueryAST extends ANY
     return IntStream
       .range(0, (int) lines.size())
       .mapToObj(x -> {
-        if (x + 1 != pos._line)
+        if (x + 1 != pos.line())
           {
             return lines.get(x);
           }
-        return lines.get(x).substring(0, pos._column - 1) + "�"
-          + lines.get(x).substring(pos._column - 1, lines.get(x).length());
+        return lines.get(x).substring(0, pos.column() - 1) + "�"
+          + lines.get(x).substring(pos.column() - 1, lines.get(x).length());
       })
       .collect(Collectors.joining(System.lineSeparator()));
   }
@@ -178,7 +178,13 @@ public class QueryAST extends ANY
    */
   public static Stream<AbstractFeature> DotCallCompletionsAt(SourcePosition params)
   {
+    var tokenBeforeDot = LexerTool
+      .TokensAt(LexerTool.GoLeft(params))
+      .left()
+      .token();
     return TargetFeature(params)
+      // NYI this should be simplified
+      .map(tf -> tokenBeforeDot == Token.t_type && !tf.isTypeFeature() ? tf.typeFeature() : tf)
       .map(tf -> Candidates(tf)
         // filter infix, prefix, postfix features
         .filter(x -> !x.featureName().baseName().contains(" ")))
@@ -347,7 +353,7 @@ public class QueryAST extends ANY
         if (astItem instanceof AbstractCall c)
           {
             return ErrorHandling.ResultOrDefault(() -> {
-              if (token.map(t -> c.pos()._column + Util.CodepointCount(t.text()) >= params._column)
+              if (token.map(t -> c.pos().column() + Util.CodepointCount(t.text()) >= params.column())
                 .orElse(false)
                 && !c.calledFeature().equals(Types.f_ERROR))
                 {
@@ -380,13 +386,13 @@ public class QueryAST extends ANY
     return ASTWalker.Features(SourceText.UriOf(params))
       .filter(af -> !FeatureTool.IsArgument(af))
       // line
-      .filter(x -> params._line == x.pos()._line)
+      .filter(x -> params.line() == x.pos().line())
       .filter(x -> {
-        var start = x.pos()._column;
+        var start = x.pos().column();
         // NYI should work most of the time but there might be additional
         // whitespace?
         var end = start + Util.CodepointCount(x.featureName().baseName());
-        return start <= params._column && params._column <= end;
+        return start <= params.column() && params.column() <= end;
       })
       .findAny();
   }
@@ -419,7 +425,7 @@ public class QueryAST extends ANY
         return SourcePositionTool.Compare(params, endOfFeature) <= 0 &&
           SourcePositionTool.Compare(params, startOfFeature) > 0;
       })
-      .filter(f -> f.pos()._column < params._column)
+      .filter(f -> f.pos().column() < params.column())
       .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
       .findFirst();
   }
@@ -434,19 +440,19 @@ public class QueryAST extends ANY
       .filter(x -> x.getKey() instanceof StrConst)
       .map(x -> (StrConst) x.getKey())
       .anyMatch(x -> {
-        if (x.pos()._line != params._line)
+        if (x.pos().line() != params.line())
           {
             return false;
           }
-        var start = x.pos()._column;
-        var end = x.pos()._column + Util.CharCount(x._str);
-        if (SourceText.LineAt(x.pos()).charAt(x.pos()._column - 1) == '\"')
+        var start = x.pos().column();
+        var end = x.pos().column() + Util.CharCount(x._str);
+        if (SourceText.LineAt(x.pos()).charAt(x.pos().column() - 1) == '\"')
           {
-            return start < params._column
-              && params._column - 1 <= end;
+            return start < params.column()
+              && params.column() - 1 <= end;
           }
-        return start < params._column
-          && params._column <= end;
+        return start < params.column()
+          && params.column() <= end;
       });
   }
 

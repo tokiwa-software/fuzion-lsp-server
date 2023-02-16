@@ -58,8 +58,7 @@ public class SignatureHelperTest extends BaseTest
   {
     SourceText.setText(uri1, """
       ex =>
-        say
-          """ + " ");
+        say""" + " ");
     assertEquals("say() => unit : Any", LabelAt(uri1, new Position(1, 6), 0));
     assertEquals("say(s Any) => unit : Any", LabelAt(uri1, new Position(1, 6), 1));
   }

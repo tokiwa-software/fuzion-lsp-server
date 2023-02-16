@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
@@ -356,12 +357,11 @@ public class CompletionTest extends ExtendedBaseTest
   }
 
   @Test
-  public void NoCompletionsInIncompleteFeature()
+  public void CompletionsInIncompleteFeature()
   {
     var sourceText = """
       ex =>
-        my_feat(a i32)
-        """ + " ";
+        my_feat(a i32) """;
 
     SourceText.setText(uri1, sourceText);
 
@@ -375,7 +375,7 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(completions.count() == 0);
 
     completions = Completion.getCompletions(params(uri1, 1, 17, Completion.TriggerCharacters.Space));
-    assertTrue(completions.count() == 0);
+    assertTrue(completions.findFirst().get().getInsertText().equals("is"));
   }
 
 

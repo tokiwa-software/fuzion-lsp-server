@@ -98,7 +98,7 @@ public class Rename extends ANY
     var changes = renamePositions
       .map(start -> {
         var end =
-          new SourcePosition(start._sourceFile, start._line, start._column + LengthOfFeatureIdentifier(feature.get()));
+          SourcePositionTool.ByLineColumn(start._sourceFile, start.line(), start.column() + LengthOfFeatureIdentifier(feature.get()));
         return Bridge.ToLocation(start, end);
       })
       .map(location -> new SimpleEntry<String, TextEdit>(location.getUri(),
@@ -126,8 +126,8 @@ public class Rename extends ANY
         if (IsAtFunKeyword(pos))
           {
             var whitespace =
-              new SourcePosition(pos._sourceFile, pos._line,
-                pos._column + Util.CharCount(Lexer.Token.t_fun.toString()));
+              SourcePositionTool.ByLineColumn(pos._sourceFile, pos.line(),
+                pos.column() + Util.CharCount(Lexer.Token.t_fun.toString()));
             pos = LexerTool
               .NextTokenOfType(whitespace, Util.ArrayToSet(new Token[]
               {
@@ -156,8 +156,8 @@ public class Rename extends ANY
             return Stream.empty();
           }
 
-        return Stream.of(new SourcePosition(f.pos()._sourceFile, f.pos()._line,
-          f.pos()._column + Util.CharCount(f.featureName().baseName()) + Util.CodepointCount(whitespace.text())));
+        return Stream.of(SourcePositionTool.ByLineColumn(f.pos()._sourceFile, f.pos().line(),
+          f.pos().column() + Util.CharCount(f.featureName().baseName()) + Util.CodepointCount(whitespace.text())));
       });
 
 
@@ -168,12 +168,12 @@ public class Rename extends ANY
       .flatMap(x -> {
         // NYI better if we had the needed and more correct info directly
         // in the AST
-        return LexerTool.NextTokenOfType(new SourcePosition(x._sourceFile, x._line, 1), Util.ArrayToSet(new Token[]
+        return LexerTool.NextTokenOfType(SourcePositionTool.ByLine(x._sourceFile, x.line()), Util.ArrayToSet(new Token[]
           {
               Token.t_set
           })).map(set -> {
             var whitespace =
-              LexerTool.TokensAt(new SourcePosition(x._sourceFile, set.end()._line, set.end()._column)).right();
+              LexerTool.TokensAt(new SourcePosition(x._sourceFile, set.end().bytePos())).right();
             if (CHECKS)
               check(whitespace.token() == Token.t_ws);
             return whitespace.end();
@@ -202,11 +202,11 @@ public class Rename extends ANY
   private static SourcePosition PositionOfChoiceGeneric(String name, AbstractFeature f)
   {
     return LexerTool
-      .TokensFrom(new SourcePosition(f.pos()._sourceFile, 1, 1))
+      .TokensFrom(new SourcePosition(f.pos()._sourceFile, 0))
       .filter(token -> name.equals(token.text()))
       .filter(token -> {
         return SourcePositionTool.Compare(
-          token.start(), new SourcePosition(token.start()._sourceFile, f.pos()._line, f.pos()._column)) > 0;
+          token.start(), new SourcePosition(token.start()._sourceFile, f.pos().bytePos())) > 0;
       })
       .findFirst()
       .get()

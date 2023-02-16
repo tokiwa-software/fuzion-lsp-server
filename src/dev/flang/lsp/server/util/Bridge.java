@@ -42,6 +42,8 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
+import dev.flang.shared.SourcePositionTool;
+import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
 import dev.flang.util.ANY;
 import dev.flang.util.SourceFile;
@@ -57,7 +59,7 @@ public class Bridge extends ANY
   {
     if (PRECONDITIONS)
       require(!sourcePosition.isBuiltIn());
-    return new Position(sourcePosition._line - 1, sourcePosition._column - 1);
+    return new Position(sourcePosition.line() - 1, sourcePosition.column() - 1);
   }
 
   public static Location ToLocation(SourcePosition start, SourcePosition end)
@@ -80,9 +82,9 @@ public class Bridge extends ANY
     var bareNamePosition = FeatureTool.BareNamePosition(feature);
     return new Range(
       ToPosition(bareNamePosition),
-      ToPosition(new SourcePosition(bareNamePosition._sourceFile,
-        bareNamePosition._line,
-        bareNamePosition._column + Util.CharCount(FeatureTool.BareName(feature)))));
+      ToPosition(SourcePositionTool.ByLineColumn(bareNamePosition._sourceFile,
+        bareNamePosition.line(),
+        bareNamePosition.column() + Util.CharCount(FeatureTool.BareName(feature)))));
   }
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
@@ -126,7 +128,7 @@ public class Bridge extends ANY
 
   public static SourcePosition ToSourcePosition(TextDocumentPositionParams params)
   {
-    return new SourcePosition(ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
+    return SourcePositionTool.ByLineColumn(ToSourceFile(Util.toURI(params.getTextDocument().getUri())),
       params.getPosition().getLine() + 1, params.getPosition().getCharacter() + 1);
   }
 
@@ -176,6 +178,6 @@ public class Bridge extends ANY
       {
         return SourcePosition.builtIn._sourceFile;
       }
-    return new SourceFile(filePath);
+    return new SourceFile(filePath, SourceText.getText(uri).getBytes());
   }
 }

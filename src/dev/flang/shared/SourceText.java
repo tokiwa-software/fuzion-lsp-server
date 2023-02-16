@@ -150,8 +150,9 @@ public class SourceText extends ANY
    */
   public static String LineAt(SourcePosition pos)
   {
-    return SourceText.getText(pos)
-      .split("\n")[pos._line - 1];
+    return pos.line() == 0 ?
+      "" : SourceText.getText(pos)
+      .split("\n")[pos.line() - 1];
   }
 
   /**
