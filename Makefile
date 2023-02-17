@@ -37,7 +37,7 @@ JUNIT_ARGS = --fail-if-no-tests --disable-banner -cp $(CLASSPATH) -p test.flang
 JUNIT_ARGS_PARALLEL = --config=junit.jupiter.execution.parallel.enabled=true --config=junit.jupiter.execution.parallel.mode.default=concurrent
 LANGUAGE_SERVER_PORT ?= 3000
 
-JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.18.0.jar:jars/org.eclipse.lsp4j.generator-0.18.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.18.0.jar:jars/gson-2.10.jar:jars/junit-platform-console-standalone-1.8.2.jar:jars/junit-jupiter-api-5.8.2.jar:jars/org.eclipse.xtext.xbase.lib-2.28.0.jar:jars/guava-31.1-jre.jar
+JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.20.0.jar:jars/org.eclipse.lsp4j.generator-0.20.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.20.0.jar:jars/gson-2.10.1.jar:jars/junit-platform-console-standalone-1.8.2.jar:jars/junit-jupiter-api-5.8.2.jar:jars/org.eclipse.xtext.xbase.lib-2.29.0.jar:jars/guava-31.1-jre.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 # on windows classpath separator is ; on linux it is :
@@ -74,21 +74,21 @@ debug_supended: classes
 	mkdir -p runDir
 	java $(DEBUGGER_SUSPENDED) -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
-jars/org.eclipse.lsp4j-0.18.0.jar:
+jars/org.eclipse.lsp4j-0.20.0.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.18.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.20.0/$(@F)
 
-jars/org.eclipse.lsp4j.generator-0.18.0.jar:
+jars/org.eclipse.lsp4j.generator-0.20.0.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.18.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.20.0/$(@F)
 
-jars/org.eclipse.lsp4j.jsonrpc-0.18.0.jar:
+jars/org.eclipse.lsp4j.jsonrpc-0.20.0.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.18.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.20.0/$(@F)
 
-jars/gson-2.10.jar:
+jars/gson-2.10.1.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/$(@F)
 
 jars/junit-platform-console-standalone-1.8.2.jar:
 	mkdir -p $(@D)
@@ -99,9 +99,9 @@ jars/junit-jupiter-api-5.8.2.jar:
 	wget -O $@ https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.8.2/$(@F)
 
 # https://github.com/eclipse/lsp4j/issues/494
-jars/org.eclipse.xtext.xbase.lib-2.28.0.jar:
+jars/org.eclipse.xtext.xbase.lib-2.29.0.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.xbase.lib/2.28.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/xtext/org.eclipse.xtext.xbase.lib/2.29.0/$(@F)
 
 # https://github.com/eclipse/lsp4j/issues/494
 jars/guava-31.1-jre.jar:

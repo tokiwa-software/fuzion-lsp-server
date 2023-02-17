@@ -276,7 +276,7 @@ public class ParserTool extends ANY
         public void         action      (Match          m, AbstractFeature outer) { FoundPos(m.pos()); }
         public void         action      (Tag            b, AbstractFeature outer) { FoundPos(b.pos()); }
         public Expr         action      (This           t, AbstractFeature outer) { FoundPos(t.pos()); return t; }
-        public AbstractType action      (AbstractType   t, AbstractFeature outer) { FoundPos(t.pos()); return t; }
+        public AbstractType action      (AbstractType   t, AbstractFeature outer) { FoundPos(t.pos2BeRemoved()); return t; }
       };
       f.visitCode(visitor);
 
