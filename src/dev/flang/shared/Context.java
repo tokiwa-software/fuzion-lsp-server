@@ -31,7 +31,7 @@ import dev.flang.util.FuzionOptions;
 
 public class Context
 {
-  public static FuzionOptions FuzionOptions = new FuzionOptions(0, 0, false, true);
+  public static FuzionOptions FuzionOptions = new FuzionOptions(0, 0, false, true, SourceText.FuzionHome);
   public static Logger Logger = new DummyLogger();
   public static boolean MiddleEndEnabled = false;
 }

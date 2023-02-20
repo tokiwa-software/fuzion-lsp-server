@@ -41,6 +41,7 @@ import dev.flang.shared.Context;
 import dev.flang.shared.ErrorHandling;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.Util;
+import dev.flang.shared.SourceText;
 import dev.flang.util.FuzionOptions;
 
 public class Config
@@ -171,7 +172,8 @@ public class Config
           ErrorHandling.ResultOrDefault(() -> options.get("verbosity").getAsInt(), 0),
           ErrorHandling.ResultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
           ErrorHandling.ResultOrDefault(() -> options.get("safety").getAsBoolean(), true),
-          ErrorHandling.ResultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true));
+          ErrorHandling.ResultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true),
+          SourceText.FuzionHome);
 
         Context.Logger.Log("[Config] FuzionOptions: verbosity(" + Context.FuzionOptions.verbose() + "), debugLevel("
           + Context.FuzionOptions.fuzionDebugLevel() + "), safety(" + Context.FuzionOptions.fuzionSafety() + ").");
