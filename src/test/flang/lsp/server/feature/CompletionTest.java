@@ -468,12 +468,12 @@ public class CompletionTest extends ExtendedBaseTest
   public void CompletionInActualArg()
   {
     var sourceText = """
-      map_of(K type : ordered K, V type, kvs array (tuple K V)) map K V is
-        psMap kvs. kvs.length kvs.length+1
+      map_of(K type : has_total_order, V type, kvs array (tuple K V)) map K V is
+        ps_map kvs. kvs.length kvs.length+1
         """;
 
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 1, 12, Completion.TriggerCharacters.Dot));
+    var completions = Completion.getCompletions(params(uri1, 1, 13, Completion.TriggerCharacters.Dot));
     assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("internalArray")));
   }
 

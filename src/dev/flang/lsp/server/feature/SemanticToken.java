@@ -151,7 +151,7 @@ public class SemanticToken extends ANY
       .mapToObj(x -> {
         var beginningOfFileToken =
           new TokenInfo(
-            SourcePosition.notAvailable,
+            new SourcePosition(lexerTokens.get(x).start()._sourceFile, 0),
             new SourcePosition(lexerTokens.get(x).start()._sourceFile, 0),
             "",
             Token.t_undefined);

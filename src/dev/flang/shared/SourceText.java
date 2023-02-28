@@ -95,11 +95,9 @@ public class SourceText extends ANY
    */
   private static String ReadFromDisk(URI uri)
   {
-    var path = Path.of(uri);
     try
       {
-        var lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-        return String.join(System.lineSeparator(), lines);
+        return Files.readString(Path.of(uri), StandardCharsets.UTF_8);
       }
     catch (IOException e)
       {

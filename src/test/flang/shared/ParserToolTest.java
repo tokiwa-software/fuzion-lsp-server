@@ -87,9 +87,8 @@ public class ParserToolTest extends BaseTest
   public void EndOfFeatureStdLib()
   {
     var yak = DeclaredInUniverse("yak", 1);
-    // NYI check why this is not 35/1
-    assertEquals(34, ParserTool.endOfFeature(yak).line());
-    assertEquals(34, ParserTool.endOfFeature(yak).column());
+    assertEquals(35, ParserTool.endOfFeature(yak).line());
+    assertEquals(1, ParserTool.endOfFeature(yak).column());
   }
 
 

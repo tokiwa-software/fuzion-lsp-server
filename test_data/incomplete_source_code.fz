@@ -1,0 +1,6 @@
+ex =>
+  something is
+    data := say "asdf"
+
+  something2 : something is
+    redef data :=

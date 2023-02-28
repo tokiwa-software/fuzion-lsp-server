@@ -153,7 +153,7 @@ public class DiagnosticsTest extends ExtendedBaseTest
           """;
     SourceText.setText(uri1, sourceText);
     var diagnostics = Diagnostics.getDiagnostics(uri1);
-    assertTrue(diagnostics.anyMatch(x -> x.getRange().getStart().getLine() == 6));
+    assertTrue(diagnostics.anyMatch(x -> x.getRange().getStart().getLine() == 7));
   }
 
 

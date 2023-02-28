@@ -206,10 +206,10 @@ public class RenameTest extends ExtendedBaseTest
       ex =>
         a is
         b (a a) is
-          say a
+          say b.this.a
           """;
     SourceText.setText(uri1, sourceText);
-    var textEdits = Rename.getWorkspaceEdit(Params(uri1, 3, 8, "c"))
+    var textEdits = Rename.getWorkspaceEdit(Params(uri1, 3, 15, "c"))
       .getChanges()
       .values()
       .stream()
@@ -227,9 +227,9 @@ public class RenameTest extends ExtendedBaseTest
 
     assertTrue(textEdits.stream().anyMatch(edit -> {
       return edit.getRange().getStart().getLine() == 3
-        && edit.getRange().getStart().getCharacter() == 8
+        && edit.getRange().getStart().getCharacter() == 15
         && edit.getRange().getEnd().getLine() == 3
-        && edit.getRange().getEnd().getCharacter() == 9;
+        && edit.getRange().getEnd().getCharacter() == 16;
     }));
 
   }

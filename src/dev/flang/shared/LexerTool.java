@@ -132,9 +132,9 @@ public class LexerTool extends ANY
       .collect(Collectors.toList());
 
     var eofPos = new SourcePosition(params._sourceFile,
-      params._sourceFile.byteLength() - 1);
+      params._sourceFile.byteLength());
 
-    var eof = new TokenInfo(eofPos, eofPos, null, Token.t_eof);
+    var eof = new TokenInfo(eofPos, eofPos, "", Token.t_eof);
 
     var token1 = tokens.size() > 0 ? tokens.get(0): eof;
     var token2 = tokens.size() > 1 ? tokens.get(1): eof;

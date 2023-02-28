@@ -453,4 +453,12 @@ public class SemanticTokenTest extends ExtendedBaseTest
     AssertBasicDataSanity(semanticTokens);
   }
 
+  @Test
+  public void SemanticTokenRegression2()
+  {
+    SourceText.setText(uri1, Read("test_data/incomplete_source_code.fz"));
+    var semanticTokens = SemanticToken.getSemanticTokens(Params(uri1));
+    AssertBasicDataSanity(semanticTokens);
+  }
+
 }
