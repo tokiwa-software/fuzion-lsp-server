@@ -49,7 +49,7 @@ public class CallTool extends ANY
       && !c.calledFeature().isBuiltInPrimitive()
       && !c.calledFeature().isTypeParameter()
       && !c.calledFeature().qualifiedName().equals("fuzion.sys")
-      && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array")
+      && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array_init")
       && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array.set_no_pre_condition")
       && !c.calledFeature().qualifiedName().equals("unit")
       && !FeatureTool.IsInternal(c.calledFeature());
