@@ -468,7 +468,7 @@ public class QueryAST extends ANY
           Stream.of(feature),
           FeatureTool.OuterFeatures(feature),
           feature.inherits().stream().map(c -> c.calledFeature()))
-          .filter(f -> !TypeTool.ContainsError(f.thisType()))
+          .filter(f -> !TypeTool.ContainsError(f.selfType()))
           .flatMap(f -> {
             return ParserTool.DeclaredFeatures(f);
           })

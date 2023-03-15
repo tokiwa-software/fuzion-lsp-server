@@ -132,7 +132,7 @@ public class ParserCacheItem
       try
         {
           return new LanguageServerEffects(f).effects()
-            .successors(Clazzes.clazz(af.thisType())._idInFUIR)
+            .successors(Clazzes.clazz(af.selfType())._idInFUIR)
             .stream()
             .map(x -> {
               try

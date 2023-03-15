@@ -404,7 +404,7 @@ public class FeatureTool extends ANY
     var uri = ParserTool.getUri(af.pos());
     var result = ASTWalker
       .Features(uri)
-      .anyMatch(f -> FeatureIsChoiceMember(f.thisType(), af)
+      .anyMatch(f -> FeatureIsChoiceMember(f.selfType(), af)
         || f.hasResultField() && FeatureIsChoiceMember(f.resultType(), af));
     return result;
   }
@@ -414,7 +414,8 @@ public class FeatureTool extends ANY
     return at.isChoice()
       && at.choiceGenerics()
         .stream()
-        .anyMatch(t -> t.equals(af.thisType()));
+        .map(t -> t.featureOfType().selfType())
+        .anyMatch(t -> t.equals(af.selfType()));
   }
 
   public static boolean DoesInherit(AbstractFeature af)

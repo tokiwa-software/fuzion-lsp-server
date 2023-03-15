@@ -139,7 +139,7 @@ public class SignatureHelper extends ANY
     return calledFeature.arguments()
       .stream()
       .map(
-        arg -> new ParameterInformation("NYI" + arg.featureName().baseName() + " " + arg.thisType().toString()))
+        arg -> new ParameterInformation("NYI" + arg.featureName().baseName() + " " + arg.selfType().toString()))
       .collect(Collectors.toList());
   }
 

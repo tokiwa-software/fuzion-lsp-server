@@ -172,7 +172,7 @@ public class Completion
                   .filter(af -> af.isConstructor() || af.isChoice())
                   .filter(af -> !af.featureName().baseName().contains(" "))
                   // NYI consider generics
-                  .map(af -> af.thisType().name())
+                  .map(af -> af.selfType().name())
                   .distinct()
                   .map(name -> buildCompletionItem(name, name, CompletionItemKind.TypeParameter));
 
