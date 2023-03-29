@@ -165,7 +165,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 2, 6, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("bytes")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("fract")));
   }
 
   @Test
