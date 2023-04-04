@@ -148,9 +148,19 @@ public class SourceText extends ANY
    */
   public static String LineAt(SourcePosition pos)
   {
-    return pos.line() == 0 ?
-      "" : SourceText.getText(pos)
-      .split("\n")[pos.line() - 1];
+    if (pos.line() == 0)
+    {
+      return "";
+    }
+
+    var s = SourceText
+      .getText(pos)
+      .split("\\r?\\n");
+
+    return s.length == pos.line() - 1
+      // empty line at end is discarded by split
+      ? ""
+      : s[pos.line() - 1];
   }
 
   /**

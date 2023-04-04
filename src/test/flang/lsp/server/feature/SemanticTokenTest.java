@@ -284,6 +284,15 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  public void MultilineStrings()
+  {
+    SourceText.setText(uri1, Read(Path.of("fuzion/tests/strings_multiline/multiline_strings_test.fz")));
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params(uri1));
+    AssertBasicDataSanity(semanticTokens);
+  }
+
+  @Test
   public void GetSemanticTokensPrefixInfixPostfix() throws IOException
   {
     SourceText.setText(uri1, Read(Path.of("fuzion/lib/bitset.fz")));

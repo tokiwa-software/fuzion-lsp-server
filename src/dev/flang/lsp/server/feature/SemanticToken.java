@@ -42,8 +42,8 @@ import dev.flang.lsp.server.enums.TokenType;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.LexerTool;
-import dev.flang.shared.Util;
 import dev.flang.shared.SourcePositionTool;
+import dev.flang.shared.Util;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
@@ -66,7 +66,6 @@ public class SemanticToken extends ANY
         Bridge.ToSourcePosition(
           new TextDocumentPositionParams(params.getTextDocument(), new Position(0, 0))))
       // - map all special strings to normal strings plus operator(s)
-      // - split mulitline comment
       .flatMap(t -> {
         switch (t.token())
           {
@@ -84,12 +83,12 @@ public class SemanticToken extends ANY
           case t_StringDB :    // '+-*{' in "abc$x+-*{a+b}."
             return Stream.of(
               new TokenInfo(t.start(),
-                SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line(),
-                  t.start().column() + Util.CodepointCount(t.text()) - 1),
+                SourcePositionTool.ByLineColumn(t.end()._sourceFile, t.end().line(),
+                  t.end().column() - 2),
                 t.text().substring(0, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
-                SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line(),
-                  t.start().column() + Util.CodepointCount(t.text()) - 1),
+                SourcePositionTool.ByLineColumn(t.end()._sourceFile, t.end().line(),
+                  t.end().column() - 1),
                 t.end(),
                 t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
           case t_stringBD :    // '}+-*$' in "abc{x}+-*$x.".
@@ -106,18 +105,6 @@ public class SemanticToken extends ANY
                   t.start().column() + Util.CodepointCount(t.text()) - 1),
                 t.end(),
                 t.text().substring(Util.CharCount(t.text()) - 1, Util.CharCount(t.text())), Token.t_op));
-          case t_comment :
-            var lines = t.text()
-              .split("\\r?\\n");
-            return IntStream.range(0, (int) lines.length)
-              .mapToObj(
-                idx -> {
-                  return new TokenInfo(
-                    SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line() + idx, idx == 0 ? t.start().column(): 1),
-                    SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line() + idx, Util.CharCount(lines[idx])),
-                    lines[idx],
-                    Token.t_comment);
-                });
           // discard these tokens
           case t_error :
           case t_ws :
@@ -141,7 +128,35 @@ public class SemanticToken extends ANY
             return Stream.of(t);
           }
       })
+      .flatMap(t -> {
+        return t.start().line() == t.end().line()
+          ? Stream.of(t)
+          : splitToken(t);
+      })
       .collect(Collectors.toList());
+  }
+
+  /**
+   * tokens like comments, multiline strings can extend over more than one line.
+   * split them up
+   */
+  private static Stream<? extends TokenInfo> splitToken(TokenInfo t)
+  {
+    var lines = t
+      .text()
+      .split("\\r?\\n");
+
+    return IntStream.range(0, (int) lines.length)
+      .filter(idx -> !lines[idx].isBlank())
+      .mapToObj(
+        idx -> {
+          var col = idx == 0 ? t.start().column(): 1;
+          return new TokenInfo(
+            SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line() + idx, col),
+            SourcePositionTool.ByLineColumn(t.start()._sourceFile, t.start().line() + idx, col - 1 + Util.CharCount(lines[idx])),
+            lines[idx],
+            t.token());
+      });
   }
 
   private static List<Integer> SemanticTokenData(List<TokenInfo> lexerTokens)
