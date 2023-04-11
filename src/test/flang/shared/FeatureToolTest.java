@@ -44,7 +44,7 @@ public class FeatureToolTest extends BaseTest
   {
     SourceText.setText(uri1, UnknownCall);
     var ast = FeatureTool.AST(uri1);
-    assertTrue(ast.contains("Call:hasInterval"));
+    assertTrue(ast.contains("Call:has_interval"));
     assertTrue(ast.contains("Call:called feature unknown"));
   }
 
@@ -134,7 +134,7 @@ public class FeatureToolTest extends BaseTest
   public void BaseNamePositionTest()
   {
     var ex = """
-      i33(val i33) : wrappingInteger i33, hasInterval i33, i33s is
+      i33(val i33) : wrappingInteger i33, has_interval i33, i33s is
         redef  prefix  -° i33 is intrinsic
         infix  ⋃ (other i33) is abstract
         private  div (other i33) i33 is intrinsic

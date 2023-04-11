@@ -173,33 +173,6 @@ public class RenameTest extends ExtendedBaseTest
   }
 
   @Test
-  public void RenameFun() throws Exception
-  {
-    var sourceText = """
-      factors is
-        print(i i32) =>
-          yak " $i"
-        (1..12) | fun print
-            """;
-
-    SourceText.setText(uri1, sourceText);
-
-    var values = Rename.getWorkspaceEdit(Params(uri1, 1, 2, "write"))
-      .getChanges()
-      .values();
-    assertEquals(1, values.size());
-    var textEdits = values.stream().findFirst().get();
-    assertEquals(2, textEdits.size());
-    assertTrue(textEdits.stream().anyMatch(edit -> {
-      return edit.getRange().getStart().getLine() == 3
-        && edit.getRange().getStart().getCharacter() == 16
-        && edit.getRange().getEnd().getLine() == 3
-        && edit.getRange().getEnd().getCharacter() == 21;
-    }));
-
-  }
-
-  @Test
   public void RenameArg()
   {
     var sourceText = """

@@ -171,11 +171,11 @@ public class LexerTool extends ANY
    */
   private static TokenInfo tokenInfo(Lexer lexer, SourceFile sf)
   {
-    var startPos = lexer.sourcePos(lexer.pos());
+    var startPos = lexer.sourcePos(lexer.tokenPos());
     var start = new SourcePosition(sf, startPos.bytePos());
     var endPos = lexer.sourcePos(lexer.bytePos());
     var end = new SourcePosition(sf, endPos.bytePos());
-    var tokenText = lexer.asString(lexer.pos(), lexer.bytePos());
+    var tokenText = lexer.asString(lexer.tokenPos(), lexer.bytePos());
     var token = lexer.current();
     return new TokenInfo(start, end, tokenText, token);
   }

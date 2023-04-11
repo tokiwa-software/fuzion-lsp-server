@@ -121,23 +121,7 @@ public class Rename extends ANY
   {
     var callsSourcePositions = FeatureTool
       .CallsTo(featureToRename)
-      .map(entry -> entry.getKey().pos())
-      .map(pos -> {
-        if (IsAtFunKeyword(pos))
-          {
-            var whitespace =
-              SourcePositionTool.ByLineColumn(pos._sourceFile, pos.line(),
-                pos.column() + Util.CharCount(Lexer.Token.t_fun.toString()));
-            pos = LexerTool
-              .NextTokenOfType(whitespace, Util.ArrayToSet(new Token[]
-              {
-                  Token.t_ident
-              }))
-              .map(x -> x.start())
-              .orElse(pos);
-          }
-        return pos;
-      });
+      .map(entry -> entry.getKey().pos());
     var pos = FeatureTool.BareNamePosition(featureToRename);
 
     // positions where feature is used as type
@@ -235,12 +219,6 @@ public class Rename extends ANY
         return new PrepareRenameResult(LSP4jUtils.Range(token), token.text());
       })
       .orElse(new PrepareRenameResult());
-  }
-
-
-  private static boolean IsAtFunKeyword(SourcePosition params)
-  {
-    return LexerTool.TokensAt(params).right().token() == Lexer.Token.t_fun;
   }
 
 }
