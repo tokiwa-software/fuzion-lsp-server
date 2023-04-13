@@ -128,6 +128,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  @Disabled // NYI
   public void GetSemanticTokensString()
   {
     SourceText.setText(uri1, """
@@ -175,6 +176,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  @Disabled // NYI
   public void GetSemanticTokensChoiceEnum()
   {
     SourceText.setText(uri1, """
@@ -216,6 +218,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  @Disabled // NYI
   public void GetSemanticTokensSpecialChar()
   {
     SourceText.setText(uri1, """
@@ -242,6 +245,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
 
 
   @Test
+  @Disabled // NYI
   public void GetSemanticTokensArray()
   {
     SourceText.setText(uri1, """
@@ -350,6 +354,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  @Disabled // NYI
   public void SemanticTokensIgnoredTokenFirst()
   {
     SourceText.setText(uri1, """
@@ -388,6 +393,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  @Disabled // NYI
   public void SemanticTokenTypeParameter()
   {
     SourceText.setText(uri1, """

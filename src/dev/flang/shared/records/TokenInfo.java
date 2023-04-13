@@ -353,13 +353,15 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
   // how can we find the feature/call of an ident token more quickly?
   private Optional<HasSourcePosition> GetItem()
   {
-    var key = KeyOf(start);
-    if (!Pos2Items().containsKey(key))
-      {
-        return Optional.empty();
-      }
-    return Optional.of(Pos2Items()
-      .get(key));
+    return Optional.empty();
+    // NYI Too slow!
+    // var key = KeyOf(start);
+    // if (!Pos2Items().containsKey(key))
+    //   {
+    //     return Optional.empty();
+    //   }
+    // return Optional.of(Pos2Items()
+    //   .get(key));
   }
 
   // NYI move this somewhere better
