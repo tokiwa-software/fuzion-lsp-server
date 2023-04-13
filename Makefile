@@ -142,20 +142,20 @@ run_tests_suspended: classes
 async-profiler:
 	git clone https://github.com/jvm-profiling-tools/async-profiler
 
-async-profiler/build/libasyncProfiler.so: async-profiler
+async-profiler/build/lib/libasyncProfiler.so: async-profiler
 	make -C async-profiler
 	sudo sysctl kernel.perf_event_paranoid=1
 
 .PHONY: profile/tests
 profile/tests: DATE = $(shell date +%y%m%d-%H%M%S)
-profile/tests: classes async-profiler/build/libasyncProfiler.so
-	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS)
+profile/tests: classes async-profiler/build/lib/libasyncProfiler.so
+	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/lib/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS)
 	x-www-browser /tmp/$(DATE)_flamegraph.html
 
 .PHONY: profile/tagged_tests
 profile/tagged_tests: DATE = $(shell date +%y%m%d-%H%M%S)
-profile/tagged_tests: classes async-profiler/build/libasyncProfiler.so
-	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS) --include-tag=TAG
+profile/tagged_tests: classes async-profiler/build/lib/libasyncProfiler.so
+	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/lib/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS) --include-tag=TAG
 	x-www-browser /tmp/$(DATE)_flamegraph.html
 
 release: clean build_fuzion jar
