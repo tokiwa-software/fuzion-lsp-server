@@ -65,7 +65,7 @@ public class CompletionTest extends ExtendedBaseTest
       size
       upper
       lower
-      sizeOption
+      size_option
       add
       as_string ${1:sep}
       as_array
@@ -84,7 +84,7 @@ public class CompletionTest extends ExtendedBaseTest
       filter (${101:T} -> ${102:bool})
       split_at ${1:at}
       concat_sequences ${1:s}
-      mapSequence (${101:T} -> ${102:B})
+      map_sequence (${101:T} -> ${102:B})
       insert ${1:at} ${2:v}
       sort (${101:T}, ${102:T} -> ${103:bool})
       sort_by (${101:T} -> ${102:O})
@@ -229,7 +229,7 @@ public class CompletionTest extends ExtendedBaseTest
     SourceText.setText(uri1, sourceText);
     assertTrue(QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 10)).count() > 0);
     assertTrue(
-      QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("sizeOption")));
+      QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("size_option")));
 
     assertTrue(QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 15)).anyMatch(x -> x.featureName().baseName().equals("max")));
   }
