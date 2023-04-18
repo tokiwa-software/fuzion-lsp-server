@@ -84,7 +84,7 @@ public class SemanticToken extends ANY
             return Stream.of(
               new TokenInfo(t.start(),
                 SourcePositionTool.ByLineColumn(t.end()._sourceFile, t.end().line(),
-                  t.end().column() - 2),
+                  t.end().column() - 1),
                 t.text().substring(0, Util.CharCount(t.text()) - 1), Token.t_stringQQ),
               new TokenInfo(
                 SourcePositionTool.ByLineColumn(t.end()._sourceFile, t.end().line(),
@@ -163,6 +163,8 @@ public class SemanticToken extends ANY
   {
     return IntStream
       .range(0, lexerTokens.size())
+      .filter(x -> lexerTokens.get(x).start().column() !=
+                   lexerTokens.get(x).end().column())
       .mapToObj(x -> {
         var beginningOfFileToken =
           new TokenInfo(

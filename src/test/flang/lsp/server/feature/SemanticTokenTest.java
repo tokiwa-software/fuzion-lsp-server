@@ -336,7 +336,7 @@ public class SemanticTokenTest extends ExtendedBaseTest
       .range(0, st.getData().size() + 0)
       .filter(x -> x % 5 == 2)
       .allMatch(x ->
-      // greater zero
+      // length greater zero
       st.getData().get(x) > 0
         // or zero when empty line
         || (

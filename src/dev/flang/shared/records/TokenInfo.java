@@ -37,8 +37,8 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Feature;
 import dev.flang.ast.AbstractFeature.State;
+import dev.flang.ast.Feature;
 import dev.flang.lsp.server.enums.TokenModifier; // NYI remove dependency
 import dev.flang.lsp.server.enums.TokenType; // NYI remove dependency
 import dev.flang.parser.Lexer.Token;
@@ -56,14 +56,68 @@ import dev.flang.util.SourcePosition;
 /**
  * holds text of lexer token and the start position of the token
  */
-public record TokenInfo(SourcePosition start, SourcePosition end, String text, Token token)
+public class TokenInfo extends ANY
 {
+
+  private SourcePosition _start;
+
+  /**
+   * @return the _start
+   */
+  public SourcePosition start()
+  {
+    return _start;
+  }
+
+
+  private SourcePosition _end;
+
+  /**
+   * @return the _end
+   */
+  public SourcePosition end()
+  {
+    return _end;
+  }
+
+
+  private String _text;
+
+  /**
+   * @return the _text
+   */
+  public String text()
+  {
+    return _text;
+  }
+
+
+  private Token _token;
+
+  /**
+   * @return the _token
+   */
+  public Token token()
+  {
+    return _token;
+  }
+
+  public TokenInfo(SourcePosition start, SourcePosition end, String text, Token token)
+  {
+    this._start = start;
+    this._end = end;
+    this._text = text;
+    this._token = token;
+    if (CHECKS)
+      check(end.compareTo(start) >= 0);
+  }
+
   /*
    * starting line of token, zero based
    */
   private Integer line()
   {
-    return start.line() == 0 ? 0: start.line() - 1;
+    return _start.line() == 0 ? 0: _start.line() - 1;
   }
 
   /*
@@ -71,19 +125,24 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
   */
   private Integer startChar()
   {
-    if (start.column() == 0)
+    if (_start.column() == 0)
       {
         return 0;
       }
     return SourceText
-      .LineAt(start)
+      .LineAt(_start)
       .codePoints()
-      .limit(start.column() - 1)
+      .limit(_start.column() - 1)
       .map(cp -> Character.charCount(cp))
       .sum();
   }
 
-  private Integer length()
+  /**
+   * Takes into account that supplementary characters like
+   * 😀 need twice the horizontal space and are thus counted as
+   * 2.
+   */
+  public Integer charCount()
   {
     return Util.CharCount(text());
   }
@@ -155,7 +214,7 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
 
   private Map<Integer, HasSourcePosition> Pos2Items()
   {
-    return Pos2ItemsCache.computeIfAbsent(SourceText.getText(start), (key) -> Pos2Items(start));
+    return Pos2ItemsCache.computeIfAbsent(SourceText.getText(_start), (key) -> Pos2Items(_start));
   }
 
   public Stream<Integer> SemanticTokenData(TokenInfo previousToken)
@@ -166,12 +225,13 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
     Integer tokenTypeNum = tokenType.get().num;
 
     if (ANY.CHECKS)
-      ANY.check(relativeLine != 0 || relativeChar >= previousToken.length());
+      ANY.check(relativeLine != 0 || relativeChar >= previousToken.charCount(),
+        charCount() > 0 || (charCount() == 0 && relativeChar == 0));
 
     return Stream.of(
       relativeLine,
       relativeChar,
-      length(),
+      charCount(),
       tokenTypeNum,
       Modifiers());
   }
@@ -184,7 +244,7 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
   // NYI
   private Integer Modifiers()
   {
-    switch (token)
+    switch (_token)
       {
       case t_ident :
         var modifiers = new HashSet<TokenModifier>();
@@ -210,9 +270,9 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
 
   private Optional<TokenType> TokenType()
   {
-    if (token.isKeyword())
+    if (_token.isKeyword())
       {
-        switch (token)
+        switch (_token)
           {
           case t_lazy :
           case t_synchronized :
@@ -230,7 +290,7 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
             return Optional.of(TokenType.Keyword);
           }
       }
-    switch (token)
+    switch (_token)
       {
       case t_comment :
         return Optional.of(TokenType.Comment);
@@ -252,10 +312,10 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
       case t_question :
         return Optional.of(TokenType.Keyword);
       case t_op :
-        if (text.equals("=>")
-          || text.equals("->")
-          || text.equals(":=")
-          || text.equals("|"))
+        if (_text.equals("=>")
+          || _text.equals("->")
+          || _text.equals(":=")
+          || _text.equals("|"))
           {
             return Optional.of(TokenType.Keyword);
           }
@@ -389,6 +449,12 @@ public record TokenInfo(SourcePosition start, SourcePosition end, String text, T
   public boolean IsRightBracket()
   {
     return rightBrackets.contains(token());
+  }
+
+  @Override
+  public String toString()
+  {
+    return "TokenInfo[start=" + start() + ", end=" + end() + ", text=" + text() + ", token=" + token() + "]";
   }
 
 }
