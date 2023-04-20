@@ -89,7 +89,7 @@ public class CompletionTest extends ExtendedBaseTest
       sort (${101:T}, ${102:T} -> ${103:bool})
       sort_by (${101:T} -> ${102:O})
       zip ${1:b} (${201:T}, ${202:U} -> ${203:V})
-      hashCode""";
+      hash_code""";
     var actual = Completion.getCompletions(params(uri1, 1, 9, Completion.TriggerCharacters.Dot))
       .map(x -> x.getInsertText())
       .collect(Collectors.toList());
