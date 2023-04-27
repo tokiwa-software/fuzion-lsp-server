@@ -65,7 +65,7 @@ public class DefinitionTest extends ExtendedBaseTest
             .get(0);
 
         assertTrue(printlnLocation.getUri().endsWith("lib/io/print_effect.fz"));
-        assertEquals(39, printlnLocation.getRange().getStart().getLine());
+        assertEquals(34, printlnLocation.getRange().getStart().getLine());
         assertEquals(2, printlnLocation.getRange().getStart().getCharacter());
     }
 
