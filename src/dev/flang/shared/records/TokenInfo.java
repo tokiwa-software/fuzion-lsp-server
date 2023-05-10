@@ -274,7 +274,6 @@ public class TokenInfo extends ANY
       {
         switch (_token)
           {
-          case t_lazy :
           case t_synchronized :
           case t_const :
           case t_leaf :

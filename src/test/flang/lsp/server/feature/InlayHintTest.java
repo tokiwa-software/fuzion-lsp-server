@@ -163,7 +163,7 @@ public class InlayHintTest extends ExtendedBaseTest
       .sorted((a, b) -> a.getPosition().getLine() - b.getPosition().getLine())
       .collect(Collectors.toList());
 
-    assertEquals("codePoints:", inlayHints.get(1).getLabel().getLeft());
+    assertEquals("codepoints:", inlayHints.get(1).getLabel().getLeft());
     assertEquals(5, inlayHints.get(1).getPosition().getLine());
     assertEquals(38, inlayHints.get(1).getPosition().getCharacter());
   }

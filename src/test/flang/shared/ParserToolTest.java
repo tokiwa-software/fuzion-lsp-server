@@ -120,7 +120,7 @@ public class ParserToolTest extends BaseTest
       """;
     SourceText.setText(uri1, sourceText);
     var f = ParserTool.Universe(uri1);
-    assertEquals("#universe", f.qualifiedName());
+    assertEquals("universe", f.qualifiedName());
   }
 
   @Test
