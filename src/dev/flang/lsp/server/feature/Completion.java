@@ -207,11 +207,11 @@ public class Completion
   private static Stream<CompletionItem> ForLoopCompletions()
   {
     return Arrays.asList(
-      buildCompletionItem("for in", "${1:i} in ${2:0}..${3:10} do", CompletionItemKind.Keyword),
-      buildCompletionItem("for in while", "${1:i} in ${2:0}..${3:10} while ${4:} do",
+      buildCompletionItem("for in", "${1:i} in ${2:1}..${3:10} do", CompletionItemKind.Keyword),
+      buildCompletionItem("for in while", "${1:i} in ${2:1}..${3:10} while ${4:} do",
         CompletionItemKind.Keyword),
       buildCompletionItem("for while", "i:=0, i+1 while ${4:} do", CompletionItemKind.Keyword),
-      buildCompletionItem("for until else", "${1:i} in ${2:0}..${3:10} do"
+      buildCompletionItem("for until else", "${1:i} in ${2:1}..${3:10} do"
         + System.lineSeparator() + "until ${4:}"
         + System.lineSeparator() + "else ${4:}",
         CompletionItemKind.Keyword))
