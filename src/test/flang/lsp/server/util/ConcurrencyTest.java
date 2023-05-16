@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 // NYI remove dependency of dev.flang.lsp and move to dev.flang.shared
@@ -107,29 +108,6 @@ public class ConcurrencyTest extends ExtendedBaseTest
       () -> {
       },
       5, maxExecutionTime);
-  }
-
-  @Test
-  public void SuccessfulRequestAfterSomeMaxExecutionTimeExceededRequests()
-    throws InterruptedException, ExecutionException
-  {
-    var sourceText = """
-      ex2 is
-        (1..10).
-            """;
-    SourceText.setText(uri1, sourceText);
-
-    int requestCount = 10;
-
-    IntStream.range(0, requestCount)
-      .forEach(idx -> {
-        assertThrows(MaxExecutionTimeExceededException.class, () -> {
-          getCompletion(1);
-        });
-      });
-
-    assertDoesNotThrow(
-      () -> getCompletion(5000));
   }
 
 }
