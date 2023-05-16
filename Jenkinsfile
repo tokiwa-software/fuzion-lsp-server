@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Install dependencies') {
             steps {
-                sh 'apk add make'
+                sh 'apk add make bash'
             }
         }
         stage('Tests') {
