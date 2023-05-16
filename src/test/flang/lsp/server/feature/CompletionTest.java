@@ -205,16 +205,16 @@ public class CompletionTest extends ExtendedBaseTest
     var sourceText = """
       towers is
 
-        numOrNil i32|nil := nil
+        num_or_nil i32|nil := nil
         s
           pre
-            match numOrNil
+            match num_or_nil
               nil => true
-              num i32 => num.
+              n i32 => n.
           is""";
     SourceText.setText(uri1, sourceText);
-    assertEquals("num", QueryAST.FeatureAt(Cursor(uri1, 7, 22)).get().featureName().baseName());
-    var completions = Completion.getCompletions(params(uri1, 7, 23, Completion.TriggerCharacters.Dot));
+    assertEquals("n", QueryAST.FeatureAt(Cursor(uri1, 7, 18)).get().featureName().baseName());
+    var completions = Completion.getCompletions(params(uri1, 7, 19, Completion.TriggerCharacters.Dot));
     assertTrue(completions.count() > 10);
   }
 
@@ -474,7 +474,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 13, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("internalArray")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("internal_array")));
   }
 
 }

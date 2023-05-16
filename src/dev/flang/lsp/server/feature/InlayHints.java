@@ -106,7 +106,7 @@ public class InlayHints extends ANY
                 .baseName()
                 .equals(c.calledFeature().valueArguments().get(idx).featureName().baseName())))
               // for array initialization via [] syntax, don't show inlay hint
-              .filter(idx -> !c.calledFeature().valueArguments().get(idx).qualifiedName().equals("array.internalArray"))
+              .filter(idx -> !c.calledFeature().valueArguments().get(idx).qualifiedName().equals("array.internal_array"))
               .mapToObj(idx -> {
                 var inlayHint = new InlayHint(Bridge.ToPosition(CallTool.StartOfExpr(c.actuals().get(idx))),
                   Either.forLeft(c.calledFeature().valueArguments().get(idx).featureName().baseName() + ":"));
