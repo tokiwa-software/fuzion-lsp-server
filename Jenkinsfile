@@ -1,4 +1,9 @@
 pipeline {
+
+    options {
+        ansiColor('xterm')
+    }
+
     agent {
       docker {
         image 'eclipse-temurin:17-alpine'
