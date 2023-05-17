@@ -279,6 +279,28 @@ public class SemanticTokenTest extends ExtendedBaseTest
   }
 
   @Test
+  public void GetSemanticTokensCommentWithEmptyLine()
+  {
+    SourceText.setText(uri1, """
+      # comment with empty comment line
+      #
+      # last comment line
+      ex is
+        say "hello"
+            """);
+    var semanticTokens =
+      SemanticToken.getSemanticTokens(Params(uri1));
+    AssertBasicDataSanity(semanticTokens);
+
+    // comment
+    assertEquals(semanticTokens, 0, 0, 0, 33, TokenType.Comment, 0);
+    assertEquals(semanticTokens, 1, 1, 0, 1, TokenType.Comment, 0);
+    assertEquals(semanticTokens, 2, 1, 0, 19, TokenType.Comment, 0);
+    // feature ex
+    assertEquals(semanticTokens, 3, 1, 0, 2, TokenType.Type /* NYI, should be Class */, 0);
+  }
+
+  @Test
   public void MultilineComments()
   {
     SourceText.setText(uri1, Read(Path.of("test_data/searchablelist0.fz")));

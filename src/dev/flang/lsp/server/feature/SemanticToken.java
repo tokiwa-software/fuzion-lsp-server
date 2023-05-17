@@ -163,8 +163,6 @@ public class SemanticToken extends ANY
   {
     return IntStream
       .range(0, lexerTokens.size())
-      .filter(x -> lexerTokens.get(x).start().column() !=
-                   lexerTokens.get(x).end().column())
       .mapToObj(x -> {
         var beginningOfFileToken =
           new TokenInfo(
