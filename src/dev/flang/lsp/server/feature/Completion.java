@@ -121,10 +121,12 @@ public class Completion
             return completions(QueryAST
               .DotCallCompletionsAt(pos));
           }
-        return Stream.concat(
-          completions(QueryAST
-            .DotCallCompletionsAt(pos)),
-          CompletionItemType());
+        return Stream.of(
+            completions(QueryAST
+              .DotCallCompletionsAt(pos)),
+            CompletionItemThis(),
+            CompletionItemType())
+          .flatMap(x -> x);
       }
     if (" ".equals(triggerCharacter))
       {
@@ -201,6 +203,15 @@ public class Completion
   private static Stream<CompletionItem> CompletionItemType()
   {
     return Stream.of(buildCompletionItem("type", "type", CompletionItemKind.Keyword));
+  }
+
+  /**
+   * completion item for keyword `this`
+   * @return
+   */
+  private static Stream<CompletionItem> CompletionItemThis()
+  {
+    return Stream.of(buildCompletionItem("this", "this", CompletionItemKind.Keyword));
   }
 
 

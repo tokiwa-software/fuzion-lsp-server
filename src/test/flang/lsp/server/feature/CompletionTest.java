@@ -402,7 +402,7 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 2, 8, Completion.TriggerCharacters.Dot));
-    assertEquals(1, completions.count());
+    assertEquals(2, completions.count());
   }
 
   @Test
