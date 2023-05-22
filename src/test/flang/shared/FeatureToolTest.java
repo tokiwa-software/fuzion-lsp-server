@@ -90,12 +90,18 @@ public class FeatureToolTest extends BaseTest
   @Test
   public void CommentOfRedef()
   {
-    var psSet = DeclaredInUniverse("ps_set", 3);
-    var psSetasArray = ParserTool.DeclaredFeatures(psSet)
+    var container = DeclaredInUniverse("container", 0);
+    var psSet = ParserTool
+      .DeclaredFeatures(container)
+      .filter(x -> x.featureName().baseName().equals("ps_set"))
+      .filter(x -> x.arguments().size() == 3)
+      .findFirst()
+      .get();
+    var psSetAsArray = ParserTool.DeclaredFeatures(psSet)
       .filter(f -> f.featureName().baseName().equals("as_array"))
       .findFirst()
       .get();
-    var actual = FeatureTool.CommentOf(psSetasArray);
+    var actual = FeatureTool.CommentOf(psSetAsArray);
 
     assertEquals(
       """
@@ -134,7 +140,7 @@ public class FeatureToolTest extends BaseTest
   public void BaseNamePositionTest()
   {
     var ex = """
-      i33(val i33) : wrappingInteger i33, has_interval i33, i33s is
+      i33(val i33) : wrapping_integer i33, has_interval i33, i33s is
         redef  prefix  -° i33 is intrinsic
         infix  ⋃ (other i33) is abstract
         private  div (other i33) i33 is intrinsic

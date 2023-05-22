@@ -443,10 +443,10 @@ public class CompletionTest extends ExtendedBaseTest
       ex =>
         all := ps_set 0..100
         removed := ps_set 0..100:2
-        (ps_set (all.filter (x -> !(removed.contains x))))""" + " ";
+        (container.ps_set (all.filter (x -> !(removed.contains x))))""" + " ";
 
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 3, 53, Completion.TriggerCharacters.Space));
+    var completions = Completion.getCompletions(params(uri1, 3, 63, Completion.TriggerCharacters.Space));
     assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("infix ∪")));
   }
 
@@ -468,12 +468,12 @@ public class CompletionTest extends ExtendedBaseTest
   public void CompletionInActualArg()
   {
     var sourceText = """
-      map_of(K type : has_total_order, V type, kvs array (tuple K V)) map K V is
-        ps_map kvs. kvs.length kvs.length+1
+      map_of(K type : has_total_order, V type, kvs array (tuple K V)) container.Map K V is
+        container.ps_map kvs. kvs.length kvs.length+1
         """;
 
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 1, 13, Completion.TriggerCharacters.Dot));
+    var completions = Completion.getCompletions(params(uri1, 1, 23, Completion.TriggerCharacters.Dot));
     assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("internal_array")));
   }
 
