@@ -153,7 +153,7 @@ public class InlayHintTest extends ExtendedBaseTest
           redef utf8 Sequence u8 is
             [u8 8]
                                                                 # asArray, since we don't want this to be lazy
-        String.type.from_codepoint_sequence (tmp.as_codepoint_sequence.as_stream.take 1).as_array
+        String.type.from_codepoints (tmp.as_codepoints.as_stream.take 1).as_array
                     """);
 
     var inlayHints = InlayHints
@@ -164,7 +164,7 @@ public class InlayHintTest extends ExtendedBaseTest
 
     assertEquals("codepoints:", inlayHints.get(1).getLabel().getLeft());
     assertEquals(5, inlayHints.get(1).getPosition().getLine());
-    assertEquals(38, inlayHints.get(1).getPosition().getCharacter());
+    assertEquals(30, inlayHints.get(1).getPosition().getCharacter());
   }
 
 
