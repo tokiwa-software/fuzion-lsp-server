@@ -128,8 +128,7 @@ public class InlayHints extends ANY
       // NYI filter duplicate loop variable
       .filter(af -> !FeatureTool.IsInternal(af))
       .filter(af -> !FeatureTool.IsArgument(af))
-      // NYI workaround: initialValue sometimes throws an exception
-      .filter(af -> !(af.isField() && IsConstant(ErrorHandling.ResultOrDefault(() -> af.initialValue(), null))))
+      // NYI filter constants like numbers, strings etc.
       .filter(af -> !(af.isField() && TypeIsExplicitlyStated(af)))
       .flatMap(af -> PositionOfOperator(af)
         .map(pos -> {

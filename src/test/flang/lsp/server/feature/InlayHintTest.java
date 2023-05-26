@@ -89,7 +89,7 @@ public class InlayHintTest extends ExtendedBaseTest
     var inlayHints = InlayHints
       .getInlayHints(Params());
 
-    assertEquals(2, inlayHints.size());
+    assertEquals(3, inlayHints.size());
     assertEquals("arg:", inlayHints.get(0).getLabel().getLeft());
     assertEquals(7, inlayHints.get(0).getPosition().getLine());
     assertEquals(9, inlayHints.get(0).getPosition().getCharacter());
