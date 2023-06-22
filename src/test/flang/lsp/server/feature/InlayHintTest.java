@@ -56,7 +56,6 @@ public class InlayHintTest extends ExtendedBaseTest
   }
 
   @Test
-  @Disabled // NYI complex is broken ATM
   public void InlayHintsComposedArg()
   {
     SourceText.setText(uri1, Mandelbrot);
