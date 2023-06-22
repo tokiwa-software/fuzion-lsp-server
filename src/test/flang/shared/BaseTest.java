@@ -214,4 +214,9 @@ public abstract class BaseTest extends Assertions
         && (includeNegative || !p.toString().contains("_negative")));
   }
 
+  protected void debugPrint(String s)
+  {
+    IO.SYS_OUT.println(s);
+  }
+
 }

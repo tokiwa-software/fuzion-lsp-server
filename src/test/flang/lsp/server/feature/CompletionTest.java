@@ -56,11 +56,11 @@ public class CompletionTest extends ExtendedBaseTest
 
     SourceText.setText(uri1, sourceText);
     var expected = """
-      map (${101:H} -> ${102:B})
+      map (${101:has_interval} -> ${102:B})
       as_string
       as_list
       as_stream
-      for_each (${101:H} -> ${102:unit})
+      for_each (${101:has_interval} -> ${102:unit})
       contains ${1:e}
       size
       upper
@@ -159,13 +159,13 @@ public class CompletionTest extends ExtendedBaseTest
   {
     var sourceText = """
       a =>
-        b(T type : float T, c T) =>
+        b(T type : Sequence T, c T) =>
           c.
                 """;
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 2, 6, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("fract")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("zip")));
   }
 
   @Test
