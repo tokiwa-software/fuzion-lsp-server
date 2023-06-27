@@ -55,9 +55,6 @@ public class QueryAST extends ANY
    */
   public static Optional<AbstractFeature> TargetFeature(SourcePosition params)
   {
-    if (PRECONDITIONS)
-      require(!Util.IsStdLib(SourceText.UriOf(params)));
-
     return FindTargetFeatureInAST(params)
       .or(() -> {
         // NYI this is a (bad) hack to handle incomplete source code

@@ -130,28 +130,23 @@ public class ParserTool extends ANY
   private static FrontEndOptions FrontEndOptions(URI uri)
   {
     File tempFile = ParserTool.toTempFile(uri);
-    var frontEndOptions = FrontEndOptions(tempFile);
-    return frontEndOptions;
-  }
-
-  private static FrontEndOptions FrontEndOptions(File tempFile)
-  {
+    var isStdLib = Util.IsStdLib(uri);
     var frontEndOptions =
       new FrontEndOptions(
-        0,
-        SourceText.FuzionHome,
-        true,
-        true,
-        new dev.flang.util.List<String>(JavaModules.iterator()),
-        new dev.flang.util.List<String>(),
-        new dev.flang.util.List<String>(),
-        0,
-        true,
-        true,
-        new dev.flang.util.List<String>(),
-        false,
-        tempFile.getAbsolutePath(),
-        true);
+        /* verbose                 */ 0,
+        /* fuzionHome              */ SourceText.FuzionHome,
+        /* loadBaseLib             */ !isStdLib,
+        /* eraseInternalNamesInLib */ false,
+        /* modules                 */ isStdLib ? new dev.flang.util.List<String>() : new dev.flang.util.List<String>(JavaModules.iterator()),
+        /* moduleDirs              */ new dev.flang.util.List<String>(),
+        /* dumpModules             */ new dev.flang.util.List<String>(),
+        /* fuzionDebugLevel        */ 1,
+        /* fuzionSafety            */ true,
+        /* enableUnsafeIntrinsics  */ true,
+        /* sourceDirs              */ isStdLib ? new dev.flang.util.List<String>(uri.getRawPath().substring(0,uri.getRawPath().indexOf("/lib/")) + "/lib") : new dev.flang.util.List<String>(),
+        /* readStdin               */ false,
+        /* main                    */ isStdLib ? null : tempFile.getAbsolutePath(),
+        /* loadSources             */ true);
     return frontEndOptions;
   }
 

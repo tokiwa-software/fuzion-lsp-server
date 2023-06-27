@@ -87,7 +87,9 @@ public class Util
   */
   public static boolean IsStdLib(URI uri)
   {
-    return uri.toString().startsWith(SourceText.FuzionHome.toUri().toString());
+    // NYI develop better heuristic to figure out if we are editing standard library.
+    // return uri.toString().startsWith(SourceText.FuzionHome.toUri().toString());
+    return uri.toString().contains("/lib/");
   }
 
 
