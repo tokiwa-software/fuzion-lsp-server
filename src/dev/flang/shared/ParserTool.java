@@ -130,7 +130,9 @@ public class ParserTool extends ANY
   private static FrontEndOptions FrontEndOptions(URI uri)
   {
     File tempFile = ParserTool.toTempFile(uri);
-    var isStdLib = Util.IsStdLib(uri);
+    // this is too slow
+    // var isStdLib = Util.IsStdLib(uri);
+    var isStdLib = false;
     var frontEndOptions =
       new FrontEndOptions(
         /* verbose                 */ 0,
