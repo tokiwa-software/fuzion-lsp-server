@@ -280,9 +280,8 @@ public class TokenInfo extends ANY
           case t_infix :
           case t_prefix :
           case t_postfix :
-          case t_export :
           case t_private :
-          case t_protected :
+          case t_module :
           case t_public :
             return Optional.of(TokenType.Modifier);
           default:

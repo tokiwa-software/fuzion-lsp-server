@@ -190,9 +190,8 @@ public class InlayHints extends ANY
     Token.t_ternary,
     Token.t_index,
     Token.t_set,
-    Token.t_export,
     Token.t_private,
-    Token.t_protected,
+    Token.t_module,
     Token.t_public,
     Token.t_type));
 
