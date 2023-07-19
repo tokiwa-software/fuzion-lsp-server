@@ -169,8 +169,8 @@ public class DiagnosticsTest extends ExtendedBaseTest
       .filter(x -> x.getSeverity().equals(DiagnosticSeverity.Error))
       .collect(Collectors.toList());
     assertEquals(1, diagnostics.size());
-    assertEquals(2, diagnostics.get(0).getRange().getStart().getCharacter());
-    assertEquals(7, diagnostics.get(0).getRange().getEnd().getCharacter());
+    assertEquals(8, diagnostics.get(0).getRange().getStart().getCharacter());
+    assertEquals(20, diagnostics.get(0).getRange().getEnd().getCharacter());
   }
 
   @Test

@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.shared;
 
-import java.nio.file.Files;
-
 import dev.flang.util.ANY;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -60,9 +58,13 @@ public class SourcePositionTool extends ANY
   public static SourcePosition ByLineColumn(SourceFile sf, int line, int column)
   {
     // lineStartPos throws in case of empty file
-    if(line == 1 && column == 1)
+    if (line == 1 && column == 1)
     {
       return new SourcePosition(sf, 0);
+    }
+    if (line > sf.numLines())
+    {
+      return new SourcePosition(sf, sf.byteLength());
     }
     var bytePos = sf.lineStartPos(line);
     while (sf.codePointInLine(bytePos) < column && bytePos < sf.byteLength())
@@ -78,6 +80,10 @@ public class SourcePositionTool extends ANY
     if(line == 1)
     {
       return new SourcePosition(sf, 0);
+    }
+    if (line > sf.numLines())
+    {
+      return new SourcePosition(sf, sf.byteLength());
     }
     return new SourcePosition(sf, sf.lineStartPos(line));
   }

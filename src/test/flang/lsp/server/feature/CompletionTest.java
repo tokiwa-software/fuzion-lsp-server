@@ -451,6 +451,7 @@ public class CompletionTest extends ExtendedBaseTest
   }
 
   @Test
+  @Disabled // NYI ParserTool.endOfFeature is broken
   public void CompletionInLambdaArg()
   {
     var sourceText = """

@@ -237,14 +237,14 @@ public class ParserTool extends ANY
     // AST
     // NOTE: since this is a very expensive calculation and frequently used we
     // cache this
-    return EndOfFeatureCache.computeIfAbsent(feature, f -> {
-      if (FeatureTool.IsArgument(f))
+    return EndOfFeatureCache.computeIfAbsent(feature, af -> {
+      if (FeatureTool.IsArgument(af))
         {
-          return LexerTool.EndOfToken(f.pos());
+          return LexerTool.EndOfToken(af.pos());
         }
-      if (!f.isUniverse() && FeatureTool.IsOfLastFeature(f))
+      if (!af.isUniverse() && FeatureTool.IsOfLastFeature(af))
         {
-          return new SourcePosition(f.pos()._sourceFile, f.pos()._sourceFile.byteLength());
+          return new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.byteLength());
         }
 
       var visitor = new FeatureVisitor() {
@@ -275,9 +275,13 @@ public class ParserTool extends ANY
         public Expr         action      (This           t, AbstractFeature outer) { FoundPos(t.pos()); return t; }
         public AbstractType action      (AbstractType   t, AbstractFeature outer) { FoundPos(t.pos2BeRemoved()); return t; }
       };
-      f.visitCode(visitor);
+      if (af instanceof Feature f)
+        {
+          f.visit(visitor);
+        }
+      af.visitCode(visitor);
 
-      var result = visitor.lastPos.equals(SourcePosition.notAvailable) ? f.pos() : visitor.lastPos;
+      var result = visitor.lastPos.equals(SourcePosition.notAvailable) ? af.pos() : visitor.lastPos;
 
       result = (SourcePosition) LexerTool
           .TokensFrom(result)
@@ -290,8 +294,8 @@ public class ParserTool extends ANY
           .orElse(result);
 
       if (POSTCONDITIONS)
-        ensure(f.pos().line() < result.line()
-          || (f.pos().line() == result.line() && f.pos().column() < result.column()));
+        ensure(af.pos().line() < result.line()
+          || (af.pos().line() == result.line() && af.pos().column() < result.column()));
       return result;
     });
   }

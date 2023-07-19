@@ -27,14 +27,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package test.flang.shared;
 
-import java.nio.file.Path;
-
 import org.junit.jupiter.api.Test;
 
 import dev.flang.shared.LexerTool;
-import dev.flang.shared.SourcePositionTool;
 import dev.flang.shared.SourceText;
-import dev.flang.util.SourceFile;
 
 public class LexerToolTest extends BaseTest
 {

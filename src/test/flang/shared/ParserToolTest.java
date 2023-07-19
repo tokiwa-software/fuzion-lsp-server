@@ -37,7 +37,6 @@ import dev.flang.shared.FeatureTool;
 import dev.flang.shared.ParserTool;
 import dev.flang.shared.SourceText;
 import dev.flang.shared.Util;
-import dev.flang.shared.SourcePositionTool;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -57,7 +56,7 @@ public class ParserToolTest extends BaseTest
   }
 
   @Test
-  public void EndOfFeatureLambdaDefinition()
+  public void EndOfInferredFeatureInOneLine()
   {
     SourceText.setText(uri1, ManOrBoy);
     var feature_b = FeatureTool.SelfAndDescendants(ParserTool.TopLevelFeatures(uri1).findFirst().get())

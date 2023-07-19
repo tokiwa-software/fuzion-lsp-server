@@ -105,9 +105,9 @@ public class QueryASTTest extends ExtendedBaseTest
     var sourceText = Read("fuzion/lib/String.fz");
     SourceText.setText(uri1, sourceText);
 
-    var atStartOfFeature = QueryAST.FeatureAt(Cursor(uri1, 54, 2)).get();
-    var atStartOfBarename = QueryAST.FeatureAt(Cursor(uri1, 54, 8)).get();
-    var atEndOrBarename = QueryAST.FeatureAt(Cursor(uri1, 54, 9)).get();
+    var atStartOfFeature = QueryAST.FeatureAt(Cursor(uri1, 54, 9)).get();
+    var atStartOfBarename = QueryAST.FeatureAt(Cursor(uri1, 54, 15)).get();
+    var atEndOrBarename = QueryAST.FeatureAt(Cursor(uri1, 54, 16)).get();
     assertEquals("infix *", atStartOfFeature.featureName().baseName());
     assertEquals("infix *", atStartOfBarename.featureName().baseName());
     assertEquals("infix *", atEndOrBarename.featureName().baseName());
@@ -216,16 +216,16 @@ public class QueryASTTest extends ExtendedBaseTest
   @Test
   public void FeatureAtInheritanceDeclaration()
   {
-    var sourceText = "i33 : wrapping_integer i33 is";
+    var sourceText = "i33 : num.wrap_around i33 is";
     SourceText.setText(uri1, sourceText);
-    var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 6)).get();
-    assertEquals("wrapping_integer", wrappingInteger.featureName().baseName());
+    var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 10)).get();
+    assertEquals("wrap_around", wrappingInteger.featureName().baseName());
   }
 
   @Test
   public void FeatureAtActualGenericOfInherited()
   {
-    var sourceText = "i33 : wrapping_integer i33 is";
+    var sourceText = "i33 : num.wrap_around i33 is";
     SourceText.setText(uri1, sourceText);
     var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 24)).get();
     assertEquals("i33", wrappingInteger.featureName().baseName());
