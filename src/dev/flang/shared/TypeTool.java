@@ -31,14 +31,14 @@ import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.FormalGenerics;
-import dev.flang.ast.Type;
 import dev.flang.ast.Types;
+import dev.flang.ast.UnresolvedType;
 import dev.flang.util.ANY;
 
 public class TypeTool extends ANY
 {
   /**
-   * human readalbe label for type
+   * human readable label for type
    * @param type
    * @return
    */
@@ -50,7 +50,7 @@ public class TypeTool extends ANY
       {
         return type.name();
       }
-    if (!type.isGenericArgument() && type.generics() != Type.NONE)
+    if (!type.isGenericArgument() && type.generics() != UnresolvedType.NONE)
       {
         return LabelNoErrorOrUndefined(type) + " "
           + type.generics().stream().map(g -> Util.AddParens(Label(g))).collect(Collectors.joining(" "));
