@@ -236,7 +236,7 @@ public class QueryASTTest extends ExtendedBaseTest
   {
     var sourceText = """
       ex =>
-        bench<unit> (() -> say "something") 1E3
+        bench unit (() -> say "something") 1E3
             """;
     SourceText.setText(uri1, sourceText);
     var unitAtStart = QueryAST.FeatureAt(Cursor(uri1, 1, 8)).get();
@@ -368,11 +368,11 @@ public class QueryASTTest extends ExtendedBaseTest
   {
     var sourceText = """
       ex=>
-        (1..2).map<f64> (x -> x.)
+        (1..2).map f64 (x -> x.)
               """;
 
     SourceText.setText(uri1, sourceText);
-    var calledFeature = QueryAST.TargetFeature(Cursor(uri1, 1, 26));
+    var calledFeature = QueryAST.TargetFeature(Cursor(uri1, 1, 25));
     assertEquals("i32", calledFeature.get().featureName().baseName());
   }
 

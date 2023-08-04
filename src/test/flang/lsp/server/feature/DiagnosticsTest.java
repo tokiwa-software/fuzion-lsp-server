@@ -46,7 +46,7 @@ public class DiagnosticsTest extends ExtendedBaseTest
     var sourceText = """
       t is
         node(parent node|nil) is
-        arr := array<node> 1 (i -> (node nil))""";
+        arr := array 1 (i -> (node nil))""";
     SourceText.setText(uri1, sourceText);
     var diagnostics = Diagnostics.getDiagnostics(uri1);
     assertEquals(1, diagnostics.count());
