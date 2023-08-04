@@ -148,7 +148,14 @@ public class ParserTool extends ANY
         /* sourceDirs              */ isStdLib ? new dev.flang.util.List<String>(uri.getRawPath().substring(0,uri.getRawPath().indexOf("/lib/")) + "/lib") : new dev.flang.util.List<String>(),
         /* readStdin               */ false,
         /* main                    */ isStdLib ? null : tempFile.getAbsolutePath(),
-        /* loadSources             */ true);
+        /* loadSources             */ true)
+        {
+          @Override
+          public boolean isLanguageServer()
+          {
+            return true;
+          }
+        };
     return frontEndOptions;
   }
 
@@ -263,8 +270,8 @@ public class ParserTool extends ANY
         public void         actionBefore(AbstractCase   c                       ) { FoundPos(c.pos()); }
         public void         actionAfter (AbstractCase   c                       ) { FoundPos(c.pos()); }
         public void         action      (Cond           c, AbstractFeature outer) { FoundPos(c.cond.pos()); }
-        public Stmnt        action      (Destructure    d, AbstractFeature outer) { FoundPos(d.pos()); return d; }
-        public Stmnt        action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
+        public Expr         action      (Destructure    d, AbstractFeature outer) { FoundPos(d.pos()); return d; }
+        public Expr         action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
         public Expr         action      (Function       f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
         public void         action      (If             i, AbstractFeature outer) { FoundPos(i.pos()); }
         public void         action      (Impl           i, AbstractFeature outer) { FoundPos(i.pos); }

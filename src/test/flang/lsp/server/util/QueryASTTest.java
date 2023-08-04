@@ -216,7 +216,7 @@ public class QueryASTTest extends ExtendedBaseTest
   @Test
   public void FeatureAtInheritanceDeclaration()
   {
-    var sourceText = "i33 : num.wrap_around i33 is";
+    var sourceText = "i33 : num.wrap_around is";
     SourceText.setText(uri1, sourceText);
     var wrappingInteger = QueryAST.FeatureAt(Cursor(uri1, 0, 10)).get();
     assertEquals("wrap_around", wrappingInteger.featureName().baseName());

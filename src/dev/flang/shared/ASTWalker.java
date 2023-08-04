@@ -46,8 +46,8 @@ import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
+import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
-import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
@@ -118,31 +118,6 @@ public class ASTWalker
     return TraverseBlock(c.code(), outer);
   }
 
-  private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseStatement(Stmnt s, AbstractFeature outer)
-  {
-    if (s instanceof AbstractFeature)
-      {
-        return TraverseFeature((AbstractFeature) s, false);
-      }
-    if (s instanceof Expr expr)
-      {
-        return TraverseExpression(expr, outer);
-      }
-    if (s instanceof Nop)
-      {
-        return Stream.empty();
-      }
-    if (s instanceof AbstractAssign a)
-      {
-        return TraverseAssign(a, outer);
-      }
-    if (s instanceof Check c)
-      {
-        return Stream.empty();
-      }
-
-    throw new RuntimeException("TraverseStatement not implemented for: " + s.getClass());
-  }
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseAssign(AbstractAssign a,
     AbstractFeature outer)
@@ -163,7 +138,7 @@ public class ASTWalker
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseBlock(AbstractBlock b, AbstractFeature outer)
   {
-    return b._statements.stream().flatMap(s -> TraverseStatement(s, outer));
+    return b._statements.stream().flatMap(s -> TraverseExpression(s, outer));
   }
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseExpression(Expr expr, AbstractFeature outer)
@@ -209,12 +184,26 @@ public class ASTWalker
       {
         return AsStream(ac, outer);
       }
+    if (expr instanceof AbstractFeature af)
+      {
+        return TraverseFeature(af, false);
+      }
+    if (expr instanceof AbstractAssign a)
+      {
+        return TraverseAssign(a, outer);
+      }
+    if (expr instanceof InlineArray ia)
+      {
+        return ia._elements.stream().flatMap(e -> TraverseExpression(e, outer));
+      }
     if ( expr == Expr.ERROR_VALUE
       || expr instanceof AbstractCurrent
       || expr instanceof Unbox
       || expr instanceof AbstractConstant
       || expr instanceof Universe
       || expr instanceof Function
+      || expr instanceof Nop
+      || expr instanceof Check
       || expr instanceof Env)
       {
         return Stream.empty();

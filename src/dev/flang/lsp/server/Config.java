@@ -173,7 +173,14 @@ public class Config
           ErrorHandling.ResultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
           ErrorHandling.ResultOrDefault(() -> options.get("safety").getAsBoolean(), true),
           ErrorHandling.ResultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true),
-          SourceText.FuzionHome);
+          SourceText.FuzionHome)
+          {
+            @Override
+            public boolean isLanguageServer()
+            {
+              return true;
+            }
+          };
 
         Context.Logger.Log("[Config] FuzionOptions: verbosity(" + Context.FuzionOptions.verbose() + "), debugLevel("
           + Context.FuzionOptions.fuzionDebugLevel() + "), safety(" + Context.FuzionOptions.fuzionSafety() + ").");
