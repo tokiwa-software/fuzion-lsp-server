@@ -81,7 +81,7 @@ public class ExprTool extends ANY
    * @param expr
    * @return
    */
-  public static boolean IsLamdaCall(Expr expr)
+  public static boolean IsLambdaCall(Expr expr)
   {
     return LexerTool.TokensAt(expr.pos()).right().text().equals("->");
   }
@@ -91,7 +91,7 @@ public class ExprTool extends ANY
   static Optional<SourcePosition> LambdaOpeningBracePosition(Expr expr)
   {
     if (PRECONDITIONS)
-      require(IsLamdaCall(expr));
+      require(IsLambdaCall(expr));
 
     var tokens = LexerTool.TokensFrom(SourcePositionTool.ByLine(expr.pos()._sourceFile, expr.pos().line()))
       .takeWhile(x -> x.start().compareTo(expr.pos()) <= 0)
