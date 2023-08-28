@@ -258,7 +258,10 @@ public class ParserTool extends ANY
         public SourcePosition lastPos = SourcePosition.notAvailable;
         private void FoundPos(SourcePosition visitedPos)
         {
-          lastPos = SourcePositionTool.Compare(lastPos, visitedPos) >=0 ? lastPos : visitedPos;
+          if (visitedPos != null)
+            {
+              lastPos = SourcePositionTool.Compare(lastPos, visitedPos) >=0 ? lastPos : visitedPos;
+            }
         }
         public void         action      (Unbox          u, AbstractFeature outer) { FoundPos(u.pos()); }
         public void         action      (AbstractAssign a, AbstractFeature outer) { FoundPos(a.pos()); }
