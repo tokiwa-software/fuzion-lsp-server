@@ -49,7 +49,6 @@ import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.Tag;
-import dev.flang.ast.Unbox;
 import dev.flang.ast.Universe;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
@@ -198,7 +197,6 @@ public class ASTWalker
       }
     if ( expr == Expr.ERROR_VALUE
       || expr instanceof AbstractCurrent
-      || expr instanceof Unbox
       || expr instanceof AbstractConstant
       || expr instanceof Universe
       || expr instanceof Function

@@ -45,7 +45,7 @@ public class HoveringTest extends ExtendedBaseTest
   {
     SourceText.setText(uri1, ChoiceType);
     var cursor = Cursor(uri1, 1, 8);
-    assertEquals("**left (choice node unit)**",
+    assertEquals("left choice node unit",
       Hovering.getHover(new HoverParams(TextDocument(cursor), Position(cursor)))
         .getContents()
         .getRight()

@@ -274,33 +274,31 @@ public class FeatureTool extends ANY
 
   /**
    * @param feature
-   * @return example: array<T>(length i32, init Function<array.T, i32>) => array<array.T>
+   * @return example: array(T type, length i32, init Function array.T i32) => array array.T
    */
-  public static String Label(AbstractFeature feature)
+  public static String Label(AbstractFeature feature, boolean useMarkup)
   {
-    if (feature.isField())
-      {
-        return feature.featureName().baseName() + " " + Util.AddParens(TypeTool.Label(feature.resultType()));
-      }
     if (feature.isRoutine())
       {
-        // NYI if no arguments no parens
-        var arguments = "(" + feature.arguments()
-          .stream()
-          .map(a -> {
-            var type = a.isTypeParameter() ? "type": Util.AddParens(TypeTool.Label(a.resultType()));
-            if (IsInternal(a))
-              {
-                return "_" + " " + type;
-              }
-            return a.featureName().baseName() + " " + type;
-          })
-          .collect(Collectors.joining(", ")) + ")";
-        return feature.featureName().baseName() + arguments + " => "
-          + Util.AddParens(TypeTool.Label(feature.resultType()))
+        var arguments = (feature.arguments().isEmpty() ? "": "(")
+          + feature.arguments()
+            .stream()
+            .map(a -> {
+              var type = a.isTypeParameter() ? "type": TypeTool.Label(a.resultType());
+              type = useMarkup ? MarkdownTool.Italic(type) : type;
+              if (IsInternal(a))
+                {
+                  return "_" + " " + type;
+                }
+              return a.featureName().baseName() + " " + type;
+            })
+            .collect(Collectors.joining(", "))
+          + (feature.arguments().isEmpty() ? "" : ")");
+        return feature.featureName().baseName() + arguments
+          + (feature.isConstructor() ? "" : " " + (useMarkup ? MarkdownTool.Italic(TypeTool.Label(feature.resultType())) : TypeTool.Label(feature.resultType())))
           + LabelInherited(feature);
       }
-    return feature.featureName().baseName() + LabelInherited(feature);
+    return feature.featureName().baseName() + " " + TypeTool.Label(feature.resultType()) + LabelInherited(feature);
   }
 
 

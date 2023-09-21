@@ -73,13 +73,9 @@ public class TypeTool extends ANY
    */
   public static String Label(FormalGenerics generics, boolean brief)
   {
-    if (!generics.isOpen() && generics.list.isEmpty())
+    if (!generics.isOpen() && generics.list.isEmpty() || brief)
       {
         return "";
-      }
-    if (brief)
-      {
-        return "<>";
       }
     return " " + generics.list + (generics.isOpen() ? "... ": "");
   }

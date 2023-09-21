@@ -89,7 +89,7 @@ public class Bridge extends ANY
 
   public static DocumentSymbol ToDocumentSymbol(AbstractFeature feature)
   {
-    return new DocumentSymbol(FeatureTool.Label(feature), SymbolKind(feature), ToRange(feature), ToRange(feature));
+    return new DocumentSymbol(FeatureTool.Label(feature, false), SymbolKind(feature), ToRange(feature), ToRange(feature));
   }
 
   private static SymbolKind SymbolKind(AbstractFeature feature)

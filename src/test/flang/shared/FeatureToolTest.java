@@ -117,8 +117,8 @@ public class FeatureToolTest extends BaseTest
   {
     var array = DeclaredInUniverse("array", 5);
     assertEquals(
-      "array(T type, internal_array (internal_array T), _ unit, _ unit, _ unit) => (array T) : Sequence<>",
-      FeatureTool.Label(array));
+      "array(T *type*, internal_array *internal_array T*, _ *unit*, _ *unit*, _ *unit*) : Sequence",
+      FeatureTool.Label(array, true));
   }
 
   @Test

@@ -56,7 +56,7 @@ public class Hovering
           .map(f -> {
             var hoverInfo = FeatureTool.CommentOfInMarkdown(f) + System.lineSeparator()
               + System.lineSeparator()
-              + MarkdownTool.Bold(FeatureTool.Label(f));
+              + FeatureTool.Label(f, true);
             var markupContent = new MarkupContent(MarkupKind.MARKDOWN, hoverInfo.trim());
             return new Hover(markupContent, range);
           });

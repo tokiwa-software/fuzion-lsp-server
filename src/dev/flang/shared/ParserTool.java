@@ -55,11 +55,9 @@ import dev.flang.ast.If;
 import dev.flang.ast.Impl;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Match;
-import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
 import dev.flang.ast.This;
 import dev.flang.ast.Types;
-import dev.flang.ast.Unbox;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
@@ -263,7 +261,6 @@ public class ParserTool extends ANY
               lastPos = SourcePositionTool.Compare(lastPos, visitedPos) >=0 ? lastPos : visitedPos;
             }
         }
-        public void         action      (Unbox          u, AbstractFeature outer) { FoundPos(u.pos()); }
         public void         action      (AbstractAssign a, AbstractFeature outer) { FoundPos(a.pos()); }
         public void         actionBefore(Block          b, AbstractFeature outer) { FoundPos(b.pos()); }
         public void         actionAfter (Block          b, AbstractFeature outer) { FoundPos(b.pos()); }

@@ -49,7 +49,7 @@ import dev.flang.shared.QueryAST;
 import dev.flang.shared.Util;
 
 /**
- * tries offering completions
+ * tries offering code completions
  * https://microsoft.github.io/language-server-protocol/specification#textDocument_completion
  */
 public class Completion
@@ -241,7 +241,7 @@ public class Completion
         index -> {
           var feature = collectedFeatures.get(index);
           return buildCompletionItem(
-            FeatureTool.Label(feature),
+            FeatureTool.Label(feature, false),
             getInsertText(feature), CompletionItemKind.Function, String.format("%10d", index));
         });
 

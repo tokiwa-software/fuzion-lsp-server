@@ -117,7 +117,7 @@ public class SignatureHelper extends ANY
   private static SignatureInformation SignatureInformation(AbstractFeature feature)
   {
     var description = new MarkupContent(MarkupKind.MARKDOWN, FeatureTool.CommentOfInMarkdown(feature));
-    return new SignatureInformation(FeatureTool.Label(feature), description,
+    return new SignatureInformation(FeatureTool.Label(feature, false), description,
       ParameterInfo(feature));
   }
 

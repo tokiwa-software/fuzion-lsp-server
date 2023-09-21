@@ -70,7 +70,7 @@ public class HasSourcePositionTool
           }
         if (item instanceof AbstractFeature af)
           {
-            return FeatureTool.Label(af);
+            return FeatureTool.Label(af, false);
           }
         return item.toString();
       }
