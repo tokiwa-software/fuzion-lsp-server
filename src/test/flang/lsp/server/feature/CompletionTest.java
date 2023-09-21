@@ -89,7 +89,7 @@ public class CompletionTest extends ExtendedBaseTest
       sort (${101:T}, ${102:T} -> ${103:bool})
       sort_by (${101:T} -> ${102:O})
       zip ${1:b} (${201:T}, ${202:U} -> ${203:V})
-      hash_code""";
+      """;
     var actual = Completion.getCompletions(params(uri1, 1, 9, Completion.TriggerCharacters.Dot))
       .map(x -> x.getInsertText())
       .collect(Collectors.toList());
@@ -469,13 +469,13 @@ public class CompletionTest extends ExtendedBaseTest
   public void CompletionInActualArg()
   {
     var sourceText = """
-      map_of(K type : has_total_order, V type, kvs array (tuple K V)) container.Map K V is
+      map_of(K type : property.orderable, V type, kvs array (tuple K V)) container.Map K V is
         container.ps_map kvs. kvs.length kvs.length+1
         """;
 
     SourceText.setText(uri1, sourceText);
     var completions = Completion.getCompletions(params(uri1, 1, 23, Completion.TriggerCharacters.Dot));
-    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("internal_array")));
+    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("finite")));
   }
 
 }
