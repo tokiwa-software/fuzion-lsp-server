@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -442,7 +443,7 @@ public class QueryAST extends ANY
             return false;
           }
         var start = x.pos().column();
-        var end = x.pos().column() + Util.CharCount(x._str);
+        var end = x.pos().column() + Util.CharCount(new String(x.data(), StandardCharsets.UTF_8));
         if (SourceText.LineAt(x.pos()).charAt(x.pos().column() - 1) == '\"')
           {
             return start < params.column()
