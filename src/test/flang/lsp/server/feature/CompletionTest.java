@@ -446,8 +446,9 @@ public class CompletionTest extends ExtendedBaseTest
         ((container.ps_set i32).type.from_sequence (all.filter (x -> !(removed.contains x))))""" + " ";
 
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 3, 88, Completion.TriggerCharacters.Space));
-    assertTrue(completions.anyMatch(x -> x.getLabel().startsWith("infix ∪")));
+    var completions = Completion.getCompletions(params(uri1, 3, 88, Completion.TriggerCharacters.Space)).collect(Collectors.toList());
+    assertTrue(completions.size() > 5);
+    assertTrue(completions.stream().anyMatch(x -> x.getLabel().startsWith("infix ∀")));
   }
 
   @Test
