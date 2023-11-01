@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Stream;

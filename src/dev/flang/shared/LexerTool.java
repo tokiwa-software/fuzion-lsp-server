@@ -37,7 +37,6 @@ import dev.flang.parser.Lexer;
 import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.records.TokenInfo;
 import dev.flang.shared.records.Tokens;
-import dev.flang.shared.SourcePositionTool;
 import dev.flang.util.ANY;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;

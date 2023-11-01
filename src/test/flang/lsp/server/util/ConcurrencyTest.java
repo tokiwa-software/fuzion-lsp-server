@@ -30,14 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.eclipse.lsp4j.CompletionContext;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 // NYI remove dependency of dev.flang.lsp and move to dev.flang.shared

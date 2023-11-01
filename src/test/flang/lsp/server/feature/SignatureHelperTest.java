@@ -30,7 +30,6 @@ import java.net.URI;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SignatureHelpParams;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import dev.flang.lsp.server.feature.SignatureHelper;

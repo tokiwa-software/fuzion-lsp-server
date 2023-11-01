@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.server.feature;
 
-import java.net.URI;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -48,10 +46,6 @@ import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.shared.CaseConverter;
 import dev.flang.shared.QueryAST;
 import dev.flang.shared.Util;
-import dev.flang.shared.SourceText;
-import dev.flang.shared.SourcePositionTool;
-import dev.flang.util.SourceFile;
-import dev.flang.util.SourcePosition;
 
 public class CodeActions
 {

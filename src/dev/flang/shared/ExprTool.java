@@ -39,7 +39,6 @@ import dev.flang.ast.Expr;
 import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
-import dev.flang.shared.HasSourcePositionTool;
 
 public class ExprTool extends ANY
 {

@@ -36,7 +36,6 @@ import org.eclipse.lsp4j.CompletionTriggerKind;
 import org.eclipse.lsp4j.Position;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
 
 import dev.flang.lsp.server.feature.Completion;
 import dev.flang.lsp.server.util.LSP4jUtils;
