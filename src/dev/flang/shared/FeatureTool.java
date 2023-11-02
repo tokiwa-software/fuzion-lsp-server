@@ -40,7 +40,7 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
-import dev.flang.ast.AbstractFeature.State;
+import dev.flang.ast.State;
 import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;

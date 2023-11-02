@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractFeature.State;
+import dev.flang.ast.State;
 import dev.flang.ast.Feature;
 import dev.flang.lsp.server.enums.TokenModifier; // NYI remove dependency
 import dev.flang.lsp.server.enums.TokenType; // NYI remove dependency
