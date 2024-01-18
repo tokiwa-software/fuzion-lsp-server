@@ -33,10 +33,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import dev.flang.ast.AbstractBlock;
-import dev.flang.ast.AbstractCall;
 import dev.flang.ast.Expr;
-import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
@@ -51,27 +48,9 @@ public class ExprTool extends ANY
    */
   public static SourcePosition EndOfExpr(Expr expr)
   {
-    if (expr instanceof AbstractBlock ab && ab.resultExpression() != null)
-      {
-        return EndOfExpr(ab.resultExpression());
-      }
-    if (expr instanceof AbstractCall ac)
-      {
-        // .type expression, using ac.pos()
-        if (ac.calledFeature() == Types.resolved.f_Types_get)
-          {
-            return ac.pos();
-          }
-        // using pos of last actual argument
-        // or the position of the call itself
-        return LexerTool.EndOfToken(ac.actuals()
-          .stream()
-          .map(expression -> EndOfExpr(expression))
-          .sorted(Comparator.reverseOrder())
-          .findFirst()
-          .orElse(ac.pos()));
-      }
-    return LexerTool.EndOfToken(expr.pos());
+      return expr.sourceRange().bytePos() == expr.sourceRange().byteEndPos()
+        ? LexerTool.EndOfToken(expr.pos())
+        : new SourcePosition(expr.sourceRange()._sourceFile, expr.sourceRange().byteEndPos());
   }
 
 

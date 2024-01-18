@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
 package test.flang.lsp.server.feature;
+/* NYI
 
 import java.io.IOException;
 import java.util.List;
@@ -240,3 +241,4 @@ public class InlayHintTest extends ExtendedBaseTest
   }
 
 }
+*/

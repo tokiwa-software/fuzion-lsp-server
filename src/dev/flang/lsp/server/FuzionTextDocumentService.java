@@ -214,11 +214,13 @@ public class FuzionTextDocumentService implements TextDocumentService
       5000);
   }
 
+  /* NYI
   @Override
   public CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params)
   {
     return Computation.CancellableComputation(() -> InlayHints.getInlayHints(params), "inlay hint", 5000);
   }
+  */
 
   @Override
   public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params)

@@ -48,8 +48,7 @@ public class SignatureHelperTest extends BaseTest
   public void getSignatureHelpMultipleSignatures()
   {
     SourceText.setText(uri1, HelloWorld);
-    assertEquals("say unit : Any", LabelAt(uri1, new Position(1, 3), 0));
-    assertEquals("say(s Any) unit : Any", LabelAt(uri1, new Position(1, 3), 1));
+    assertEquals("say(s Any) unit : Any", LabelAt(uri1, new Position(1, 3), 0));
   }
 
   @Test
@@ -58,8 +57,7 @@ public class SignatureHelperTest extends BaseTest
     SourceText.setText(uri1, """
       ex =>
         say""" + " ");
-    assertEquals("say unit : Any", LabelAt(uri1, new Position(1, 6), 0));
-    assertEquals("say(s Any) unit : Any", LabelAt(uri1, new Position(1, 6), 1));
+    assertEquals("say(s Any) unit : Any", LabelAt(uri1, new Position(1, 6), 0));
   }
 
   @Test

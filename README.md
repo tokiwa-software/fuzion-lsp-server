@@ -270,7 +270,7 @@ For emacs there is two options eglot or lsp-mode.
 |semantic tokens|☑|
 |linkedEditingRange|☐|
 |moniker|☐|
-|inlayHints|☑|
+|inlayHints|☐|
 |inlineValue|☐|
 |type hierarchy|☐|
 |notebook document support|☐|

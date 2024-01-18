@@ -40,6 +40,10 @@ LANGUAGE_SERVER_PORT ?= 3000
 JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.21.0.jar:jars/org.eclipse.lsp4j.generator-0.21.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.21.0.jar:jars/gson-2.10.jar:jars/junit-platform-console-standalone-1.8.2.jar:jars/junit-jupiter-api-5.8.2.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
+ifeq ($(FUZION_DEBUG_SYMBOLS),true)
+	JAVAC += -g
+endif
+
 # on windows classpath separator is ; on linux it is :
 _CLASSPATH="classes:$(FUZION_HOME)/classes:$(JARS_FOR_CLASSPATH)"
 # https://stackoverflow.com/questions/714100/os-detecting-makefile

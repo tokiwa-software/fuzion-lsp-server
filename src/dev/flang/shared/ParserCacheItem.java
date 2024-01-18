@@ -130,7 +130,7 @@ public class ParserCacheItem
     return fuir().map(f -> {
       try
         {
-          return new LanguageServerEffects(f).effects()
+          return new LanguageServerEffects(frontEndOptions(), f).effects()
             .successors(Clazzes.clazz(af.selfType())._idInFUIR)
             .stream()
             .map(x -> {

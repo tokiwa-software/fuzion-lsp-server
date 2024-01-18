@@ -28,6 +28,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.effects;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.Graph;
 
 /**
@@ -36,9 +37,9 @@ import dev.flang.util.Graph;
 public class LanguageServerEffects extends Effects
 {
 
-  public LanguageServerEffects(FUIR fuir)
+  public LanguageServerEffects(FuzionOptions options, FUIR fuir)
   {
-    super(fuir);
+    super(options, fuir);
   }
 
   public Graph<Integer> effects()
