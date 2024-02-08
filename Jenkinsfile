@@ -6,7 +6,7 @@ pipeline {
 
     agent {
       docker {
-        image 'eclipse-temurin:17-alpine'
+        image 'eclipse-temurin:21-alpine'
         args '-u root'
       }
     }

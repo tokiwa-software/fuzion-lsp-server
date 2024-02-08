@@ -22,7 +22,7 @@
 ---
 
 ## Requirements
-- java version 17 or higher
+- java version 21 or higher
 - GNU-Make
 - wget
 
