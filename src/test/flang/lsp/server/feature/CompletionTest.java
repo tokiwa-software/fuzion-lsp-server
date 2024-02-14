@@ -64,7 +64,6 @@ public class CompletionTest extends ExtendedBaseTest
       upper
       lower
       size_option
-      add
       as_string ${1:sep}
       as_array
       slice ${1:from} ${2:to}
