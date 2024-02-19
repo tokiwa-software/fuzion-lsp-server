@@ -58,7 +58,6 @@ public class CompletionTest extends ExtendedBaseTest
       as_string
       as_list
       as_stream
-      for_each (${101:has_interval} -> ${102:unit})
       contains ${1:e}
       size
       upper
@@ -228,7 +227,7 @@ public class CompletionTest extends ExtendedBaseTest
     assertTrue(
       QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 10)).anyMatch(f -> f.featureName().baseName().equals("size_option")));
 
-    assertTrue(QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 15)).anyMatch(x -> x.featureName().baseName().equals("max")));
+    assertTrue(QueryAST.DotCallCompletionsAt(Cursor(uri1, 2, 15)).anyMatch(x -> x.featureName().baseName().equals("cast_to_u64")));
   }
 
   @Test
