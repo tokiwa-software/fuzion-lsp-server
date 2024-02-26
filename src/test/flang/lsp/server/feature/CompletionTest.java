@@ -60,8 +60,6 @@ public class CompletionTest extends ExtendedBaseTest
       as_stream
       contains ${1:e}
       size
-      upper
-      lower
       size_option
       as_string ${1:sep}
       as_array
