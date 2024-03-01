@@ -145,6 +145,7 @@ public class ParserTool extends ANY
         /* enableUnsafeIntrinsics  */ true,
         /* sourceDirs              */ isStdLib ? new dev.flang.util.List<String>(uri.getRawPath().substring(0,uri.getRawPath().indexOf("/lib/")) + "/lib") : new dev.flang.util.List<String>(),
         /* readStdin               */ false,
+        /* executeCode             */ null,
         /* main                    */ isStdLib ? null : tempFile.getAbsolutePath(),
         /* loadSources             */ true)
         {

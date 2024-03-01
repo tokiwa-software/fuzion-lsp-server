@@ -152,7 +152,7 @@ public class LexerTool extends ANY
    */
   private static Lexer NewLexerStdIn()
   {
-    var lexer = new Lexer(SourceFile.STDIN);
+    var lexer = new Lexer(SourceFile.STDIN, null);
     // HACK the following is necessary because currently on instantiation
     // lexer calls next(), skipping any raw tokens at start
     lexer.setPos(0);
