@@ -48,7 +48,7 @@ public class TypeTool extends ANY
     if (ContainsError(type)
       || type.containsUndefined(false))
       {
-        return type.name();
+        return baseName(type);
       }
     if (!type.isGenericArgument() && type.generics() != UnresolvedType.NONE)
       {
@@ -87,7 +87,7 @@ public class TypeTool extends ANY
 
     if (type.isGenericArgument())
       {
-        return type.name() + (type.isRef() ? " (boxed)": "");
+        return baseName(type) + (type.isRef() ? " (boxed)": "");
       }
     else if (type.outer() != null)
       {
@@ -95,16 +95,30 @@ public class TypeTool extends ANY
                     : !type.isRef() && type.featureOfType() != null && type.featureOfType().isThisRef() ? "value "
                     : "")
           + (type.featureOfType() == null
-                                          ? type.name()
+                                          ? baseName(type)
                                           : type.featureOfType().featureName().baseName());
       }
     else if (type.featureOfType() == null || type.featureOfType() == Types.f_ERROR)
       {
-        return type.name();
+        return baseName(type);
       }
     else
       {
         return type.featureOfType().featureName().baseName();
       }
+  }
+
+
+  /*
+   * the base name of the generic or feature describing the type.
+   */
+  public static String baseName(AbstractType t)
+  {
+    var f = t.isGenericArgument()
+                                  ? t.genericArgument().typeParameter()
+                                  : t.featureOfType();
+    return f
+      .featureName()
+      .baseName();
   }
 }

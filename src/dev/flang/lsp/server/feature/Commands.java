@@ -149,7 +149,7 @@ public enum Commands
               .choiceGenerics()
               .stream()
               .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFrom(cg)))
-              .map(t -> indent + CaseConverter.ToSnakeCase(t.name()) + " " + TypeTool.Label(t) + " =>")
+              .map(t -> indent + CaseConverter.ToSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.Label(t) + " =>")
               .collect(Collectors.joining(System.lineSeparator()));
 
           var endOfSubPos = Bridge.ToPosition(ExprTool.EndOfExpr(m.subject()));
