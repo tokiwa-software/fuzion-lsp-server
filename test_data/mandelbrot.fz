@@ -1,5 +1,5 @@
 mandelbrotexample is
-  isInMandelbrotSet(c num.complex f64, maxEscapeIterations i32, z num.complex f64) bool is
+  isInMandelbrotSet(c num.complex f64, maxEscapeIterations i32, z num.complex f64) bool =>
     maxEscapeIterations = 0 || z.abs² <= 4 && isInMandelbrotSet c maxEscapeIterations-1 z*z+c
 
   steps(start, step f64, numPixels i32) =>
