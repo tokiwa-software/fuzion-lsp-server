@@ -32,11 +32,9 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import dev.flang.air.AIR;
-import dev.flang.air.Clazzes;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Types.Resolved;
-import dev.flang.be.effects.LanguageServerEffects;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fuir.FUIR;
@@ -123,32 +121,6 @@ public class ParserCacheItem
   public FrontEnd frontEnd()
   {
     return frontEnd;
-  }
-
-  public Stream<String> effects(AbstractFeature af)
-  {
-    return fuir().map(f -> {
-      try
-        {
-          return new LanguageServerEffects(frontEndOptions(), f).effects()
-            .successors(Clazzes.clazz(af.selfType())._idInFUIR)
-            .stream()
-            .map(x -> {
-              try
-                {
-                  return f.clazzAsString(x);
-                }
-              catch (Exception e)
-                {
-                  return "?";
-                }
-            });
-        }
-      catch (Exception e)
-        {
-          return Stream.of("error evaluating effects");
-        }
-    }).orElse(Stream.empty());
   }
 
   public Optional<FUIR> fuir()
