@@ -57,7 +57,6 @@ public class CompletionTest extends ExtendedBaseTest
     var expected = """
       as_string
       as_list
-      as_stream
       contains ${1:e}
       size
       size_option

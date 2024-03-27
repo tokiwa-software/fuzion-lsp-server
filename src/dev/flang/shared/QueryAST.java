@@ -154,7 +154,7 @@ public class QueryAST extends ANY
 
   private static boolean HasConstraint(AbstractType at)
   {
-    return at.isGenericArgument() && !at.genericArgument().constraint().equals(Types.resolved.t_any);
+    return at.isGenericArgument() && !at.genericArgument().constraint().equals(Types.resolved.t_Any);
   }
 
   // NYI motivate/explain this heuristic

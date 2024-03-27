@@ -129,8 +129,6 @@ public class FeatureToolTest extends BaseTest
 
     var expected = List.of("""
       "yak" -> "io";
-      """, """
-      .call" -> "yak";
       """);
 
     assertTrue(expected.stream().allMatch(e -> graph.contains(e)));

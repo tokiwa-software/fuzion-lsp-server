@@ -341,7 +341,7 @@ public class FeatureTool extends ANY
 
   private static boolean IsFunctionCall(AbstractFeature f)
   {
-    return f.redefines().contains(Types.resolved.f_function_call);
+    return f.redefines().contains(Types.resolved.f_Function_call);
   }
 
   private static Set<AbstractFeature> Callers(AbstractFeature f)
