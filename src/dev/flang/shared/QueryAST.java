@@ -28,6 +28,7 @@ package dev.flang.shared;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
@@ -446,7 +447,7 @@ public class QueryAST extends ANY
           }
         var start = x.pos().column();
         var d = x.data();
-        var end = x.pos().column() + Util.CharCount(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).getInt() + 4), StandardCharsets.UTF_8));
+        var end = x.pos().column() + Util.CharCount(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
         if (SourceText.LineAt(x.pos()).charAt(x.pos().column() - 1) == '\"')
           {
             return start < params.column()
