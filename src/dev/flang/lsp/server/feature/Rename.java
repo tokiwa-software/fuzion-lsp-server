@@ -127,7 +127,7 @@ public class Rename extends ANY
     // positions where feature is used as type
     var typePositions = FeatureTool.SelfAndDescendants(featureToRename.universe())
       .filter(f -> !f.equals(featureToRename) && !f.resultType().isGenericArgument()
-        && f.resultType().featureOfType().equals(featureToRename))
+        && f.resultType().feature().equals(featureToRename))
       .flatMap(f -> {
         var tokens = LexerTool.TokensFrom(f.pos()).skip(1).collect(Collectors.toList());
         var whitespace = tokens.get(0);

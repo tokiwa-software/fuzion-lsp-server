@@ -432,12 +432,12 @@ public class CompletionTest extends ExtendedBaseTest
   {
     var sourceText = """
       ex =>
-        all := (container.ps_set i32).type.from_sequence 0..100
-        removed := (container.ps_set i32).type.from_sequence 0..100:2
-        ((container.ps_set i32).type.from_sequence (all.filter (x -> !(removed.contains x))))""" + " ";
+        all := (container.ps_set i32).type.new 0..100
+        removed := (container.ps_set i32).type.new 0..100:2
+        ((container.ps_set i32).type.new (all.filter (x -> !(removed.contains x))))""" + " ";
 
     SourceText.setText(uri1, sourceText);
-    var completions = Completion.getCompletions(params(uri1, 3, 88, Completion.TriggerCharacters.Space)).collect(Collectors.toList());
+    var completions = Completion.getCompletions(params(uri1, 3, 78, Completion.TriggerCharacters.Space)).collect(Collectors.toList());
     assertTrue(completions.size() > 5);
     assertTrue(completions.stream().anyMatch(x -> x.getLabel().startsWith("infix ∀")));
   }

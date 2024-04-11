@@ -412,7 +412,7 @@ public class FeatureTool extends ANY
     return at.isChoice()
       && at.choiceGenerics()
         .stream()
-        .map(t -> t.featureOfType().selfType())
+        .map(t -> t.feature().selfType())
         .anyMatch(t -> t.equals(af.selfType()));
   }
 

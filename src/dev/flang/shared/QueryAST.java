@@ -145,9 +145,9 @@ public class QueryAST extends ANY
       .map(at -> {
         if (HasConstraint(at))
           {
-            return at.genericArgument().constraint().featureOfType();
+            return at.genericArgument().constraint().feature();
           }
-        return at.featureOfType();
+        return at.feature();
       })
       .filter(f -> !FeatureTool.IsInternal(f) || f.featureName().baseName().endsWith("#type"))
       .findFirst();
@@ -169,7 +169,7 @@ public class QueryAST extends ANY
       .map(entry -> ((AbstractConstant) entry.getKey()))
       .filter(HasSourcePositionTool.IsItemOnSameLineAsCursor(params))
       .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
-      .map(x -> x.type().featureOfType())
+      .map(x -> x.type().feature())
       .findFirst();
   }
 

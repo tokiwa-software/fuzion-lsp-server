@@ -91,20 +91,20 @@ public class TypeTool extends ANY
       }
     else if (type.outer() != null)
       {
-        return (type.isRef() && (type.featureOfType() == null || !type.featureOfType().isThisRef()) ? "ref "
-                    : !type.isRef() && type.featureOfType() != null && type.featureOfType().isThisRef() ? "value "
+        return (type.isRef() && (type.feature() == null || !type.feature().isThisRef()) ? "ref "
+                    : !type.isRef() && type.feature() != null && type.feature().isThisRef() ? "value "
                     : "")
-          + (type.featureOfType() == null
+          + (type.feature() == null
                                           ? baseName(type)
-                                          : type.featureOfType().featureName().baseName());
+                                          : type.feature().featureName().baseName());
       }
-    else if (type.featureOfType() == null || type.featureOfType() == Types.f_ERROR)
+    else if (type.feature() == null || type.feature() == Types.f_ERROR)
       {
         return baseName(type);
       }
     else
       {
-        return type.featureOfType().featureName().baseName();
+        return type.feature().featureName().baseName();
       }
   }
 
@@ -116,7 +116,7 @@ public class TypeTool extends ANY
   {
     var f = t.isGenericArgument()
                                   ? t.genericArgument().typeParameter()
-                                  : t.featureOfType();
+                                  : t.feature();
     return f
       .featureName()
       .baseName();
