@@ -67,9 +67,11 @@ public class SourcePositionTool extends ANY
       return new SourcePosition(sf, sf.byteLength());
     }
     var bytePos = sf.lineStartPos(line);
-    while (sf.codePointInLine(bytePos) < column && bytePos < sf.byteLength())
+    var curColumn = 1;
+    while (curColumn < column && bytePos < sf.byteLength())
       {
-        bytePos++;
+        bytePos += sf.codePointSize(bytePos);
+        curColumn++;
       }
     return new SourcePosition(sf, bytePos);
   }

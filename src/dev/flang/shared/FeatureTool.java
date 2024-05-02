@@ -392,9 +392,20 @@ public class FeatureTool extends ANY
    */
   public static Stream<SimpleEntry<AbstractCall, AbstractFeature>> CallsTo(AbstractFeature feature)
   {
-    return ASTWalker.Calls(feature.universe())
+    var universe = FeatureTool.Universe(feature);
+    return ASTWalker.Calls(universe)
       .filter(entry -> entry.getKey().calledFeature() != null
         && entry.getKey().calledFeature().equals(feature));
+  }
+
+  static AbstractFeature Universe(AbstractFeature feature)
+  {
+    var universe = feature;
+    while (universe.outer() != null)
+      {
+        universe = universe.outer();
+      }
+    return universe;
   }
 
   public static boolean IsUsedInChoice(AbstractFeature af)

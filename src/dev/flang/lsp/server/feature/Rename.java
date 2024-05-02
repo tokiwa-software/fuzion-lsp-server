@@ -48,6 +48,7 @@ import dev.flang.parser.Lexer.Token;
 import dev.flang.shared.ASTWalker;
 import dev.flang.shared.FeatureTool;
 import dev.flang.shared.LexerTool;
+import dev.flang.shared.ParserTool;
 import dev.flang.shared.QueryAST;
 import dev.flang.shared.SourcePositionTool;
 import dev.flang.shared.TypeTool;
@@ -125,7 +126,7 @@ public class Rename extends ANY
     var pos = FeatureTool.BareNamePosition(featureToRename);
 
     // positions where feature is used as type
-    var typePositions = FeatureTool.SelfAndDescendants(featureToRename.universe())
+    var typePositions = FeatureTool.SelfAndDescendants(ParserTool.Universe(Util.toURI(params.getTextDocument().getUri())))
       .filter(f -> !f.equals(featureToRename) && !f.resultType().isGenericArgument()
         && f.resultType().feature().equals(featureToRename))
       .flatMap(f -> {

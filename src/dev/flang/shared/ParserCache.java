@@ -80,6 +80,7 @@ public class ParserCache extends ANY
   {
     if (PRECONDITIONS)
       require(!TypeTool.ContainsError(f.selfType()));
-    return universe2FrontEndMap.get(f.universe()).module();
+    var universe = FeatureTool.Universe(f);
+    return universe2FrontEndMap.get(universe).module();
   }
 }
