@@ -39,7 +39,6 @@ import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
-import dev.flang.ast.Actual;
 import dev.flang.ast.Box;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
@@ -195,10 +194,6 @@ public class ASTWalker
     if (expr instanceof InlineArray ia)
       {
         return Stream.concat(AsStream(ia, outer), ia._elements.stream().flatMap(e -> TraverseExpression(e, outer)));
-      }
-    if (expr instanceof Actual act)
-      {
-        return Stream.empty(); // NYI
       }
     if ( expr == Expr.ERROR_VALUE
       || expr instanceof AbstractCurrent
