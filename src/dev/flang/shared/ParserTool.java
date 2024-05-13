@@ -274,7 +274,7 @@ public class ParserTool extends ANY
         public Expr         action      (Destructure    d, AbstractFeature outer) { FoundPos(d.pos()); return d; }
         public Expr         action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
         public Expr         action      (Function       f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
-        public void         action      (If             i, AbstractFeature outer) { FoundPos(i.pos()); }
+        public Expr         action      (If             i, AbstractFeature outer) { FoundPos(i.pos()); return i; }
         public void         action      (Impl           i, AbstractFeature outer) { FoundPos(i.pos); }
         public Expr         action      (InlineArray    i, AbstractFeature outer) { FoundPos(i.pos()); return i; }
         public void         action      (AbstractMatch  m                       ) { FoundPos(m.pos()); }

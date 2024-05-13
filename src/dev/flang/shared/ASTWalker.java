@@ -114,7 +114,7 @@ public class ASTWalker
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> TraverseCase(AbstractCase c, AbstractFeature outer)
   {
-    return TraverseBlock(c.code(), outer);
+    return TraverseExpression(c.code(), outer);
   }
 
 
@@ -201,7 +201,6 @@ public class ASTWalker
       || expr instanceof Universe
       || expr instanceof Function
       || expr instanceof Nop
-      || expr instanceof Check
       || expr instanceof Env)
       {
         return Stream.empty();
