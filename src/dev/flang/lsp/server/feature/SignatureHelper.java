@@ -100,7 +100,7 @@ public class SignatureHelper extends ANY
 
   private static SignatureHelp getSignatureHelp(AbstractCall call, AbstractFeature featureOfCall)
   {
-    var consideredCallTargets_declaredOrInherited = ParserTool.DeclaredOrInheritedFeatures(featureOfCall);
+    var consideredCallTargets_declaredOrInherited = ParserTool.DeclaredFeatures(featureOfCall); // NYI: what about inherited features?
     var consideredCallTargets_outerFeatures =
       FeatureTool.OuterFeatures(featureOfCall).flatMap(f -> ParserTool.DeclaredFeatures(f));
 

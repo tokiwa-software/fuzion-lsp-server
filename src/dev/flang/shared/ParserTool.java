@@ -199,18 +199,6 @@ public class ParserTool extends ANY
     return DeclaredFeatures(f, false);
   }
 
-  public static Stream<AbstractFeature> DeclaredOrInheritedFeatures(AbstractFeature f)
-  {
-    if (TypeTool.ContainsError(f.selfType()))
-      {
-        return Stream.empty();
-      }
-    return parserCache.SourceModule(f)
-      .declaredOrInheritedFeatures(f)
-      .values()
-      .stream();
-  }
-
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f, boolean includeInternalFeatures)
   {
     if (TypeTool.ContainsError(f.selfType()))

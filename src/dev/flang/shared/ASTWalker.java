@@ -103,7 +103,7 @@ public class ASTWalker
         .flatMap(x -> TraverseCall(x, feature)),
 
       feature.contract().req.stream().flatMap(x -> TraverseExpression(x.cond, feature.outer())),
-      feature.contract().ens.stream().flatMap(x -> TraverseExpression(x.cond, feature.outer())),
+      feature.contract()._declared_postconditions.stream().flatMap(x -> TraverseExpression(x.cond, feature.outer())),
 
       descend
               ? ParserTool.DeclaredFeatures(feature, true)
