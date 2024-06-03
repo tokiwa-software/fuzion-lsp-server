@@ -175,8 +175,7 @@ public class ASTWalker
         return Util.ConcatStreams(
           TraverseExpression(i.cond, outer),
           TraverseBlock(i.block, outer),
-          i.elseBlock != null ? TraverseBlock(i.elseBlock, outer): Stream.empty(),
-          i.elseIf != null ? TraverseExpression(i.elseIf, outer): Stream.empty());
+          i.elseBlock != null ? TraverseBlock(i.elseBlock, outer): Stream.empty());
       }
     // for offering completions on constants
     if (expr instanceof Constant ac)
