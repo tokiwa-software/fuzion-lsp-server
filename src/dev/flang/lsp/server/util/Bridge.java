@@ -77,6 +77,11 @@ public class Bridge extends ANY
     return new Range(ToPosition(feature.pos()), ToPosition(ParserTool.endOfFeature(feature)));
   }
 
+  public static Range ToRange(SourcePosition pos)
+  {
+    return new Range(ToPosition(pos), ToPosition(new SourcePosition(pos._sourceFile, pos.byteEndPos())));
+  }
+
   public static Range ToRangeBaseName(AbstractFeature feature)
   {
     var bareNamePosition = FeatureTool.BareNamePosition(feature);
@@ -106,7 +111,7 @@ public class Bridge extends ANY
       {
         return SymbolKind.Number;
       }
-    if (feature.isConstructor() || feature.isIntrinsicConstructor())
+    if (feature.isConstructor() || feature.isIntrinsic())
       {
         return SymbolKind.Constructor;
       }

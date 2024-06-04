@@ -72,58 +72,35 @@ public enum Diagnostics
     return Util.ConcatStreams(
       Errors(uri),
       Warnings(uri),
-      Unused(uri),
       NamingFeatures(uri),
       NamingRefs(uri),
-      NamingTypeParams(uri),
-      DuplicateName(uri));
-  }
-
-  private static Stream<Diagnostic> DuplicateName(URI uri)
-  {
-    var usedNames = new HashMap<String, String>();
-    var featuresReusingNames = new HashSet<AbstractFeature>();
-    QueryAST.SelfAndDescendants(uri)
-      .forEach(x -> {
-        var ident = x.qualifiedName() + x.featureName().argCount();
-        if (usedNames.containsKey(ident) &&
-          x.outer().qualifiedName().contains(usedNames.get(ident)) &&
-          !FeatureTool.IsArgument(x))
-          {
-            featuresReusingNames.add(x);
-          }
-        else
-          {
-            usedNames.put(ident, x.outer().qualifiedName());
-          }
-      });
-    return featuresReusingNames.stream().map(f -> {
-      return Create(Bridge.ToRangeBaseName(f),
-        "name reuse detected.",
-        DiagnosticSeverity.Information, duplicateName);
-    });
+      NamingTypeParams(uri));
   }
 
   private static Stream<Diagnostic> Errors(URI uri)
   {
     var errorDiagnostics =
-      ParserTool.Errors(uri).filter(error -> ParserTool.getUri(error.pos).equals(uri)).map((error) -> {
-        var message = error.msg + System.lineSeparator() + error.detail;
-        return Create(LSP4jUtils.Range(LexerTool.TokensAt(error.pos).right()), message,
-          DiagnosticSeverity.Error,
-          errors);
-      });
+      ParserTool.Errors(uri)
+        .filter(error -> ParserTool.getUri(error.pos).equals(uri))
+        .map((error) -> {
+            var message = error.msg + System.lineSeparator() + error.detail;
+            return Create(Bridge.ToRange(error.pos), message,
+              DiagnosticSeverity.Error,
+              errors);
+          });
     return errorDiagnostics;
   }
 
   private static Stream<Diagnostic> Warnings(URI uri)
   {
     var warningDiagnostics =
-      ParserTool.Warnings(uri).filter(warning -> ParserTool.getUri(warning.pos).equals(uri)).map((warning) -> {
-        var message = warning.msg + System.lineSeparator() + warning.detail;
-        return Create(LSP4jUtils.Range(LexerTool.TokensAt(warning.pos).right()), message,
-          DiagnosticSeverity.Warning, warnings);
-      });
+      ParserTool.Warnings(uri)
+        .filter(warning -> ParserTool.getUri(warning.pos).equals(uri))
+        .map((warning) -> {
+            var message = warning.msg + System.lineSeparator() + warning.detail;
+            return Create(Bridge.ToRange(warning.pos), message,
+              DiagnosticSeverity.Warning, warnings);
+          });
     return warningDiagnostics;
   }
 
@@ -194,44 +171,4 @@ public enum Diagnostics
     return diagnostic;
   }
 
-
-  /**
-   * diagnostics for unused features
-   * @param uri
-   * @return
-   */
-  private static Stream<Diagnostic> Unused(URI uri)
-  {
-    if (Util.IsStdLib(uri))
-      {
-        return Stream.empty();
-      }
-    return ParserTool.TopLevelFeatures(uri)
-      .flatMap(main -> {
-        var calledFeatures = ASTWalker.Calls(main)
-          .map(x -> x.getKey().calledFeature())
-          .collect(Collectors.toSet());
-
-        var unused = FeatureTool
-          .SelfAndDescendants(main)
-          .filter(f -> !f.isTypeParameter() // NYI unused type parameter
-            && !f.isAbstract()
-            && !calledFeatures.contains(f)
-            && !f.equals(main)
-            && !f.featureName().baseName().equals("result")
-        // NYI in this case we would need to do more work to
-        // know if feature is used.
-            && f.redefines().isEmpty())
-          .collect(Collectors.toList());
-
-        var unusedDiagnostics = unused.stream().map(f -> {
-          var diagnostic =
-            Create(Bridge.ToRangeBaseName(f), "unused", DiagnosticSeverity.Hint, unusedFeatures);
-          diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
-          return diagnostic;
-        });
-
-        return unusedDiagnostics;
-      });
-  }
 }
