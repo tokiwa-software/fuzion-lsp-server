@@ -58,9 +58,11 @@ import dev.flang.ast.Match;
 import dev.flang.ast.Tag;
 import dev.flang.ast.This;
 import dev.flang.ast.Types;
+import dev.flang.ast.Visi;
 import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+import dev.flang.fe.LibraryFeature;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -209,6 +211,10 @@ public class ParserTool extends ANY
       .declaredFeatures(f)
       .values()
       .stream()
+      .filter(af -> {
+        var isFromModule = (af instanceof LibraryFeature lf);
+        return !isFromModule || af.visibility().featureVisibility() == Visi.PUB;
+      })
       .filter(feat -> includeInternalFeatures
         || !FeatureTool.IsInternal(feat));
   }
