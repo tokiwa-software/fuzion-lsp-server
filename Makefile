@@ -37,7 +37,7 @@ JUNIT_ARGS = --fail-if-no-tests --disable-banner --details=tree -cp $(CLASSPATH)
 JUNIT_ARGS_PARALLEL = --config=junit.jupiter.execution.parallel.enabled=true --config=junit.jupiter.execution.parallel.mode.default=concurrent
 LANGUAGE_SERVER_PORT ?= 3000
 
-JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.21.0.jar:jars/org.eclipse.lsp4j.generator-0.21.0.jar:jars/org.eclipse.lsp4j.jsonrpc-0.21.0.jar:jars/gson-2.10.jar:jars/junit-platform-console-standalone-1.8.2.jar:jars/junit-jupiter-api-5.8.2.jar
+JARS_FOR_CLASSPATH = jars/org.eclipse.lsp4j-0.23.1.jar:jars/org.eclipse.lsp4j.generator-0.23.1.jar:jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar:jars/gson-2.11.0.jar:jars/junit-platform-console-standalone-1.10.2.jar:jars/junit-jupiter-api-5.10.2.jar
 JARS = $(subst :, ,$(JARS_FOR_CLASSPATH))
 
 ifeq ($(FUZION_DEBUG_SYMBOLS),true)
@@ -78,29 +78,29 @@ debug_supended: classes
 	mkdir -p runDir
 	java $(DEBUGGER_SUSPENDED) -cp $(CLASSPATH) $(JAVA_ARGS) dev.flang.lsp.server.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
-jars/org.eclipse.lsp4j-0.21.0.jar:
+jars/org.eclipse.lsp4j-0.23.1.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.21.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.23.1/$(@F)
 
-jars/org.eclipse.lsp4j.generator-0.21.0.jar:
+jars/org.eclipse.lsp4j.generator-0.23.1.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.21.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.23.1/$(@F)
 
-jars/org.eclipse.lsp4j.jsonrpc-0.21.0.jar:
+jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.21.0/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.23.1/$(@F)
 
-jars/gson-2.10.jar:
+jars/gson-2.11.0.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/com/google/code/gson/gson/2.11.0/$(@F)
 
-jars/junit-platform-console-standalone-1.8.2.jar:
+jars/junit-platform-console-standalone-1.10.2.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.8.2/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.2/$(@F)
 
-jars/junit-jupiter-api-5.8.2.jar:
+jars/junit-jupiter-api-5.10.2.jar:
 	mkdir -p $(@D)
-	wget -O $@ https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.8.2/$(@F)
+	wget -O $@ https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.10.2/$(@F)
 
 build_fuzion_no_java:
 	make -s -C fuzion no-java 2> /dev/null
@@ -119,19 +119,19 @@ jar: build_fuzion_no_java classes
 	jar cfm out.jar Manifest.txt -C classes . -C $(FUZION_HOME)/classes .
 
 run_tests_tagged: classes
-	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS) --include-tag=TAG
+	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.10.2.jar $(JUNIT_ARGS) --include-tag=TAG
 
 run_tests_tagged_suspended: classes
-	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.2.jar  $(JUNIT_ARGS) --include-tag=TAG
+	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.10.2.jar  $(JUNIT_ARGS) --include-tag=TAG
 
 run_tests: classes
-	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS)
+	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.10.2.jar $(JUNIT_ARGS)
 
 run_tests_parallel: classes
-	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS) $(JUNIT_ARGS_PARALLEL)
+	$(CONDITIONS) java $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.10.2.jar $(JUNIT_ARGS) $(JUNIT_ARGS_PARALLEL)
 
 run_tests_suspended: classes
-	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS)
+	$(CONDITIONS) java $(DEBUGGER_SUSPENDED) $(JAVA_ARGS) -jar jars/junit-platform-console-standalone-1.10.2.jar $(JUNIT_ARGS)
 
 async-profiler:
 	git clone https://github.com/jvm-profiling-tools/async-profiler
@@ -143,13 +143,13 @@ async-profiler/build/lib/libasyncProfiler.so: async-profiler
 .PHONY: profile/tests
 profile/tests: DATE = $(shell date +%y%m%d-%H%M%S)
 profile/tests: classes async-profiler/build/lib/libasyncProfiler.so
-	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/lib/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS)
+	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/lib/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.10.2.jar $(JUNIT_ARGS)
 	x-www-browser /tmp/$(DATE)_flamegraph.html
 
 .PHONY: profile/tagged_tests
 profile/tagged_tests: DATE = $(shell date +%y%m%d-%H%M%S)
 profile/tagged_tests: classes async-profiler/build/lib/libasyncProfiler.so
-	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/lib/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.8.2.jar $(JUNIT_ARGS) --include-tag=TAG
+	$(CONDITIONS) java $(JAVA_ARGS) -agentpath:async-profiler/build/lib/libasyncProfiler.so=start,event=cpu,file=/tmp/$(DATE)_flamegraph.html -jar jars/junit-platform-console-standalone-1.10.2.jar $(JUNIT_ARGS) --include-tag=TAG
 	x-www-browser /tmp/$(DATE)_flamegraph.html
 
 release: clean build_fuzion jar

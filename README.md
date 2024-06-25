@@ -9,7 +9,7 @@
      * [Vim](#vim)
      * [Emacs](#emacs)
        * [Eglot](#eglot)
-       * [LSP-Mode](#vim)
+       * [LSP-Mode](#lsp-mode)
    * [Run standalone](#run-standalone)
      * [socket](#transport-socket)
      * [stdio](#transport-stdio)
