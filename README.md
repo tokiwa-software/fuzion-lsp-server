@@ -143,7 +143,7 @@ For emacs there is two options eglot or lsp-mode.
     - M-x package-install RET lsp-mode
     - M-x package-install RET flycheck
     - M-x package-install RET company RET
-- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [https://github.com/emacs-lsp/lsp-mode](lsp-mode)
+- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [lsp-mode](https://github.com/emacs-lsp/lsp-mode)
 
 ```elisp
 (require 'package)
