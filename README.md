@@ -90,7 +90,7 @@ For emacs there is two options eglot or lsp-mode.
 
 
 - M-x package-install RET eglot RET (only needed for emacs version <29)
-- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [https://github.com/joaotavora/eglot](eglot)
+- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [eglot](https://github.com/joaotavora/eglot)
 
 
 ```elisp
