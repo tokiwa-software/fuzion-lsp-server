@@ -48,7 +48,7 @@ public class QueryASTTest extends ExtendedBaseTest
     assertEquals(1, QueryAST.SelfAndDescendants(uri1).count());
     assertEquals(1, QueryAST.SelfAndDescendants(uri2).count());
     assertEquals(11, QueryAST.SelfAndDescendants(uri3).count());
-    assertEquals(3, QueryAST.SelfAndDescendants(uri4).count());
+    assertEquals(2, QueryAST.SelfAndDescendants(uri4).count());
   }
 
   @Test

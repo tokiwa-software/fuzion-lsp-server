@@ -212,8 +212,8 @@ public class ParserTool extends ANY
       .values()
       .stream()
       .filter(af -> {
-        var isFromModule = (af instanceof LibraryFeature lf);
-        return !isFromModule || af.visibility().featureVisibility() == Visi.PUB;
+        var isFromModule = (af instanceof LibraryFeature);
+        return !isFromModule || af.visibility().eraseTypeVisibility() == Visi.PUB;
       })
       .filter(feat -> includeInternalFeatures
         || !FeatureTool.IsInternal(feat));
