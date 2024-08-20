@@ -113,15 +113,14 @@ public class SemanticToken extends ANY
           case t_rparen :
           case t_lbrace :
           case t_rbrace :
-          case t_lcrochet :
-          case t_rcrochet :
+          case t_lbracket :
+          case t_rbracket :
           case t_semicolon :
           case t_eof :
           case t_barLimit :
           case t_colonLimit :
           case t_indentationLimit :
           case t_lineLimit :
-          case t_spaceLimit :
           case t_undefined :
             return Stream.empty();
           default:

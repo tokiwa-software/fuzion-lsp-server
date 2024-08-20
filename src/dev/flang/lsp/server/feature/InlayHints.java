@@ -41,7 +41,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.Constant;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Expr;
 import dev.flang.lsp.server.util.Bridge;
@@ -161,7 +161,7 @@ public class InlayHints extends ANY
 
   private static boolean IsConstant(Expr code)
   {
-    return code instanceof AbstractConstant;
+    return code instanceof Constant;
   }
 
   static HashSet<Token> AllowedTokensBeforeOp = new HashSet<>(List.of(
@@ -172,12 +172,11 @@ public class InlayHints extends ANY
     Token.t_rparen,
     Token.t_lbrace,
     Token.t_rbrace,
-    Token.t_lcrochet,
-    Token.t_rcrochet,
+    Token.t_lbracket,
+    Token.t_rbracket,
     Token.t_ident,
     Token.t_in,
     Token.t_ref,
-    Token.t_synchronized,
     Token.t_redef,
     Token.t_const,
     Token.t_leaf,

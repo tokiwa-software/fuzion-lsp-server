@@ -274,7 +274,6 @@ public class TokenInfo extends ANY
       {
         switch (_token)
           {
-          case t_synchronized :
           case t_const :
           case t_leaf :
           case t_infix :
@@ -330,13 +329,12 @@ public class TokenInfo extends ANY
       case t_rparen :
       case t_lbrace :
       case t_rbrace :
-      case t_lcrochet :
-      case t_rcrochet :
+      case t_lbracket :
+      case t_rbracket :
       case t_semicolon :
       case t_eof :
       case t_indentationLimit :
       case t_lineLimit :
-      case t_spaceLimit :
       case t_undefined :
         return Optional.empty();
       default:
@@ -435,9 +433,9 @@ public class TokenInfo extends ANY
   }
 
   private final static Set<Token> leftBrackets =
-    List.of(Token.t_lbrace, Token.t_lcrochet, Token.t_lparen).stream().collect(Collectors.toUnmodifiableSet());
+    List.of(Token.t_lbrace, Token.t_lbracket, Token.t_lparen).stream().collect(Collectors.toUnmodifiableSet());
   private final static Set<Token> rightBrackets =
-    List.of(Token.t_rbrace, Token.t_rcrochet, Token.t_rparen).stream().collect(Collectors.toUnmodifiableSet());
+    List.of(Token.t_rbrace, Token.t_rbracket, Token.t_rparen).stream().collect(Collectors.toUnmodifiableSet());
 
   public boolean IsLeftBracket()
   {

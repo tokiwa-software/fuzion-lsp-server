@@ -35,13 +35,13 @@ import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
-import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.Constant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Box;
 import dev.flang.ast.Check;
-import dev.flang.ast.Constant;
+import dev.flang.ast.Context;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Function;
@@ -196,7 +196,7 @@ public class ASTWalker
       }
     if ( expr == Expr.ERROR_VALUE
       || expr instanceof AbstractCurrent
-      || expr instanceof AbstractConstant
+      || expr instanceof Constant
       || expr instanceof Universe
       || expr instanceof Function
       || expr instanceof Nop

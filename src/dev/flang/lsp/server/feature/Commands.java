@@ -51,6 +51,7 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import com.google.gson.JsonPrimitive;
 
 import dev.flang.ast.AbstractMatch;
+import dev.flang.ast.Context;
 import dev.flang.lsp.server.Config;
 import dev.flang.lsp.server.FuzionLanguageClient;
 import dev.flang.lsp.server.util.Bridge;
@@ -146,9 +147,9 @@ public enum Commands
           var text = System.lineSeparator()
             + m.subject()
               .type()
-              .choiceGenerics()
+              .choiceGenerics(Context.NONE)
               .stream()
-              .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFrom(cg)))
+              .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFrom(cg, Context.NONE)))
               .map(t -> indent + CaseConverter.ToSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.Label(t) + " =>")
               .collect(Collectors.joining(System.lineSeparator()));
 

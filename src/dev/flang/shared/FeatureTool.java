@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Context;
 import dev.flang.ast.Feature;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
@@ -421,7 +422,7 @@ public class FeatureTool extends ANY
   private static boolean FeatureIsChoiceMember(AbstractType at, AbstractFeature af)
   {
     return at.isChoice()
-      && at.choiceGenerics()
+      && at.choiceGenerics(Context.NONE)
         .stream()
         .map(t -> t.feature().selfType())
         .anyMatch(t -> t.equals(af.selfType()));

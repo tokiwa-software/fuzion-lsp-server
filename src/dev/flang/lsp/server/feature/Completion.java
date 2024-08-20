@@ -147,7 +147,7 @@ public class Completion
               Token.t_ident,
               Token.t_numliteral,
               Token.t_rbrace,
-              Token.t_rcrochet,
+              Token.t_rbracket,
               Token.t_rparen,
               Token.t_stringQQ,
               Token.t_StringDQ,

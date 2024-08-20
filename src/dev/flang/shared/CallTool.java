@@ -31,7 +31,7 @@ import java.util.function.Predicate;
 
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.Constant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.Box;
 import dev.flang.ast.Expr;
@@ -82,15 +82,15 @@ public class CallTool extends ANY
   }
 
   /*
-   * if pos is at opening parens, braces, crochets,
-   * return the start of the parens, crochets
+   * if pos is at opening parens, braces, brackets,
+   * return the start of the parens, brackets
    */
   private static SourcePosition AdjustForOpeningParens(SourcePosition pos)
   {
     var leftToken = LexerTool.TokensAt(pos).left().token();
     if (leftToken == Token.t_lparen
       || leftToken == Token.t_lbrace
-      || leftToken == Token.t_lcrochet)
+      || leftToken == Token.t_lbracket)
       {
         return AdjustForOpeningParens(LexerTool.GoLeft(pos));
       }
@@ -111,7 +111,7 @@ public class CallTool extends ANY
     if (expr instanceof AbstractCall ac
       && (ac.target() instanceof AbstractBlock
         || ac.target() instanceof AbstractCurrent
-        || ac.target() instanceof AbstractConstant
+        || ac.target() instanceof Constant
         || ac.target() instanceof AbstractCall))
       {
         return TraverseChainedCalls(ac.target());

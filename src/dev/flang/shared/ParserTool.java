@@ -116,7 +116,7 @@ public class ParserTool extends ANY
 
   private static ParserCacheItem createParserCacheItem(URI uri)
   {
-    Clazzes.reset();
+    Clazzes.instance = null;
 
     var frontEndOptions = FrontEndOptions(uri);
     var frontEnd = new FrontEnd(frontEndOptions);
@@ -149,7 +149,8 @@ public class ParserTool extends ANY
         /* readStdin               */ false,
         /* executeCode             */ null,
         /* main                    */ isStdLib ? null : tempFile.getAbsolutePath(),
-        /* loadSources             */ true)
+        /* loadSources             */ true,
+        null)
         {
           @Override
           public boolean isLanguageServer()

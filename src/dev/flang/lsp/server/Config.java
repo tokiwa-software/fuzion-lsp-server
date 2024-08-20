@@ -173,7 +173,7 @@ public class Config
           ErrorHandling.ResultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
           ErrorHandling.ResultOrDefault(() -> options.get("safety").getAsBoolean(), true),
           ErrorHandling.ResultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true),
-          SourceText.FuzionHome)
+          SourceText.FuzionHome, null)
           {
             @Override
             public boolean isLanguageServer()

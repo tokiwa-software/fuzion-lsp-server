@@ -37,10 +37,11 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Call;
+import dev.flang.ast.Constant;
+import dev.flang.ast.Context;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
 import dev.flang.parser.Lexer.Token;
@@ -122,8 +123,6 @@ public class QueryAST extends ANY
         && SourcePositionTool.PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
       .filter(entry -> SourcePositionTool.PositionIsBeforeCursor(params, ((AbstractCall) entry.getKey()).pos()))
       .map(entry -> (AbstractCall) entry.getKey())
-      // filter generated call to "Types", see DotType.resolveTypes()
-      .filter(ac -> ac.calledFeature() != Types.resolved.f_Types || LexerTool.TokensAt(ac.pos()).right().text().equals("Types"))
       .filter(ac -> SourcePositionTool.Compare(ExprTool.EndOfExpr(ac), params) <= 0)
       .sorted(ExprTool.CompareByEndOfExpr.reversed())
       .filter(ac -> ac.calledFeature() != null)
@@ -145,7 +144,7 @@ public class QueryAST extends ANY
       .map(at -> {
         if (HasConstraint(at))
           {
-            return at.genericArgument().constraint().feature();
+            return at.genericArgument().constraint(Context.NONE).feature();
           }
         return at.feature();
       })
@@ -155,18 +154,18 @@ public class QueryAST extends ANY
 
   private static boolean HasConstraint(AbstractType at)
   {
-    return at.isGenericArgument() && !at.genericArgument().constraint().equals(Types.resolved.t_Any);
+    return at.isGenericArgument() && !at.genericArgument().constraint(Context.NONE).equals(Types.resolved.t_Any);
   }
 
   // NYI motivate/explain this heuristic
   private static Optional<? extends AbstractFeature> Constant(SourcePosition params)
   {
     return ASTWalker.Traverse(params)
-      .filter(entry -> entry.getKey() instanceof AbstractConstant)
+      .filter(entry -> entry.getKey() instanceof Constant)
       .filter(entry -> !entry.getValue().pos().isBuiltIn()
         && SourcePositionTool.PositionIsAfterOrAtCursor(params, ParserTool.endOfFeature(entry.getValue())))
-      .filter(entry -> SourcePositionTool.PositionIsBeforeCursor(params, ((AbstractConstant) entry.getKey()).pos()))
-      .map(entry -> ((AbstractConstant) entry.getKey()))
+      .filter(entry -> SourcePositionTool.PositionIsBeforeCursor(params, ((Constant) entry.getKey()).pos()))
+      .map(entry -> ((Constant) entry.getKey()))
       .filter(HasSourcePositionTool.IsItemOnSameLineAsCursor(params))
       .sorted(HasSourcePositionTool.CompareBySourcePosition.reversed())
       .map(x -> x.type().feature())
@@ -336,7 +335,7 @@ public class QueryAST extends ANY
       // the AST currently
       .or(() -> FeatureAtFuzzy(params))
       .or(() -> {
-        Context.Logger.Warning("No feature found at: " + params);
+        dev.flang.shared.Context.Logger.Warning("No feature found at: " + params);
         return Optional.empty();
       });
   }
