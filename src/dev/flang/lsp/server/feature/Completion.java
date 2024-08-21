@@ -226,7 +226,23 @@ public class Completion
       buildCompletionItem("for until else", "${1:i} in ${2:1}..${3:10} do"
         + System.lineSeparator() + "until ${4:}"
         + System.lineSeparator() + "else ${4:}",
-        CompletionItemKind.Keyword))
+        CompletionItemKind.Keyword),
+      buildCompletionItem("for while until else","""
+          for
+            x1 := init1, next1
+            x2 in set1
+            x3 := init2, next2
+            x4 in set2
+            x5 := init3, next3
+          while <whileCond>
+            <body>
+          until <untilCond>
+            <success>
+          else
+            <failure>
+          """,
+        CompletionItemKind.Keyword)
+      )
       .stream();
   }
 
