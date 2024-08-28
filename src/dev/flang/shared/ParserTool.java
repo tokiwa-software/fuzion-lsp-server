@@ -187,7 +187,7 @@ public class ParserTool extends ANY
       }
     catch (Exception e)
       {
-        ErrorHandling.WriteStackTraceAndExit(1, e);
+        ErrorHandling.WriteStackTrace(e);
       }
     return sourceFile;
   }

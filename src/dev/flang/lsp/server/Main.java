@@ -161,7 +161,8 @@ public class Main
             return createLauncher(server, socket.getInputStream(), socket.getOutputStream());
           }
       default:
-        ErrorHandling.WriteStackTraceAndExit(1);
+        IO.SYS_OUT.print("NYI: " + Config.transport());
+        ErrorHandling.WriteStackTrace();
         return null;
       }
   }

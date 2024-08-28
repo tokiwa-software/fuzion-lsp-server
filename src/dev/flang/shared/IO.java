@@ -62,7 +62,7 @@ public class IO
       }
     catch (UnsupportedEncodingException e)
       {
-        ErrorHandling.WriteStackTraceAndExit(1);
+        ErrorHandling.WriteStackTrace();
       }
     return byteArray;
   }
@@ -94,7 +94,7 @@ public class IO
       }
     catch (IOException e)
       {
-        ErrorHandling.WriteStackTraceAndExit(1);
+        ErrorHandling.WriteStackTrace();
         return null;
       }
   }
@@ -116,7 +116,7 @@ public class IO
       }
     catch (Exception e)
       {
-        ErrorHandling.WriteStackTraceAndExit(1, e);
+        ErrorHandling.WriteStackTrace(e);
         return null;
       } finally
       {

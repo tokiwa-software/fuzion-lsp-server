@@ -32,24 +32,11 @@ import java.util.stream.Collectors;
 
 public class ErrorHandling
 {
-
-  public static void WriteStackTraceAndExit(int status)
-  {
-    var throwable = CurrentStacktrace();
-    WriteStackTraceAndExit(status, throwable);
-  }
-
   public static Throwable CurrentStacktrace()
   {
     var throwable = new Throwable();
     throwable.fillInStackTrace();
     return throwable;
-  }
-
-  public static void WriteStackTraceAndExit(int status, Throwable e)
-  {
-    WriteStackTrace(e);
-    System.exit(status);
   }
 
   public static String toString(Throwable th)
@@ -70,6 +57,11 @@ public class ErrorHandling
       .map(st -> st.toString())
       .collect(Collectors.joining(System.lineSeparator()));
     return stackTraceString;
+  }
+
+  public static String WriteStackTrace()
+  {
+    return WriteStackTrace(CurrentStacktrace());
   }
 
   public static String WriteStackTrace(Throwable e)
