@@ -99,9 +99,9 @@ public class SourceText extends ANY
       {
         return Files.readString(Path.of(uri), StandardCharsets.UTF_8);
       }
-    catch (IOException e)
+    catch (Exception e)
       {
-        ErrorHandling.WriteStackTraceAndExit(1, e);
+        ErrorHandling.WriteStackTrace(e);
         return null;
       }
   }
