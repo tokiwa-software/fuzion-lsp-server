@@ -184,7 +184,7 @@ public class FuzionLanguageServer implements LanguageServer
 
   private void initializeInlayHints(ServerCapabilities capabilities)
   {
-    capabilities.setInlayHintProvider(true);
+    capabilities.setInlayHintProvider(false /* NYI: BUG inlay hints broken */);
   }
 
   private void initializeSignatureHelp(ServerCapabilities capabilities)
