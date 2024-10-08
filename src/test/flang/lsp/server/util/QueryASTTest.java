@@ -328,16 +328,6 @@ public class QueryASTTest extends ExtendedBaseTest
   }
 
   @Test
-  @Disabled // failing
-  public void RunBrokenSource()
-  {
-    SourceText.setText(uri1, UnknownCall);
-    assertThrows(RuntimeException.class, () -> ParserTool.Run(uri1, 10000));
-    assertEquals(1, QueryAST.SelfAndDescendants(uri1).count());
-  }
-
-
-  @Test
   public void TargetNumLiteral()
   {
     var sourceText = """

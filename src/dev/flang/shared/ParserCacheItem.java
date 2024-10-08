@@ -27,20 +27,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.shared;
 
 import java.net.URI;
-import java.util.Optional;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
-import dev.flang.air.AIR;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
 import dev.flang.ast.Types.Resolved;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
-import dev.flang.fuir.FUIR;
-import dev.flang.me.MiddleEnd;
-import dev.flang.mir.MIR;
-import dev.flang.opt.Optimizer;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 
@@ -51,35 +44,21 @@ public class ParserCacheItem
 {
 
   private final URI uri;
-  private final MIR mir;
   private final FrontEndOptions frontEndOptions;
   private final FrontEnd frontEnd;
   private final TreeSet<Errors.Error> errors;
   private final TreeSet<Errors.Error> warnings;
   private final Resolved resolved;
 
-  public ParserCacheItem(URI uri, MIR mir, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
+  public ParserCacheItem(URI uri, FrontEndOptions frontEndOptions, FrontEnd frontEnd,
     TreeSet<Errors.Error> errors, TreeSet<Errors.Error> warnings, Resolved resolved)
   {
     this.uri = uri;
-    this.mir = mir;
     this.frontEndOptions = frontEndOptions;
     this.frontEnd = frontEnd;
     this.errors = errors;
     this.warnings = warnings;
     this.resolved = resolved;
-  }
-
-  public AIR air()
-  {
-    RestoreStaticArtifacts();
-    return new MiddleEnd(frontEndOptions, mir, frontEnd.module())
-      .air();
-  }
-
-  private void RestoreStaticArtifacts()
-  {
-    Types.resolved = resolved();
   }
 
   /**
@@ -88,7 +67,7 @@ public class ParserCacheItem
    */
   public Stream<AbstractFeature> TopLevelFeatures()
   {
-    return ParserTool.DeclaredFeatures(mir.universe())
+    return ParserTool.DeclaredFeatures(resolved.universe)
       // feature is in file
       .filter(f -> ParserTool.getUri(f.pos()).equals(uri));
   }
@@ -101,11 +80,6 @@ public class ParserCacheItem
   public TreeSet<Errors.Error> errors()
   {
     return errors;
-  }
-
-  public MIR mir()
-  {
-    return mir;
   }
 
   public FuzionOptions frontEndOptions()
@@ -123,21 +97,9 @@ public class ParserCacheItem
     return frontEnd;
   }
 
-  public Optional<FUIR> fuir()
+  public AbstractFeature universe()
   {
-    if (!Context.MiddleEndEnabled)
-      {
-        return Optional.empty();
-      }
-    try
-      {
-        return Optional.of(new Optimizer(frontEndOptions, air())
-          .fuir());
-      }
-    catch (Exception e)
-      {
-        return Optional.empty();
-      }
+    return resolved.universe;
   }
 
 }

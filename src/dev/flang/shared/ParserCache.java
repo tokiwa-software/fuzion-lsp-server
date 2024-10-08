@@ -38,7 +38,7 @@ import dev.flang.util.ANY;
 
 public class ParserCache extends ANY
 {
-  private int PARSER_CACHE_MAX_SIZE = 5;
+  private int PARSER_CACHE_MAX_SIZE = 1;
 
   /*
    * this map is kept in sync with sourceText2ParserCache
@@ -48,7 +48,7 @@ public class ParserCache extends ANY
   // LRU-Cache holding the most recent results of parser
   private Map<String, ParserCacheItem> sourceText2ParserCache =
     Util.ThreadSafeLRUMap(PARSER_CACHE_MAX_SIZE, (removed) -> {
-      var frontEnd = universe2FrontEndMap.remove(removed.getValue().mir().universe());
+      var frontEnd = universe2FrontEndMap.remove(removed.getValue().universe());
       check(frontEnd != null, universe2FrontEndMap.size() <= PARSER_CACHE_MAX_SIZE);
     });
 
@@ -60,7 +60,7 @@ public class ParserCache extends ANY
       long startTime = System.nanoTime();
 
       var parserCacheItem = mappingFunction.apply(str);
-      universe2FrontEndMap.put(parserCacheItem.mir().universe(), parserCacheItem.frontEnd());
+      universe2FrontEndMap.put(parserCacheItem.universe(), parserCacheItem.frontEnd());
 
       long stopTime = System.nanoTime();
       var elapsedTime = (int) ((stopTime - startTime) / 1E6);
@@ -81,6 +81,6 @@ public class ParserCache extends ANY
     if (PRECONDITIONS)
       require(!TypeTool.ContainsError(f.selfType()));
     var universe = FeatureTool.Universe(f);
-    return universe2FrontEndMap.get(universe).module();
+    return universe2FrontEndMap.get(universe).sourceModule();
   }
 }

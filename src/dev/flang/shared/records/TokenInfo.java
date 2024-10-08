@@ -209,7 +209,7 @@ public class TokenInfo extends ANY
   }
 
 
-  private static final Map<String, Map<Integer, HasSourcePosition>> Pos2ItemsCache = Util.ThreadSafeLRUMap(3, null);
+  private static final Map<String, Map<Integer, HasSourcePosition>> Pos2ItemsCache = Util.ThreadSafeLRUMap(1, null);
 
 
   private Map<Integer, HasSourcePosition> Pos2Items()

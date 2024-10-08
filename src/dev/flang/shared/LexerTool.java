@@ -61,7 +61,7 @@ public class LexerTool extends ANY
   }
 
   private static Map<String, List<TokenInfo>> tokenCache =
-    Util.ThreadSafeLRUMap(10, (removed) -> {
+    Util.ThreadSafeLRUMap(1, (removed) -> {
     });
 
   private static Stream<TokenInfo> Tokenize(SourcePosition pos)

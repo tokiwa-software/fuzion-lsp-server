@@ -45,39 +45,6 @@ import test.flang.shared.BaseTest;
 public class CommandTest extends BaseTest
 {
 
-  /**
-   * test if we can run more than one program
-   * successfully and thus statically held stuff does not
-   * get in the way.
-   * @throws Exception
-   */
-  @Test @Disabled // too slow
-  public void RunMultiple() throws Throwable
-  {
-    SourceText.setText(uri1, HelloWorld);
-    SourceText.setText(uri2, PythagoreanTriple);
-
-    ParserTool.Run(uri1);
-    ParserTool.Run(uri2);
-    var message = ParserTool.Run(uri1);
-
-    assertEquals("Hello World!" + "\n", message);
-  }
-
-  @Test @Disabled // too slow
-  public void RunSuccessfulAfterRunWithTimeoutException() throws Throwable
-  {
-    SourceText.setText(uri1, ManOrBoy);
-    SourceText.setText(uri2, HelloWorld);
-    SourceText.setText(uri3, PythagoreanTriple);
-
-    // NYI this will not throw once fuzion gets faster, how to test properly?
-    assertThrows(MaxExecutionTimeExceededException.class, () -> ParserTool.Run(uri1, 100));
-    assertThrows(MaxExecutionTimeExceededException.class, () -> ParserTool.Run(uri3, 50));
-
-    assertEquals("Hello World!" + "\n", ParserTool.Run(uri2));
-  }
-
   @Test
   public void GenerateMatchCases() throws Throwable
   {

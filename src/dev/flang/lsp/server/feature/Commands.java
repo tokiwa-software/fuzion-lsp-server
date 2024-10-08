@@ -79,8 +79,6 @@ public enum Commands
       {
       case showSyntaxTree :
         return "Show syntax tree";
-      case run :
-        return "Run";
       case callGraph :
         return "Show call graph";
       case codeActionFixIdentifier :
@@ -103,10 +101,6 @@ public enum Commands
 
       case showSyntaxTree :
         return showSyntaxTree(uri);
-
-
-      case run :
-        return run(uri);
 
 
       case callGraph :
@@ -168,12 +162,6 @@ public enum Commands
   private static CompletableFuture<Object> showSyntaxTree(String uri)
   {
     Concurrency.MainExecutor.submit(() -> showSyntaxTree(Util.toURI(uri)));
-    return completedFuture;
-  }
-
-  private static CompletableFuture<Object> run(String uri)
-  {
-    Concurrency.MainExecutor.submit(() -> evaluate(Util.toURI(uri)));
     return completedFuture;
   }
 
@@ -259,29 +247,6 @@ public enum Commands
           .showMessage(new MessageParams(MessageType.Warning,
             "Display of call graph failed. Do you have graphviz and imagemagick installed?"));
         Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
-      }
-  }
-
-  private static void evaluate(URI uri)
-  {
-    var token = FuzionLanguageClient.StartProgress("running", uri.toString());
-    try
-      {
-        var result = ParserTool.Run(uri);
-        var file = IO.writeToTempFile(result, String.valueOf(System.currentTimeMillis()), ".result");
-        Config.languageClient().showDocument(new ShowDocumentParams(file.toURI().toString()));
-      }
-    catch (Throwable e)
-      {
-        var message = e.getMessage();
-        if (message != null)
-          {
-            Config.languageClient()
-              .showMessage(new MessageParams(MessageType.Error, message));
-          }
-      } finally
-      {
-        FuzionLanguageClient.EndProgress(token);
       }
   }
 

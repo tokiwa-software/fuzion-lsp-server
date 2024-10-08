@@ -41,7 +41,7 @@ public class SignatureHelperTest extends BaseTest
 {
   private static final String HelloWorld = """
     HelloWorld is
-      say "
+      say "Hello World"
         """;
 
   @Test

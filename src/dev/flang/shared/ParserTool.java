@@ -82,7 +82,7 @@ public class ParserTool extends ANY
   // NYI fix memory leak
   private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
 
-  private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 10;
+  private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 1;
 
   private static List<String> JavaModules = List.<String>of();
 
@@ -116,15 +116,12 @@ public class ParserTool extends ANY
 
   private static ParserCacheItem createParserCacheItem(URI uri)
   {
-    Clazzes.instance = null;
-
     var frontEndOptions = FrontEndOptions(uri);
     var frontEnd = new FrontEnd(frontEndOptions);
-    var mir = frontEnd.createMIR();
     var errors = Errors.errors();
     var warnings = Errors.warnings();
 
-    return new ParserCacheItem(uri, mir, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
+    return new ParserCacheItem(uri, frontEndOptions, frontEnd, errors, warnings, Types.resolved);
   }
 
   private static FrontEndOptions FrontEndOptions(URI uri)
@@ -194,7 +191,7 @@ public class ParserTool extends ANY
 
   public static AbstractFeature Universe(URI uri)
   {
-    return getParserCacheItem(uri).mir().universe();
+    return getParserCacheItem(uri).universe();
   }
 
   public static Stream<AbstractFeature> DeclaredFeatures(AbstractFeature f)
@@ -301,32 +298,6 @@ public class ParserTool extends ANY
           || (af.pos().line() == result.line() && af.pos().column() < result.column()));
       return result;
     });
-  }
-
-  private static Optional<Interpreter> Interpreter(URI uri)
-  {
-    return getParserCacheItem(uri).fuir().map(f -> new Interpreter(Context.FuzionOptions, f));
-  }
-
-  public static String Run(URI uri)
-    throws Throwable
-  {
-    return Run(uri, 10000);
-  }
-
-  public synchronized static String Run(URI uri, int timeout)
-    throws Throwable
-  {
-    var interpreter = ParserTool.Interpreter(uri);
-    var result = Concurrency.RunWithPeriodicCancelCheck(IO.WithCapturedStdOutErr(() -> {
-      interpreter.ifPresent(i -> i.run());
-      if (interpreter.isEmpty())
-        {
-          throw new RuntimeException("Interpreter could not be created.");
-        }
-    }), () -> {
-    }, timeout, timeout);
-    return result.result();
   }
 
   public static Stream<Errors.Error> Warnings(URI uri)
