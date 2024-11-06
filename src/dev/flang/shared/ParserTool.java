@@ -35,7 +35,6 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import dev.flang.air.Clazzes;
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
