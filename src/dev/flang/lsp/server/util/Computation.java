@@ -43,7 +43,7 @@ import dev.flang.shared.concurrent.MaxExecutionTimeExceededException;
 
 public class Computation
 {
-  private static final int INTERVALL_CHECK_CANCELLED_MS = 50;
+  private static final int INTERVALL_CHECK_CANCELLED_MS = 250;
   private static LocalDateTime lastErrorMessageSent = LocalDateTime.MIN;
 
   public static <T> CompletableFuture<T> CancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
