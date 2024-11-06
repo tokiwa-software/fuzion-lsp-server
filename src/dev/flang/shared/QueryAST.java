@@ -184,7 +184,7 @@ public class QueryAST extends ANY
       .token();
     return TargetFeature(params)
       // NYI this should be simplified
-      .map(tf -> tokenBeforeDot == Token.t_type && !tf.isTypeFeature() ? tf.typeFeature() : tf)
+      .map(tf -> tokenBeforeDot == Token.t_type && !tf.isCotype() ? tf.cotype() : tf)
       .map(tf -> Candidates(tf)
         // filter infix, prefix, postfix features
         .filter(x -> !x.featureName().baseName().contains(" ")))
