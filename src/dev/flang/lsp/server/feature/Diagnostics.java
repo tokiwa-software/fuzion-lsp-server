@@ -108,7 +108,7 @@ public enum Diagnostics
   {
     return QueryAST.SelfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
-      .filter(f -> (f.isOuterRef() || f.isThisRef()) && !f.isField())
+      .filter(f -> (f.isOuterRef() || f.isRef()) && !f.isField())
       .filter(f -> {
         var basename = f.featureName().baseName();
         var splittedBaseName = basename.split("_");
@@ -131,7 +131,7 @@ public enum Diagnostics
   {
     var snakeCase = QueryAST.SelfAndDescendants(uri)
       .filter(f -> !f.isTypeParameter())
-      .filter(f -> !(f.isOuterRef() || f.isThisRef()) || f.isField())
+      .filter(f -> !(f.isOuterRef() || f.isRef()) || f.isField())
       .filter(f -> {
         var basename = f.featureName().baseName();
         return

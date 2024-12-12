@@ -40,6 +40,7 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Box;
+import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Context;
 import dev.flang.ast.Env;
@@ -194,7 +195,7 @@ public class ASTWalker
       {
         return Stream.concat(AsStream(ia, outer), ia._elements.stream().flatMap(e -> TraverseExpression(e, outer)));
       }
-    if ( expr == Expr.ERROR_VALUE
+    if ( expr == Call.ERROR
       || expr instanceof AbstractCurrent
       || expr instanceof Constant
       || expr instanceof Universe

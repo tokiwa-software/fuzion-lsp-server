@@ -145,8 +145,10 @@ public class ParserTool extends ANY
         /* readStdin               */ false,
         /* executeCode             */ null,
         /* main                    */ isStdLib ? null : tempFile.getAbsolutePath(),
+        /* moduleName              */ "main",
         /* loadSources             */ true,
-        null)
+        /* needsEscapeAnalysis     */ false,
+        /* timer                   */ s -> {})
         {
           @Override
           public boolean isLanguageServer()
