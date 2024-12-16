@@ -41,9 +41,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
-import dev.flang.ast.Check;
-import dev.flang.ast.Context;
-import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Function;
 import dev.flang.ast.If;
@@ -200,8 +197,7 @@ public class ASTWalker
       || expr instanceof Constant
       || expr instanceof Universe
       || expr instanceof Function
-      || expr instanceof Nop
-      || expr instanceof Env)
+      || expr instanceof Nop)
       {
         return Stream.empty();
       }
