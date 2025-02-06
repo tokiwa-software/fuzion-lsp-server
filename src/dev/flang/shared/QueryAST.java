@@ -41,7 +41,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Call;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Context;
 import dev.flang.ast.StrConst;
 import dev.flang.ast.Types;
 import dev.flang.parser.Lexer.Token;
@@ -141,20 +140,11 @@ public class QueryAST extends ANY
           .calledFeature()
           .resultType();
       })
-      .map(at -> {
-        if (HasConstraint(at))
-          {
-            return at.genericArgument().constraint(Context.NONE).feature();
-          }
-        return at.feature();
-      })
+      // NYI:
+      // .map(at -> at.selfOrConstraint())
+      .map(at -> at.feature())
       .filter(f -> !FeatureTool.IsInternal(f) || f.featureName().baseName().endsWith("#type"))
       .findFirst();
-  }
-
-  private static boolean HasConstraint(AbstractType at)
-  {
-    return at.isGenericArgument() && !at.genericArgument().constraint(Context.NONE).equals(Types.resolved.t_Any);
   }
 
   // NYI motivate/explain this heuristic

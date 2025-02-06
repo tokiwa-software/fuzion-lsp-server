@@ -42,7 +42,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseError;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Context;
 import dev.flang.lsp.server.util.Bridge;
 import dev.flang.lsp.server.util.LSP4jUtils;
 import dev.flang.parser.Lexer.Token;
@@ -171,7 +170,7 @@ public class Rename extends ANY
       .Features(LSP4jUtils.getUri(params))
       .filter(f -> f.resultType().isChoice())
       .filter(f -> {
-        return f.resultType().choiceGenerics(Context.NONE).stream().anyMatch(t -> {
+        return f.resultType().choiceGenerics().stream().anyMatch(t -> {
           return TypeTool.baseName(t).equals(featureToRename.featureName().baseName());
         });
       })
