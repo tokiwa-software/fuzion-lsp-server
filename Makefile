@@ -103,10 +103,10 @@ jars/junit-jupiter-api-5.10.2.jar:
 	wget -O $@ https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.10.2/$(@F)
 
 build_fuzion_no_java:
-	make -s -C fuzion no-java 2> /dev/null
+	make -s -C fuzion no-java
 
 build_fuzion:
-	make -s -C fuzion 2> /dev/null
+	make -s -C fuzion
 
 clean:
 	make -C fuzion clean
