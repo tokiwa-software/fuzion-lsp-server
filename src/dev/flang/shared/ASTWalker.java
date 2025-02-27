@@ -38,11 +38,11 @@ import dev.flang.ast.AbstractCase;
 import dev.flang.ast.Constant;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractLambda;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
-import dev.flang.ast.Function;
 import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
@@ -196,7 +196,7 @@ public class ASTWalker
       || expr instanceof AbstractCurrent
       || expr instanceof Constant
       || expr instanceof Universe
-      || expr instanceof Function
+      || expr instanceof AbstractLambda
       || expr instanceof Nop)
       {
         return Stream.empty();

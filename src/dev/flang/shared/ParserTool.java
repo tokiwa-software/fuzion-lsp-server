@@ -148,6 +148,7 @@ public class ParserTool extends ANY
         /* moduleName              */ "main",
         /* loadSources             */ true,
         /* needsEscapeAnalysis     */ false,
+        /* serializeFuir           */ false,
         /* timer                   */ s -> {})
         {
           @Override
@@ -255,26 +256,25 @@ public class ParserTool extends ANY
               lastPos = SourcePositionTool.Compare(lastPos, visitedPos) >=0 ? lastPos : visitedPos;
             }
         }
-        public void         action      (AbstractAssign a, AbstractFeature outer) { FoundPos(a.pos()); }
-        public void         actionBefore(Block          b, AbstractFeature outer) { FoundPos(b.pos()); }
-        public void         actionAfter (Block          b, AbstractFeature outer) { FoundPos(b.pos()); }
-        public void         action      (AbstractCall   c                       ) { FoundPos(c.pos()); }
-        public Expr         action      (Call           c, AbstractFeature outer) { FoundPos(c.pos()); return c; }
-        public Expr         action      (DotType        d, AbstractFeature outer) { FoundPos(d.pos()); return d; }
-        public void         actionBefore(AbstractCase   c                       ) { FoundPos(c.pos()); }
-        public void         actionAfter (AbstractCase   c                       ) { FoundPos(c.pos()); }
-        public void         action      (Cond           c, AbstractFeature outer) { FoundPos(c.cond.pos()); }
-        public Expr         action      (Destructure    d, AbstractFeature outer) { FoundPos(d.pos()); return d; }
-        public Expr         action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
-        public Expr         action      (Function       f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
-        public Expr         action      (If             i, AbstractFeature outer) { FoundPos(i.pos()); return i; }
-        public void         action      (Impl           i, AbstractFeature outer) { FoundPos(i.pos); }
-        public Expr         action      (InlineArray    i, AbstractFeature outer) { FoundPos(i.pos()); return i; }
-        public void         action      (AbstractMatch  m                       ) { FoundPos(m.pos()); }
-        public void         action      (Match          m, AbstractFeature outer) { FoundPos(m.pos()); }
-        public void         action      (Tag            b, AbstractFeature outer) { FoundPos(b.pos()); }
-        public Expr         action      (This           t, AbstractFeature outer) { FoundPos(t.pos()); return t; }
-        public AbstractType action      (AbstractType   t, AbstractFeature outer) { FoundPos(t.declarationPos()); return t; }
+        @Override public void         action      (AbstractAssign a) { FoundPos(a.pos()); }
+        @Override public void         actionBefore(Block          b) { FoundPos(b.pos()); }
+        @Override public void         actionAfter (Block          b) { FoundPos(b.pos()); }
+        @Override public void         action      (AbstractCall   c) { FoundPos(c.pos()); }
+        @Override public Expr         action      (Call           c) { FoundPos(c.pos()); return c; }
+        @Override public Expr         action      (DotType        d) { FoundPos(d.pos()); return d; }
+        @Override public void         actionBefore(AbstractCase   c) { FoundPos(c.pos()); }
+        @Override public void         actionAfter (AbstractCase   c) { FoundPos(c.pos()); }
+        @Override public void         action      (Cond           c) { FoundPos(c.cond.pos()); }
+        @Override public Expr         action      (Destructure    d) { FoundPos(d.pos()); return d; }
+        @Override public Expr         action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
+        @Override public Expr         action      (Function       f) { FoundPos(f.pos()); return f; }
+        @Override public Expr         action      (If             i) { FoundPos(i.pos()); return i; }
+        @Override public void         action      (Impl           i) { FoundPos(i.pos); }
+        @Override public Expr         action      (InlineArray    i) { FoundPos(i.pos()); return i; }
+        @Override public void         action      (AbstractMatch  m) { FoundPos(m.pos()); }
+        @Override public void         action      (Tag            b) { FoundPos(b.pos()); }
+        @Override public Expr         action      (This           t) { FoundPos(t.pos()); return t; }
+        @Override public AbstractType action      (AbstractType   t) { FoundPos(t.declarationPos()); return t; }
       };
       if (af instanceof Feature f)
         {
